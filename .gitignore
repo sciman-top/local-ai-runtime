@@ -1,0 +1,9 @@
+.env
+.env.*
+!.env.example
+
+private-local/*
+!private-local/README.md
+
+Thumbs.db
+.DS_Store

@@ -1,0 +1,17 @@
+{
+  "source_release_tag": "v2026.6.19",
+  "source_release_name": "Hermes Agent v0.17.0 (v2026.6.19)",
+  "repository": "nousresearch/hermes-agent",
+  "tag": "v2026.6.19",
+  "repo_digest": "nousresearch/hermes-agent@sha256:9f367c7756ef087661a361536a89f438d57a122b958dc23d82d456b1433e6e9e",
+  "config_user": "",
+  "resolution_status": "resolved",
+  "resolution_notes": [
+    "config user unresolved"
+  ],
+  "pull_exit_code": null,
+  "inspect_digest_exit_code": null,
+  "inspect_user_exit_code": null,
+  "registry_only": true,
+  "resolved_at": "2026-06-27T13:21:10.5867373Z"
+}

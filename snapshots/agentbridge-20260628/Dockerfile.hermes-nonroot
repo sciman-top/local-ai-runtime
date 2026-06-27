@@ -1,0 +1,12 @@
+ARG BASE_IMAGE
+FROM ${BASE_IMAGE}
+
+ARG HERMES_UID=10001
+ARG HERMES_GID=10001
+
+RUN groupadd --gid "${HERMES_GID}" hermes \
+    && useradd --uid "${HERMES_UID}" --gid "${HERMES_GID}" --create-home --home-dir /home/hermes --shell /usr/sbin/nologin hermes \
+    && mkdir -p /opt/data /home/hermes \
+    && chown -R "${HERMES_UID}:${HERMES_GID}" /opt/data /home/hermes
+
+USER ${HERMES_UID}:${HERMES_GID}

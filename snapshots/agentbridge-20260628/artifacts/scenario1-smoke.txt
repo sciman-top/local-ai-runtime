@@ -1,0 +1,3 @@
+scenario=1
+purpose=file-only-agentbridge-smoke
+generated_at=2026-06-27T08:20:25.4252622Z

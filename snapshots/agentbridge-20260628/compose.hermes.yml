@@ -1,0 +1,59 @@
+name: agentbridge-hermes
+
+secrets:
+  provider_api_key:
+    environment: HERMES_PROVIDER_API_KEY
+
+services:
+  hermes-init:
+    image: ${HERMES_INIT_IMAGE:-alpine:3.20}
+    profiles: ["init"]
+    user: "0:0"
+    command: ["/bin/sh", "/bridge/scripts/init-hermes-volume.sh"]
+    restart: "no"
+    security_opt:
+      - no-new-privileges:true
+    volumes:
+      - hermes_data:/opt/data
+      - type: bind
+        source: ${AGENTBRIDGE_PATH:-C:/Users/sciman/Documents/AgentBridge}
+        target: /bridge
+        read_only: true
+
+  hermes:
+    image: ${HERMES_RUNTIME_IMAGE:?Set HERMES_RUNTIME_IMAGE to an official image@sha256:... reference}
+    init: true
+    entrypoint: ["/bin/sh", "/bridge/scripts/run-hermes-wrapper.sh"]
+    command: ["chat"]
+    working_dir: /bridge
+    restart: "no"
+    # These service-level limits are intentional for single-host Docker Compose.
+    cpus: "${HERMES_CPUS:-2}"
+    mem_limit: "${HERMES_MEM_LIMIT:-2g}"
+    pids_limit: ${HERMES_PIDS_LIMIT:-256}
+    # Add memswap_limit only after the host proves it is supported and stable.
+    security_opt:
+      - no-new-privileges:true
+    environment:
+      AGENTBRIDGE_ROOT: /bridge
+      HERMES_DATA_DIR: /opt/data
+      HERMES_APPROVALS_MODE: manual
+      HERMES_UID: ${HERMES_UID:?Set HERMES_UID to the runtime service uid}
+      HERMES_GID: ${HERMES_GID:?Set HERMES_GID to the runtime service gid}
+      HERMES_PROVIDER_BASE_URL: ${HERMES_PROVIDER_BASE_URL:-}
+      HERMES_MODEL_PRIMARY: ${HERMES_MODEL_PRIMARY:-gpt-5.5}
+      HERMES_MODEL_FALLBACK: ${HERMES_MODEL_FALLBACK:-gpt-5.4}
+      HERMES_RUN_LOG_DIR: /bridge/logs/hermes-runs
+      HERMES_COST_LOG_DIR: /bridge/logs/cost-rollups
+    secrets:
+      - source: provider_api_key
+        target: provider_api_key
+    volumes:
+      - hermes_data:/opt/data
+      - type: bind
+        source: ${AGENTBRIDGE_PATH:-C:/Users/sciman/Documents/AgentBridge}
+        target: /bridge
+
+volumes:
+  hermes_data:
+    name: ${HERMES_VOLUME_NAME:-agentbridge-hermes-data}

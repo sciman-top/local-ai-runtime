@@ -1,0 +1,15 @@
+{
+  "initialized_at": "2026-06-27T13:41:03.5468859Z",
+  "volume_name": "agentbridge-hermes-data",
+  "runtime_user": "root-bootstrap-with-runtime-remap",
+  "volume_uid": 10001,
+  "volume_gid": 10001,
+  "verified_owner": "10001:10001",
+  "verified_directories": [
+    "cache",
+    "logs",
+    "profiles",
+    "sessions"
+  ],
+  "compose_sha256": "5D8A5257793F6478C328BF5B74448C6BE8A1BECA2FA70F766C884D839863924F"
+}
