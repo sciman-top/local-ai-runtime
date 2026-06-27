@@ -85,19 +85,28 @@
   - the full run generated `docs/known-good-20260628-000717.json`
   - `test-known-good-snapshot.ps1` passes against that snapshot
 
+## Completed on 2026-06-28
+
+- improved `verify-hermes-boundary.ps1` so the helper container now follows the real `sh /bridge/scripts/run-hermes-wrapper.sh chat` path instead of `sleep 300`
+- replaced the one-shot `ps` check with bounded `docker top` polling so boundary evidence waits for the supervised Hermes process tree to settle
+- verified the real Windows-side boundary result now reports:
+  - `service_uidgid_present = true`
+  - `service_uidgid_lines` includes `/opt/hermes/.venv/bin/python3 /opt/hermes/.venv/bin/hermes chat`
+- recorded the current boundary evidence at:
+  - `docs/verify-hermes-boundary-20260628-005239.json`
+
 ## Current Status
 
 - Windows-side v1.6 bring-up is now operational end-to-end
 - the latest verified known-good snapshot is:
   - `docs/known-good-20260628-000717.json`
+- the latest verified boundary evidence is:
+  - `docs/verify-hermes-boundary-20260628-005239.json`
 - the older `docs/known-good-20260627-214819.json` should be treated as stale pre-fix evidence, not the current anchor
 - `invoke-hermes-bringup-once.ps1` now returns the final `session_cleared` state after the cleanup step, instead of emitting the summary too early
 
 ## Remaining limitations
 
-- `verify-hermes-boundary.ps1` still reports `service_uidgid_present = false`
-  - this is currently a probe-fidelity gap, not a failed Windows bring-up
-  - the verifier launches a `sleep 300` helper container and therefore only observes the root bootstrap process tree, not the long-lived supervised Hermes worker uid/gid path
 - `Ubuntu-24.04` still does not have Docker Desktop WSL integration enabled
   - Windows-side bring-up is already working
   - only in-distro `docker` use inside `Ubuntu-24.04` remains unavailable
@@ -111,4 +120,5 @@
 3. If you want to inspect the current slot projection only:
    - `& 'C:\Users\sciman\Documents\AgentBridge\scripts\manage-hermes-provider-session.ps1' -Action load -EnvFilePath 'D:\CODE\qq-codex-bot\.env' -SkipBackupPrompt`
 4. If Linux-side `docker` usage inside `Ubuntu-24.04` is still desired, enable Docker Desktop WSL integration for that distro.
-5. If boundary evidence needs to prove the non-root service uid/gid directly, the next slice is to improve `verify-hermes-boundary.ps1` so it inspects the supervised Hermes process instead of a `sleep 300` placeholder.
+5. If you want the current boundary evidence anchor directly:
+   - `docs/verify-hermes-boundary-20260628-005239.json`

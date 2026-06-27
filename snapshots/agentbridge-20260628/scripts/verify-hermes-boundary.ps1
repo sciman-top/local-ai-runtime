@@ -60,10 +60,14 @@ $secretMount = '{0}:/run/secrets/provider_api_key:ro' -f $secretFile
 $cpus = if ($env:HERMES_CPUS) { $env:HERMES_CPUS } else { '2' }
 $memory = if ($env:HERMES_MEM_LIMIT) { $env:HERMES_MEM_LIMIT } else { '2g' }
 $pidsLimit = if ($env:HERMES_PIDS_LIMIT) { $env:HERMES_PIDS_LIMIT } else { '256' }
+$observationTimeoutSeconds = 15
+$observationPollMilliseconds = 250
+# 直接走真实 Hermes chat 入口，避免只观察到 sleep 占位命令。
+$serviceProbeArgs = @('sh', '/bridge/scripts/run-hermes-wrapper.sh', 'chat')
 
 try {
     $null = Set-Content -LiteralPath $secretFile -NoNewline -Value $env:HERMES_PROVIDER_API_KEY
-    Invoke-AgentBridgeNativeCommand -FilePath $dockerCli -Arguments @(
+    $dockerRunArgs = @(
         'run',
         '-d',
         '--name', $containerName,
@@ -84,16 +88,49 @@ try {
         '-v', $volumeMount,
         '-v', $bridgeMount,
         '-v', $secretMount,
-        $env:HERMES_RUNTIME_IMAGE,
-        'sleep', '300'
-    ) | Out-Null
+        $env:HERMES_RUNTIME_IMAGE
+    ) + $serviceProbeArgs
+    Invoke-AgentBridgeNativeCommand -FilePath $dockerCli -Arguments $dockerRunArgs | Out-Null
     $containerResult = Invoke-AgentBridgeNativeCommand -FilePath $dockerCli -Arguments @('ps', '-aqf', "name=^$containerName$")
     $containerId = $containerResult.output.Trim()
     if (-not $containerId) {
         throw 'Verification container did not start.'
     }
 
-    $processTable = Invoke-AgentBridgeNativeCommand -FilePath $dockerCli -Arguments @('exec', $containerId, 'sh', '-lc', 'ps -eo uid,gid,args')
+    $serviceUid = [int]$env:HERMES_UID
+    $serviceGid = [int]$env:HERMES_GID
+    $serviceProcessRegex = "^\s*\d+\s+{0}\s+{1}\s+.*(?:^|[\\/ ])\.?venv[\\/ ]bin[\\/ ]hermes\s+chat(?:\s|$)" -f $serviceUid, $serviceGid
+    $rootBootstrapRegex = '^\s*\d+\s+0\s+0\s+'
+    $processLines = @()
+    $matchedServiceLines = @()
+    $hasServiceUidGid = $false
+    $hasRootBootstrap = $false
+    $probeAttempts = 0
+    $probeTimedOut = $false
+    $probeStopwatch = [System.Diagnostics.Stopwatch]::StartNew()
+
+    while ($true) {
+        $probeAttempts++
+        $processTable = Invoke-AgentBridgeNativeCommand -FilePath $dockerCli -Arguments @('top', $containerId, '-eo', 'pid,uid,gid,args') -AllowFailure
+        if ($processTable.exit_code -eq 0) {
+            $processLines = @($processTable.output -split "`r?`n" | Where-Object { $_ -and $_.Trim() })
+            $matchedServiceLines = @($processLines | Where-Object { $_ -match $serviceProcessRegex })
+            $hasServiceUidGid = $matchedServiceLines.Count -gt 0
+            $hasRootBootstrap = @($processLines | Where-Object { $_ -match $rootBootstrapRegex }).Count -gt 0
+            if ($hasServiceUidGid) {
+                break
+            }
+        }
+
+        if ($probeStopwatch.Elapsed.TotalSeconds -ge $observationTimeoutSeconds) {
+            $probeTimedOut = $true
+            break
+        }
+
+        Start-Sleep -Milliseconds $observationPollMilliseconds
+    }
+    $probeStopwatch.Stop()
+
     Invoke-AgentBridgeNativeCommand -FilePath $dockerCli -Arguments @('exec', $containerId, 'sh', '-lc', 'test -d /opt/data && test -d /bridge && test ! -S /var/run/docker.sock') | Out-Null
 
     $mountsJson = Invoke-AgentBridgeNativeCommand -FilePath $dockerCli -Arguments @('inspect', $containerId, '--format', '{{json .Mounts}}')
@@ -117,18 +154,16 @@ try {
             ForEach-Object { $_.Source }
     )
 
-    $serviceUid = [int]$env:HERMES_UID
-    $serviceGid = [int]$env:HERMES_GID
-    $processLines = @($processTable.output -split "`r?`n" | Where-Object { $_ -and $_.Trim() })
-    $hasServiceUidGid = @($processLines | Where-Object { $_ -match ("^\s*{0}\s+{1}\s+" -f $serviceUid, $serviceGid) }).Count -gt 0
-    $hasRootBootstrap = @($processLines | Where-Object { $_ -match '^\s*0\s+0\s+' }).Count -gt 0
-
     [pscustomobject]@{
         bootstrap_model = if ($env:HERMES_RUNTIME_USER) { $env:HERMES_RUNTIME_USER } else { 'unspecified' }
         service_uid = $serviceUid
         service_gid = $serviceGid
         service_uidgid_present = $hasServiceUidGid
+        service_uidgid_lines = $matchedServiceLines
         root_bootstrap_present = $hasRootBootstrap
+        probe_attempts = $probeAttempts
+        probe_wait_seconds = [math]::Round($probeStopwatch.Elapsed.TotalSeconds, 2)
+        probe_timed_out = $probeTimedOut
         process_lines = $processLines
         mount_targets = $mountTargets
         unexpected_mount_targets = $unexpectedTargets

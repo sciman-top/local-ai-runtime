@@ -16,6 +16,7 @@
 - v1 目标固定为：人工触发的批量学习闭环，而不是实时自进化、常驻学习或桌面控制
 - 当前 live 运行面仍在：`C:\Users\sciman\Documents\AgentBridge`
 - 当前维护仓在：`D:\CODE\hermes-agent`
+- 当前 boundary 证据锚点是 [verify-hermes-boundary-20260628-005239.json](D:/CODE/hermes-agent/snapshots/agentbridge-20260628/docs/verify-hermes-boundary-20260628-005239.json)，已直接观测到 `10001:10001` 的 `hermes chat`
 
 ## 仓内结构
 
@@ -29,6 +30,8 @@
 - [docs/工作交接提示词.md](D:/CODE/hermes-agent/docs/工作交接提示词.md)：可直接复制给下一位 agent 的提示词
 - [docs/交接摘要模板.md](D:/CODE/hermes-agent/docs/交接摘要模板.md)：后续交接时可复用模板
 - [references/README.md](D:/CODE/hermes-agent/references/README.md)：参考源码目录策略入口
+- [references/observations/README.md](D:/CODE/hermes-agent/references/observations/README.md)：各参考仓保留理由与使用边界
+- [references/updates/reference-refresh-latest.md](D:/CODE/hermes-agent/references/updates/reference-refresh-latest.md)：最新一次参考仓刷新与差异摘要
 - [snapshots/agentbridge-20260628/README.md](D:/CODE/hermes-agent/snapshots/agentbridge-20260628/README.md)：已验收 `AgentBridge` 快照说明
 - `snapshots/agentbridge-20260628/`：当前可公开提交的 `AgentBridge` 配置、脚本、文档、样例任务/结果、日志与快照元数据
 - `private-local/`：只在本机保存、不进入 git 的私有运行数据
@@ -69,3 +72,4 @@
 4. [docs/接手检查单.md](D:/CODE/hermes-agent/docs/接手检查单.md)
 5. [snapshots/agentbridge-20260628/docs/implementation-status.md](D:/CODE/hermes-agent/snapshots/agentbridge-20260628/docs/implementation-status.md)
 6. [snapshots/agentbridge-20260628/docs/中文操作说明.md](D:/CODE/hermes-agent/snapshots/agentbridge-20260628/docs/中文操作说明.md)
+7. [references/updates/reference-refresh-latest.md](D:/CODE/hermes-agent/references/updates/reference-refresh-latest.md)
