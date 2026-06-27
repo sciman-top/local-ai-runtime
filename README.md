@@ -23,6 +23,7 @@
 - [docs/实施计划.md](D:/CODE/hermes-agent/docs/实施计划.md)：分阶段实施与当前状态
 - [docs/任务清单.md](D:/CODE/hermes-agent/docs/任务清单.md)：后续维护任务与升级门禁
 - [docs/社区参考源码策略.md](D:/CODE/hermes-agent/docs/社区参考源码策略.md)：社区参考仓应否拉取、放哪里、如何更新
+- [docs/参考项目清单.md](D:/CODE/hermes-agent/docs/参考项目清单.md)：当前已拉取的上游参考源码清单
 - [references/README.md](D:/CODE/hermes-agent/references/README.md)：参考源码目录策略入口
 - [snapshots/agentbridge-20260628/README.md](D:/CODE/hermes-agent/snapshots/agentbridge-20260628/README.md)：已验收 `AgentBridge` 快照说明
 - `snapshots/agentbridge-20260628/`：当前可公开提交的 `AgentBridge` 配置、脚本、文档、样例任务/结果、日志与快照元数据
@@ -46,13 +47,13 @@
 
 应该拉，但不应混在本仓。
 
-推荐放在 `D:\CODE\external\...`，而不是 `D:\CODE\hermes-agent` 内部。原因很简单：
+推荐放在 `D:\CODE\external\hermes-agent-references`，而不是 `D:\CODE\hermes-agent` 内部。原因很简单：
 
 - 维护仓要保持“决策、计划、快照、脚本索引”的干净边界
 - 上游参考仓会频繁更新，混入本仓后会迅速把维护历史污染成 vendor 历史
 - 后续拉官方更新、做 diff、切换 tag、保留上游 git history，都更适合在 `external` 区完成
 
-具体策略见 [docs/社区参考源码策略.md](D:/CODE/hermes-agent/docs/社区参考源码策略.md)。
+当前已落地的具体清单见 [docs/参考项目清单.md](D:/CODE/hermes-agent/docs/参考项目清单.md)，目录现场索引见 [D:\CODE\external\hermes-agent-references\README.md](D:/CODE/external/hermes-agent-references/README.md)。
 
 ## 日常维护入口
 
