@@ -24,6 +24,10 @@
 - [docs/任务清单.md](D:/CODE/hermes-agent/docs/任务清单.md)：后续维护任务与升级门禁
 - [docs/社区参考源码策略.md](D:/CODE/hermes-agent/docs/社区参考源码策略.md)：社区参考仓应否拉取、放哪里、如何更新
 - [docs/参考项目清单.md](D:/CODE/hermes-agent/docs/参考项目清单.md)：当前已拉取的上游参考源码清单
+- [docs/当前交接摘要.md](D:/CODE/hermes-agent/docs/当前交接摘要.md)：当前维护状态的一页交接摘要
+- [docs/接手检查单.md](D:/CODE/hermes-agent/docs/接手检查单.md)：下一位接手时的最小检查路径
+- [docs/工作交接提示词.md](D:/CODE/hermes-agent/docs/工作交接提示词.md)：可直接复制给下一位 agent 的提示词
+- [docs/交接摘要模板.md](D:/CODE/hermes-agent/docs/交接摘要模板.md)：后续交接时可复用模板
 - [references/README.md](D:/CODE/hermes-agent/references/README.md)：参考源码目录策略入口
 - [snapshots/agentbridge-20260628/README.md](D:/CODE/hermes-agent/snapshots/agentbridge-20260628/README.md)：已验收 `AgentBridge` 快照说明
 - `snapshots/agentbridge-20260628/`：当前可公开提交的 `AgentBridge` 配置、脚本、文档、样例任务/结果、日志与快照元数据
@@ -61,5 +65,7 @@
 
 1. [docs/Windows主力机-AI-Agent-分层架构-v1.6.md](D:/CODE/hermes-agent/docs/Windows主力机-AI-Agent-分层架构-v1.6.md)
 2. [docs/实施计划.md](D:/CODE/hermes-agent/docs/实施计划.md)
-3. [snapshots/agentbridge-20260628/docs/implementation-status.md](D:/CODE/hermes-agent/snapshots/agentbridge-20260628/docs/implementation-status.md)
-4. [snapshots/agentbridge-20260628/docs/中文操作说明.md](D:/CODE/hermes-agent/snapshots/agentbridge-20260628/docs/中文操作说明.md)
+3. [docs/当前交接摘要.md](D:/CODE/hermes-agent/docs/当前交接摘要.md)
+4. [docs/接手检查单.md](D:/CODE/hermes-agent/docs/接手检查单.md)
+5. [snapshots/agentbridge-20260628/docs/implementation-status.md](D:/CODE/hermes-agent/snapshots/agentbridge-20260628/docs/implementation-status.md)
+6. [snapshots/agentbridge-20260628/docs/中文操作说明.md](D:/CODE/hermes-agent/snapshots/agentbridge-20260628/docs/中文操作说明.md)
