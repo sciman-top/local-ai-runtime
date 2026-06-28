@@ -70,7 +70,7 @@ $secretMount = '{0}:/run/secrets/provider_api_key:ro' -f $secretFile
 $cpus = if ($env:HERMES_CPUS) { $env:HERMES_CPUS } else { '2' }
 $memory = if ($env:HERMES_MEM_LIMIT) { $env:HERMES_MEM_LIMIT } else { '2g' }
 $pidsLimit = if ($env:HERMES_PIDS_LIMIT) { $env:HERMES_PIDS_LIMIT } else { '256' }
-$inferenceModel = if ($env:HERMES_INFERENCE_MODEL) { $env:HERMES_INFERENCE_MODEL } elseif ($env:HERMES_MODEL_PRIMARY) { $env:HERMES_MODEL_PRIMARY } else { 'gpt-5.5' }
+$inferenceModel = if ($env:HERMES_INFERENCE_MODEL) { $env:HERMES_INFERENCE_MODEL } elseif ($env:HERMES_MODEL_PRIMARY) { $env:HERMES_MODEL_PRIMARY } else { 'gpt-5.4' }
 $inferenceProvider = if ($env:HERMES_INFERENCE_PROVIDER) { $env:HERMES_INFERENCE_PROVIDER } else { 'openai-api' }
 $runDay = (Get-Date).ToUniversalTime().ToString('yyyy-MM-dd')
 $runMonth = (Get-Date).ToUniversalTime().ToString('yyyy-MM')
@@ -89,7 +89,7 @@ $dockerArgs = @(
     '-e', "HERMES_UID=$($env:HERMES_UID)",
     '-e', "HERMES_GID=$($env:HERMES_GID)",
     '-e', "HERMES_PROVIDER_BASE_URL=$($env:HERMES_PROVIDER_BASE_URL)",
-    '-e', "HERMES_MODEL_PRIMARY=$(if ($env:HERMES_MODEL_PRIMARY) { $env:HERMES_MODEL_PRIMARY } else { 'gpt-5.5' })",
+    '-e', "HERMES_MODEL_PRIMARY=$(if ($env:HERMES_MODEL_PRIMARY) { $env:HERMES_MODEL_PRIMARY } else { 'gpt-5.4' })",
     '-e', "HERMES_MODEL_FALLBACK=$(if ($env:HERMES_MODEL_FALLBACK) { $env:HERMES_MODEL_FALLBACK } else { 'gpt-5.4' })",
     '-e', "HERMES_INFERENCE_MODEL=$inferenceModel",
     '-e', "HERMES_INFERENCE_PROVIDER=$inferenceProvider",
@@ -103,12 +103,54 @@ $dockerArgs = @(
     '/bridge/scripts/run-hermes-wrapper.sh'
 ) + $HermesArgs
 
+$interactiveEntryCommands = @('chat', 'auth', 'model', 'setup')
+$commandName = if ($HermesArgs.Count -gt 0 -and $HermesArgs[0] -notmatch '^-') { $HermesArgs[0] } else { '' }
+$hasQueryMode = (
+    ($HermesArgs -contains '-q') -or
+    ($HermesArgs -contains '--query') -or
+    ($HermesArgs -contains '-z') -or
+    ($HermesArgs -contains '--oneshot') -or
+    (@($HermesArgs | Where-Object { $_ -like '--query=*' -or $_ -like '--oneshot=*' }).Count -gt 0)
+)
 $interactiveCommand = (
     ($HermesArgs.Count -eq 0) -or
-    ($HermesArgs[0] -eq 'chat') -or
-    ($HermesArgs -contains '--tui') -or
-    ($HermesArgs -contains '--cli')
+    (($commandName -eq 'chat') -and -not $hasQueryMode) -or
+    (($interactiveEntryCommands -contains $commandName) -and ($commandName -ne 'chat')) -or
+    (($HermesArgs -contains '--tui') -and -not $hasQueryMode) -or
+    (($HermesArgs -contains '--cli') -and -not $hasQueryMode)
 )
+
+$interactiveDockerArgs = $dockerArgs
+if ($interactiveCommand) {
+    $terminalAttached = $false
+    try {
+        $terminalAttached = (
+            -not [Console]::IsInputRedirected -and
+            -not [Console]::IsOutputRedirected -and
+            -not [Console]::IsErrorRedirected
+        )
+    }
+    catch {
+        $terminalAttached = $false
+    }
+
+    if (-not $terminalAttached) {
+        $requestedCommand = if ($HermesArgs -and $HermesArgs.Count -gt 0) {
+            $HermesArgs -join ' '
+        }
+        else {
+            'chat'
+        }
+
+        throw "Hermes interactive command requires an attached terminal. Re-run this command directly in Windows Terminal or PowerShell: $requestedCommand"
+    }
+
+    $interactiveDockerArgs = @(
+        $dockerArgs[0],
+        '-i',
+        '-t'
+    ) + $dockerArgs[1..($dockerArgs.Count - 1)]
+}
 
 try {
     $null = Set-Content -LiteralPath $secretFile -NoNewline -Value $env:HERMES_PROVIDER_API_KEY
@@ -123,14 +165,17 @@ try {
     ) | Out-Null
 
     if ($interactiveCommand) {
-        & $dockerCli @dockerArgs
+        & $dockerCli @interactiveDockerArgs
         $exitCode = $LASTEXITCODE
         if ($exitCode -ne 0) {
             throw "Hermes interactive command failed with exit code $exitCode."
         }
     }
     else {
-        Invoke-AgentBridgeNativeCommand -FilePath $dockerCli -Arguments $dockerArgs | Out-Null
+        $commandResult = Invoke-AgentBridgeNativeCommand -FilePath $dockerCli -Arguments $dockerArgs
+        if ($commandResult.output) {
+            [Console]::Out.Write($commandResult.output)
+        }
     }
 }
 finally {

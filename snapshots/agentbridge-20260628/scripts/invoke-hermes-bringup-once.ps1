@@ -6,7 +6,7 @@ param(
     [string]$EnvFilePath,
     [string]$PrimaryBaseUrl,
     [string]$BackupBaseUrl,
-    [string]$ModelPrimary = 'gpt-5.5',
+    [string]$ModelPrimary = 'gpt-5.4',
     [string]$ModelFallback = 'gpt-5.4',
     [switch]$SkipBackupPrompt,
     [switch]$SkipSnapshot,
@@ -28,6 +28,23 @@ $snapshotTestScript = Join-Path $PSScriptRoot 'test-known-good-snapshot.ps1'
 if (-not $HermesArgs -or $HermesArgs.Count -eq 0) {
     $HermesArgs = @('--oneshot', 'Reply with exactly OK.')
 }
+
+$interactiveEntryCommands = @('chat', 'auth', 'model', 'setup')
+$commandName = if ($HermesArgs.Count -gt 0 -and $HermesArgs[0] -notmatch '^-') { $HermesArgs[0] } else { '' }
+$hasQueryMode = (
+    ($HermesArgs -contains '-q') -or
+    ($HermesArgs -contains '--query') -or
+    ($HermesArgs -contains '-z') -or
+    ($HermesArgs -contains '--oneshot') -or
+    (@($HermesArgs | Where-Object { $_ -like '--query=*' -or $_ -like '--oneshot=*' }).Count -gt 0)
+)
+$interactiveHermesCommand = (
+    ($HermesArgs.Count -eq 0) -or
+    (($commandName -eq 'chat') -and -not $hasQueryMode) -or
+    (($interactiveEntryCommands -contains $commandName) -and ($commandName -ne 'chat')) -or
+    (($HermesArgs -contains '--tui') -and -not $hasQueryMode) -or
+    (($HermesArgs -contains '--cli') -and -not $hasQueryMode)
+)
 
 $summary = [ordered]@{
     loaded_session = $null
@@ -72,7 +89,12 @@ try {
         throw 'Hermes bring-up gates are not ready after session key injection.'
     }
 
-    & $startScript @HermesArgs | Out-Null
+    if ($interactiveHermesCommand) {
+        & $startScript @HermesArgs
+    }
+    else {
+        & $startScript @HermesArgs | Out-Null
+    }
     $summary.hermes_started = $true
 
     $summary.boundary = & $verifyScript

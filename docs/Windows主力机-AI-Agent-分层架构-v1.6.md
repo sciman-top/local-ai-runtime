@@ -172,7 +172,7 @@ v1 明确不做：
 
 当前已复制到仓内的本机快照见：
 
-- [snapshots/agentbridge-20260628/docs/known-good-20260628-000717.json](D:/CODE/hermes-agent/snapshots/agentbridge-20260628/docs/known-good-20260628-000717.json)
+- [snapshots/agentbridge-20260628/docs/known-good-20260628-131518-032.json](D:/CODE/hermes-agent/snapshots/agentbridge-20260628/docs/known-good-20260628-131518-032.json)
 
 ## 9. 当前本机结论
 

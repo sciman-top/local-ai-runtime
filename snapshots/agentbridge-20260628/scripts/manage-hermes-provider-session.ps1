@@ -8,7 +8,7 @@ param(
     [string]$PrimaryBaseUrl,
     [string]$BackupBaseUrl,
     [string]$BaseUrl,
-    [string]$ModelPrimary = 'gpt-5.5',
+    [string]$ModelPrimary = 'gpt-5.4',
     [string]$ModelFallback = 'gpt-5.4',
     [Security.SecureString]$PrimaryKey,
     [Security.SecureString]$BackupKey,

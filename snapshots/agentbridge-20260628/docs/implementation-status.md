@@ -94,22 +94,49 @@
   - `service_uidgid_lines` includes `/opt/hermes/.venv/bin/python3 /opt/hermes/.venv/bin/hermes chat`
 - recorded the current boundary evidence at:
   - `docs/verify-hermes-boundary-20260628-005239.json`
+- fixed the live custom-gateway runtime for `ai.input.im`:
+  - switched the live config from bare `provider: custom` to a named custom provider with explicit `key_env: OPENAI_API_KEY`
+  - pinned the gateway base URL to `https://ai.input.im/v1`
+  - added `model.default_headers.User-Agent: curl/8.7.1` to avoid gateway/WAF blocks on the default OpenAI SDK headers
+- fixed the wrapper fail-closed behavior:
+  - `run-hermes-wrapper.sh` now marks the run as failed when Hermes prints known fatal markers even if the process exit code was `0`
+- fixed Hermes non-interactive output handling in the bridge:
+  - `start-hermes.ps1` now forwards stdout for non-interactive commands instead of swallowing successful `chat -q` / `--oneshot` replies
+- fixed interactive classic CLI TTY handling in the bridge:
+  - root cause: `run-hermes-wrapper.sh` captured interactive `hermes` output via command substitution, so `chat --cli` inherited stdin TTY but non-TTY stdout and looked hung with no visible prompt
+  - bridge fix: interactive `chat` / `auth` / `model` / `setup` with attached tty now `exec hermes "$@"` directly instead of buffering output
+- fixed the default bring-up `--oneshot` regression:
+  - root cause: Hermes upstream oneshot treats `HERMES_INFERENCE_MODEL` as an explicit model override, auto-detects `gpt-5.4` from a custom OpenAI-compatible endpoint to the non-routable group alias `openai`, then fails with `Unknown provider 'openai'`
+  - bridge mitigation: `run-hermes-wrapper.sh` now clears `HERMES_INFERENCE_MODEL` and `HERMES_INFERENCE_PROVIDER` only for `--oneshot/-z` runs that do not explicitly pass `--model/--provider`, forcing Hermes back onto the persisted config provider pair
+- hardened known-good snapshot creation against same-second collisions:
+  - `new-known-good-snapshot.ps1` now uses millisecond-resolution snapshot filenames
+- re-verified the full default bring-up after the interactive wrapper fix:
+  - `invoke-hermes-bringup-once.ps1 -EnvFilePath 'D:\CODE\qq-codex-bot\.env'` succeeds
+  - the post-fix run generated `docs/known-good-20260628-131518-032.json`
+  - `test-known-good-snapshot.ps1` passes against that snapshot
 
 ## Current Status
 
 - Windows-side v1.6 bring-up is now operational end-to-end
 - the latest verified known-good snapshot is:
-  - `docs/known-good-20260628-000717.json`
+  - `docs/known-good-20260628-131518-032.json`
 - the latest verified boundary evidence is:
   - `docs/verify-hermes-boundary-20260628-005239.json`
+- `docs/known-good-20260628-124819-747.json` is now historical pre-chat-cli-fix evidence, not the current anchor
 - the older `docs/known-good-20260627-214819.json` should be treated as stale pre-fix evidence, not the current anchor
 - `invoke-hermes-bringup-once.ps1` now returns the final `session_cleared` state after the cleanup step, instead of emitting the summary too early
+- the verified non-interactive smoke commands are now:
+  - `start-hermes.ps1 --oneshot 'Reply with exactly OK.'` -> prints `OK`
+  - `start-hermes.ps1 chat -Q -q 'Reply with exactly OK.'` -> prints `OK`
+  - `invoke-hermes-bringup-once.ps1 -EnvFilePath 'D:\CODE\qq-codex-bot\.env'` -> prints `OK` and completes boundary + snapshot validation
 
 ## Remaining limitations
 
 - `Ubuntu-24.04` still does not have Docker Desktop WSL integration enabled
   - Windows-side bring-up is already working
   - only in-distro `docker` use inside `Ubuntu-24.04` remains unavailable
+- the Hermes oneshot provider bug is mitigated in AgentBridge, not fixed upstream
+  - if the upstream Hermes code path changes, re-validate the wrapper mitigation before removing it
 
 ## Resume Point
 
@@ -119,6 +146,8 @@
    - `& 'C:\Users\sciman\Documents\AgentBridge\scripts\invoke-hermes-bringup-once.ps1' -EnvFilePath 'D:\CODE\qq-codex-bot\.env' -SkipSnapshot`
 3. If you want to inspect the current slot projection only:
    - `& 'C:\Users\sciman\Documents\AgentBridge\scripts\manage-hermes-provider-session.ps1' -Action load -EnvFilePath 'D:\CODE\qq-codex-bot\.env' -SkipBackupPrompt`
-4. If Linux-side `docker` usage inside `Ubuntu-24.04` is still desired, enable Docker Desktop WSL integration for that distro.
-5. If you want the current boundary evidence anchor directly:
+4. If you want the classic interactive REPL explicitly:
+   - `& 'C:\Users\sciman\Documents\AgentBridge\scripts\invoke-hermes-bringup-once.ps1' -EnvFilePath 'D:\CODE\qq-codex-bot\.env' chat --cli`
+5. If Linux-side `docker` usage inside `Ubuntu-24.04` is still desired, enable Docker Desktop WSL integration for that distro.
+6. If you want the current boundary evidence anchor directly:
    - `docs/verify-hermes-boundary-20260628-005239.json`

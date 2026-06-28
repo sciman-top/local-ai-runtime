@@ -1,0 +1,22 @@
+{
+  "created_at": "2026-06-28T05:15:20.5934133Z",
+  "hermes_release_tag": "v2026.6.19",
+  "hermes_image_digest": "nousresearch/hermes-agent@sha256:9f367c7756ef087661a361536a89f438d57a122b958dc23d82d456b1433e6e9e",
+  "hermes_image_resolution_status": "resolved",
+  "hermes_bootstrap_model": "official_root_bootstrap",
+  "hermes_runtime_image": "nousresearch/hermes-agent@sha256:9f367c7756ef087661a361536a89f438d57a122b958dc23d82d456b1433e6e9e",
+  "hermes_runtime_user": "root-bootstrap-with-runtime-remap",
+  "hermes_service_uid": 10001,
+  "hermes_service_gid": 10001,
+  "compose_sha256": "5D8A5257793F6478C328BF5B74448C6BE8A1BECA2FA70F766C884D839863924F",
+  "dockerfile_sha256": "99048828D2EC6490FE914CEC3F31CE3DB2C70EEFF795EE253427555D0A1639F8",
+  "provider_config_hash": "6252320ebdd9acb5b3052ca4d38bd3ea00ffe85e966e9ce0bb3d10e3ef311c9d",
+  "provider_base_url": "https://ai.input.im/v1",
+  "model_primary": "gpt-5.4",
+  "model_fallback": "gpt-5.4",
+  "hermes_volume_name": "agentbridge-hermes-data",
+  "volume_backup_path": "docs/volume-backups/hermes-data-20260628-131518-032.tgz",
+  "volume_backup_bytes": 11616648,
+  "volume_backup_sha256": "f5da4f285aa6193afbb526a6c8e3ac52f3314682d49f85d35a3b30b3e561849e",
+  "recommended_volume_backup": "docker run --rm -v hermes_data:/source -v ${PWD}:/backup alpine:3.20 tar -czf /backup/hermes-data-backup.tgz -C /source ."
+}
