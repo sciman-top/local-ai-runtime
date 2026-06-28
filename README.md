@@ -23,6 +23,7 @@
 - 当前 `active truth`：`v1.6 bring-up` 已验收，可维护基线已形成
 - 当前 `planned target`：`Phase 0` 先做 `v1.6` 安全治理收口，`Phase 1` 再做 `V2 Codex-Native` 自动化 MVP；v2 正式终态真源见 [Hermes-v2-终态收口-20260628.md](D:/CODE/hermes-agent/docs/Hermes-v2-终态收口-20260628.md)
 - 最新本机探针结论：`workspace-write` 与 SDK 已证实可用，但 `network_proxy` 未在本机证实，因此 `Phase 1` 当前只能收敛到“纯本地任务自动执行 MVP”
+- 最新 `Phase 0 / P0-2` repo-side 探针已证实：`read_only rootfs` 不是天然不可行，但 `tmpfs /run` 必须至少为 `exec`，且当前 accepted 运行模型 `official_root_bootstrap + 10001:10001 remap` 在 `read_only rootfs` 下仍稳定阻塞；见 [phase0-readonly-rootfs-probe-20260628.md](D:/CODE/hermes-agent/docs/phase0-readonly-rootfs-probe-20260628.md)
 - 当前 live 运行面仍在：`C:\Users\sciman\Documents\AgentBridge`
 - 当前维护仓在：`D:\CODE\hermes-agent`
 - 当前 boundary 证据锚点是 [verify-hermes-boundary-20260628-005239.json](D:/CODE/hermes-agent/snapshots/agentbridge-20260628/docs/verify-hermes-boundary-20260628-005239.json)，已直接观测到 `10001:10001` 的 `hermes chat`

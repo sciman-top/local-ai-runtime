@@ -11,6 +11,9 @@ param(
     [switch]$SkipBackupPrompt,
     [switch]$SkipSnapshot,
     [switch]$KeepSession,
+    [switch]$ReadOnlyRootfs,
+    [Parameter()]
+    [string[]]$TmpfsMounts = @(),
     [Parameter(ValueFromRemainingArguments = $true)]
     [string[]]$HermesArgs
 )
@@ -57,6 +60,20 @@ $summary = [ordered]@{
     session_cleared = $false
 }
 
+$startParams = @{
+    ReadOnlyRootfs = $ReadOnlyRootfs
+}
+if ($TmpfsMounts -and $TmpfsMounts.Count -gt 0) {
+    $startParams.TmpfsMounts = $TmpfsMounts
+}
+
+$boundaryParams = @{
+    ReadOnlyRootfs = $ReadOnlyRootfs
+}
+if ($TmpfsMounts -and $TmpfsMounts.Count -gt 0) {
+    $boundaryParams.TmpfsMounts = $TmpfsMounts
+}
+
 try {
     $loadParams = @{
         Action = 'load'
@@ -90,14 +107,14 @@ try {
     }
 
     if ($interactiveHermesCommand) {
-        & $startScript @HermesArgs
+        & $startScript @startParams @HermesArgs
     }
     else {
-        & $startScript @HermesArgs | Out-Null
+        & $startScript @startParams @HermesArgs | Out-Null
     }
     $summary.hermes_started = $true
 
-    $summary.boundary = & $verifyScript
+    $summary.boundary = & $verifyScript @boundaryParams
 
     if (-not $SkipSnapshot) {
         $summary.snapshot = & $snapshotScript

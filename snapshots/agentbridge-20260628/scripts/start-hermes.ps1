@@ -1,4 +1,7 @@
+[CmdletBinding(PositionalBinding = $false)]
 param(
+    [switch]$ReadOnlyRootfs,
+    [string[]]$TmpfsMounts = @(),
     [Parameter(ValueFromRemainingArguments = $true)]
     [string[]]$HermesArgs
 )
@@ -74,6 +77,7 @@ $inferenceModel = if ($env:HERMES_INFERENCE_MODEL) { $env:HERMES_INFERENCE_MODEL
 $inferenceProvider = if ($env:HERMES_INFERENCE_PROVIDER) { $env:HERMES_INFERENCE_PROVIDER } else { 'openai-api' }
 $runDay = (Get-Date).ToUniversalTime().ToString('yyyy-MM-dd')
 $runMonth = (Get-Date).ToUniversalTime().ToString('yyyy-MM')
+$normalizedTmpfsMounts = @($TmpfsMounts | Where-Object { -not [string]::IsNullOrWhiteSpace($_) } | ForEach-Object { $_.Trim() })
 
 $dockerArgs = @(
     'run',
@@ -102,6 +106,19 @@ $dockerArgs = @(
     'sh',
     '/bridge/scripts/run-hermes-wrapper.sh'
 ) + $HermesArgs
+
+if ($ReadOnlyRootfs) {
+    $dockerArgs = @($dockerArgs[0]) + @('--read-only') + @($dockerArgs[1..($dockerArgs.Count - 1)])
+}
+
+if ($normalizedTmpfsMounts.Count -gt 0) {
+    $tmpfsArgs = @()
+    foreach ($tmpfsMount in $normalizedTmpfsMounts) {
+        $tmpfsArgs += @('--tmpfs', $tmpfsMount)
+    }
+
+    $dockerArgs = @($dockerArgs[0]) + $tmpfsArgs + @($dockerArgs[1..($dockerArgs.Count - 1)])
+}
 
 $interactiveEntryCommands = @('chat', 'auth', 'model', 'setup')
 $commandName = if ($HermesArgs.Count -gt 0 -and $HermesArgs[0] -notmatch '^-') { $HermesArgs[0] } else { '' }

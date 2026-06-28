@@ -631,7 +631,7 @@ function Get-LoadSlotDefinitions {
         return Merge-SlotDefinitions -PrimaryDefinitions @($definitions) -FallbackDefinitions $dotEnvDefinitions
     }
 
-    $compatDefinitions = Get-CompatSlotDefinitions
+    $compatDefinitions = @(Get-CompatSlotDefinitions)
     if ($compatDefinitions.Count -gt 0) {
         if ($compatDefinitions.Count -eq 1 -and $compatDefinitions[0].slot -eq 'primary' -and -not $BackupKey -and [string]::IsNullOrWhiteSpace($BackupBaseUrl) -and -not $SkipBackupPrompt) {
             $answer = Read-Host 'Load a backup HERMES provider API key into this session? [y/N]'
@@ -780,7 +780,7 @@ function Set-LoadedSessionValues {
 
 switch ($Action) {
     'load' {
-        $definitions = Get-LoadSlotDefinitions
+        $definitions = @(Get-LoadSlotDefinitions)
         if ($definitions.Count -eq 0) {
             throw 'No provider slot definitions were supplied for load.'
         }

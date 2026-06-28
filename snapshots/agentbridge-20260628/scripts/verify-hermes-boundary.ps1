@@ -1,4 +1,7 @@
-param()
+param(
+    [switch]$ReadOnlyRootfs,
+    [string[]]$TmpfsMounts = @()
+)
 
 $ErrorActionPreference = 'Stop'
 
@@ -60,6 +63,7 @@ $secretMount = '{0}:/run/secrets/provider_api_key:ro' -f $secretFile
 $cpus = if ($env:HERMES_CPUS) { $env:HERMES_CPUS } else { '2' }
 $memory = if ($env:HERMES_MEM_LIMIT) { $env:HERMES_MEM_LIMIT } else { '2g' }
 $pidsLimit = if ($env:HERMES_PIDS_LIMIT) { $env:HERMES_PIDS_LIMIT } else { '256' }
+$normalizedTmpfsMounts = @($TmpfsMounts | Where-Object { -not [string]::IsNullOrWhiteSpace($_) } | ForEach-Object { $_.Trim() })
 $observationTimeoutSeconds = 15
 $observationPollMilliseconds = 250
 # 直接走真实 Hermes chat 入口，避免只观察到 sleep 占位命令。
@@ -90,6 +94,18 @@ try {
         '-v', $secretMount,
         $env:HERMES_RUNTIME_IMAGE
     ) + $serviceProbeArgs
+    if ($ReadOnlyRootfs) {
+        $dockerRunArgs = @($dockerRunArgs[0]) + @('--read-only') + @($dockerRunArgs[1..($dockerRunArgs.Count - 1)])
+    }
+
+    if ($normalizedTmpfsMounts.Count -gt 0) {
+        $tmpfsArgs = @()
+        foreach ($tmpfsMount in $normalizedTmpfsMounts) {
+            $tmpfsArgs += @('--tmpfs', $tmpfsMount)
+        }
+
+        $dockerRunArgs = @($dockerRunArgs[0]) + $tmpfsArgs + @($dockerRunArgs[1..($dockerRunArgs.Count - 1)])
+    }
     Invoke-AgentBridgeNativeCommand -FilePath $dockerCli -Arguments $dockerRunArgs | Out-Null
     $containerResult = Invoke-AgentBridgeNativeCommand -FilePath $dockerCli -Arguments @('ps', '-aqf', "name=^$containerName$")
     $containerId = $containerResult.output.Trim()
@@ -131,7 +147,9 @@ try {
     }
     $probeStopwatch.Stop()
 
-    Invoke-AgentBridgeNativeCommand -FilePath $dockerCli -Arguments @('exec', $containerId, 'sh', '-lc', 'test -d /opt/data && test -d /bridge && test ! -S /var/run/docker.sock') | Out-Null
+    Invoke-AgentBridgeNativeCommand -FilePath $dockerCli -Arguments @('exec', $containerId, 'sh', '-lc', 'set -eu; test -d /opt/data && test -d /bridge && test ! -S /var/run/docker.sock; touch /run/agentbridge-run-probe; rm -f /run/agentbridge-run-probe; touch /tmp/agentbridge-tmp-probe; rm -f /tmp/agentbridge-tmp-probe') | Out-Null
+
+    $rootfsProbe = Invoke-AgentBridgeNativeCommand -FilePath $dockerCli -Arguments @('exec', $containerId, 'sh', '-lc', 'set +e; output=$(touch /.agentbridge-rootfs-probe 2>&1); status=$?; rm -f /.agentbridge-rootfs-probe >/dev/null 2>&1 || true; if [ "$status" -eq 0 ]; then echo writable; else echo blocked; if [ -n "$output" ]; then printf "%s\n" "$output"; fi; fi') -AllowFailure
 
     $mountsJson = Invoke-AgentBridgeNativeCommand -FilePath $dockerCli -Arguments @('inspect', $containerId, '--format', '{{json .Mounts}}')
     $hostConfigJson = Invoke-AgentBridgeNativeCommand -FilePath $dockerCli -Arguments @('inspect', $containerId, '--format', '{{json .HostConfig}}')
@@ -154,8 +172,19 @@ try {
             ForEach-Object { $_.Source }
     )
 
+    $tmpfsTargets = @()
+    if ($hostConfig.Tmpfs) {
+        $tmpfsTargets = @($hostConfig.Tmpfs.PSObject.Properties.Name)
+    }
+
+    $rootfsProbeLines = @($rootfsProbe.lines | Where-Object { $_ -and $_.Trim() })
+    $rootfsWriteBlocked = ($rootfsProbeLines.Count -gt 0 -and $rootfsProbeLines[0].Trim() -eq 'blocked')
+
     [pscustomobject]@{
         bootstrap_model = if ($env:HERMES_RUNTIME_USER) { $env:HERMES_RUNTIME_USER } else { 'unspecified' }
+        requested_read_only_rootfs = [bool]$ReadOnlyRootfs
+        requested_tmpfs_mounts = $normalizedTmpfsMounts
+        observed_read_only_rootfs = [bool]$hostConfig.ReadonlyRootfs
         service_uid = $serviceUid
         service_gid = $serviceGid
         service_uidgid_present = $hasServiceUidGid
@@ -168,6 +197,11 @@ try {
         mount_targets = $mountTargets
         unexpected_mount_targets = $unexpectedTargets
         blocked_mount_sources = $blockedSources
+        tmpfs_targets = $tmpfsTargets
+        run_tmpfs_write_ok = $true
+        tmp_tmpfs_write_ok = $true
+        rootfs_write_blocked = $rootfsWriteBlocked
+        rootfs_probe_lines = $rootfsProbeLines
         published_ports = $hostConfig.PortBindings
         cap_drop = $hostConfig.CapDrop
         cap_drop_all_present = (@($hostConfig.CapDrop) -contains 'ALL')
