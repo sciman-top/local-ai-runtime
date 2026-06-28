@@ -1,0 +1,5 @@
+DOC_SMOKE_OK
+targets=runtime/host-orchestrator/README.md,runtime/host-orchestrator/scripts/README.md
+category=docs_sync
+verification=runtime/host-orchestrator/scripts/test-wave1-acceptance.ps1
+boundary=repo-side done is separate from live Phase 1 acceptance

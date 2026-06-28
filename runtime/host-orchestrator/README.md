@@ -15,6 +15,13 @@
   - 写入一对一 `results/*.md`
   - 生成 artifact
   - 写入基础运行态表与事件
+- `W1-T06` 所需的三类 Wave 1 smoke 样本任务集：
+  - `code_refactor`
+  - `docs_sync`
+  - `script_contract`
+- `W1-T07` 所需的一键 repo-side 验收脚本：
+  - `scripts/run-wave1-smokes.ps1`
+  - `scripts/test-wave1-acceptance.ps1`
 
 当前明确不做：
 
@@ -26,9 +33,12 @@
 
 当前验证口径：
 
-- `uv run pytest` 已覆盖 `W1-T01 ~ W1-T05` 的 fake-first 回归
-- `snapshots/agentbridge-20260628/scripts/test-agentbridge-contract.ps1` 仍通过
-- 以上只证明 repo-side 结构、契约与 fake-first 闭环成立
+- `uv run pytest` 已覆盖 `W1-T01 ~ W1-T07` 的 repo-side 回归
+- `runtime/host-orchestrator/scripts/test-wave1-acceptance.ps1` 会串起：
+  - `uv run pytest`
+  - `snapshots/agentbridge-20260628/scripts/test-agentbridge-contract.ps1`
+  - `private-local/wave-smokes/` 下的 deterministic smoke suite
+- 以上只证明 repo-side 结构、契约、样本任务与 fake-first 验收资产成立
 - 还不等于 `Phase 1 accepted`
 
 后续原子任务会在这个骨架上继续叠加。

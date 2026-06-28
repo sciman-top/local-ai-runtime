@@ -29,6 +29,11 @@ def utc_now_iso() -> str:
     return datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
 
 
+def write_utf8_lf(path: Path, content: str) -> None:
+    with path.open("w", encoding="utf-8", newline="\n") as handle:
+        handle.write(content)
+
+
 def load_task(path: Path) -> TaskDocument:
     raw_text = path.read_text(encoding="utf-8")
     front_matter = FRONT_MATTER_PATTERN.match(raw_text)
@@ -51,7 +56,7 @@ def write_text_artifact(agentbridge_root: Path, task_id: str, content: str) -> A
     relative_path = Path("artifacts") / artifact_name
     artifact_path = agentbridge_root / relative_path
     artifact_path.parent.mkdir(parents=True, exist_ok=True)
-    artifact_path.write_text(content, encoding="utf-8")
+    write_utf8_lf(artifact_path, content)
 
     payload = artifact_path.read_bytes()
     return ArtifactRecord(
@@ -167,5 +172,5 @@ def write_result(
     )
 
     result_path.parent.mkdir(parents=True, exist_ok=True)
-    result_path.write_text(front_matter + body, encoding="utf-8")
+    write_utf8_lf(result_path, front_matter + body)
     return result_path

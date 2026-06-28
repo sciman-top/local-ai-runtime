@@ -1,0 +1,5 @@
+CODE_SMOKE_OK
+target=runtime/host-orchestrator/src/host_orchestrator/cli.py
+category=code_refactor
+verification=uv run pytest
+boundary=repo-side fake-first only; live Codex SDK acceptance remains open

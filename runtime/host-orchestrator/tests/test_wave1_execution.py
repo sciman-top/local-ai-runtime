@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+import shutil
 import sqlite3
 
 from openai_codex import ApprovalMode, Sandbox
@@ -13,7 +14,13 @@ from host_orchestrator.exec_fallback import (
 )
 from host_orchestrator.host_local import HostLocalConfig, HostLocalRunner
 from host_orchestrator.paths import RuntimeLayout
+from host_orchestrator.wave1_smoke import load_wave1_smoke_samples, run_wave1_smokes
 from host_orchestrator.worker import WorkerRequest, WorkerResult
+
+
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+REPO_ROOT = PROJECT_ROOT.parents[1]
+FIXTURES_ROOT = PROJECT_ROOT / "fixtures" / "wave1-smokes"
 
 
 def test_exec_fallback_builds_expected_codex_exec_command(tmp_path: Path) -> None:
@@ -190,3 +197,56 @@ def test_host_local_runner_writes_result_and_runtime_state(tmp_path: Path) -> No
     )
     assert [event_type for (event_type,) in events] == ["task_started", "task_completed"]
     assert routes == [("host_local",)]
+
+
+def test_wave1_smoke_manifest_covers_three_categories() -> None:
+    samples = load_wave1_smoke_samples(FIXTURES_ROOT)
+
+    assert [sample.category for sample in samples] == [
+        "code_refactor",
+        "docs_sync",
+        "script_contract",
+    ]
+    assert len({sample.task_id for sample in samples}) == 3
+
+
+def test_wave1_smoke_suite_writes_summary_and_generated_agentbridge_root(tmp_path: Path) -> None:
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir()
+    (repo_root / "AGENTS.md").write_text("stub", encoding="utf-8")
+
+    snapshot_root = repo_root / "snapshots" / "agentbridge-20260628"
+    (snapshot_root / "tasks").mkdir(parents=True, exist_ok=True)
+    (snapshot_root / "results").mkdir(parents=True, exist_ok=True)
+    shutil.copy2(
+        REPO_ROOT / "snapshots" / "agentbridge-20260628" / "tasks" / "_TEMPLATE.md",
+        snapshot_root / "tasks" / "_TEMPLATE.md",
+    )
+    shutil.copy2(
+        REPO_ROOT / "snapshots" / "agentbridge-20260628" / "results" / "_TEMPLATE.md",
+        snapshot_root / "results" / "_TEMPLATE.md",
+    )
+
+    summary = run_wave1_smokes(
+        repo_root,
+        run_id="wave1-smoke-test",
+        fixtures_root=FIXTURES_ROOT,
+        snapshot_root=snapshot_root,
+    )
+
+    assert summary.ok is True
+    assert summary.sample_count == 3
+    assert summary.completed_task_count == 3
+    assert summary.route_decision_count == 3
+    assert summary.event_count == 6
+    assert summary.worker_status == "idle"
+    assert summary.summary_path.exists()
+
+    summary_text = summary.summary_path.read_text(encoding="utf-8")
+    assert '"ok": true' in summary_text
+    assert (summary.agentbridge_root / "tasks" / "_TEMPLATE.md").exists()
+    assert (summary.agentbridge_root / "results" / "_TEMPLATE.md").exists()
+
+    for outcome in summary.task_outcomes:
+        assert (summary.agentbridge_root / outcome.result_path).exists()
+        assert (summary.agentbridge_root / outcome.artifact_path).exists()
