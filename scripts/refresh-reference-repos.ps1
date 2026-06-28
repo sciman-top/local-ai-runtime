@@ -2,12 +2,9 @@ param(
     [string]$ReferencesRoot = 'D:\CODE\external\hermes-agent-references',
     [string[]]$RepoNames = @(
         'hermes-agent',
-        'hermes-agent-self-evolution',
         'codex',
-        'skills',
         'modelcontextprotocol',
-        'servers',
-        'openclaw'
+        'servers'
     ),
     [string]$OutputDirectory = 'D:\CODE\hermes-agent\references\updates',
     [switch]$FetchOnly,
@@ -34,8 +31,54 @@ function Invoke-GitText {
     return $output.TrimEnd()
 }
 
+function Get-TrimmedErrorMessage {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Message
+    )
+
+    $normalized = ($Message -replace '\r\n', "`n").Trim()
+    if ([string]::IsNullOrWhiteSpace($normalized)) {
+        return 'unknown git error'
+    }
+
+    $lines = @($normalized -split "`n" | Where-Object { $_ -and $_.Trim() })
+    if ($lines.Count -eq 0) {
+        return 'unknown git error'
+    }
+
+    return $lines[-1].Trim()
+}
+
 function New-UtcTimestamp {
     (Get-Date).ToUniversalTime().ToString('yyyyMMdd-HHmmss')
+}
+
+function Normalize-RepoNames {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string[]]$Names
+    )
+
+    $normalized = [System.Collections.Generic.List[string]]::new()
+    foreach ($name in $Names) {
+        if ([string]::IsNullOrWhiteSpace($name)) {
+            continue
+        }
+
+        foreach ($segment in ($name -split ',')) {
+            $candidate = $segment.Trim()
+            if ([string]::IsNullOrWhiteSpace($candidate)) {
+                continue
+            }
+
+            if (-not $normalized.Contains($candidate)) {
+                $normalized.Add($candidate)
+            }
+        }
+    }
+
+    return @($normalized)
 }
 
 if (-not (Test-Path -LiteralPath $ReferencesRoot)) {
@@ -44,10 +87,18 @@ if (-not (Test-Path -LiteralPath $ReferencesRoot)) {
 
 New-Item -ItemType Directory -Force -Path $OutputDirectory | Out-Null
 
+$RepoNames = Normalize-RepoNames -Names $RepoNames
+
 $timestamp = New-UtcTimestamp
 $reportPath = Join-Path $OutputDirectory ("reference-refresh-{0}.md" -f $timestamp)
 $latestReportPath = Join-Path $OutputDirectory 'reference-refresh-latest.md'
 $results = [System.Collections.Generic.List[object]]::new()
+$defaultCoreRepos = @('hermes-agent', 'codex', 'modelcontextprotocol', 'servers')
+$repoNamesLabel = if (@($RepoNames) -join ',' -eq ($defaultCoreRepos -join ',')) {
+    'core-default'
+} else {
+    'custom'
+}
 
 foreach ($repoName in $RepoNames) {
     $repoPath = Join-Path $ReferencesRoot $repoName
@@ -88,12 +139,44 @@ foreach ($repoName in $RepoNames) {
         continue
     }
 
-    Invoke-GitText -RepositoryPath $repoPath -Arguments @('fetch', '--prune', 'origin') | Out-Null
+    try {
+        Invoke-GitText -RepositoryPath $repoPath -Arguments @('fetch', '--prune', 'origin') | Out-Null
+    } catch {
+        $results.Add([pscustomobject]@{
+                repo = $repoName
+                path = $repoPath
+                status = 'fetch-failed'
+                branch = $branch
+                head_before = $headBefore
+                head_after = $headBefore
+                changed = $false
+                ahead_behind = $null
+                note = Get-TrimmedErrorMessage -Message $_.Exception.Message
+                compare_log = @()
+            })
+        continue
+    }
 
     $pullMode = if ($FetchOnly) { 'fetch-only' } else { 'pull' }
     $pullNote = 'remote refs fetched'
     if (-not $FetchOnly) {
-        Invoke-GitText -RepositoryPath $repoPath -Arguments @('pull', '--ff-only', 'origin', $branch) | Out-Null
+        try {
+            Invoke-GitText -RepositoryPath $repoPath -Arguments @('pull', '--ff-only', 'origin', $branch) | Out-Null
+        } catch {
+            $results.Add([pscustomobject]@{
+                    repo = $repoName
+                    path = $repoPath
+                    status = 'pull-failed'
+                    branch = $branch
+                    head_before = $headBefore
+                    head_after = $headBefore
+                    changed = $false
+                    ahead_behind = $null
+                    note = Get-TrimmedErrorMessage -Message $_.Exception.Message
+                    compare_log = @()
+                })
+            continue
+        }
         $pullNote = 'pull --ff-only completed'
     }
 
@@ -129,6 +212,8 @@ $lines.Add('')
 $lines.Add(('生成时间（UTC）：`' + (Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ssZ') + '`'))
 $lines.Add(('模式：`' + $modeLabel + '`'))
 $lines.Add(('根目录：`' + $ReferencesRoot + '`'))
+$lines.Add(('集合：`' + $repoNamesLabel + '`'))
+$lines.Add(('仓列表：`' + (($RepoNames -join ', ') -replace '\\', '/') + '`'))
 $lines.Add('')
 
 foreach ($result in $results) {
@@ -173,6 +258,8 @@ foreach ($result in $results) {
     references_root = $ReferencesRoot
     output_path = $reportPath
     latest_output_path = $latestReportPath
+    repo_set = $repoNamesLabel
+    repo_names = $RepoNames
     fetch_only = [bool]$FetchOnly
     skip_dirty_repos = [bool]$SkipDirtyRepos
     results = $results

@@ -62,6 +62,14 @@
 
 当前已落地的具体清单见 [docs/参考项目清单.md](D:/CODE/hermes-agent/docs/参考项目清单.md)，目录现场索引见 [D:\CODE\external\hermes-agent-references\README.md](D:/CODE/external/hermes-agent-references/README.md)。
 
+当前维护口径已经收紧为三层：
+
+- `core`：`hermes-agent`、`codex`、`modelcontextprotocol`、`servers`
+- `secondary`：`skills`、`hermes-agent-self-evolution`
+- `conditional`：`openclaw`
+
+默认刷新只覆盖 `core`。`NapCat/AstrBot` 这类 QQ 渠道层项目继续复用它们自己的专属参考架，不并入这里。
+
 ## 日常维护入口
 
 如果以后要继续推进这条线，建议先读：

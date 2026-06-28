@@ -4,8 +4,25 @@
 
 上游参考源码统一建议放在：
 
-- `D:\CODE\external\hermes-agent-references\hermes-agent`
-- `D:\CODE\external\hermes-agent-references\openclaw`
+- `D:\CODE\external\hermes-agent-references`
+
+其中当前默认活跃参考面是：
+
+- `hermes-agent`
+- `codex`
+- `modelcontextprotocol`
+- `servers`
+
+二线保留：
+
+- `skills`
+- `hermes-agent-self-evolution`
+
+条件保留：
+
+- `openclaw`
+
+QQ / OneBot / IM 渠道层项目如 `AstrBot`、`NapCat-Docker`、`NapCatQQ`、`aiocqhttp` 不应并入这里，继续复用它们自己的外部参考架。
 
 理由见：
 
