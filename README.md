@@ -1,21 +1,27 @@
 # hermes-agent
 
-这个仓是 `Windows 主力机 AI Agent 分层架构 v1.6` 的长期维护仓。
+这个仓是 `Windows 主力机 AI Agent 分层架构 v1.6` 的长期维护仓，也是 `Hermes v2` 高自治终态文档的正式落盘仓。
 
-它保存三类内容：
+它保存四类内容：
 
 1. 方案定稿：`Codex = 主力执行层`、`Hermes = 隔离学习层`、`PAD = 固定 GUI 补件`、`OpenClaw = 暂缓`
 2. 实施与运维：实施计划、任务清单、社区参考源码策略、密钥录入样例
 3. 本机验收快照：把 `C:\Users\sciman\Documents\AgentBridge` 当前已验收的安全文件树复制到仓内，便于长期追溯
+4. v2 终态文档：高自治四平面、路线图、实施规格、接口规格、runner 协议、测试规格
 
 ## 当前真值
+
+当前采用双层真相：
+
+- `active truth`：当前已验收的 `v1.6` 可审计批处理闭环
+- `target truth`：`Hermes v2` 高自治四平面终态
 
 - 主链定位：`Codex` 仍是唯一允许直接碰 Windows 主桌面的 agent
 - `Hermes` 只做隔离学习层，通过 `AgentBridge` 文件桥生成任务、吸收结果、产出技能草稿和记忆提升
 - `Hermes` 当前运行方式：`Docker Desktop + WSL2 backend + 按需 CLI 容器`
 - v1 目标固定为：人工触发的批量学习闭环，而不是实时自进化、常驻学习或桌面控制
 - 当前 `active truth`：`v1.6 bring-up` 已验收，可维护基线已形成
-- 当前 `planned target`：`Phase 0` 先做 `v1.6` 安全治理收口，`Phase 1` 再做 `V2 Codex-Native` 自动化 MVP
+- 当前 `planned target`：`Phase 0` 先做 `v1.6` 安全治理收口，`Phase 1` 再做 `V2 Codex-Native` 自动化 MVP；v2 正式终态真源见 [Hermes-v2-终态收口-20260628.md](D:/CODE/hermes-agent/docs/Hermes-v2-终态收口-20260628.md)
 - 最新本机探针结论：`workspace-write` 与 SDK 已证实可用，但 `network_proxy` 未在本机证实，因此 `Phase 1` 当前只能收敛到“纯本地任务自动执行 MVP”
 - 当前 live 运行面仍在：`C:\Users\sciman\Documents\AgentBridge`
 - 当前维护仓在：`D:\CODE\hermes-agent`
@@ -25,6 +31,12 @@
 ## 仓内结构
 
 - [docs/Windows主力机-AI-Agent-分层架构-v1.6.md](D:/CODE/hermes-agent/docs/Windows主力机-AI-Agent-分层架构-v1.6.md)：方案定稿
+- [docs/Hermes-v2-终态收口-20260628.md](D:/CODE/hermes-agent/docs/Hermes-v2-终态收口-20260628.md)：v2 `target truth`
+- [docs/Hermes-v2-路线图.md](D:/CODE/hermes-agent/docs/Hermes-v2-路线图.md)：v2 波次与并行关系
+- [docs/Hermes-v2-实施规格.md](D:/CODE/hermes-agent/docs/Hermes-v2-实施规格.md)：目录、模块、进程、路径
+- [docs/Hermes-v2-接口规格.md](D:/CODE/hermes-agent/docs/Hermes-v2-接口规格.md)：字段、SQLite、状态机
+- [docs/Hermes-v2-runner-协议.md](D:/CODE/hermes-agent/docs/Hermes-v2-runner-%E5%8D%8F%E8%AE%AE.md)：三条 lane 的任务包与回写协议
+- [docs/Hermes-v2-测试规格.md](D:/CODE/hermes-agent/docs/Hermes-v2-%E6%B5%8B%E8%AF%95%E8%A7%84%E6%A0%BC.md)：Wave 0-5 测试矩阵
 - [docs/实施计划.md](D:/CODE/hermes-agent/docs/实施计划.md)：分阶段实施与当前状态
 - [docs/任务清单.md](D:/CODE/hermes-agent/docs/任务清单.md)：后续维护任务与升级门禁
 - [docs/社区参考源码策略.md](D:/CODE/hermes-agent/docs/社区参考源码策略.md)：社区参考仓应否拉取、放哪里、如何更新
@@ -79,9 +91,10 @@
 如果以后要继续推进这条线，建议先读：
 
 1. [docs/Windows主力机-AI-Agent-分层架构-v1.6.md](D:/CODE/hermes-agent/docs/Windows主力机-AI-Agent-分层架构-v1.6.md)
-2. [docs/实施计划.md](D:/CODE/hermes-agent/docs/实施计划.md)
-3. [docs/当前交接摘要.md](D:/CODE/hermes-agent/docs/当前交接摘要.md)
-4. [docs/接手检查单.md](D:/CODE/hermes-agent/docs/接手检查单.md)
-5. [snapshots/agentbridge-20260628/docs/implementation-status.md](D:/CODE/hermes-agent/snapshots/agentbridge-20260628/docs/implementation-status.md)
-6. [snapshots/agentbridge-20260628/docs/中文操作说明.md](D:/CODE/hermes-agent/snapshots/agentbridge-20260628/docs/中文操作说明.md)
-7. [references/updates/reference-refresh-latest.md](D:/CODE/hermes-agent/references/updates/reference-refresh-latest.md)
+2. [docs/Hermes-v2-终态收口-20260628.md](D:/CODE/hermes-agent/docs/Hermes-v2-终态收口-20260628.md)
+3. [docs/实施计划.md](D:/CODE/hermes-agent/docs/实施计划.md)
+4. [docs/当前交接摘要.md](D:/CODE/hermes-agent/docs/当前交接摘要.md)
+5. [docs/接手检查单.md](D:/CODE/hermes-agent/docs/接手检查单.md)
+6. [snapshots/agentbridge-20260628/docs/implementation-status.md](D:/CODE/hermes-agent/snapshots/agentbridge-20260628/docs/implementation-status.md)
+7. [snapshots/agentbridge-20260628/docs/中文操作说明.md](D:/CODE/hermes-agent/snapshots/agentbridge-20260628/docs/中文操作说明.md)
+8. [references/updates/reference-refresh-latest.md](D:/CODE/hermes-agent/references/updates/reference-refresh-latest.md)
