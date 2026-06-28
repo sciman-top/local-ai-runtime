@@ -43,6 +43,7 @@
 - [docs/社区参考源码策略.md](D:/CODE/hermes-agent/docs/社区参考源码策略.md)：社区参考仓应否拉取、放哪里、如何更新
 - [docs/参考项目清单.md](D:/CODE/hermes-agent/docs/参考项目清单.md)：当前已拉取的上游参考源码清单
 - [docs/当前交接摘要.md](D:/CODE/hermes-agent/docs/当前交接摘要.md)：当前维护状态的一页交接摘要
+- [docs/AgentBridge-迁移与复用-runbook.md](D:/CODE/hermes-agent/docs/AgentBridge-%E8%BF%81%E7%A7%BB%E4%B8%8E%E5%A4%8D%E7%94%A8-runbook.md)：以后迁移 live 运行面、跨机复用、交付他人时的正式 runbook
 - [docs/接手检查单.md](D:/CODE/hermes-agent/docs/接手检查单.md)：下一位接手时的最小检查路径
 - [docs/工作交接提示词.md](D:/CODE/hermes-agent/docs/工作交接提示词.md)：可直接复制给下一位 agent 的提示词
 - [docs/交接摘要模板.md](D:/CODE/hermes-agent/docs/交接摘要模板.md)：后续交接时可复用模板
@@ -95,7 +96,8 @@
 2. [docs/Hermes-v2-终态收口-20260628.md](D:/CODE/hermes-agent/docs/Hermes-v2-终态收口-20260628.md)
 3. [docs/实施计划.md](D:/CODE/hermes-agent/docs/实施计划.md)
 4. [docs/当前交接摘要.md](D:/CODE/hermes-agent/docs/当前交接摘要.md)
-5. [docs/接手检查单.md](D:/CODE/hermes-agent/docs/接手检查单.md)
-6. [snapshots/agentbridge-20260628/docs/implementation-status.md](D:/CODE/hermes-agent/snapshots/agentbridge-20260628/docs/implementation-status.md)
-7. [snapshots/agentbridge-20260628/docs/中文操作说明.md](D:/CODE/hermes-agent/snapshots/agentbridge-20260628/docs/中文操作说明.md)
-8. [references/updates/reference-refresh-latest.md](D:/CODE/hermes-agent/references/updates/reference-refresh-latest.md)
+5. [docs/AgentBridge-迁移与复用-runbook.md](D:/CODE/hermes-agent/docs/AgentBridge-%E8%BF%81%E7%A7%BB%E4%B8%8E%E5%A4%8D%E7%94%A8-runbook.md)
+6. [docs/接手检查单.md](D:/CODE/hermes-agent/docs/接手检查单.md)
+7. [snapshots/agentbridge-20260628/docs/implementation-status.md](D:/CODE/hermes-agent/snapshots/agentbridge-20260628/docs/implementation-status.md)
+8. [snapshots/agentbridge-20260628/docs/中文操作说明.md](D:/CODE/hermes-agent/snapshots/agentbridge-20260628/docs/中文操作说明.md)
+9. [references/updates/reference-refresh-latest.md](D:/CODE/hermes-agent/references/updates/reference-refresh-latest.md)
