@@ -14,9 +14,13 @@
 - `Hermes` 只做隔离学习层，通过 `AgentBridge` 文件桥生成任务、吸收结果、产出技能草稿和记忆提升
 - `Hermes` 当前运行方式：`Docker Desktop + WSL2 backend + 按需 CLI 容器`
 - v1 目标固定为：人工触发的批量学习闭环，而不是实时自进化、常驻学习或桌面控制
+- 当前 `active truth`：`v1.6 bring-up` 已验收，可维护基线已形成
+- 当前 `planned target`：`Phase 0` 先做 `v1.6` 安全治理收口，`Phase 1` 再做 `V2 Codex-Native` 自动化 MVP
+- 最新本机探针结论：`workspace-write` 与 SDK 已证实可用，但 `network_proxy` 未在本机证实，因此 `Phase 1` 当前只能收敛到“纯本地任务自动执行 MVP”
 - 当前 live 运行面仍在：`C:\Users\sciman\Documents\AgentBridge`
 - 当前维护仓在：`D:\CODE\hermes-agent`
 - 当前 boundary 证据锚点是 [verify-hermes-boundary-20260628-005239.json](D:/CODE/hermes-agent/snapshots/agentbridge-20260628/docs/verify-hermes-boundary-20260628-005239.json)，已直接观测到 `10001:10001` 的 `hermes chat`
+- 当前 Phase 1 探针报告锚点是 [phase1-capability-probe-report-20260628-143744.md](D:/CODE/hermes-agent/docs/phase1-capability-probe-report-20260628-143744.md)
 
 ## 仓内结构
 

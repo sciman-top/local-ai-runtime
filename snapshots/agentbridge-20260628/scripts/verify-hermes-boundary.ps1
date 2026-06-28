@@ -169,6 +169,8 @@ try {
         unexpected_mount_targets = $unexpectedTargets
         blocked_mount_sources = $blockedSources
         published_ports = $hostConfig.PortBindings
+        cap_drop = $hostConfig.CapDrop
+        cap_drop_all_present = (@($hostConfig.CapDrop) -contains 'ALL')
         nano_cpus = $hostConfig.NanoCpus
         memory_bytes = $hostConfig.Memory
         pids_limit = $hostConfig.PidsLimit
