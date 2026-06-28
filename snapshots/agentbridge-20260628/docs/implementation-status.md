@@ -87,6 +87,22 @@
 
 ## Completed on 2026-06-28
 
+- ran a host-local Phase 1 capability probe from isolated temp workspaces and isolated `CODEX_HOME`
+- recorded the probe report at:
+  - `D:\CODE\hermes-agent\docs\phase1-capability-probe-report-20260628-143744.md`
+- confirmed current host facts:
+  - `workspace-write` is viable as the default Phase 1 sandbox base
+  - `Codex SDK` and `codex exec` are both viable local control paths
+  - `network_proxy` is still not proven on this host and must be treated as `platform_na`
+  - native automations surface exists, but watcher semantics for `AgentBridge/tasks` remain unproven
+- aligned the next planned target to the probe result:
+  - `Phase 0` remains the v1.6 safety/governance closeout lane
+  - `Phase 1` must currently shrink to pure local task automation
+- probed the first Phase 0 safety candidate, `cap_drop:[ALL]`, against the real runtime path:
+  - static file and gate wiring were easy, but the real `docker run` path is the truth source
+  - under the current `official_root_bootstrap` runtime model, `--cap-drop ALL` breaks the actual Hermes start path
+  - the decisive runtime errors were `s6-applyuidgid: fatal: unable to set supplementary group list: Operation not permitted` and `/opt/hermes/docker/main-wrapper.sh: 63: cd: can't cd to /opt/data`
+  - therefore `cap_drop:[ALL]` is currently blocked and must not be left enabled in the accepted baseline
 - improved `verify-hermes-boundary.ps1` so the helper container now follows the real `sh /bridge/scripts/run-hermes-wrapper.sh chat` path instead of `sleep 300`
 - replaced the one-shot `ps` check with bounded `docker top` polling so boundary evidence waits for the supervised Hermes process tree to settle
 - verified the real Windows-side boundary result now reports:
