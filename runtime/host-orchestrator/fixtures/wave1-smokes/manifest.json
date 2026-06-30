@@ -1,0 +1,25 @@
+{
+  "samples": [
+    {
+      "task_id": "T-20260629-000101-code-refactor-smoke",
+      "category": "code_refactor",
+      "description": "Code small fix or refactor smoke sample.",
+      "task_path": "tasks/T-20260629-000101-code-refactor-smoke.md",
+      "response_path": "responses/T-20260629-000101-code-refactor-smoke-worker-output.txt"
+    },
+    {
+      "task_id": "T-20260629-000102-doc-sync-smoke",
+      "category": "docs_sync",
+      "description": "Documentation generation or refresh smoke sample.",
+      "task_path": "tasks/T-20260629-000102-doc-sync-smoke.md",
+      "response_path": "responses/T-20260629-000102-doc-sync-smoke-worker-output.txt"
+    },
+    {
+      "task_id": "T-20260629-000103-script-contract-smoke",
+      "category": "script_contract",
+      "description": "Local script execution plus contract validation smoke sample.",
+      "task_path": "tasks/T-20260629-000103-script-contract-smoke.md",
+      "response_path": "responses/T-20260629-000103-script-contract-smoke-worker-output.txt"
+    }
+  ]
+}

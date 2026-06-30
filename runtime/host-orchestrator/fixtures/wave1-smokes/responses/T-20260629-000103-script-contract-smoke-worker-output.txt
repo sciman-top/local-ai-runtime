@@ -1,0 +1,5 @@
+SCRIPT_SMOKE_OK
+gate=snapshots/agentbridge-20260628/scripts/test-agentbridge-contract.ps1
+category=script_contract
+verification=pytest plus contract plus smoke summary
+boundary=local script validation only; no live Codex SDK acceptance implied
