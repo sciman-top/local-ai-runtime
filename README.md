@@ -15,21 +15,13 @@
 
 - `active truth`：当前已验收的 `v1.6` 可审计批处理闭环
 - `target truth`：`Hermes v2` 高自治四平面终态
-
-- 主链定位：`Codex` 仍是唯一允许直接碰 Windows 主桌面的 agent
-- `Hermes` 只做隔离学习层，通过 `AgentBridge` 文件桥生成任务、吸收结果、产出技能草稿和记忆提升
-- `Hermes` 当前运行方式：`Docker Desktop + WSL2 backend + 按需 CLI 容器`
-- v1 目标固定为：人工触发的批量学习闭环，而不是实时自进化、常驻学习或桌面控制
-- 当前 `active truth`：`v1.6 bring-up` 已验收，可维护基线已形成
-- 当前 `planned target`：`Phase 0` 先做 `v1.6` 安全治理收口，`Phase 1` 再做 `V2 Codex-Native` 自动化 MVP；v2 正式终态真源见 [Hermes-v2-终态收口-20260628.md](D:/CODE/hermes-agent/docs/Hermes-v2-终态收口-20260628.md)
-- 最新本机探针结论：`workspace-write` 与 SDK 已证实可用，但 `network_proxy` 未在本机证实，因此 `Phase 1` 当前只能收敛到“纯本地任务自动执行 MVP”
-- 最新 `Phase 0 / P0-2` 已完成 live-side acceptance：`read_only rootfs` 不是天然不可行，但 `tmpfs /run` 必须至少为 `exec`；旧 accepted 运行模型 `official_root_bootstrap + 10001:10001 remap` 在 `read_only rootfs` 下仍稳定阻塞；当前已正式升级为新的 accepted 运行模型：`derived image + runtime_user 10001:10001 + container_start_user 0:0`，并已在 live `AgentBridge` 上完整通过 `bring-up -> boundary -> snapshot`。同时，`P0-1 cap_drop:[ALL]` 已在这条新 accepted runtime model 上完成 repo-side 与 live-side 复核，仍稳定阻塞于真实 `docker run -> s6 -> /opt/data` 路径，因此当前 `P0-1` 的正确口径是 `re-probed on replacement model / still blocked`；而 `P0-3 network allowlist` 则只保留为 `platform_na / 非 Phase 1 前提`。因此当前 `Phase 0` 已基本收口到：`P0-2 accepted + P0-1 blocked by runtime fact + P0-3 boundary-only`；见 [phase0-readonly-rootfs-probe-20260628.md](D:/CODE/hermes-agent/docs/phase0-readonly-rootfs-probe-20260628.md) 与 [phase0-cap-drop-probe-20260628.md](D:/CODE/hermes-agent/docs/phase0-cap-drop-probe-20260628.md)
-- 当前 `Wave 1` repo-side 已完成 `W1-T01 ~ W1-T07` 的 fake-first 主机侧薄切片，新增落点为 `runtime/host-orchestrator/`
-- 当前 `Wave 1` 仍未 accepted：尚未做 live `Codex SDK` 真机执行验收，当前完成度只到 repo-side smoke / acceptance 资产
-- 当前 live 运行面仍在：`C:\Users\sciman\Documents\AgentBridge`
-- 当前维护仓在：`D:\CODE\hermes-agent`
-- 当前 boundary 证据锚点是 [verify-hermes-boundary-20260628-225841-414.json](D:/CODE/hermes-agent/snapshots/agentbridge-20260628/docs/verify-hermes-boundary-20260628-225841-414.json)，已直接观测到 `10001:10001` 的 `hermes chat`
-- 当前 Phase 1 探针报告锚点是 [phase1-capability-probe-report-20260628-143744.md](D:/CODE/hermes-agent/docs/phase1-capability-probe-report-20260628-143744.md)
+- 当前稳定口径以 [docs/实施计划.md](D:/CODE/hermes-agent/docs/实施计划.md) 和 [docs/当前交接摘要.md](D:/CODE/hermes-agent/docs/当前交接摘要.md) 为准
+- 当前短结论：
+  - `Phase 0`：已收口到 `P0-2 accepted + P0-1 still blocked + P0-3 platform_na`
+  - `Phase 1 / Wave 1`：repo-side 骨架、smoke、structured usage、worktree 收口已完成，但仍未做 live `Codex SDK` 真机执行验收
+  - 当前 live 运行面仍在 `C:\Users\sciman\Documents\AgentBridge`
+  - 当前 boundary 证据锚点仍是 [verify-hermes-boundary-20260628-225841-414.json](D:/CODE/hermes-agent/snapshots/agentbridge-20260628/docs/verify-hermes-boundary-20260628-225841-414.json)
+  - 当前 `Phase 1` 探针报告锚点仍是 [phase1-capability-probe-report-20260628-143744.md](D:/CODE/hermes-agent/docs/phase1-capability-probe-report-20260628-143744.md)
 
 ## 仓内结构
 
