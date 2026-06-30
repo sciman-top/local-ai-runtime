@@ -34,6 +34,7 @@
 当前验证口径：
 
 - `uv run pytest` 已覆盖 `W1-T01 ~ W1-T07` 的 repo-side 回归
+- `P1-1` 的第一步已落地到 repo-side：优先采集 SDK 结构化 `usage`，并把 token 使用量写入运行态事件与结果观察；文本 probe 仍只保留为后续保底方案
 - `runtime/host-orchestrator/scripts/test-wave1-acceptance.ps1` 会串起：
   - `uv run pytest`
   - `snapshots/agentbridge-20260628/scripts/test-agentbridge-contract.ps1`

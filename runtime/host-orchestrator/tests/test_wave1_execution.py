@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from pathlib import Path
 import shutil
 import sqlite3
@@ -15,7 +16,12 @@ from host_orchestrator.exec_fallback import (
 from host_orchestrator.host_local import HostLocalConfig, HostLocalRunner
 from host_orchestrator.paths import RuntimeLayout
 from host_orchestrator.wave1_smoke import load_wave1_smoke_samples, run_wave1_smokes
-from host_orchestrator.worker import WorkerRequest, WorkerResult
+from host_orchestrator.worker import (
+    UsageBreakdown,
+    WorkerRequest,
+    WorkerResult,
+    WorkerUsage,
+)
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -149,6 +155,24 @@ def test_host_local_runner_writes_result_and_runtime_state(tmp_path: Path) -> No
             return WorkerResult(
                 final_response="HOST_LOCAL_OK",
                 raw_result={"kind": "fake"},
+                usage=WorkerUsage(
+                    source="sdk_structured",
+                    last=UsageBreakdown(
+                        cached_input_tokens=3,
+                        input_tokens=120,
+                        output_tokens=20,
+                        reasoning_output_tokens=6,
+                        total_tokens=146,
+                    ),
+                    total=UsageBreakdown(
+                        cached_input_tokens=3,
+                        input_tokens=120,
+                        output_tokens=20,
+                        reasoning_output_tokens=6,
+                        total_tokens=146,
+                    ),
+                    model_context_window=272000,
+                ),
             )
 
     layout = RuntimeLayout.from_repo_root(repo_root)
@@ -173,6 +197,10 @@ def test_host_local_runner_writes_result_and_runtime_state(tmp_path: Path) -> No
     assert "# Artifacts" in result_text
     assert "# Observations" in result_text
     assert "HOST_LOCAL_OK" not in result_text
+    assert "Structured token usage captured from the worker runtime." in result_text
+    assert "total=146" in result_text
+    assert "input=120" in result_text
+    assert "output=20" in result_text
 
     artifact_path = agentbridge_root / "artifacts" / "T-20260628-000001-wave1-smoke-worker-output.txt"
     assert artifact_path.exists()
@@ -183,7 +211,9 @@ def test_host_local_runner_writes_result_and_runtime_state(tmp_path: Path) -> No
             "SELECT state, execution_lane, worker_profile, result_path FROM runtime_tasks WHERE task_id = ?",
             ("T-20260628-000001-wave1-smoke",),
         ).fetchone()
-        events = connection.execute("SELECT event_type FROM events ORDER BY created_at").fetchall()
+        events = connection.execute(
+            "SELECT event_type, payload_json FROM events ORDER BY created_at"
+        ).fetchall()
         routes = connection.execute(
             "SELECT selected_lane FROM route_decisions WHERE task_id = ?",
             ("T-20260628-000001-wave1-smoke",),
@@ -195,7 +225,25 @@ def test_host_local_runner_writes_result_and_runtime_state(tmp_path: Path) -> No
         "local_maint",
         "results/T-20260628-000001-wave1-smoke.md",
     )
-    assert [event_type for (event_type,) in events] == ["task_started", "task_completed"]
+    assert [event_type for (event_type, _) in events] == ["task_started", "task_completed"]
+    assert json.loads(events[1][1])["usage"] == {
+        "source": "sdk_structured",
+        "last": {
+            "cached_input_tokens": 3,
+            "input_tokens": 120,
+            "output_tokens": 20,
+            "reasoning_output_tokens": 6,
+            "total_tokens": 146,
+        },
+        "total": {
+            "cached_input_tokens": 3,
+            "input_tokens": 120,
+            "output_tokens": 20,
+            "reasoning_output_tokens": 6,
+            "total_tokens": 146,
+        },
+        "model_context_window": 272000,
+    }
     assert routes == [("host_local",)]
 
 

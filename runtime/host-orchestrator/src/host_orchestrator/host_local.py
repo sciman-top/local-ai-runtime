@@ -2,10 +2,11 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Any
 
 from host_orchestrator import agentbridge, db
 from host_orchestrator.paths import RuntimeLayout
-from host_orchestrator.worker import WorkerLike, WorkerRequest
+from host_orchestrator.worker import WorkerLike, WorkerRequest, WorkerUsage
 
 
 @dataclass(frozen=True)
@@ -68,6 +69,7 @@ class HostLocalRunner:
             model=self._config.model,
         )
         worker_result = self._worker.run(request)
+        usage_observations = self._build_usage_observations(worker_result.usage)
         artifact = agentbridge.write_text_artifact(
             self._config.agentbridge_root,
             task.task_id,
@@ -90,6 +92,7 @@ class HostLocalRunner:
             observations=[
                 "- Result file was written by the host-local orchestrator slice.",
                 "- This path still uses fake-first verification; live SDK execution remains a separate acceptance step.",
+                *usage_observations,
             ],
             human_review_required=False,
             next_action="none",
@@ -118,7 +121,54 @@ class HostLocalRunner:
             self._config.layout.control_plane_db,
             task_id=task.task_id,
             event_type="task_completed",
-            payload={"result_path": relative_result_path, "artifact": artifact.relative_path},
+            payload={
+                "result_path": relative_result_path,
+                "artifact": artifact.relative_path,
+                "usage": self._usage_payload(worker_result.usage),
+            },
             created_at=finished_at,
         )
         return result_path
+
+    @staticmethod
+    def _build_usage_observations(usage: WorkerUsage | None) -> list[str]:
+        if usage is None:
+            return ["- Structured token usage was not available from the worker runtime."]
+
+        return [
+            "- Structured token usage captured from the worker runtime.",
+            (
+                f"- usage source={usage.source}; total={usage.total.total_tokens}; "
+                f"input={usage.total.input_tokens}; output={usage.total.output_tokens}; "
+                f"cached_input={usage.total.cached_input_tokens}; "
+                f"reasoning_output={usage.total.reasoning_output_tokens}."
+            ),
+            (
+                f"- usage last_turn total={usage.last.total_tokens}; input={usage.last.input_tokens}; "
+                f"output={usage.last.output_tokens}."
+            ),
+        ]
+
+    @staticmethod
+    def _usage_payload(usage: WorkerUsage | None) -> dict[str, Any] | None:
+        if usage is None:
+            return None
+
+        return {
+            "source": usage.source,
+            "last": {
+                "cached_input_tokens": usage.last.cached_input_tokens,
+                "input_tokens": usage.last.input_tokens,
+                "output_tokens": usage.last.output_tokens,
+                "reasoning_output_tokens": usage.last.reasoning_output_tokens,
+                "total_tokens": usage.last.total_tokens,
+            },
+            "total": {
+                "cached_input_tokens": usage.total.cached_input_tokens,
+                "input_tokens": usage.total.input_tokens,
+                "output_tokens": usage.total.output_tokens,
+                "reasoning_output_tokens": usage.total.reasoning_output_tokens,
+                "total_tokens": usage.total.total_tokens,
+            },
+            "model_context_window": usage.model_context_window,
+        }

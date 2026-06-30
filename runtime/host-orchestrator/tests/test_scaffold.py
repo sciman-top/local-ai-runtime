@@ -73,14 +73,38 @@ def test_sdk_worker_request_maps_to_codex_thread_run() -> None:
 def test_sdk_worker_executes_prompt_via_thread_run() -> None:
     from openai_codex import ApprovalMode, Sandbox
 
-    from host_orchestrator.worker import CodexSdkWorker, WorkerRequest
+    from host_orchestrator.worker import (
+        CodexSdkWorker,
+        UsageBreakdown,
+        WorkerRequest,
+        WorkerUsage,
+    )
 
     calls: dict[str, object] = {}
 
     class FakeThread:
         def run(self, input: str, **kwargs: object) -> object:
             calls["run"] = {"input": input, "kwargs": kwargs}
-            return SimpleNamespace(final_response="WORKER_OK")
+            return SimpleNamespace(
+                final_response="WORKER_OK",
+                usage=SimpleNamespace(
+                    last=SimpleNamespace(
+                        cached_input_tokens=11,
+                        input_tokens=101,
+                        output_tokens=29,
+                        reasoning_output_tokens=7,
+                        total_tokens=137,
+                    ),
+                    total=SimpleNamespace(
+                        cached_input_tokens=11,
+                        input_tokens=101,
+                        output_tokens=29,
+                        reasoning_output_tokens=7,
+                        total_tokens=137,
+                    ),
+                    model_context_window=272000,
+                ),
+            )
 
     class FakeCodex:
         def thread_start(self, **kwargs: object) -> FakeThread:
@@ -97,6 +121,24 @@ def test_sdk_worker_executes_prompt_via_thread_run() -> None:
     result = worker.run(request)
 
     assert result.final_response == "WORKER_OK"
+    assert result.usage == WorkerUsage(
+        source="sdk_structured",
+        last=UsageBreakdown(
+            cached_input_tokens=11,
+            input_tokens=101,
+            output_tokens=29,
+            reasoning_output_tokens=7,
+            total_tokens=137,
+        ),
+        total=UsageBreakdown(
+            cached_input_tokens=11,
+            input_tokens=101,
+            output_tokens=29,
+            reasoning_output_tokens=7,
+            total_tokens=137,
+        ),
+        model_context_window=272000,
+    )
     assert calls["thread_start"] == {
         "cwd": str(REPO_ROOT),
         "model": "gpt-5.4",
