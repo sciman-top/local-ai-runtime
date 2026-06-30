@@ -1,11 +1,12 @@
 {
-  "created_at": "2026-06-27T13:21:21.0488517Z",
+  "created_at": "2026-06-28T14:44:19.4472228Z",
   "base_image": "nousresearch/hermes-agent@sha256:9f367c7756ef087661a361536a89f438d57a122b958dc23d82d456b1433e6e9e",
   "base_config_user": "root",
-  "derived_image_used": false,
-  "bootstrap_model": "official_root_bootstrap",
-  "runtime_image": "nousresearch/hermes-agent@sha256:9f367c7756ef087661a361536a89f438d57a122b958dc23d82d456b1433e6e9e",
-  "runtime_user": "root-bootstrap-with-runtime-remap",
+  "derived_image_used": true,
+  "bootstrap_model": "derived_non_root",
+  "runtime_image": "agentbridge/hermes-nonroot:p0-2-20260628",
+  "runtime_user": "10001:10001",
   "volume_uid": 10001,
-  "volume_gid": 10001
+  "volume_gid": 10001,
+  "container_start_user": "0:0"
 }

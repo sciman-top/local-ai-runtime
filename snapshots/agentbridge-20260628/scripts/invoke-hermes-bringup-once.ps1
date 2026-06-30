@@ -12,8 +12,10 @@ param(
     [switch]$SkipSnapshot,
     [switch]$KeepSession,
     [switch]$ReadOnlyRootfs,
+    [switch]$CapDropAll,
     [Parameter()]
     [string[]]$TmpfsMounts = @(),
+    [string]$ContainerUserOverride,
     [Parameter(ValueFromRemainingArguments = $true)]
     [string[]]$HermesArgs
 )
@@ -62,16 +64,24 @@ $summary = [ordered]@{
 
 $startParams = @{
     ReadOnlyRootfs = $ReadOnlyRootfs
+    CapDropAll = $CapDropAll
 }
 if ($TmpfsMounts -and $TmpfsMounts.Count -gt 0) {
     $startParams.TmpfsMounts = $TmpfsMounts
 }
+if (-not [string]::IsNullOrWhiteSpace($ContainerUserOverride)) {
+    $startParams.ContainerUserOverride = $ContainerUserOverride
+}
 
 $boundaryParams = @{
     ReadOnlyRootfs = $ReadOnlyRootfs
+    CapDropAll = $CapDropAll
 }
 if ($TmpfsMounts -and $TmpfsMounts.Count -gt 0) {
     $boundaryParams.TmpfsMounts = $TmpfsMounts
+}
+if (-not [string]::IsNullOrWhiteSpace($ContainerUserOverride)) {
+    $boundaryParams.ContainerUserOverride = $ContainerUserOverride
 }
 
 try {

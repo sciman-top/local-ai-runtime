@@ -1,6 +1,8 @@
 param(
     [switch]$ReadOnlyRootfs,
-    [string[]]$TmpfsMounts = @()
+    [switch]$CapDropAll,
+    [string[]]$TmpfsMounts = @(),
+    [string]$ContainerUserOverride
 )
 
 $ErrorActionPreference = 'Stop'
@@ -29,6 +31,10 @@ if (Test-Path $runtimeProfilePath) {
     }
     if (-not $env:HERMES_RUNTIME_USER -and $runtimeProfile.runtime_user) {
         $env:HERMES_RUNTIME_USER = [string]$runtimeProfile.runtime_user
+    }
+    $runtimeProfileContainerStartUser = if ($runtimeProfile.PSObject.Properties.Name -contains 'container_start_user') { [string]$runtimeProfile.container_start_user } else { $null }
+    if (-not $env:HERMES_CONTAINER_START_USER -and $runtimeProfileContainerStartUser) {
+        $env:HERMES_CONTAINER_START_USER = $runtimeProfileContainerStartUser
     }
     if (-not $env:HERMES_UID -and $runtimeProfile.volume_uid) {
         $env:HERMES_UID = [string]$runtimeProfile.volume_uid
@@ -64,6 +70,12 @@ $cpus = if ($env:HERMES_CPUS) { $env:HERMES_CPUS } else { '2' }
 $memory = if ($env:HERMES_MEM_LIMIT) { $env:HERMES_MEM_LIMIT } else { '2g' }
 $pidsLimit = if ($env:HERMES_PIDS_LIMIT) { $env:HERMES_PIDS_LIMIT } else { '256' }
 $normalizedTmpfsMounts = @($TmpfsMounts | Where-Object { -not [string]::IsNullOrWhiteSpace($_) } | ForEach-Object { $_.Trim() })
+$normalizedContainerUserOverride = if ([string]::IsNullOrWhiteSpace($ContainerUserOverride)) {
+    if ([string]::IsNullOrWhiteSpace($env:HERMES_CONTAINER_START_USER)) { $null } else { $env:HERMES_CONTAINER_START_USER.Trim() }
+}
+else {
+    $ContainerUserOverride.Trim()
+}
 $observationTimeoutSeconds = 15
 $observationPollMilliseconds = 250
 # 直接走真实 Hermes chat 入口，避免只观察到 sleep 占位命令。
@@ -71,8 +83,8 @@ $serviceProbeArgs = @('sh', '/bridge/scripts/run-hermes-wrapper.sh', 'chat')
 
 try {
     $null = Set-Content -LiteralPath $secretFile -NoNewline -Value $env:HERMES_PROVIDER_API_KEY
-    $dockerRunArgs = @(
-        'run',
+    $dockerCommand = 'run'
+    $dockerBaseArgs = @(
         '-d',
         '--name', $containerName,
         '--security-opt', 'no-new-privileges:true',
@@ -91,21 +103,26 @@ try {
         '-e', "HERMES_COST_LOG_DIR=/bridge/logs/cost-rollups",
         '-v', $volumeMount,
         '-v', $bridgeMount,
-        '-v', $secretMount,
-        $env:HERMES_RUNTIME_IMAGE
-    ) + $serviceProbeArgs
+        '-v', $secretMount
+    )
     if ($ReadOnlyRootfs) {
-        $dockerRunArgs = @($dockerRunArgs[0]) + @('--read-only') + @($dockerRunArgs[1..($dockerRunArgs.Count - 1)])
+        $dockerBaseArgs += '--read-only'
+    }
+
+    if ($CapDropAll) {
+        $dockerBaseArgs += @('--cap-drop', 'ALL')
+    }
+
+    if ($normalizedContainerUserOverride) {
+        $dockerBaseArgs += @('--user', $normalizedContainerUserOverride)
     }
 
     if ($normalizedTmpfsMounts.Count -gt 0) {
-        $tmpfsArgs = @()
         foreach ($tmpfsMount in $normalizedTmpfsMounts) {
-            $tmpfsArgs += @('--tmpfs', $tmpfsMount)
+            $dockerBaseArgs += @('--tmpfs', $tmpfsMount)
         }
-
-        $dockerRunArgs = @($dockerRunArgs[0]) + $tmpfsArgs + @($dockerRunArgs[1..($dockerRunArgs.Count - 1)])
     }
+    $dockerRunArgs = @($dockerCommand) + $dockerBaseArgs + @($env:HERMES_RUNTIME_IMAGE) + $serviceProbeArgs
     Invoke-AgentBridgeNativeCommand -FilePath $dockerCli -Arguments $dockerRunArgs | Out-Null
     $containerResult = Invoke-AgentBridgeNativeCommand -FilePath $dockerCli -Arguments @('ps', '-aqf', "name=^$containerName$")
     $containerId = $containerResult.output.Trim()
@@ -181,8 +198,11 @@ try {
     $rootfsWriteBlocked = ($rootfsProbeLines.Count -gt 0 -and $rootfsProbeLines[0].Trim() -eq 'blocked')
 
     [pscustomobject]@{
-        bootstrap_model = if ($env:HERMES_RUNTIME_USER) { $env:HERMES_RUNTIME_USER } else { 'unspecified' }
+        bootstrap_model = if ($runtimeProfile -and $runtimeProfile.bootstrap_model) { [string]$runtimeProfile.bootstrap_model } else { 'unspecified' }
+        runtime_user = if ($env:HERMES_RUNTIME_USER) { $env:HERMES_RUNTIME_USER } elseif ($runtimeProfile.runtime_user) { [string]$runtimeProfile.runtime_user } else { 'unspecified' }
+        requested_container_user_override = $normalizedContainerUserOverride
         requested_read_only_rootfs = [bool]$ReadOnlyRootfs
+        requested_cap_drop_all = [bool]$CapDropAll
         requested_tmpfs_mounts = $normalizedTmpfsMounts
         observed_read_only_rootfs = [bool]$hostConfig.ReadonlyRootfs
         service_uid = $serviceUid

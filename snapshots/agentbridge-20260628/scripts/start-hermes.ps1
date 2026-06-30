@@ -1,7 +1,9 @@
 [CmdletBinding(PositionalBinding = $false)]
 param(
     [switch]$ReadOnlyRootfs,
+    [switch]$CapDropAll,
     [string[]]$TmpfsMounts = @(),
+    [string]$ContainerUserOverride,
     [Parameter(ValueFromRemainingArguments = $true)]
     [string[]]$HermesArgs
 )
@@ -32,6 +34,10 @@ if (Test-Path $runtimeProfilePath) {
     }
     if (-not $env:HERMES_RUNTIME_USER -and $runtimeProfile.runtime_user) {
         $env:HERMES_RUNTIME_USER = [string]$runtimeProfile.runtime_user
+    }
+    $runtimeProfileContainerStartUser = if ($runtimeProfile.PSObject.Properties.Name -contains 'container_start_user') { [string]$runtimeProfile.container_start_user } else { $null }
+    if (-not $env:HERMES_CONTAINER_START_USER -and $runtimeProfileContainerStartUser) {
+        $env:HERMES_CONTAINER_START_USER = $runtimeProfileContainerStartUser
     }
     if (-not $env:HERMES_UID -and $runtimeProfile.volume_uid) {
         $env:HERMES_UID = [string]$runtimeProfile.volume_uid
@@ -78,9 +84,14 @@ $inferenceProvider = if ($env:HERMES_INFERENCE_PROVIDER) { $env:HERMES_INFERENCE
 $runDay = (Get-Date).ToUniversalTime().ToString('yyyy-MM-dd')
 $runMonth = (Get-Date).ToUniversalTime().ToString('yyyy-MM')
 $normalizedTmpfsMounts = @($TmpfsMounts | Where-Object { -not [string]::IsNullOrWhiteSpace($_) } | ForEach-Object { $_.Trim() })
-
-$dockerArgs = @(
-    'run',
+$normalizedContainerUserOverride = if ([string]::IsNullOrWhiteSpace($ContainerUserOverride)) {
+    if ([string]::IsNullOrWhiteSpace($env:HERMES_CONTAINER_START_USER)) { $null } else { $env:HERMES_CONTAINER_START_USER.Trim() }
+}
+else {
+    $ContainerUserOverride.Trim()
+}
+$dockerCommand = 'run'
+$dockerBaseArgs = @(
     '--rm',
     '--security-opt', 'no-new-privileges:true',
     '--cpus', $cpus,
@@ -101,24 +112,32 @@ $dockerArgs = @(
     '-e', 'HERMES_COST_LOG_DIR=/bridge/logs/cost-rollups',
     '-v', $volumeMount,
     '-v', $bridgeMount,
-    '-v', $secretMount,
+    '-v', $secretMount
+)
+
+if ($ReadOnlyRootfs) {
+    $dockerBaseArgs += '--read-only'
+}
+
+if ($CapDropAll) {
+    $dockerBaseArgs += @('--cap-drop', 'ALL')
+}
+
+if ($normalizedContainerUserOverride) {
+    $dockerBaseArgs += @('--user', $normalizedContainerUserOverride)
+}
+
+if ($normalizedTmpfsMounts.Count -gt 0) {
+    foreach ($tmpfsMount in $normalizedTmpfsMounts) {
+        $dockerBaseArgs += @('--tmpfs', $tmpfsMount)
+    }
+}
+
+$dockerArgs = @($dockerCommand) + $dockerBaseArgs + @(
     $env:HERMES_RUNTIME_IMAGE,
     'sh',
     '/bridge/scripts/run-hermes-wrapper.sh'
 ) + $HermesArgs
-
-if ($ReadOnlyRootfs) {
-    $dockerArgs = @($dockerArgs[0]) + @('--read-only') + @($dockerArgs[1..($dockerArgs.Count - 1)])
-}
-
-if ($normalizedTmpfsMounts.Count -gt 0) {
-    $tmpfsArgs = @()
-    foreach ($tmpfsMount in $normalizedTmpfsMounts) {
-        $tmpfsArgs += @('--tmpfs', $tmpfsMount)
-    }
-
-    $dockerArgs = @($dockerArgs[0]) + $tmpfsArgs + @($dockerArgs[1..($dockerArgs.Count - 1)])
-}
 
 $interactiveEntryCommands = @('chat', 'auth', 'model', 'setup')
 $commandName = if ($HermesArgs.Count -gt 0 -and $HermesArgs[0] -notmatch '^-') { $HermesArgs[0] } else { '' }

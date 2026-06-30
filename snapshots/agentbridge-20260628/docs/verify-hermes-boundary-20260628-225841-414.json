@@ -1,0 +1,66 @@
+{
+  "bootstrap_model": "derived_non_root",
+  "runtime_user": "10001:10001",
+  "requested_container_user_override": "0:0",
+  "requested_read_only_rootfs": true,
+  "requested_tmpfs_mounts": [
+    "/run:exec",
+    "/tmp"
+  ],
+  "observed_read_only_rootfs": true,
+  "service_uid": 10001,
+  "service_gid": 10001,
+  "service_uidgid_present": true,
+  "service_uidgid_lines": [
+    "33793               10001               10001               /opt/hermes/.venv/bin/python3 /opt/hermes/.venv/bin/hermes chat"
+  ],
+  "root_bootstrap_present": true,
+  "probe_attempts": 5,
+  "probe_wait_seconds": 1.51,
+  "probe_timed_out": false,
+  "process_lines": [
+    "PID                 UID                 GID                 COMMAND",
+    "33604               0                   0                   /package/admin/s6/command/s6-svscan -d4 -- /run/service",
+    "33630               0                   0                   /bin/sh -e /run/s6/basedir/scripts/rc.init top /opt/hermes/docker/main-wrapper.sh sh /bridge/scripts/run-hermes-wrapper.sh chat",
+    "33631               0                   0                   s6-supervise s6-linux-init-shutdownd",
+    "33633               0                   0                   /package/admin/s6-linux-init/command/s6-linux-init-shutdownd -d3 -c /run/s6/basedir -g 3000 -C -B",
+    "33641               0                   0                   s6-supervise main-hermes",
+    "33642               0                   0                   s6-supervise dashboard",
+    "33643               0                   0                   s6-supervise s6rc-fdholder",
+    "33644               0                   0                   s6-supervise s6rc-oneshot-runner",
+    "33650               0                   0                   /package/admin/s6/command/s6-ipcserverd -1 -- /package/admin/s6/command/s6-ipcserver-access -v0 -E -l0 -i data/rules -- /package/admin/s6/command/s6-sudod -t 30000 -- /package/admin/s6-rc/command/s6-rc-oneshot-run -l ../.. --",
+    "33749               0                   0                   sleep infinity",
+    "33766               0                   0                   s6-supervise gateway-default",
+    "33768               0                   0                   s6-supervise gateway-default/log",
+    "33769               10001               10001               s6-log 1 n10 s1000000 T /opt/data/logs/gateways/default",
+    "33778               10001               10001               sh /bridge/scripts/run-hermes-wrapper.sh chat",
+    "33793               10001               10001               /opt/hermes/.venv/bin/python3 /opt/hermes/.venv/bin/hermes chat"
+  ],
+  "mount_targets": [
+    "/bridge",
+    "/run/secrets/provider_api_key",
+    "/opt/data"
+  ],
+  "unexpected_mount_targets": [],
+  "blocked_mount_sources": [],
+  "tmpfs_targets": [
+    "/run",
+    "/tmp"
+  ],
+  "run_tmpfs_write_ok": true,
+  "tmp_tmpfs_write_ok": true,
+  "rootfs_write_blocked": true,
+  "rootfs_probe_lines": [
+    "blocked",
+    "touch: cannot touch '/.agentbridge-rootfs-probe': Read-only file system"
+  ],
+  "published_ports": {},
+  "cap_drop": null,
+  "cap_drop_all_present": false,
+  "nano_cpus": 2000000000,
+  "memory_bytes": 2147483648,
+  "pids_limit": 256,
+  "security_opt": [
+    "no-new-privileges:true"
+  ]
+}

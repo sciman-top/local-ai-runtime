@@ -4,8 +4,20 @@ FROM ${BASE_IMAGE}
 ARG HERMES_UID=10001
 ARG HERMES_GID=10001
 
-RUN groupadd --gid "${HERMES_GID}" hermes \
-    && useradd --uid "${HERMES_UID}" --gid "${HERMES_GID}" --create-home --home-dir /home/hermes --shell /usr/sbin/nologin hermes \
+RUN if ! getent group "${HERMES_GID}" >/dev/null 2>&1; then \
+        if getent group hermes >/dev/null 2>&1; then \
+            groupmod --gid "${HERMES_GID}" hermes; \
+        else \
+            groupadd --gid "${HERMES_GID}" hermes; \
+        fi; \
+    fi \
+    && if ! getent passwd "${HERMES_UID}" >/dev/null 2>&1; then \
+        if getent passwd hermes >/dev/null 2>&1; then \
+            usermod --uid "${HERMES_UID}" --gid "${HERMES_GID}" --home /home/hermes --shell /usr/sbin/nologin hermes; \
+        else \
+            useradd --uid "${HERMES_UID}" --gid "${HERMES_GID}" --create-home --home-dir /home/hermes --shell /usr/sbin/nologin hermes; \
+        fi; \
+    fi \
     && mkdir -p /opt/data /home/hermes \
     && chown -R "${HERMES_UID}:${HERMES_GID}" /opt/data /home/hermes
 

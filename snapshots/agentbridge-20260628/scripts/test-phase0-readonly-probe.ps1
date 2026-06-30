@@ -9,19 +9,23 @@ $issues = @()
 $requirements = @(
     @{
         path = Join-Path $PSScriptRoot 'start-hermes.ps1'
-        parameters = @('ReadOnlyRootfs', 'TmpfsMounts')
+        parameters = @('ReadOnlyRootfs', 'CapDropAll', 'TmpfsMounts')
     },
     @{
         path = Join-Path $PSScriptRoot 'verify-hermes-boundary.ps1'
-        parameters = @('ReadOnlyRootfs', 'TmpfsMounts')
+        parameters = @('ReadOnlyRootfs', 'CapDropAll', 'TmpfsMounts')
     },
     @{
         path = Join-Path $PSScriptRoot 'invoke-hermes-bringup-once.ps1'
-        parameters = @('ReadOnlyRootfs', 'TmpfsMounts')
+        parameters = @('ReadOnlyRootfs', 'CapDropAll', 'TmpfsMounts')
     },
     @{
         path = Join-Path $PSScriptRoot 'invoke-phase0-readonly-probe.ps1'
-        parameters = @('EnvFilePath')
+        parameters = @('EnvFilePath', 'RuntimeUid', 'RuntimeGid', 'RuntimeImageOverride', 'RuntimeUserOverride', 'BootstrapModelOverride', 'ContainerUserOverride', 'ContainerStartUserOverride', 'SkipProbeConfigBootstrap')
+    },
+    @{
+        path = Join-Path $PSScriptRoot 'invoke-phase0-cap-drop-probe.ps1'
+        parameters = @('EnvFilePath', 'SourceVolumeName', 'SkipSnapshot', 'CleanupVolume')
     }
 )
 

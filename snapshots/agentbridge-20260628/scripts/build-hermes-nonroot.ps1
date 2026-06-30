@@ -4,6 +4,7 @@ param(
     [string]$Tag = 'agentbridge/hermes-nonroot:local',
     [int]$Uid = 10001,
     [int]$Gid = 10001,
+    [string]$ContainerStartUser,
     [switch]$PreferOfficialBootstrap,
     [string]$RuntimeProfilePath
 )
@@ -63,6 +64,7 @@ function Get-ImageUserIds {
 $inspectConfigUser = Invoke-AgentBridgeNativeCommand -FilePath $dockerCli -Arguments @('image', 'inspect', $BaseImage, '--format', '{{.Config.User}}')
 $configUser = $inspectConfigUser.output.Trim()
 $rootLikeConfigUser = [string]::IsNullOrWhiteSpace($configUser) -or ($configUser -match '^(0(?::0)?|root(?::root)?)$')
+$bootstrapModel = $null
 
 if ($rootLikeConfigUser -and -not $PreferOfficialBootstrap) {
     Invoke-AgentBridgeNativeCommand -FilePath $dockerCli -Arguments @(
@@ -80,6 +82,7 @@ if ($rootLikeConfigUser -and -not $PreferOfficialBootstrap) {
     $volumeUid = $Uid
     $volumeGid = $Gid
     $derivedImageUsed = $true
+    $bootstrapModel = 'derived_non_root'
 }
 else {
     $runtimeImage = $BaseImage
@@ -115,6 +118,10 @@ $runtimeProfile = [ordered]@{
     runtime_user = $runtimeUser
     volume_uid = $volumeUid
     volume_gid = $volumeGid
+}
+
+if (-not [string]::IsNullOrWhiteSpace($ContainerStartUser)) {
+    $runtimeProfile.container_start_user = $ContainerStartUser.Trim()
 }
 
 $runtimeProfileJson = $runtimeProfile | ConvertTo-Json -Depth 4

@@ -27,6 +27,9 @@
 - `hermes-data-20260628-131518-032.tgz`
   - `bytes = 11616648`
   - `sha256 = F5DA4F285AA6193AFBB526A6C8E3AC52F3314682D49F85D35A3B30B3E561849E`
+- `hermes-data-20260628-225738-431.tgz`
+  - `bytes = 12996274`
+  - `sha256 = 4AC3AD7EF7AA608902BB91ADBF3BB18CA2E0C39E35D2F65DD55195E064C115EC`
 
 相关快照元数据见：
 
@@ -34,3 +37,4 @@
 - [../known-good-20260628-000717.json](D:/CODE/hermes-agent/snapshots/agentbridge-20260628/docs/known-good-20260628-000717.json)
 - [../known-good-20260628-124819-747.json](D:/CODE/hermes-agent/snapshots/agentbridge-20260628/docs/known-good-20260628-124819-747.json)
 - [../known-good-20260628-131518-032.json](D:/CODE/hermes-agent/snapshots/agentbridge-20260628/docs/known-good-20260628-131518-032.json)
+- [../known-good-20260628-225738-431.json](D:/CODE/hermes-agent/snapshots/agentbridge-20260628/docs/known-good-20260628-225738-431.json)

@@ -119,6 +119,81 @@ exit /b 0
     }
 }
 
+function Test-StartHermesCapDropForwarding {
+    $testRoot = New-TestRoot -Prefix 'agentbridge-start-hermes-cap-drop-forwarding'
+    $snapshotRoot = Join-Path $testRoot 'snapshots\agentbridge-20260628'
+    $scriptsRoot = Join-Path $snapshotRoot 'scripts'
+    $docsRoot = Join-Path $snapshotRoot 'docs'
+    $fakeBinRoot = Join-Path $testRoot 'fake-bin'
+    $dockerLogPath = Join-Path $testRoot 'docker-log.jsonl'
+
+    try {
+        New-Item -ItemType Directory -Force -Path $scriptsRoot, $docsRoot, $fakeBinRoot | Out-Null
+        Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'start-hermes.ps1') -Destination (Join-Path $scriptsRoot 'start-hermes.ps1')
+        Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'AgentBridge.Common.ps1') -Destination (Join-Path $scriptsRoot 'AgentBridge.Common.ps1')
+        Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'Resolve-DockerCli.ps1') -Destination (Join-Path $scriptsRoot 'Resolve-DockerCli.ps1')
+
+        Set-TestFile -Path (Join-Path $docsRoot 'hermes-volume-init.json') -Content '{"accepted_at":"2026-06-28T00:00:00Z"}'
+        Set-TestFile -Path (Join-Path $docsRoot 'hermes-runtime.json') -Content '{"runtime_image":"fake/hermes:latest","runtime_user":"official_root_bootstrap","volume_uid":"10001","volume_gid":"10001"}'
+        Set-TestFile -Path (Join-Path $fakeBinRoot 'docker.cmd') -Content @"
+@echo off
+>> "%DOCKER_FAKE_LOG%" echo %*
+exit /b 0
+"@
+
+        $savedPath = $env:Path
+        $savedApiKey = $env:HERMES_PROVIDER_API_KEY
+        $savedBaseUrl = $env:HERMES_PROVIDER_BASE_URL
+        $savedRuntimeImage = $env:HERMES_RUNTIME_IMAGE
+        $savedUid = $env:HERMES_UID
+        $savedGid = $env:HERMES_GID
+        $savedVolumeName = $env:HERMES_VOLUME_NAME
+        $savedDockerFakeLog = $env:DOCKER_FAKE_LOG
+
+        try {
+            $env:Path = "$fakeBinRoot;$env:Path"
+            $env:DOCKER_FAKE_LOG = $dockerLogPath
+            $env:HERMES_PROVIDER_API_KEY = 'fake-key'
+            $env:HERMES_PROVIDER_BASE_URL = 'https://example.invalid/v1'
+            $env:HERMES_RUNTIME_IMAGE = 'fake/hermes:latest'
+            $env:HERMES_UID = '10001'
+            $env:HERMES_GID = '10001'
+            $env:HERMES_VOLUME_NAME = 'fake-hermes-volume'
+
+            & (Join-Path $scriptsRoot 'start-hermes.ps1') -CapDropAll chat -Q -q 'Reply with exactly OK.' | Out-Null
+        }
+        finally {
+            $env:Path = $savedPath
+            $env:HERMES_PROVIDER_API_KEY = $savedApiKey
+            $env:HERMES_PROVIDER_BASE_URL = $savedBaseUrl
+            $env:HERMES_RUNTIME_IMAGE = $savedRuntimeImage
+            $env:HERMES_UID = $savedUid
+            $env:HERMES_GID = $savedGid
+            $env:HERMES_VOLUME_NAME = $savedVolumeName
+            $env:DOCKER_FAKE_LOG = $savedDockerFakeLog
+        }
+
+        $dockerCalls = @(Get-Content -LiteralPath $dockerLogPath)
+        if ($dockerCalls.Count -lt 2) {
+            return 'start-hermes cap-drop call did not issue the expected docker invocations.'
+        }
+
+        $mainRunLine = [string]$dockerCalls[1]
+        if ($mainRunLine -notmatch '\s--cap-drop\s+ALL(\s|$)') {
+            return "start-hermes cap-drop call did not inject --cap-drop ALL: $mainRunLine"
+        }
+
+        if ($mainRunLine -notmatch 'run-hermes-wrapper\.sh\s+chat\s+-Q\s+-q\s+"?Reply with exactly OK\."?\s*$') {
+            return "start-hermes cap-drop forwarding mismatch: $mainRunLine"
+        }
+
+        return $null
+    }
+    finally {
+        Remove-TestRoot -Path $testRoot
+    }
+}
+
 function New-StubBringupHarness {
     param(
         [Parameter(Mandatory = $true)]
@@ -145,13 +220,17 @@ param([string]$Action)
 [CmdletBinding(PositionalBinding = `$false)]
 param(
     [switch]`$ReadOnlyRootfs,
+    [switch]`$CapDropAll,
     [string[]]`$TmpfsMounts = @(),
+    [string]`$ContainerUserOverride,
     [Parameter(ValueFromRemainingArguments = `$true)]
     [string[]]`$HermesArgs
 )
 `$payload = [pscustomobject]@{
     read_only_rootfs = [bool]`$ReadOnlyRootfs
+    cap_drop_all = [bool]`$CapDropAll
     tmpfs_mounts = @(`$TmpfsMounts)
+    container_user_override = `$ContainerUserOverride
     hermes_args = @(`$HermesArgs)
 }
 Set-Content -LiteralPath '$startCallPath' -Value (`$payload | ConvertTo-Json -Compress) -NoNewline
@@ -161,15 +240,18 @@ Set-Content -LiteralPath '$startCallPath' -Value (`$payload | ConvertTo-Json -Co
         Set-TestFile -Path (Join-Path $scriptsRoot 'verify-hermes-boundary.ps1') -Content @"
 param(
     [switch]`$ReadOnlyRootfs,
+    [switch]`$CapDropAll,
     [string[]]`$TmpfsMounts = @()
 )
 `$payload = [pscustomobject]@{
     read_only_rootfs = [bool]`$ReadOnlyRootfs
+    cap_drop_all = [bool]`$CapDropAll
     tmpfs_mounts = @(`$TmpfsMounts)
 }
 Set-Content -LiteralPath '$verifyCallPath' -Value (`$payload | ConvertTo-Json -Compress) -NoNewline
 [pscustomobject]@{
     observed_read_only_rootfs = [bool]`$ReadOnlyRootfs
+    requested_cap_drop_all = [bool]`$CapDropAll
     tmpfs_targets = @()
 }
 "@
@@ -229,6 +311,176 @@ function Test-InvokeBringupArrayTmpfsForwarding {
             return "invoke-hermes-bringup-once did not preserve tmpfs array forwarding. Expected '$($tmpfsMounts -join ',')', got '$($observedTmpfs -join ',')'."
         }
 
+        $expectedArgs = @('chat', '-Q', '-q', 'Reply with exactly OK.')
+        if ((@($startCall.hermes_args) -join "`n") -ne (@($expectedArgs) -join "`n")) {
+            return "invoke-hermes-bringup-once leaked tmpfs mounts into Hermes args. Expected '$($expectedArgs -join ' ')', got '$(@($startCall.hermes_args) -join ' ')'."
+        }
+
+        return $null
+    }
+    finally {
+        Remove-TestRoot -Path $testRoot
+    }
+}
+
+function Test-InvokeBringupCapDropForwarding {
+    $testRoot = New-TestRoot -Prefix 'agentbridge-invoke-bringup-cap-drop-forwarding'
+
+    try {
+        $harness = New-StubBringupHarness -TestRoot $testRoot -CaptureBoundary
+        & (Join-Path $harness.scripts_root 'invoke-hermes-bringup-once.ps1') -SkipSnapshot -CapDropAll chat -Q -q 'Reply with exactly OK.' | Out-Null
+
+        $startCall = Get-Content -Raw -LiteralPath $harness.start_call_path | ConvertFrom-Json
+        $verifyCall = Get-Content -Raw -LiteralPath $harness.verify_call_path | ConvertFrom-Json
+
+        if (-not [bool]$startCall.cap_drop_all) {
+            return 'invoke-hermes-bringup-once did not forward CapDropAll to start-hermes.'
+        }
+
+        if (-not [bool]$verifyCall.cap_drop_all) {
+            return 'invoke-hermes-bringup-once did not forward CapDropAll to verify-hermes-boundary.'
+        }
+
+        $expectedArgs = @('chat', '-Q', '-q', 'Reply with exactly OK.')
+        if ((@($startCall.hermes_args) -join "`n") -ne (@($expectedArgs) -join "`n")) {
+            return "invoke-hermes-bringup-once leaked CapDropAll into Hermes args. Expected '$($expectedArgs -join ' ')', got '$(@($startCall.hermes_args) -join ' ')'."
+        }
+
+        return $null
+    }
+    finally {
+        Remove-TestRoot -Path $testRoot
+    }
+}
+
+function Test-InvokeBringupContainerUserOverrideForwarding {
+    $testRoot = New-TestRoot -Prefix 'agentbridge-invoke-bringup-user-override-forwarding'
+
+    try {
+        $harness = New-StubBringupHarness -TestRoot $testRoot
+        & (Join-Path $harness.scripts_root 'invoke-hermes-bringup-once.ps1') -SkipSnapshot -ContainerUserOverride '0:0' chat -Q -q 'Reply with exactly OK.' | Out-Null
+
+        $startCall = Get-Content -Raw -LiteralPath $harness.start_call_path | ConvertFrom-Json
+        if ([string]$startCall.container_user_override -ne '0:0') {
+            return "invoke-hermes-bringup-once did not forward container user override. Expected '0:0', got '$([string]$startCall.container_user_override)'."
+        }
+
+        return $null
+    }
+    finally {
+        Remove-TestRoot -Path $testRoot
+    }
+}
+
+function Test-Phase0ProbeBootstrapConfig {
+    $testRoot = New-TestRoot -Prefix 'agentbridge-phase0-probe-bootstrap'
+    $repoRoot = Join-Path $testRoot 'repo'
+    $snapshotRoot = Join-Path $repoRoot 'snapshots\agentbridge-20260628'
+    $scriptsRoot = Join-Path $snapshotRoot 'scripts'
+    $docsRoot = Join-Path $snapshotRoot 'docs'
+    $fakeBinRoot = Join-Path $testRoot 'fake-bin'
+    $dockerLogPath = Join-Path $testRoot 'docker-log.jsonl'
+    $envPath = Join-Path $repoRoot '.env'
+
+    try {
+        New-Item -ItemType Directory -Force -Path $scriptsRoot, $docsRoot, $fakeBinRoot | Out-Null
+        Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'invoke-phase0-readonly-probe.ps1') -Destination (Join-Path $scriptsRoot 'invoke-phase0-readonly-probe.ps1')
+        Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'AgentBridge.Common.ps1') -Destination (Join-Path $scriptsRoot 'AgentBridge.Common.ps1')
+        Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'Resolve-DockerCli.ps1') -Destination (Join-Path $scriptsRoot 'Resolve-DockerCli.ps1')
+
+        Set-TestFile -Path $envPath -Content @'
+primary_base_url=https://example.invalid/v1
+primary_key=fake-primary-key
+'@
+        Set-TestFile -Path (Join-Path $docsRoot 'hermes-runtime.json') -Content '{"runtime_image":"fake/hermes:latest","runtime_user":"root-bootstrap-with-runtime-remap","bootstrap_model":"official_root_bootstrap","volume_uid":10000,"volume_gid":10000}'
+        Set-TestFile -Path (Join-Path $scriptsRoot 'test-phase0-readonly-probe.ps1') -Content '[pscustomobject]@{ ok = $true; issues = @() }'
+        Set-TestFile -Path (Join-Path $scriptsRoot 'init-hermes.ps1') -Content @'
+Write-Output "init-ok"
+'@
+        Set-TestFile -Path (Join-Path $scriptsRoot 'invoke-hermes-bringup-once.ps1') -Content @'
+param()
+[pscustomobject]@{
+    boundary = [pscustomobject]@{
+        service_uidgid_present = $true
+        observed_read_only_rootfs = $true
+        rootfs_write_blocked = $true
+        tmpfs_targets = @('/run', '/tmp')
+    }
+}
+'@
+        Set-TestFile -Path (Join-Path $scriptsRoot 'manage-hermes-provider-session.ps1') -Content @'
+param(
+    [string]$Action,
+    [string]$EnvFilePath
+)
+
+if ($Action -eq 'load') {
+    [System.Environment]::SetEnvironmentVariable('HERMES_PROVIDER_BASE_URL', 'https://example.invalid/v1', 'Process')
+    [System.Environment]::SetEnvironmentVariable('HERMES_MODEL_PRIMARY', 'gpt-5.4', 'Process')
+    [System.Environment]::SetEnvironmentVariable('HERMES_MODEL_FALLBACK', 'gpt-5.4', 'Process')
+    [System.Environment]::SetEnvironmentVariable('HERMES_PROVIDER_API_KEY', 'fake-primary-key', 'Process')
+    [pscustomobject]@{
+        gate_ready = $true
+        active_slot = 'primary'
+        loaded_slots = @('primary')
+        env_file_path = $EnvFilePath
+    }
+}
+else {
+    [pscustomobject]@{ action = $Action; ok = $true }
+}
+'@
+        Set-TestFile -Path (Join-Path $fakeBinRoot 'docker.cmd') -Content @"
+@echo off
+>> "%DOCKER_FAKE_LOG%" echo %*
+exit /b 0
+"@
+
+        $savedPath = $env:Path
+        $savedDockerFakeLog = $env:DOCKER_FAKE_LOG
+
+        try {
+            $env:Path = "$fakeBinRoot;$env:Path"
+            $env:DOCKER_FAKE_LOG = $dockerLogPath
+            $probeResult = & (Join-Path $scriptsRoot 'invoke-phase0-readonly-probe.ps1') -Root $snapshotRoot -CleanupVolume
+        }
+        finally {
+            $env:Path = $savedPath
+            $env:DOCKER_FAKE_LOG = $savedDockerFakeLog
+        }
+
+        if (-not $probeResult.ok) {
+            return "phase0 probe bootstrap harness did not complete successfully: $($probeResult.error)"
+        }
+
+        if (-not $probeResult.probe_config_bootstrap.applied) {
+            return 'phase0 probe did not mark probe_config_bootstrap as applied.'
+        }
+
+        $bootstrapPath = [string]$probeResult.probe_config_bootstrap.template_path
+        if (-not (Test-Path -LiteralPath $bootstrapPath)) {
+            return "phase0 probe bootstrap config was not written: $bootstrapPath"
+        }
+
+        $bootstrapContent = Get-Content -Raw -LiteralPath $bootstrapPath
+        $requiredSnippets = @(
+            'provider: "custom:primary-gateway"',
+            'key_env: "OPENAI_API_KEY"',
+            'base_url: "https://example.invalid/v1"',
+            'User-Agent: "curl/8.7.1"'
+        )
+        foreach ($snippet in $requiredSnippets) {
+            if ($bootstrapContent -notmatch [regex]::Escape($snippet)) {
+                return "phase0 probe bootstrap config is missing expected content: $snippet"
+            }
+        }
+
+        $dockerCalls = @(Get-Content -LiteralPath $dockerLogPath)
+        $bootstrapCopyCall = $dockerCalls | Where-Object { $_ -match 'cp /probe-config\.yaml /opt/data/config\.yaml' } | Select-Object -First 1
+        if (-not $bootstrapCopyCall) {
+            return 'phase0 probe bootstrap did not invoke the config seed docker copy step.'
+        }
+
         return $null
     }
     finally {
@@ -243,6 +495,11 @@ if ($directIssue) {
     $issues += $directIssue
 }
 
+$directCapDropIssue = Test-StartHermesCapDropForwarding
+if ($directCapDropIssue) {
+    $issues += $directCapDropIssue
+}
+
 $bringupIssue = Test-InvokeBringupForwarding
 if ($bringupIssue) {
     $issues += $bringupIssue
@@ -251,6 +508,21 @@ if ($bringupIssue) {
 $tmpfsForwardIssue = Test-InvokeBringupArrayTmpfsForwarding
 if ($tmpfsForwardIssue) {
     $issues += $tmpfsForwardIssue
+}
+
+$capDropForwardIssue = Test-InvokeBringupCapDropForwarding
+if ($capDropForwardIssue) {
+    $issues += $capDropForwardIssue
+}
+
+$containerUserOverrideIssue = Test-InvokeBringupContainerUserOverrideForwarding
+if ($containerUserOverrideIssue) {
+    $issues += $containerUserOverrideIssue
+}
+
+$phase0BootstrapIssue = Test-Phase0ProbeBootstrapConfig
+if ($phase0BootstrapIssue) {
+    $issues += $phase0BootstrapIssue
 }
 
 [pscustomobject]@{

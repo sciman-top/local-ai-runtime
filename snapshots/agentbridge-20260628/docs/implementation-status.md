@@ -130,14 +130,58 @@
   - `invoke-hermes-bringup-once.ps1 -EnvFilePath 'D:\CODE\qq-codex-bot\.env'` succeeds
   - the post-fix run generated `docs/known-good-20260628-131518-032.json`
   - `test-known-good-snapshot.ps1` passes against that snapshot
+- completed Phase 0 `P0-2` live-side acceptance for the replacement runtime model:
+  - built and accepted `agentbridge/hermes-nonroot:p0-2-20260628` as the live runtime image
+  - live `docs/hermes-runtime.json` now records:
+    - `bootstrap_model = derived_non_root`
+    - `runtime_user = 10001:10001`
+    - `container_start_user = 0:0`
+  - confirmed the live provider-session loader still needed host-specific compatibility:
+    - current `D:\CODE\qq-codex-bot\.env` still uses legacy indexed names such as `TEXT_MODEL_BASE_URL_1` / `TEXT_MODEL_API_KEY_1`
+    - `manage-hermes-provider-session.ps1` now maps that legacy indexed form back onto `primary` / `backup` slots when `HERMES_SLOTS` is absent
+  - confirmed a PowerShell calling-boundary caveat:
+    - when an outer `pwsh -File` process forwards `-TmpfsMounts @('/run:exec','/tmp')`, the second tmpfs entry can be reinterpreted as a trailing positional argument
+    - the accepted live run therefore uses the same PowerShell process when invoking `invoke-hermes-bringup-once.ps1`
+  - completed the accepted live run with:
+    - `& 'C:\Users\sciman\Documents\AgentBridge\scripts\invoke-hermes-bringup-once.ps1' -EnvFilePath 'D:\CODE\qq-codex-bot\.env' -ReadOnlyRootfs -TmpfsMounts @('/run:exec','/tmp')`
+  - the accepted live run generated:
+    - `docs/known-good-20260628-225738-431.json`
+    - `docs/verify-hermes-boundary-20260628-225841-414.json`
+  - `test-known-good-snapshot.ps1` passes against that snapshot
+- re-probed Phase 0 `P0-1 cap_drop:[ALL]` on the current accepted replacement runtime model:
+  - added a real runtime `-CapDropAll` argument path to:
+    - `start-hermes.ps1`
+    - `verify-hermes-boundary.ps1`
+    - `invoke-hermes-bringup-once.ps1`
+  - added `scripts/invoke-phase0-cap-drop-probe.ps1` so the probe runs against a cloned named volume instead of mutating the accepted live volume
+  - repo-side re-probe against the snapshot runtime and cloned `agentbridge-hermes-data` still failed with the same decisive runtime facts:
+    - `s6-applyuidgid: fatal: unable to set supplementary group list: Operation not permitted`
+    - `/opt/hermes/docker/main-wrapper.sh: 63: cd: can't cd to /opt/data`
+  - live-side re-probe against `C:\Users\sciman\Documents\AgentBridge` produced the same failure signature on a cloned volume
+  - therefore `P0-1` is now confirmed as `still blocked on the accepted replacement runtime model`, not merely “blocked on the old official_root_bootstrap model”
+- closed the remaining `P0-3` wording boundary:
+  - current host facts still leave `network_proxy` unproven
+  - Hermes-side network allowlist therefore remains `platform_na`
+  - it is no longer treated as a Phase 1 prerequisite and should wait for the later network-lane wave
 
 ## Current Status
 
 - Windows-side v1.6 bring-up is now operational end-to-end
 - the latest verified known-good snapshot is:
-  - `docs/known-good-20260628-131518-032.json`
+  - `docs/known-good-20260628-225738-431.json`
 - the latest verified boundary evidence is:
-  - `docs/verify-hermes-boundary-20260628-005239.json`
+  - `docs/verify-hermes-boundary-20260628-225841-414.json`
+- the accepted read-only rootfs runtime model is now:
+  - `bootstrap_model = derived_non_root`
+  - `runtime_user = 10001:10001`
+  - `container_start_user = 0:0`
+- the current `P0-1 cap_drop:[ALL]` truth is now:
+  - re-probed on both repo-side and live-side against the accepted replacement runtime model
+  - still blocked by runtime facts
+  - not part of the accepted baseline
+- the current `P0-3` truth is now:
+  - `platform_na`
+  - not a Phase 1 prerequisite
 - `docs/known-good-20260628-124819-747.json` is now historical pre-chat-cli-fix evidence, not the current anchor
 - the older `docs/known-good-20260627-214819.json` should be treated as stale pre-fix evidence, not the current anchor
 - `invoke-hermes-bringup-once.ps1` now returns the final `session_cleared` state after the cleanup step, instead of emitting the summary too early
@@ -157,13 +201,13 @@
 ## Resume Point
 
 1. Verified shortest path:
-   - `& 'C:\Users\sciman\Documents\AgentBridge\scripts\invoke-hermes-bringup-once.ps1' -EnvFilePath 'D:\CODE\qq-codex-bot\.env'`
+   - `& 'C:\Users\sciman\Documents\AgentBridge\scripts\invoke-hermes-bringup-once.ps1' -EnvFilePath 'D:\CODE\qq-codex-bot\.env' -ReadOnlyRootfs -TmpfsMounts @('/run:exec','/tmp')`
 2. If you only want a start-and-boundary check without snapshot:
-   - `& 'C:\Users\sciman\Documents\AgentBridge\scripts\invoke-hermes-bringup-once.ps1' -EnvFilePath 'D:\CODE\qq-codex-bot\.env' -SkipSnapshot`
+   - `& 'C:\Users\sciman\Documents\AgentBridge\scripts\invoke-hermes-bringup-once.ps1' -EnvFilePath 'D:\CODE\qq-codex-bot\.env' -ReadOnlyRootfs -TmpfsMounts @('/run:exec','/tmp') -SkipSnapshot`
 3. If you want to inspect the current slot projection only:
    - `& 'C:\Users\sciman\Documents\AgentBridge\scripts\manage-hermes-provider-session.ps1' -Action load -EnvFilePath 'D:\CODE\qq-codex-bot\.env' -SkipBackupPrompt`
 4. If you want the classic interactive REPL explicitly:
    - `& 'C:\Users\sciman\Documents\AgentBridge\scripts\invoke-hermes-bringup-once.ps1' -EnvFilePath 'D:\CODE\qq-codex-bot\.env' chat --cli`
 5. If Linux-side `docker` usage inside `Ubuntu-24.04` is still desired, enable Docker Desktop WSL integration for that distro.
 6. If you want the current boundary evidence anchor directly:
-   - `docs/verify-hermes-boundary-20260628-005239.json`
+   - `docs/verify-hermes-boundary-20260628-225841-414.json`

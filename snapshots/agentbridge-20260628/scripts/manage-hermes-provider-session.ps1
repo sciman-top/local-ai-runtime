@@ -207,6 +207,28 @@ function Get-SlotDefinitionsFromDotEnvFile {
     $slotMap = @{}
     $pendingBareKeySlot = $null
 
+    function ConvertFrom-LegacyIndexedSlotName {
+        param(
+            [Parameter(Mandatory = $true)]
+            [string]$Prefix,
+            [Parameter(Mandatory = $true)]
+            [int]$Index
+        )
+
+        switch ($Index) {
+            1 { return 'primary' }
+            2 { return 'backup' }
+            default {
+                $normalizedPrefix = ($Prefix.ToLowerInvariant() -replace '[^a-z0-9]+', '-').Trim('-')
+                if ([string]::IsNullOrWhiteSpace($normalizedPrefix)) {
+                    $normalizedPrefix = 'slot'
+                }
+
+                return '{0}-{1}' -f $normalizedPrefix, $Index
+            }
+        }
+    }
+
     function Ensure-SlotRecord {
         param(
             [Parameter(Mandatory = $true)]
@@ -297,6 +319,26 @@ function Get-SlotDefinitionsFromDotEnvFile {
 
         if ($name -eq 'HERMES_SLOTS') {
             $pendingBareKeySlot = $null
+            continue
+        }
+
+        $legacyIndexedMatch = [regex]::Match($name, '(?i)^(?<prefix>.+?)_(?<kind>base_url|url|api_key|key)_(?<index>\d+)$')
+        if ($legacyIndexedMatch.Success -and $declaredSlots.Count -eq 0) {
+            $slotName = ConvertFrom-LegacyIndexedSlotName `
+                -Prefix ([string]$legacyIndexedMatch.Groups['prefix'].Value) `
+                -Index ([int]$legacyIndexedMatch.Groups['index'].Value)
+            $slotKind = [string]$legacyIndexedMatch.Groups['kind'].Value
+            $record = Ensure-SlotRecord -SlotName $slotName
+
+            if ($slotKind -in @('base_url', 'url')) {
+                $record.base_url = $value
+                $pendingBareKeySlot = $slotName
+            }
+            else {
+                $record.plain_key = $value
+                $pendingBareKeySlot = $null
+            }
+
             continue
         }
 
