@@ -14,7 +14,7 @@ This repository is the mainline repo for the generic local AI Dev Orchestrator, 
 Run commands from `D:\CODE\local-ai-dev-orchestrator`, or from `runtime/host-orchestrator` / `snapshots/agentbridge-20260628` when working on the corresponding slice.
 
 - `python .\scripts\verify-planning-status.py`: verify the machine-readable planning truth and authoritative-doc consistency gate.
-- `uv run --project .\runtime\host-orchestrator pytest`: run the current orchestrator repo-side Python test suite.
+- `uv run --project .\runtime\host-orchestrator python -m pytest`: run the current orchestrator repo-side Python test suite on Windows without relying on the `pytest.exe` wrapper.
 - `pwsh .\scripts\refresh-reference-repos.ps1 -FetchOnly -SkipDirtyRepos`: refresh external reference repos without mutating dirty checkouts.
 - `pwsh .\snapshots\agentbridge-20260628\scripts\test-agentbridge-contract.ps1`: validate task/result naming, front matter, LF endings, and bridge file rules.
 - `pwsh .\snapshots\agentbridge-20260628\scripts\test-hermes-bringup-gates.ps1`: run bring-up preflight gates against Compose, runtime, and init evidence.
