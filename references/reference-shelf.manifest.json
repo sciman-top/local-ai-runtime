@@ -1,0 +1,81 @@
+{
+  "schema_version": 1,
+  "references_root": "D:\\CODE\\external\\local-ai-dev-orchestrator-references",
+  "default_refresh_set": [
+    "codex",
+    "plugins",
+    "modelcontextprotocol",
+    "servers"
+  ],
+  "repos": [
+    {
+      "name": "codex",
+      "tier": "core-mainline",
+      "status": "active",
+      "upstream_url": "https://github.com/openai/codex.git"
+    },
+    {
+      "name": "plugins",
+      "tier": "core-mainline",
+      "status": "active",
+      "upstream_url": "https://github.com/openai/plugins.git"
+    },
+    {
+      "name": "modelcontextprotocol",
+      "tier": "core-mainline",
+      "status": "active",
+      "upstream_url": "https://github.com/modelcontextprotocol/modelcontextprotocol.git"
+    },
+    {
+      "name": "servers",
+      "tier": "core-mainline",
+      "status": "active",
+      "upstream_url": "https://github.com/modelcontextprotocol/servers.git"
+    },
+    {
+      "name": "openai-agents-python",
+      "tier": "secondary-mainline",
+      "status": "active",
+      "upstream_url": "https://github.com/openai/openai-agents-python.git"
+    },
+    {
+      "name": "governed-ai-coding-runtime",
+      "tier": "governance-sidecar",
+      "status": "active",
+      "upstream_url": "https://github.com/sciman-top/governed-ai-coding-runtime.git",
+      "absolute_path": "D:\\CODE\\governed-ai-coding-runtime"
+    },
+    {
+      "name": "hermes-agent",
+      "tier": "compatibility",
+      "status": "active",
+      "upstream_url": "https://github.com/NousResearch/hermes-agent.git"
+    },
+    {
+      "name": "skills",
+      "tier": "archive-on-demand",
+      "status": "active",
+      "upstream_url": "https://github.com/openai/skills.git"
+    },
+    {
+      "name": "hermes-agent-self-evolution",
+      "tier": "archive-on-demand",
+      "status": "active",
+      "upstream_url": "https://github.com/NousResearch/hermes-agent-self-evolution.git"
+    },
+    {
+      "name": "openclaw",
+      "tier": "archive-on-demand",
+      "status": "active",
+      "upstream_url": "https://github.com/openclaw/openclaw.git"
+    }
+  ],
+  "not_cloned_candidates": [
+    {
+      "name": "claude-code",
+      "tier": "conditional",
+      "status": "not-cloned",
+      "upstream_url": "https://github.com/anthropics/claude-code.git"
+    }
+  ]
+}

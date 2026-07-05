@@ -1,11 +1,7 @@
 param(
-    [string]$ReferencesRoot = 'D:\CODE\external\hermes-agent-references',
-    [string[]]$RepoNames = @(
-        'hermes-agent',
-        'codex',
-        'modelcontextprotocol',
-        'servers'
-    ),
+    [string]$ManifestPath = 'D:\CODE\local-ai-dev-orchestrator\references\reference-shelf.manifest.json',
+    [string]$ReferencesRoot,
+    [string[]]$RepoNames,
     [string]$OutputDirectory = 'D:\CODE\local-ai-dev-orchestrator\references\updates',
     [switch]$FetchOnly,
     [switch]$SkipDirtyRepos
@@ -81,6 +77,42 @@ function Normalize-RepoNames {
     return @($normalized)
 }
 
+function Read-ReferenceManifest {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Path
+    )
+
+    if (-not (Test-Path -LiteralPath $Path)) {
+        return $null
+    }
+
+    $raw = Get-Content -LiteralPath $Path -Raw
+    if ([string]::IsNullOrWhiteSpace($raw)) {
+        return $null
+    }
+
+    return $raw | ConvertFrom-Json
+}
+
+$manifest = Read-ReferenceManifest -Path $ManifestPath
+
+if (-not $ReferencesRoot) {
+    if ($manifest -and $manifest.references_root) {
+        $ReferencesRoot = [string]$manifest.references_root
+    } else {
+        throw "ReferencesRoot not provided and manifest does not define references_root: $ManifestPath"
+    }
+}
+
+if (-not $RepoNames -or $RepoNames.Count -eq 0) {
+    if ($manifest -and $manifest.default_refresh_set) {
+        $RepoNames = @($manifest.default_refresh_set | ForEach-Object { [string]$_ })
+    } else {
+        throw "RepoNames not provided and manifest does not define default_refresh_set: $ManifestPath"
+    }
+}
+
 if (-not (Test-Path -LiteralPath $ReferencesRoot)) {
     throw "References root not found: $ReferencesRoot"
 }
@@ -93,15 +125,32 @@ $timestamp = New-UtcTimestamp
 $reportPath = Join-Path $OutputDirectory ("reference-refresh-{0}.md" -f $timestamp)
 $latestReportPath = Join-Path $OutputDirectory 'reference-refresh-latest.md'
 $results = [System.Collections.Generic.List[object]]::new()
-$defaultCoreRepos = @('hermes-agent', 'codex', 'modelcontextprotocol', 'servers')
-$repoNamesLabel = if (@($RepoNames) -join ',' -eq ($defaultCoreRepos -join ',')) {
-    'core-default'
+$manifestDefaultRepos = if ($manifest -and $manifest.default_refresh_set) {
+    @($manifest.default_refresh_set | ForEach-Object { [string]$_ })
+} else {
+    @()
+}
+$manifestRepoIndex = @{}
+if ($manifest -and $manifest.repos) {
+    foreach ($entry in $manifest.repos) {
+        if ($entry.name) {
+            $manifestRepoIndex[[string]$entry.name] = $entry
+        }
+    }
+}
+$repoNamesLabel = if ($manifestDefaultRepos.Count -gt 0 -and (@($RepoNames) -join ',' -eq ($manifestDefaultRepos -join ','))) {
+    'manifest-default'
 } else {
     'custom'
 }
 
 foreach ($repoName in $RepoNames) {
-    $repoPath = Join-Path $ReferencesRoot $repoName
+    $manifestRepo = if ($manifestRepoIndex.ContainsKey($repoName)) { $manifestRepoIndex[$repoName] } else { $null }
+    if ($manifestRepo -and $manifestRepo.absolute_path) {
+        $repoPath = [string]$manifestRepo.absolute_path
+    } else {
+        $repoPath = Join-Path $ReferencesRoot $repoName
+    }
     if (-not (Test-Path -LiteralPath $repoPath)) {
         $results.Add([pscustomobject]@{
                 repo = $repoName
@@ -212,6 +261,7 @@ $lines.Add('')
 $lines.Add(('生成时间（UTC）：`' + (Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ssZ') + '`'))
 $lines.Add(('模式：`' + $modeLabel + '`'))
 $lines.Add(('根目录：`' + $ReferencesRoot + '`'))
+$lines.Add(('manifest：`' + $ManifestPath + '`'))
 $lines.Add(('集合：`' + $repoNamesLabel + '`'))
 $lines.Add(('仓列表：`' + (($RepoNames -join ', ') -replace '\\', '/') + '`'))
 $lines.Add('')
@@ -255,6 +305,7 @@ foreach ($result in $results) {
 )
 
 [pscustomobject]@{
+    manifest_path = $ManifestPath
     references_root = $ReferencesRoot
     output_path = $reportPath
     latest_output_path = $latestReportPath

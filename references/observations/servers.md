@@ -1,7 +1,7 @@
 # servers
 
-- 仓路径：`D:\CODE\external\hermes-agent-references\servers`
-- 当前本机锚点：`main @ 7b1170d1da`
+- 仓路径：`D:\CODE\external\local-ai-dev-orchestrator-references\servers`
+- 当前本机锚点：`main @ 7097923966`
 
 ## 为什么保留
 

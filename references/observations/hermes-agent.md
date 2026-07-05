@@ -1,11 +1,11 @@
 # hermes-agent
 
-- 仓路径：`D:\CODE\external\hermes-agent-references\hermes-agent`
+- 仓路径：`D:\CODE\external\local-ai-dev-orchestrator-references\hermes-agent`
 - 当前本机锚点：`main @ f53b184c48`
 
 ## 为什么保留
 
-这是当前 `Hermes` 运行时、Docker 发布、配置迁移、s6/bootstrap 行为的第一真值。
+这是 `Hermes/AgentBridge compatibility` 这条副线的第一真值，不再是当前 generic orchestrator mainline 的默认第一参考仓。
 
 当前主链里所有这些判断都要优先回到这里核对：
 

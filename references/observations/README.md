@@ -13,10 +13,13 @@
 
 当前观察记录：
 
-- [hermes-agent.md](D:/CODE/local-ai-dev-orchestrator/references/observations/hermes-agent.md)
 - [hermes-agent-self-evolution.md](D:/CODE/local-ai-dev-orchestrator/references/observations/hermes-agent-self-evolution.md)
 - [codex.md](D:/CODE/local-ai-dev-orchestrator/references/observations/codex.md)
+- [governed-ai-coding-runtime.md](D:/CODE/local-ai-dev-orchestrator/references/observations/governed-ai-coding-runtime.md)
+- [plugins.md](D:/CODE/local-ai-dev-orchestrator/references/observations/plugins.md)
 - [skills.md](D:/CODE/local-ai-dev-orchestrator/references/observations/skills.md)
 - [modelcontextprotocol.md](D:/CODE/local-ai-dev-orchestrator/references/observations/modelcontextprotocol.md)
 - [servers.md](D:/CODE/local-ai-dev-orchestrator/references/observations/servers.md)
+- [openai-agents-python.md](D:/CODE/local-ai-dev-orchestrator/references/observations/openai-agents-python.md)
+- [hermes-agent.md](D:/CODE/local-ai-dev-orchestrator/references/observations/hermes-agent.md)
 - [openclaw.md](D:/CODE/local-ai-dev-orchestrator/references/observations/openclaw.md)

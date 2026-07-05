@@ -1,6 +1,6 @@
 # openclaw
 
-- 仓路径：`D:\CODE\external\hermes-agent-references\openclaw`
+- 仓路径：`D:\CODE\external\local-ai-dev-orchestrator-references\openclaw`
 - 当前本机锚点：`main @ 1bdde66950`
 
 ## 为什么保留

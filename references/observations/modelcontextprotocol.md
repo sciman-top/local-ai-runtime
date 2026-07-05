@@ -1,7 +1,7 @@
 # modelcontextprotocol
 
-- 仓路径：`D:\CODE\external\hermes-agent-references\modelcontextprotocol`
-- 当前本机锚点：`main @ ead35b59b4`
+- 仓路径：`D:\CODE\external\local-ai-dev-orchestrator-references\modelcontextprotocol`
+- 当前本机锚点：`main @ 60dc69e9a9`
 
 ## 为什么保留
 

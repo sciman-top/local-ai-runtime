@@ -1,6 +1,6 @@
 # hermes-agent-self-evolution
 
-- 仓路径：`D:\CODE\external\hermes-agent-references\hermes-agent-self-evolution`
+- 仓路径：`D:\CODE\external\local-ai-dev-orchestrator-references\hermes-agent-self-evolution`
 - 当前本机锚点：`main @ 0a929e3aa2`
 
 ## 为什么保留

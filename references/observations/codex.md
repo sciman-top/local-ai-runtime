@@ -1,7 +1,7 @@
 # codex
 
-- 仓路径：`D:\CODE\external\hermes-agent-references\codex`
-- 当前本机锚点：`main @ 328e95110c`
+- 仓路径：`D:\CODE\external\local-ai-dev-orchestrator-references\codex`
+- 当前本机锚点：`main @ be33f80bc6`
 
 ## 为什么保留
 
@@ -9,7 +9,7 @@
 
 保留它的价值在于：
 
-- 以后如果 `Codex` 的配置、规则加载、执行边界、工具行为需要对照上游实现，这里是第一源码入口
+- 以后如果 `Codex` 的配置、规则加载、执行边界、AGENTS / hooks / plugin / worktree 行为需要对照上游实现，这里是第一源码入口
 - 它帮助防止把 Hermes 侧问题误判成 Codex 平台问题，反之亦然
 
 ## 什么时候先看它
