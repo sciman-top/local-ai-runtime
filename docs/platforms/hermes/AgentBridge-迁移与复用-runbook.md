@@ -22,7 +22,7 @@
 
 ### 2.1 维护仓
 
-- `D:\CODE\hermes-agent`
+- `D:\CODE\local-ai-dev-orchestrator`
 
 职责：
 
@@ -159,8 +159,8 @@
 从维护仓快照同步到新 live 路径：
 
 ```powershell
-& 'D:\CODE\hermes-agent\snapshots\agentbridge-20260628\scripts\sync-agentbridge-to-documents.ps1' `
-  -SourceRoot 'D:\CODE\hermes-agent\snapshots\agentbridge-20260628' `
+& 'D:\CODE\local-ai-dev-orchestrator\snapshots\agentbridge-20260628\scripts\sync-agentbridge-to-documents.ps1' `
+  -SourceRoot 'D:\CODE\local-ai-dev-orchestrator\snapshots\agentbridge-20260628' `
   -DestinationRoot 'D:\RUNTIME\AgentBridge'
 ```
 
@@ -278,12 +278,12 @@ Set-Location 'D:\RUNTIME\AgentBridge'
 
 最关键入口：
 
-- [README.md](D:/CODE/hermes-agent/README.md)
-- [接手检查单.md](D:/CODE/hermes-agent/docs/接手检查单.md)
-- [实施计划.md](D:/CODE/hermes-agent/docs/实施计划.md)
-- [当前交接摘要.md](D:/CODE/hermes-agent/docs/当前交接摘要.md)
-- [中文操作说明.md](D:/CODE/hermes-agent/snapshots/agentbridge-20260628/docs/中文操作说明.md)
-- [hermes-docker.md](D:/CODE/hermes-agent/snapshots/agentbridge-20260628/docs/hermes-docker.md)
+- [README.md](D:/CODE/local-ai-dev-orchestrator/README.md)
+- [接手检查单.md](D:/CODE/local-ai-dev-orchestrator/docs/接手检查单.md)
+- [实施计划.md](D:/CODE/local-ai-dev-orchestrator/docs/实施计划.md)
+- [当前交接摘要.md](D:/CODE/local-ai-dev-orchestrator/docs/当前交接摘要.md)
+- [中文操作说明.md](D:/CODE/local-ai-dev-orchestrator/snapshots/agentbridge-20260628/docs/中文操作说明.md)
+- [hermes-docker.md](D:/CODE/local-ai-dev-orchestrator/snapshots/agentbridge-20260628/docs/hermes-docker.md)
 
 ### 7.2 不应交付什么
 
@@ -305,7 +305,7 @@ Set-Location 'D:\RUNTIME\AgentBridge'
 
 当前索引说明见：
 
-- [docs/volume-backups/README.md](D:/CODE/hermes-agent/snapshots/agentbridge-20260628/docs/volume-backups/README.md)
+- [docs/volume-backups/README.md](D:/CODE/local-ai-dev-orchestrator/snapshots/agentbridge-20260628/docs/volume-backups/README.md)
 
 原则：
 
@@ -346,7 +346,7 @@ Set-Location 'D:\RUNTIME\AgentBridge'
 以后如果经常要迁移 / 复用，建议进一步收口成：
 
 1. `维护仓`
-   - `D:\CODE\hermes-agent`
+   - `D:\CODE\local-ai-dev-orchestrator`
 2. `标准快照树`
    - `snapshots/agentbridge-<accepted-date>/`
 3. `可切换的 live 根`

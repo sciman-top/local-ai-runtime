@@ -22,7 +22,7 @@
 
 ## 本轮 scope
 
-只在维护仓 `D:\CODE\hermes-agent` 内做 repo-side 工作：
+只在维护仓 `D:\CODE\local-ai-dev-orchestrator` 内做 repo-side 工作：
 
 - 补 `read_only rootfs + tmpfs` 探针入口
 - 补行为级回归测试，守住既有 `start-hermes.ps1` / `invoke-hermes-bringup-once.ps1` 参数兼容性
@@ -100,11 +100,11 @@
 
 本轮 fresh 隔离 probe 报告文件：
 
-- [phase0-readonly-rootfs-probe.json](D:/CODE/hermes-agent/private-local/phase0-probes/phase0-readonly-rootfs-20260628-202120-338/phase0-readonly-rootfs-probe.json)
+- [phase0-readonly-rootfs-probe.json](D:/CODE/local-ai-dev-orchestrator/private-local/phase0-probes/phase0-readonly-rootfs-20260628-202120-338/phase0-readonly-rootfs-probe.json)
 
 当前 accepted runtime profile：
 
-- [hermes-runtime.json](D:/CODE/hermes-agent/snapshots/agentbridge-20260628/docs/hermes-runtime.json)
+- [hermes-runtime.json](D:/CODE/local-ai-dev-orchestrator/snapshots/agentbridge-20260628/docs/hermes-runtime.json)
 
 其中关键运行模型仍是：
 
@@ -132,7 +132,7 @@
 
 本轮 fresh comparative probe 报告文件：
 
-- [phase0-readonly-rootfs-probe.json](D:/CODE/hermes-agent/private-local/phase0-probes/phase0-readonly-rootfs-20260628-212302-672/phase0-readonly-rootfs-probe.json)
+- [phase0-readonly-rootfs-probe.json](D:/CODE/local-ai-dev-orchestrator/private-local/phase0-probes/phase0-readonly-rootfs-20260628-212302-672/phase0-readonly-rootfs-probe.json)
 
 探针方法保持同一条 repo-side 隔离链路：
 
@@ -205,7 +205,7 @@
 
 新的成功 evidence：
 
-- [phase0-readonly-rootfs-probe.json](D:/CODE/hermes-agent/private-local/phase0-probes/phase0-readonly-rootfs-20260628-215023-143/phase0-readonly-rootfs-probe.json)
+- [phase0-readonly-rootfs-probe.json](D:/CODE/local-ai-dev-orchestrator/private-local/phase0-probes/phase0-readonly-rootfs-20260628-215023-143/phase0-readonly-rootfs-probe.json)
 
 结果：
 
@@ -216,10 +216,10 @@
 配套对照也已补齐：
 
 - 关掉 probe bootstrap 的 `10000:10000` 对照失败：
-  - [phase0-readonly-rootfs-probe.json](D:/CODE/hermes-agent/private-local/phase0-probes/phase0-readonly-rootfs-20260628-215117-133/phase0-readonly-rootfs-probe.json)
+  - [phase0-readonly-rootfs-probe.json](D:/CODE/local-ai-dev-orchestrator/private-local/phase0-probes/phase0-readonly-rootfs-20260628-215117-133/phase0-readonly-rootfs-probe.json)
   - 仍回到 `hermes -z: no final response was produced`
 - 保持 probe bootstrap、但回到 accepted `10001:10001` 运行模型的对照失败：
-  - [phase0-readonly-rootfs-probe.json](D:/CODE/hermes-agent/private-local/phase0-probes/phase0-readonly-rootfs-20260628-215117-179/phase0-readonly-rootfs-probe.json)
+  - [phase0-readonly-rootfs-probe.json](D:/CODE/local-ai-dev-orchestrator/private-local/phase0-probes/phase0-readonly-rootfs-20260628-215117-179/phase0-readonly-rootfs-probe.json)
   - 仍回到 `usermod: cannot lock /etc/passwd` + `/opt/data/gateway_state.json` + `/opt/data/.env` 权限链
 
 这把归因进一步钉死为：
@@ -247,7 +247,7 @@
 
 失败 evidence：
 
-- [phase0-readonly-rootfs-probe.json](D:/CODE/hermes-agent/private-local/phase0-probes/phase0-readonly-rootfs-20260628-221127-659/phase0-readonly-rootfs-probe.json)
+- [phase0-readonly-rootfs-probe.json](D:/CODE/local-ai-dev-orchestrator/private-local/phase0-probes/phase0-readonly-rootfs-20260628-221127-659/phase0-readonly-rootfs-probe.json)
 
 失败点不再是旧的 `usermod + /opt/data` 链，而是更早的：
 
@@ -282,11 +282,11 @@
 新的成功 evidence：
 
 - 第一轮显式 override 成功样本：
-  - [phase0-readonly-rootfs-probe.json](D:/CODE/hermes-agent/private-local/phase0-probes/phase0-readonly-rootfs-20260628-222013-307/phase0-readonly-rootfs-probe.json)
-  - [known-good-20260628-222042-261.json](D:/CODE/hermes-agent/private-local/phase0-probes/phase0-readonly-rootfs-20260628-222013-307/bridge/docs/known-good-20260628-222042-261.json)
-  - [hermes-data-20260628-222042-261.tgz](D:/CODE/hermes-agent/private-local/phase0-probes/phase0-readonly-rootfs-20260628-222013-307/bridge/docs/volume-backups/hermes-data-20260628-222042-261.tgz)
+  - [phase0-readonly-rootfs-probe.json](D:/CODE/local-ai-dev-orchestrator/private-local/phase0-probes/phase0-readonly-rootfs-20260628-222013-307/phase0-readonly-rootfs-probe.json)
+  - [known-good-20260628-222042-261.json](D:/CODE/local-ai-dev-orchestrator/private-local/phase0-probes/phase0-readonly-rootfs-20260628-222013-307/bridge/docs/known-good-20260628-222042-261.json)
+  - [hermes-data-20260628-222042-261.tgz](D:/CODE/local-ai-dev-orchestrator/private-local/phase0-probes/phase0-readonly-rootfs-20260628-222013-307/bridge/docs/volume-backups/hermes-data-20260628-222042-261.tgz)
 - 更强的 runtime-profile 语义成功样本：
-  - [phase0-readonly-rootfs-probe.json](D:/CODE/hermes-agent/private-local/phase0-probes/phase0-readonly-rootfs-20260628-223400-954/phase0-readonly-rootfs-probe.json)
+  - [phase0-readonly-rootfs-probe.json](D:/CODE/local-ai-dev-orchestrator/private-local/phase0-probes/phase0-readonly-rootfs-20260628-223400-954/phase0-readonly-rootfs-probe.json)
 
 结果：
 
@@ -324,9 +324,9 @@
 - live `invoke-hermes-bringup-once.ps1` 已完整通过：
   - `load -> contract -> gates -> start -> boundary -> snapshot -> snapshot_test`
 - 最新 live snapshot：
-  - [known-good-20260628-225738-431.json](D:/CODE/hermes-agent/snapshots/agentbridge-20260628/docs/known-good-20260628-225738-431.json)
+  - [known-good-20260628-225738-431.json](D:/CODE/local-ai-dev-orchestrator/snapshots/agentbridge-20260628/docs/known-good-20260628-225738-431.json)
 - 最新 live boundary：
-  - [verify-hermes-boundary-20260628-225841-414.json](D:/CODE/hermes-agent/snapshots/agentbridge-20260628/docs/verify-hermes-boundary-20260628-225841-414.json)
+  - [verify-hermes-boundary-20260628-225841-414.json](D:/CODE/local-ai-dev-orchestrator/snapshots/agentbridge-20260628/docs/verify-hermes-boundary-20260628-225841-414.json)
 
 因此当前正确状态已经升级为：
 

@@ -122,7 +122,7 @@ Hermes v1.6 的容器基线如下：
 - 不写文档
 - 不写 `/opt/data`
 
-标准 `.env` 格式见根目录 [.env.example](D:/CODE/hermes-agent/.env.example)。
+标准 `.env` 格式见根目录 [.env.example](D:/CODE/local-ai-dev-orchestrator/.env.example)。
 
 ## 6. 安全边界
 
@@ -172,7 +172,7 @@ v1 明确不做：
 
 当前已复制到仓内的本机快照见：
 
-- [snapshots/agentbridge-20260628/docs/known-good-20260628-131518-032.json](D:/CODE/hermes-agent/snapshots/agentbridge-20260628/docs/known-good-20260628-131518-032.json)
+- [snapshots/agentbridge-20260628/docs/known-good-20260628-131518-032.json](D:/CODE/local-ai-dev-orchestrator/snapshots/agentbridge-20260628/docs/known-good-20260628-131518-032.json)
 
 ## 9. 当前本机结论
 

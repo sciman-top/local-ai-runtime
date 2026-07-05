@@ -6,7 +6,7 @@ param(
         'modelcontextprotocol',
         'servers'
     ),
-    [string]$OutputDirectory = 'D:\CODE\hermes-agent\references\updates',
+    [string]$OutputDirectory = 'D:\CODE\local-ai-dev-orchestrator\references\updates',
     [switch]$FetchOnly,
     [switch]$SkipDirtyRepos
 )

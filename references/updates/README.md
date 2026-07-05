@@ -9,4 +9,4 @@
 
 如果只想看“现在外部参考仓是否已经和远端对齐”，优先打开：
 
-- [reference-refresh-latest.md](D:/CODE/hermes-agent/references/updates/reference-refresh-latest.md)
+- [reference-refresh-latest.md](D:/CODE/local-ai-dev-orchestrator/references/updates/reference-refresh-latest.md)

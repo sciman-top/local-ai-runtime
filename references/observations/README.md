@@ -13,10 +13,10 @@
 
 当前观察记录：
 
-- [hermes-agent.md](D:/CODE/hermes-agent/references/observations/hermes-agent.md)
-- [hermes-agent-self-evolution.md](D:/CODE/hermes-agent/references/observations/hermes-agent-self-evolution.md)
-- [codex.md](D:/CODE/hermes-agent/references/observations/codex.md)
-- [skills.md](D:/CODE/hermes-agent/references/observations/skills.md)
-- [modelcontextprotocol.md](D:/CODE/hermes-agent/references/observations/modelcontextprotocol.md)
-- [servers.md](D:/CODE/hermes-agent/references/observations/servers.md)
-- [openclaw.md](D:/CODE/hermes-agent/references/observations/openclaw.md)
+- [hermes-agent.md](D:/CODE/local-ai-dev-orchestrator/references/observations/hermes-agent.md)
+- [hermes-agent-self-evolution.md](D:/CODE/local-ai-dev-orchestrator/references/observations/hermes-agent-self-evolution.md)
+- [codex.md](D:/CODE/local-ai-dev-orchestrator/references/observations/codex.md)
+- [skills.md](D:/CODE/local-ai-dev-orchestrator/references/observations/skills.md)
+- [modelcontextprotocol.md](D:/CODE/local-ai-dev-orchestrator/references/observations/modelcontextprotocol.md)
+- [servers.md](D:/CODE/local-ai-dev-orchestrator/references/observations/servers.md)
+- [openclaw.md](D:/CODE/local-ai-dev-orchestrator/references/observations/openclaw.md)

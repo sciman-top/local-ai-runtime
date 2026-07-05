@@ -1,7 +1,7 @@
 ## Summary
 
-- Probe session root: D:\CODE\hermes-agent\private-local\phase1-probes\phase1-capability-probe-20260628-143744
-- Artifacts root: D:\CODE\hermes-agent\private-local\phase1-probes\phase1-capability-probe-20260628-143744\artifacts
+- Probe session root: D:\CODE\local-ai-dev-orchestrator\private-local\phase1-probes\phase1-capability-probe-20260628-143744
+- Artifacts root: D:\CODE\local-ai-dev-orchestrator\private-local\phase1-probes\phase1-capability-probe-20260628-143744\artifacts
 - Temporary workspace: C:\Users\sciman\AppData\Local\Temp\codex-phase1-probe-20260628-143744\workspace
 - Isolated CODEX_HOME used for sandbox/network probes: C:\Users\sciman\AppData\Local\Temp\codex-phase1-probe-20260628-143744\codex-home
 - Host auth/control plane reused only for codex exec and SDK probes; repo worktree and AgentBridge were not used as experiment targets.

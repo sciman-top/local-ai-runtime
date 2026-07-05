@@ -9,8 +9,8 @@
 
 当前本机私有备份位置：
 
-- `D:\CODE\hermes-agent\private-local\agentbridge-volume-backups\hermes-data-20260627-214819.tgz`
-- `D:\CODE\hermes-agent\private-local\agentbridge-volume-backups\hermes-data-20260628-000717.tgz`
+- `D:\CODE\local-ai-dev-orchestrator\private-local\agentbridge-volume-backups\hermes-data-20260627-214819.tgz`
+- `D:\CODE\local-ai-dev-orchestrator\private-local\agentbridge-volume-backups\hermes-data-20260628-000717.tgz`
 - `C:\Users\sciman\Documents\AgentBridge\docs\volume-backups\hermes-data-20260628-124819-747.tgz`
 
 当前已记录的校验值：
@@ -33,8 +33,8 @@
 
 相关快照元数据见：
 
-- [../known-good-20260627-214819.json](D:/CODE/hermes-agent/snapshots/agentbridge-20260628/docs/known-good-20260627-214819.json)
-- [../known-good-20260628-000717.json](D:/CODE/hermes-agent/snapshots/agentbridge-20260628/docs/known-good-20260628-000717.json)
-- [../known-good-20260628-124819-747.json](D:/CODE/hermes-agent/snapshots/agentbridge-20260628/docs/known-good-20260628-124819-747.json)
-- [../known-good-20260628-131518-032.json](D:/CODE/hermes-agent/snapshots/agentbridge-20260628/docs/known-good-20260628-131518-032.json)
-- [../known-good-20260628-225738-431.json](D:/CODE/hermes-agent/snapshots/agentbridge-20260628/docs/known-good-20260628-225738-431.json)
+- [../known-good-20260627-214819.json](D:/CODE/local-ai-dev-orchestrator/snapshots/agentbridge-20260628/docs/known-good-20260627-214819.json)
+- [../known-good-20260628-000717.json](D:/CODE/local-ai-dev-orchestrator/snapshots/agentbridge-20260628/docs/known-good-20260628-000717.json)
+- [../known-good-20260628-124819-747.json](D:/CODE/local-ai-dev-orchestrator/snapshots/agentbridge-20260628/docs/known-good-20260628-124819-747.json)
+- [../known-good-20260628-131518-032.json](D:/CODE/local-ai-dev-orchestrator/snapshots/agentbridge-20260628/docs/known-good-20260628-131518-032.json)
+- [../known-good-20260628-225738-431.json](D:/CODE/local-ai-dev-orchestrator/snapshots/agentbridge-20260628/docs/known-good-20260628-225738-431.json)

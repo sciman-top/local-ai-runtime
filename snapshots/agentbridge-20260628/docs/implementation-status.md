@@ -89,7 +89,7 @@
 
 - ran a host-local Phase 1 capability probe from isolated temp workspaces and isolated `CODEX_HOME`
 - recorded the probe report at:
-  - `D:\CODE\hermes-agent\docs\phase1-capability-probe-report-20260628-143744.md`
+  - `D:\CODE\local-ai-dev-orchestrator\docs\phase1-capability-probe-report-20260628-143744.md`
 - confirmed current host facts:
   - `workspace-write` is viable as the default Phase 1 sandbox base
   - `Codex SDK` and `codex exec` are both viable local control paths

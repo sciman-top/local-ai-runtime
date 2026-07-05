@@ -8,7 +8,7 @@
 
 本轮已在 **当前 accepted replacement runtime model** 上完成两次真实单变量探针：
 
-- repo-side：`D:\CODE\hermes-agent\snapshots\agentbridge-20260628`
+- repo-side：`D:\CODE\local-ai-dev-orchestrator\snapshots\agentbridge-20260628`
 - live-side：`C:\Users\sciman\Documents\AgentBridge`
 
 两边结论一致：
@@ -57,7 +57,7 @@
 
 位置：
 
-- `D:\CODE\hermes-agent\snapshots\agentbridge-20260628`
+- `D:\CODE\local-ai-dev-orchestrator\snapshots\agentbridge-20260628`
 
 命令：
 
@@ -71,7 +71,7 @@ pwsh -NoProfile -File snapshots/agentbridge-20260628/scripts/invoke-phase0-cap-d
 
 结果文件：
 
-- [phase0-cap-drop-probe.json](D:/CODE/hermes-agent/private-local/phase0-probes/phase0-cap-drop-20260628-233607-514/phase0-cap-drop-probe.json)
+- [phase0-cap-drop-probe.json](D:/CODE/local-ai-dev-orchestrator/private-local/phase0-probes/phase0-cap-drop-20260628-233607-514/phase0-cap-drop-probe.json)
 
 ### 第二轮：live-side 最小投影真实 probe
 
@@ -175,7 +175,7 @@ repo-side 与 live-side 的失败签名一致：
 如果要回滚本轮 `P0-1` 相关 live 脚本投影：
 
 - live 备份目录：
-  - `D:\CODE\hermes-agent\private-local\live-projection-backups\agentbridge-live-p0-1-20260628-233808-669`
+  - `D:\CODE\local-ai-dev-orchestrator\private-local\live-projection-backups\agentbridge-live-p0-1-20260628-233808-669`
 
 如果只回滚 repo-side：
 

@@ -9,7 +9,7 @@ goal: >
   Exercise the Wave 1 local script plus contract-check task shape by invoking
   the AgentBridge contract gate and summarizing the result.
 constraints:
-  - Stay inside D:\CODE\hermes-agent.
+  - Stay inside D:\CODE\local-ai-dev-orchestrator.
   - Use the existing AgentBridge contract script rather than inventing a second gate.
   - Keep the final status limited to repo-side fake-first acceptance assets.
 runner: codex

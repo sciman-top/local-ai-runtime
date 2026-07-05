@@ -9,7 +9,7 @@ goal: >
   Exercise the Wave 1 code-side task shape by making one minimal cleanup around
   the host-orchestrator CLI without expanding current scope.
 constraints:
-  - Stay inside D:\CODE\hermes-agent.
+  - Stay inside D:\CODE\local-ai-dev-orchestrator.
   - Do not touch the live AgentBridge tree.
   - Keep network off and stay within the single-repo Wave 1 boundary.
 runner: codex

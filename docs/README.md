@@ -6,17 +6,17 @@
 
 以下文件构成当前 authoritative docs，后续 AI 编码应先读这些文件，再动 `runtime/host-orchestrator`：
 
-1. [planning-status.json](D:/CODE/hermes-agent/docs/architecture/planning-status.json)
-2. [orchestrator-prd.md](D:/CODE/hermes-agent/docs/product/orchestrator-prd.md)
-3. [orchestrator-target-architecture.md](D:/CODE/hermes-agent/docs/architecture/orchestrator-target-architecture.md)
-4. [task-contract.md](D:/CODE/hermes-agent/docs/specs/task-contract.md)
-5. [result-contract.md](D:/CODE/hermes-agent/docs/specs/result-contract.md)
-6. [review-contract.md](D:/CODE/hermes-agent/docs/specs/review-contract.md)
-7. [state-and-db.md](D:/CODE/hermes-agent/docs/specs/state-and-db.md)
-8. [orchestrator-roadmap.md](D:/CODE/hermes-agent/docs/roadmap/orchestrator-roadmap.md)
-9. [orchestrator-implementation-plan.md](D:/CODE/hermes-agent/docs/plans/orchestrator-implementation-plan.md)
-10. [orchestrator-task-list.md](D:/CODE/hermes-agent/docs/backlog/orchestrator-task-list.md)
-11. [hermes-compatibility-demotion.md](D:/CODE/hermes-agent/docs/migrations/hermes-compatibility-demotion.md)
+1. [planning-status.json](D:/CODE/local-ai-dev-orchestrator/docs/architecture/planning-status.json)
+2. [orchestrator-prd.md](D:/CODE/local-ai-dev-orchestrator/docs/product/orchestrator-prd.md)
+3. [orchestrator-target-architecture.md](D:/CODE/local-ai-dev-orchestrator/docs/architecture/orchestrator-target-architecture.md)
+4. [task-contract.md](D:/CODE/local-ai-dev-orchestrator/docs/specs/task-contract.md)
+5. [result-contract.md](D:/CODE/local-ai-dev-orchestrator/docs/specs/result-contract.md)
+6. [review-contract.md](D:/CODE/local-ai-dev-orchestrator/docs/specs/review-contract.md)
+7. [state-and-db.md](D:/CODE/local-ai-dev-orchestrator/docs/specs/state-and-db.md)
+8. [orchestrator-roadmap.md](D:/CODE/local-ai-dev-orchestrator/docs/roadmap/orchestrator-roadmap.md)
+9. [orchestrator-implementation-plan.md](D:/CODE/local-ai-dev-orchestrator/docs/plans/orchestrator-implementation-plan.md)
+10. [orchestrator-task-list.md](D:/CODE/local-ai-dev-orchestrator/docs/backlog/orchestrator-task-list.md)
+11. [hermes-compatibility-demotion.md](D:/CODE/local-ai-dev-orchestrator/docs/migrations/hermes-compatibility-demotion.md)
 
 ## 主线口径
 
@@ -30,9 +30,9 @@
 
 Hermes/AgentBridge 历史基线与兼容资料入口：
 
-- [docs/platforms/hermes/README.md](D:/CODE/hermes-agent/docs/platforms/hermes/README.md)
+- [docs/platforms/hermes/README.md](D:/CODE/local-ai-dev-orchestrator/docs/platforms/hermes/README.md)
 
 参考源码策略仍保留：
 
-- [参考项目清单.md](D:/CODE/hermes-agent/docs/参考项目清单.md)
-- [社区参考源码策略.md](D:/CODE/hermes-agent/docs/社区参考源码策略.md)
+- [参考项目清单.md](D:/CODE/local-ai-dev-orchestrator/docs/参考项目清单.md)
+- [社区参考源码策略.md](D:/CODE/local-ai-dev-orchestrator/docs/社区参考源码策略.md)

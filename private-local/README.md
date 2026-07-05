@@ -14,5 +14,5 @@
 
 所以当前策略是：
 
-- 可以保存在 `D:\CODE\hermes-agent\private-local\...`
+- 可以保存在 `D:\CODE\local-ai-dev-orchestrator\private-local\...`
 - 但默认由 `.gitignore` 排除
