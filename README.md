@@ -14,6 +14,22 @@
 - `.ai/runs/<run_id>/<task_id>/` 是正式 evidence 面
 - `Hermes/AgentBridge` 只保留为兼容线与历史基线
 
+## Governance Overlay
+
+当前主线额外叠加一层 **Governance Overlay**，但它不是新的产品 phase，也不把本仓改写成 `governed-ai-coding-runtime` 的翻版。
+
+- `selector + change-evidence + preflight + reference governance` 是 Phase 1 推进前和推进过程中的 cross-cutting 治理增强面
+- 当前预期 next action 是 `phase1_prereq_probe_first`
+- `governed-ai-coding-runtime` 现在是正式的 `governance-sidecar` reference companion，用来借鉴 gate / evidence / selector 治理机制，而不是当前主线实现真源
+
+当前治理入口：
+
+- [docs/change-evidence/README.md](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/README.md)
+- [docs/architecture/next-work-selection-policy.json](D:/CODE/local-ai-dev-orchestrator/docs/architecture/next-work-selection-policy.json)
+- `python .\scripts\select-next-work.py`
+- `pwsh .\scripts\governance\preflight.ps1 -DisableAutoCommit`
+- [references/README.md](D:/CODE/local-ai-dev-orchestrator/references/README.md)
+
 ## 阅读顺序
 
 1. [docs/README.md](D:/CODE/local-ai-dev-orchestrator/docs/README.md)
@@ -23,6 +39,7 @@
 5. [docs/roadmap/orchestrator-roadmap.md](D:/CODE/local-ai-dev-orchestrator/docs/roadmap/orchestrator-roadmap.md)
 6. [docs/plans/orchestrator-implementation-plan.md](D:/CODE/local-ai-dev-orchestrator/docs/plans/orchestrator-implementation-plan.md)
 7. [docs/backlog/orchestrator-task-list.md](D:/CODE/local-ai-dev-orchestrator/docs/backlog/orchestrator-task-list.md)
+8. [docs/change-evidence/README.md](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/README.md)
 
 ## 兼容线
 

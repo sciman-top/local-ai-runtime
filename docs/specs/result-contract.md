@@ -77,3 +77,8 @@
 `Phase 1` 期间正式结果以 `result.json` 为主，同时允许写一份兼容 `AgentBridge results/*.md` 投影。
 
 这份 markdown 投影只用于保持现有回归与兼容线不断绿，不改变 `result.json` 的主协议地位。
+
+## Repo-level governance evidence
+
+- `docs/change-evidence/README.md` 只负责 repo-level governance evidence index。
+- 它不替代 `.ai/runs/<run_id>/<task_id>/evidence_index.json` 这一类 task-level 正式 evidence。

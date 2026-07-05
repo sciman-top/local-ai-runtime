@@ -6,6 +6,24 @@
 
 当前下一执行队列是 `Phase 1 垂直切片`，前置是 `Phase 0' 真源收敛` 已落盘并通过 verifier。
 
+当前 selector 预期结果是 `phase1_prereq_probe_first`。
+
+## Governance Overlay
+
+这层横切 `Phase 1` 推进前和推进过程中，但不替代既有产品 phase。
+
+- 目标：把 `planning truth / selector split / repo-level change-evidence / release-style preflight / formal reference governance companion` 落成统一治理增强面
+- 当前 companion：`governed-ai-coding-runtime`，定位为 `governance-sidecar`
+- 当前规则：Governance Overlay 为绿之后，才允许把真实 Phase 1 prerequisite probes 推进到 ready
+
+治理任务包：
+
+- `GOV-T01`：formalize governed reference companion
+- `GOV-T02`：split selector from verifier
+- `GOV-T03`：add repo-level change-evidence index
+- `GOV-T04`：add release-style preflight entrypoint
+- `GOV-T05`：wire docs, AGENTS, and proof routing
+
 ## 阶段总表
 
 ### Phase 0'
@@ -18,6 +36,7 @@
 
 - 目标：canonical task -> 真实 SDK -> `result.json` -> markdown projection
 - 入口条件：
+  - Governance Overlay 已落盘并可通过 repo-side gate
   - GPT-5.4 网关或等效凭据可用
   - `codex exec` 最小命令可跑
 - 出口门禁：
@@ -61,4 +80,4 @@
 
 ## Promotion Rule
 
-只有当当前 phase 的出口门禁为绿时，才允许推进 `planning-status.json` 的 `current_active_queue`。
+只有当 Governance Overlay 与当前 phase 的出口门禁都为绿时，才允许推进 `planning-status.json` 的 `current_active_queue`。

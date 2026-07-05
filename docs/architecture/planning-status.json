@@ -12,13 +12,20 @@
   },
   "current_decision_gate": {
     "selector": "phase1_prereq_probe_first",
-    "selector_source": "scripts/verify-planning-status.py",
+    "selector_source": "scripts/select-next-work.py",
     "as_of": "2026-07-06",
-    "proof_ref": "docs/plans/orchestrator-implementation-plan.md",
+    "proof_ref": "docs/change-evidence/20260706-governed-governance-absorption.md",
     "blocking_reasons": [
       "gpt54_gateway_probe_pending",
       "codex_exec_minimum_probe_pending"
     ]
+  },
+  "current_live_posture": {
+    "status": "prereq_probe_pending",
+    "gpt54_gateway_probe_status": "pending",
+    "codex_exec_probe_status": "pending",
+    "as_of": "2026-07-06",
+    "summary": "Governance Overlay is now the cross-cutting repo-side gate layer, but the Phase 1 live prerequisite probes are still pending. The expected next action remains `phase1_prereq_probe_first` until fresh GPT-5.4 gateway and codex exec readiness evidence are recorded."
   },
   "certified_baseline": {
     "queue_id": "HERMES-AGENTBRIDGE-BASELINE",
@@ -49,7 +56,10 @@
     ".ai/runs/<run_id>/<task_id>/",
     "Hermes/AgentBridge 兼容线",
     "Phase 1 垂直切片",
-    "双写过渡方案 A"
+    "双写过渡方案 A",
+    "Governance Overlay",
+    "phase1_prereq_probe_first",
+    "selector + change-evidence + preflight + reference governance"
   ],
   "unexpected_tokens": [
     "当前主线仍是 `single worker / single repo / no push / PR`",

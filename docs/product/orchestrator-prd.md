@@ -20,6 +20,7 @@
 - canonical `JSON/YAML` task contract
 - `.ai/state/control-plane.db` 调度真源
 - `.ai/runs/<run_id>/<task_id>/` 正式 evidence 面
+- Governance Overlay：`planning truth / selector split / repo-level change-evidence / release-style preflight / formal reference governance companion`
 - `runtime/host-orchestrator` 就地演进
 
 ### 执行面
@@ -47,6 +48,7 @@
 - 不做无闸门 auto-merge
 - 不做多租户 SaaS
 - 不做云端共享控制面
+- 不把当前仓重塑成通用 governance hub
 - 不把 Hermes/AgentBridge 继续当当前主线协议
 - 不在 Phase 1 就宣称 live multi-worker accepted
 
@@ -56,7 +58,8 @@
 
 - Phase 1 垂直切片跑通：canonical task -> 真实 SDK -> result.json -> markdown projection
 - 双写过渡方案 A 保持 `repo-side green`
-- `planning-status.json` + verifier 成为默认 gate
+- `planning-status.json` + verifier + selector + preflight 成为默认治理 gate
+- `selector + change-evidence + preflight + reference governance` 成为 Phase 1 前置的 Governance Overlay
 
 ### 中期
 
@@ -81,3 +84,4 @@
 - 所有 live claim 必须服从四档验收：`repo-side green`、`multi-worker simulation green`、`platform compatibility green`、`live accepted`
 - planner/review 失败、缺 gateway、缺 credentials 只能降级，不能伪装成 live success
 - `Hermes/AgentBridge 兼容线` 只保留兼容与历史承载，不恢复为当前主线 authoritative truth
+- `governed-ai-coding-runtime` 只作为 `governance-sidecar` companion 提供 gate / evidence / selector 机制参考，不替代当前主线实现真源

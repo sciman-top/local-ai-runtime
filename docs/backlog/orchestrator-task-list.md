@@ -2,16 +2,64 @@
 
 ## Phase 0'
 
-- [ ] `P0'-T01` 落主真源与 verifier
+- [x] `P0'-T01` 落主真源与 verifier
   - Done when:
     - `docs/architecture/planning-status.json` 存在
     - `python scripts/verify-planning-status.py` 通过
-- [ ] `P0'-T02` 改写 impl_pack 四入口
+  - Status note:
+    - 2026-07-06 已落盘并可通过 verifier
+- [x] `P0'-T02` 改写 impl_pack 四入口
   - Done when:
     - 不再出现 greenfield 口径
-- [ ] `P0'-T03` 下沉 Hermes 主线文档
+  - Status note:
+    - 2026-07-06 已统一为基于 `runtime/host-orchestrator` 的落点说明
+- [x] `P0'-T03` 下沉 Hermes 主线文档
   - Done when:
     - 顶层旧入口全部变成明确指针页或降级页
+  - Status note:
+    - 2026-07-06 顶层旧 Hermes 入口已降级为指针页，兼容正文下沉到 `docs/platforms/hermes/`
+
+## Governance Overlay
+
+- [x] `GOV-T01` formalize governed reference companion
+  - Done when:
+    - `governed-ai-coding-runtime` 以 `governance-sidecar` 进入 manifest / references / observation surfaces
+  - Status note:
+    - 2026-07-06 已正式纳入 companion 参考面，不进入 `default_refresh_set`
+- [x] `GOV-T02` split selector from verifier
+  - Done when:
+    - `scripts/select-next-work.py` 独立返回下一步动作
+    - `scripts/verify-planning-status.py` 只做一致性校验
+  - Status note:
+    - 2026-07-06 当前 selector 预期结果为 `phase1_prereq_probe_first`
+- [x] `GOV-T03` add repo-level change-evidence index
+  - Done when:
+    - `docs/change-evidence/README.md` 与 dated evidence note 已落盘
+  - Status note:
+    - 2026-07-06 已补第一份 governed absorption evidence
+- [x] `GOV-T04` add release-style preflight entrypoint
+  - Done when:
+    - `scripts/governance/preflight.ps1` 可执行
+    - build / hotspot 缺口用 `gate_na` 明示
+  - Status note:
+    - 2026-07-06 已固化 repo-owned release-style preflight
+- [x] `GOV-T04A` preflight line-ending hygiene closeout
+  - Done when:
+    - `.gitattributes` 显式覆盖 `*.py text eol=lf`
+    - 当前治理脚本切片的 Python 文件不再触发 CRLF warning
+    - `git diff --check` 回到零噪声
+  - Status note:
+    - 2026-07-06 已按“规则 + 定向修复”收敛 Python 行尾策略与当前 warning
+- [x] `GOV-T05` wire docs, AGENTS, and proof routing
+  - Done when:
+    - README / docs / AGENTS 对 Governance Overlay 口径一致
+  - Status note:
+    - 2026-07-06 已完成 proof routing 与入口同步
+
+治理任务完成后：
+
+- 当前产品 active queue 仍然是 `PHASE-1-VERTICAL-SLICE`
+- 当前预期 next action 仍然是 `phase1_prereq_probe_first`
 
 ## Phase 1
 

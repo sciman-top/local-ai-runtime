@@ -1,0 +1,61 @@
+{
+  "schema_version": "1.0",
+  "policy_id": "phase1-governance-overlay-selector",
+  "reviewed_on": "2026-07-06",
+  "review_expires_at": "2026-08-06",
+  "allowed_next_actions": [
+    "repair_gate_first",
+    "refresh_governance_evidence_first",
+    "phase1_prereq_probe_first",
+    "promote_phase1_execution"
+  ],
+  "selection_order": [
+    {
+      "priority": 1,
+      "condition": "governance entrypoints or governance evidence are missing or mismatched",
+      "next_action": "refresh_governance_evidence_first",
+      "why": "Governance Overlay is not fully landed, so refresh repo-level evidence and entrypoint wiring before promoting product work."
+    },
+    {
+      "priority": 2,
+      "condition": "planning verifier or release-style preflight is red",
+      "next_action": "repair_gate_first",
+      "why": "The repo-side gate floor is red; repair the failing gate before advancing the active queue."
+    },
+    {
+      "priority": 3,
+      "condition": "governance overlay is green but Phase 1 prerequisite probes are not ready",
+      "next_action": "phase1_prereq_probe_first",
+      "why": "The governance floor is in place, but GPT-5.4 gateway or codex exec readiness is still pending."
+    },
+    {
+      "priority": 4,
+      "condition": "governance overlay is green and Phase 1 prerequisite probes are ready",
+      "next_action": "promote_phase1_execution",
+      "why": "Governance is green and the prerequisite probes are ready, so the repo can advance into real SDK execution work."
+    }
+  ],
+  "required_entrypoints": [
+    "docs/change-evidence/README.md",
+    "docs/change-evidence/20260706-governed-governance-absorption.md",
+    "scripts/select-next-work.py",
+    "scripts/governance/preflight.ps1",
+    "references/README.md",
+    "references/observations/governed-ai-coding-runtime.md"
+  ],
+  "required_doc_refs": [
+    {
+      "path": "docs/roadmap/orchestrator-roadmap.md",
+      "contains": "Governance Overlay"
+    },
+    {
+      "path": "docs/plans/orchestrator-implementation-plan.md",
+      "contains": "GOV-T01"
+    },
+    {
+      "path": "docs/backlog/orchestrator-task-list.md",
+      "contains": "phase1_prereq_probe_first"
+    }
+  ],
+  "rollback_ref": "git revert governance overlay docs, selector, preflight, and governed reference companion bundle"
+}

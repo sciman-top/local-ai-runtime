@@ -26,6 +26,20 @@
 - `Hermes/AgentBridge 兼容线` 不再承载当前主线 authoritative truth。
 - 当前下一编码队列是 `Phase 1 垂直切片`，重点是 canonical task、真实 SDK 执行、双写过渡方案 A。
 
+## Governance Overlay
+
+治理增强层是当前主线的 cross-cutting overlay，不替代 `Phase 1 -> Phase 6` 产品路线图。
+
+- `selector + change-evidence + preflight + reference governance` 是 Phase 1 推进前和推进过程中的治理增强面。
+- 当前 selector 预期结果是 `phase1_prereq_probe_first`，直到 GPT-5.4 gateway 与 `codex exec` prerequisite probes 被刷新为 ready。
+- `governed-ai-coding-runtime` 已被纳入正式 `governance-sidecar` companion，但它只提供治理机制参考，不定义当前主线实现真相。
+
+当前治理入口：
+
+- [next-work-selection-policy.json](D:/CODE/local-ai-dev-orchestrator/docs/architecture/next-work-selection-policy.json)
+- [change-evidence/README.md](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/README.md)
+- [references/README.md](D:/CODE/local-ai-dev-orchestrator/references/README.md)
+
 ## 兼容与历史
 
 Hermes/AgentBridge 历史基线与兼容资料入口：

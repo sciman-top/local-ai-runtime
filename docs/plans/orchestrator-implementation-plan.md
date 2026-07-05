@@ -12,6 +12,115 @@
 - `Wave 1 smoke` 继续隔离在 `private-local/wave-smokes/`
 - gate 顺序固定为 `build -> [lint -> typecheck] -> test -> contract -> hotspot`
 
+## Governance Overlay
+
+这组任务是 cross-cutting overlay，不替代 `Phase 1 -> Phase 6` 产品路线图。
+
+当前 companion：
+
+- `governed-ai-coding-runtime`
+
+当前预期 selector 结果：
+
+- `phase1_prereq_probe_first`
+
+### GOV-T01 formalize governed reference companion
+
+- Files:
+  - `references/reference-shelf.manifest.json`
+  - `references/README.md`
+  - `references/observations/governed-ai-coding-runtime.md`
+  - `docs/社区参考源码策略.md`
+  - `docs/参考项目清单.md`
+- Outputs:
+  - `governed-ai-coding-runtime` 作为正式 `governance-sidecar` companion 纳入参考架
+  - `absolute_path` manifest 扩展
+- Verification:
+  - `pwsh .\scripts\refresh-reference-repos.ps1 -FetchOnly -SkipDirtyRepos -RepoNames governed-ai-coding-runtime`
+- Rollback:
+  - revert reference governance companion bundle
+
+### GOV-T02 split selector from verifier
+
+- Files:
+  - `docs/architecture/planning-status.json`
+  - `docs/architecture/next-work-selection-policy.json`
+  - `scripts/verify-planning-status.py`
+  - `scripts/select-next-work.py`
+- Outputs:
+  - verifier 只做一致性校验
+  - selector 独立选择下一步动作
+- Verification:
+  - `python .\scripts\verify-planning-status.py`
+  - `python .\scripts\select-next-work.py`
+- Rollback:
+  - revert planning truth + selector bundle
+
+### GOV-T03 add repo-level change-evidence index
+
+- Files:
+  - `docs/change-evidence/README.md`
+  - `docs/change-evidence/20260706-governed-governance-absorption.md`
+  - `docs/specs/result-contract.md`
+- Outputs:
+  - repo-level governance evidence index
+  - dated absorption evidence note
+- Verification:
+  - evidence files exist and are referenced by selector policy / planning truth
+- Rollback:
+  - revert change-evidence bundle
+
+### GOV-T04 add release-style preflight entrypoint
+
+- Files:
+  - `scripts/governance/preflight.ps1`
+  - `AGENTS.md`
+- Outputs:
+  - repo-owned release-style closeout entrypoint
+  - `gate_na` 记录 build / hotspot 当前客观缺口
+- Verification:
+  - `pwsh .\scripts\governance\preflight.ps1 -DisableAutoCommit`
+- Rollback:
+  - revert preflight bundle
+
+### GOV-T04A preflight line-ending hygiene closeout
+
+- Files:
+  - `.gitattributes`
+  - `scripts/verify-planning-status.py`
+  - `docs/change-evidence/README.md`
+  - `docs/change-evidence/20260706-preflight-line-ending-hygiene-closeout.md`
+- Outputs:
+  - 仓库级 `*.py` 行尾策略显式固定为 `LF`
+  - 当前治理脚本切片的 Python 文件不再触发 CRLF warning
+  - `git diff --check` 对本次切片回到零噪声
+- Verification:
+  - `git diff --check`
+  - `git ls-files --eol -- "*.py"`
+  - `python .\scripts\verify-planning-status.py`
+  - `python .\scripts\select-next-work.py`
+  - `pwsh .\scripts\governance\preflight.ps1 -DisableAutoCommit`
+- Rollback:
+  - revert Python line-ending hygiene bundle
+
+### GOV-T05 wire docs, AGENTS, and proof routing
+
+- Files:
+  - `README.md`
+  - `docs/README.md`
+  - `docs/product/orchestrator-prd.md`
+  - `docs/architecture/orchestrator-target-architecture.md`
+  - `docs/roadmap/orchestrator-roadmap.md`
+  - `docs/backlog/orchestrator-task-list.md`
+  - `AGENTS.md`
+- Outputs:
+  - Governance Overlay 口径统一
+  - 当前 active queue 仍保持 `PHASE-1-VERTICAL-SLICE`
+- Verification:
+  - `python .\scripts\verify-planning-status.py`
+- Rollback:
+  - revert docs/AGENTS routing bundle
+
 ## Phase 0' 真源收敛
 
 ### P0'-T01 主真源落盘
@@ -215,5 +324,5 @@
 
 每个 phase 的：
 
-- 第一个动作：更新 `planning-status.json`
-- 最后一个动作：重跑 `python scripts/verify-planning-status.py`
+- 第一个动作：只有在 queue 真相变化时才更新 `planning-status.json`
+- 最后一个动作：重跑 `python scripts/verify-planning-status.py` 与 `python scripts/select-next-work.py`

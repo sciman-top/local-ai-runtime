@@ -9,6 +9,23 @@
 - `private-local/` 只保留密钥、探针、非正式 smoke
 - `Hermes/AgentBridge 兼容线` 是 adapter，不是主协议
 
+## Governance Overlay
+
+这层是当前主线的 cross-cutting overlay，不是新的产品 phase：
+
+- `docs/architecture/planning-status.json`：唯一状态真源
+- `docs/architecture/next-work-selection-policy.json`：selector policy 真源
+- `scripts/select-next-work.py`：下一步动作选择入口
+- `scripts/governance/preflight.ps1`：release-style closeout 入口
+- `docs/change-evidence/README.md`：repo-level governance evidence index
+- `references/README.md`：formal reference governance companion 入口
+
+边界：
+
+- repo-level governance evidence 只落在 `docs/change-evidence/`
+- 它不替代 `.ai/runs/<run_id>/<task_id>/evidence_index.json`
+- `governed-ai-coding-runtime` 只作为 `governance-sidecar` companion 参与治理借鉴，不定义当前主线运行时协议
+
 ## 组件边界
 
 ### 1. Intake / Normalization
@@ -78,6 +95,12 @@
 
 - `.ai/runs/<run_id>/<task_id>/`
 - 保存每任务正式工件与索引
+
+### repo-level governance evidence
+
+- `docs/change-evidence/README.md`
+- 保存 selector / preflight / reference governance 这类 repo-side 治理证据
+- 不替代 task-level `evidence_index.json`
 
 ### 非正式隔离态
 
