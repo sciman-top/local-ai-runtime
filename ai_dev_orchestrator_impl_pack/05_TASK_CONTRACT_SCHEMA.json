@@ -1,0 +1,118 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Task Contract",
+  "type": "object",
+  "required": [
+    "id",
+    "title",
+    "adapter",
+    "branch",
+    "worktree",
+    "allowed_paths",
+    "commands",
+    "acceptance",
+    "merge_policy",
+    "risk_level"
+  ],
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "adapter": {
+      "type": "string",
+      "enum": [
+        "codex_gpt54_main",
+        "codex_gpt54_review",
+        "claude_code_glm52",
+        "gpt54_direct"
+      ]
+    },
+    "base_branch": {
+      "type": "string",
+      "default": "main"
+    },
+    "branch": {
+      "type": "string"
+    },
+    "worktree": {
+      "type": "string"
+    },
+    "allowed_paths": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "forbidden_paths": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "commands": {
+      "type": "object",
+      "properties": {
+        "setup": {
+          "type": "string"
+        },
+        "test": {
+          "type": "string"
+        },
+        "lint": {
+          "type": "string"
+        },
+        "typecheck": {
+          "type": "string"
+        },
+        "build": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "acceptance": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "depends_on": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "write_access": {
+      "type": "boolean",
+      "default": false
+    },
+    "merge_policy": {
+      "type": "string",
+      "enum": [
+        "draft_pr_only",
+        "manual_merge_only",
+        "never_merge"
+      ]
+    },
+    "risk_level": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high",
+        "critical"
+      ]
+    },
+    "review_required": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "additionalProperties": false
+}

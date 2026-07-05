@@ -1,0 +1,113 @@
+[
+  {
+    "id": "task-001-bootstrap",
+    "title": "Create minimal orchestrator skeleton and config loading",
+    "description": "Set up project structure, CLI entrypoint, config loader, and filesystem-based run artifact persistence.",
+    "adapter": "codex_gpt54_main",
+    "base_branch": "main",
+    "branch": "ai/task-001-bootstrap",
+    "worktree": "../wt-task-001-bootstrap",
+    "allowed_paths": [
+      "orchestrator/",
+      ".ai/config/",
+      "scripts/",
+      "tests/"
+    ],
+    "forbidden_paths": [
+      ".env",
+      ".env.*",
+      ".ssh/",
+      ".git/config",
+      "secrets/"
+    ],
+    "commands": {
+      "test": "pytest tests -q",
+      "lint": "python -m compileall orchestrator",
+      "typecheck": ""
+    },
+    "acceptance": [
+      "Project skeleton is created.",
+      "CLI can load config files.",
+      "Run artifacts are persisted to .ai/runs/<run_id>/."
+    ],
+    "depends_on": [],
+    "write_access": true,
+    "merge_policy": "draft_pr_only",
+    "risk_level": "low",
+    "review_required": true
+  },
+  {
+    "id": "task-002-worktree-manager",
+    "title": "Implement worktree lifecycle management",
+    "description": "Add create/list/remove/prune worktree support with branch handling and path validation.",
+    "adapter": "codex_gpt54_main",
+    "base_branch": "main",
+    "branch": "ai/task-002-worktree-manager",
+    "worktree": "../wt-task-002-worktree-manager",
+    "allowed_paths": [
+      "orchestrator/gitops/",
+      "tests/"
+    ],
+    "forbidden_paths": [
+      ".env",
+      ".env.*",
+      ".ssh/",
+      ".git/config",
+      "secrets/"
+    ],
+    "commands": {
+      "test": "pytest tests -q",
+      "lint": "python -m compileall orchestrator",
+      "typecheck": ""
+    },
+    "acceptance": [
+      "Worktree add/remove/prune functions exist.",
+      "Branch creation is validated.",
+      "Paths outside repository policy are blocked."
+    ],
+    "depends_on": [
+      "task-001-bootstrap"
+    ],
+    "write_access": true,
+    "merge_policy": "draft_pr_only",
+    "risk_level": "medium",
+    "review_required": true
+  },
+  {
+    "id": "task-003-codex-adapter",
+    "title": "Implement Codex adapter for codex exec workflow",
+    "description": "Call codex exec with prompt files, capture stdout/stderr, and store structured result metadata.",
+    "adapter": "codex_gpt54_main",
+    "base_branch": "main",
+    "branch": "ai/task-003-codex-adapter",
+    "worktree": "../wt-task-003-codex-adapter",
+    "allowed_paths": [
+      "orchestrator/adapters/",
+      "tests/"
+    ],
+    "forbidden_paths": [
+      ".env",
+      ".env.*",
+      ".ssh/",
+      ".git/config",
+      "secrets/"
+    ],
+    "commands": {
+      "test": "pytest tests -q",
+      "lint": "python -m compileall orchestrator",
+      "typecheck": ""
+    },
+    "acceptance": [
+      "Codex adapter can execute a task.",
+      "Prompt files and logs are persisted.",
+      "Non-zero exits are captured and reported."
+    ],
+    "depends_on": [
+      "task-001-bootstrap"
+    ],
+    "write_access": true,
+    "merge_policy": "draft_pr_only",
+    "risk_level": "medium",
+    "review_required": true
+  }
+]

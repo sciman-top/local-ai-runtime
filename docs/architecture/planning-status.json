@@ -1,0 +1,59 @@
+{
+  "schema_version": "1.0",
+  "status_id": "orchestrator-rebaseline-status",
+  "updated_on": "2026-07-06",
+  "current_active_queue": {
+    "queue_id": "PHASE-1-VERTICAL-SLICE",
+    "label": "Real SDK Vertical Slice And Canonical Runtime Evidence",
+    "status": "prepared_next",
+    "source_plan": "docs/plans/orchestrator-implementation-plan.md",
+    "source_backlog": "docs/backlog/orchestrator-task-list.md",
+    "why_now": "Phase 0' truth convergence and documentation rebaseline are now documented. The next executable queue is the Phase 1 vertical slice on top of runtime/host-orchestrator."
+  },
+  "current_decision_gate": {
+    "selector": "phase1_prereq_probe_first",
+    "selector_source": "scripts/verify-planning-status.py",
+    "as_of": "2026-07-06",
+    "proof_ref": "docs/plans/orchestrator-implementation-plan.md",
+    "blocking_reasons": [
+      "gpt54_gateway_probe_pending",
+      "codex_exec_minimum_probe_pending"
+    ]
+  },
+  "certified_baseline": {
+    "queue_id": "HERMES-AGENTBRIDGE-BASELINE",
+    "label": "Hermes AgentBridge Compatibility Baseline",
+    "status": "certified_historical_baseline",
+    "evidence_ref": "docs/platforms/hermes/README.md",
+    "claim_boundary": "Hermes/AgentBridge remains the certified historical and compatibility baseline. It no longer defines the current generic orchestrator mainline."
+  },
+  "authoritative_docs": [
+    "README.md",
+    "docs/README.md",
+    "docs/product/orchestrator-prd.md",
+    "docs/architecture/orchestrator-target-architecture.md",
+    "docs/specs/task-contract.md",
+    "docs/specs/result-contract.md",
+    "docs/specs/review-contract.md",
+    "docs/specs/state-and-db.md",
+    "docs/roadmap/orchestrator-roadmap.md",
+    "docs/plans/orchestrator-implementation-plan.md",
+    "docs/backlog/orchestrator-task-list.md",
+    "docs/migrations/hermes-compatibility-demotion.md"
+  ],
+  "required_consistency_tokens": [
+    "通用本地 AI Dev Orchestrator",
+    "planning-status.json",
+    "runtime/host-orchestrator",
+    ".ai/state/control-plane.db",
+    ".ai/runs/<run_id>/<task_id>/",
+    "Hermes/AgentBridge 兼容线",
+    "Phase 1 垂直切片",
+    "双写过渡方案 A"
+  ],
+  "unexpected_tokens": [
+    "当前主线仍是 `single worker / single repo / no push / PR`",
+    "`single worker / single repo / pure local tasks / SDK first / codex exec fallback / no auto_continue / no auto-merge`"
+  ],
+  "rollback_ref": "git revert the planning-status.json + authoritative docs + hermes compatibility demotion bundle as one change set"
+}
