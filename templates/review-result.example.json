@@ -1,0 +1,27 @@
+{
+  "task_id": "T03",
+  "reviewer_kind": "codex_review",
+  "review_mode": "blocking",
+  "model": "gpt-5.4",
+  "risk": "medium",
+  "findings": [
+    {
+      "severity": "medium",
+      "category": "tests",
+      "title": "Missing closeout bundle update after merge",
+      "detail": "The worker verified the code slice but did not prove the final closeout bundle was refreshed after merge and cleanup.",
+      "suggested_fix": "Require the master agent to update closeout_bundle.json after merge and before branch/worktree cleanup."
+    }
+  ],
+  "blocking_reasons": [
+    "review_required"
+  ],
+  "missing_tests": [
+    "post-merge closeout bundle freshness check"
+  ],
+  "recommended_action": "revise",
+  "source_evidence_refs": [
+    "docs/change-evidence/20260707-subagent-worktree-contract-assets.md",
+    ".ai/runs/<run_id>/T02/verification_summary.json"
+  ]
+}

@@ -1,0 +1,104 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ReviewResult",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "task_id",
+    "reviewer_kind",
+    "review_mode",
+    "model",
+    "risk",
+    "findings",
+    "blocking_reasons",
+    "missing_tests",
+    "recommended_action",
+    "source_evidence_refs"
+  ],
+  "properties": {
+    "task_id": {
+      "type": "string"
+    },
+    "reviewer_kind": {
+      "enum": [
+        "claude_glm",
+        "codex_review",
+        "gpt54_direct_review"
+      ]
+    },
+    "review_mode": {
+      "enum": [
+        "advisory",
+        "blocking"
+      ]
+    },
+    "model": {
+      "type": "string"
+    },
+    "risk": {
+      "enum": [
+        "low",
+        "medium",
+        "high",
+        "critical"
+      ]
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "severity",
+          "category",
+          "title",
+          "detail",
+          "suggested_fix"
+        ],
+        "properties": {
+          "severity": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "detail": {
+            "type": "string"
+          },
+          "suggested_fix": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "blocking_reasons": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "missing_tests": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "recommended_action": {
+      "enum": [
+        "approve",
+        "revise",
+        "reject"
+      ]
+    },
+    "source_evidence_refs": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

@@ -29,7 +29,13 @@
 - [20260706 AgentBridge Safe Intake Upgrade](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260706-agentbridge-safe-intake-upgrade.md)
 - [20260706 AgentBridge Round-Trip Parity](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260706-agentbridge-round-trip-parity.md)
 - [20260707 Planner Handoff Minimal Slice](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260707-planner-handoff-minimal-slice.md)
+- [20260707 Review Adapter Minimal Slice](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260707-review-adapter-minimal-slice.md)
+- [20260707 Predicate Coverage And Force-On Overrides](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260707-predicate-coverage-and-force-on-overrides.md)
 - [20260707 Subagent Worktree Operating Pack](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260707-subagent-worktree-operating-pack.md)
+- [20260707 Subagent Worktree Contract Assets](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260707-subagent-worktree-contract-assets.md)
+- [20260707 Subagent Worktree Best-Practice Review](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260707-subagent-worktree-best-practice-review.md)
+- [20260707 Official Research: Subagents, Worktrees, Structured Contracts, Review Gates, and Closeout](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260707-official-subagent-worktree-research.md)
+- [20260707 Community Subagent Worktree Patterns](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260707-community-subagent-worktree-patterns.md)
 
 当前最新结论：
 
@@ -44,7 +50,11 @@
 - 安全版 AgentBridge-first intake 已落 repo-side；`host_local` 可直接接收合规 markdown task，并对 execution-critical override / markdown 侧 gate 命令输入 fail closed
 - `P2-T03` 的 repo-side projection parity 已落地：markdown task 现已通过 `host_local` 主入口写出 `result.json`、projection markdown、artifact 与 evidence index 闭环
 - `P4-T01` 的 repo-side planner handoff 已落地：`planner_required` 命中时当前会在主 worker 前停在 `waiting_handoff`，并仍写正式四件套与 compatibility projection
-- 一套 repo-owned 的 `主控 + 子代理 + worktree` 操作资产已落盘，可直接复用 master / explorer / worker / reviewer prompt 与 manifest / closeout 模板
+- `P4-T02` 的 repo-side review gate 已落地：`review_required` 命中时当前会在 worker / verification 之后停在 `needs_review`，并仍写正式四件套与 compatibility projection
+- `P4-T03` 的 repo-side 谓词正反覆盖已落地：`user_forced_planner / user_forced_review` 现在是 force-on-only contract，而不是文档漂浮字段
+- 一套 repo-owned 的 `主控 + 子代理 + worktree` 操作资产已落盘，可直接复用 master / explorer / worker / reviewer prompt 与 manifest / dispatch_state / closeout bundle 模板
+- operator 侧协作资产现已具备 repo-owned 自检：pytest 会校验 manifest、dispatch_state、review_result、closeout bundle 示例与 schema 关键字段不漂移
+- 官方研究与社区研究都已落成 repo-owned 证据：结论一致指向“保留本仓 canonical contract，并优先补 path guard / durable ledger / closeout receipt，而不是继续加长 prompt”
 - GPT-5.4 gateway probe 与 `codex exec` minimum probe 已 ready，当前 selector 预期结果已提升到 `promote_phase1_execution`
 - 一次非 mock 的 `Codex SDK` canonical runtime vertical slice 已成功写出正式 `.ai/runs/...` 工件
 - `P1-T05` 的 `evidence_index.json` sha256 / byte_count 独立重算入口已落盘，并能回放 real SDK 产物
@@ -52,4 +62,4 @@
 - Python repo-level line-ending policy 已显式覆盖 `*.py -> LF`
 - 本仓已接入 `AGENTS.md` 共同项目规则主体 + `CLAUDE.md` thin wrapper 试点；全局规则真源仍在 `D:\CODE\governed-ai-coding-runtime`
 - 当前 active queue 仍是 `PHASE-1-VERTICAL-SLICE`
-- 当前预期 next action 仍是粗粒度的 `promote_phase1_execution`；repo-side planner handoff 已完成，后续进入 `P4-T02 review adapter`
+- 当前预期 next action 仍是粗粒度的 `promote_phase1_execution`；repo-side planner/review predicate coverage 已完成，下一最小切片转到 `P3-T02` path guard

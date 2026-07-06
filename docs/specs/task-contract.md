@@ -83,23 +83,29 @@
 
 ### planner_required
 
-满足任一条件即为 true：
+当前 repo-side 已 materialize 的触发条件：
 
-- `task_count > 1`
-- `target_repo_count > 1`
 - `depends_on` 非空
 - `risk_level in {high, critical}`
 - `user_forced_planner = true`
 
+保留为 future planner routing 的候选条件，但当前代码尚未 materialize：
+
+- `task_count > 1`
+- `target_repo_count > 1`
+
 ### review_required
 
-满足任一条件即为 true：
+当前 repo-side 已 materialize 的触发条件：
 
 - `risk_level in {medium, high, critical}`
 - `write_access = true`
-- `target_repo_count > 1`
 - `touches_policy_surface = true`
 - `user_forced_review = true`
+
+保留为 future review routing 的候选条件，但当前代码尚未 materialize：
+
+- `target_repo_count > 1`
 
 ### touches_policy_surface
 

@@ -20,28 +20,33 @@
    - 风险边界
    - 当前最小切片
 3. 生成或读取 machine-readable task manifest。
-4. 只按 `write_set` 判断能否并发；`write_set` 重叠禁止并发。
-5. 先派 explorer，只读分析：
+4. 为每个子代理创建或更新对应 `dispatch_state.json`。
+5. 不手写 `planner_required / review_required`；只根据 `depends_on / risk_level / write_access / policy surface / user_forced_planner / user_forced_review` 派生判断。
+6. 以 `allowed_paths / forbidden_paths` 作为正式写入边界；`write_set` 只是更窄的操作子集。
+7. 并发判断先看 `allowed_paths / write_set`，再看 `depends_on / risk_level / policy surface`；任一冲突命中即禁止并发。
+8. 先派 explorer，只读分析：
    - 最小切片
-   - 建议写入集合
-   - 建议测试集合
+   - 建议 `allowed_paths / write_set`
+   - 建议 `verification_commands`
+   - 建议 `artifacts_out`
    - 冲突点
-6. 再派 worker：
+9. 再派 worker：
    - 每个 worker 一个独立 worktree
-   - 每个 worker 只允许修改自己的 `write_set`
+   - 每个 worker 只允许修改自己的 `allowed_paths`，且应尽量限制在 `write_set`
    - 做最小修改
-7. worker 完成后，必须经过：
+10. worker 完成后，必须经过：
    - spec compliance review
    - quality/correctness/security/tests review
-8. 主控负责：
+11. 主控负责：
    - 串行 cherry-pick / merge
    - 全量 gates
+   - 更新 `closeout_bundle.json`
    - docs / roadmap / backlog / evidence sync
    - worktree / branch cleanup
 
 硬约束：
 - 不擅自扩 scope
-- 不让子代理修改 ownership 外文件
+- 不让子代理修改 `allowed_paths` 外文件
 - 不把目标态写成当前事实
 - 不跳过门禁
 - 不保留脏 worktree / 临时分支作为“完成”

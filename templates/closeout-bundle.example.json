@@ -1,0 +1,63 @@
+{
+  "run_id": "20260707-example",
+  "repo_root": "D:/CODE/your-repo",
+  "objective": "推进当前最小切片",
+  "status": "partial",
+  "completed": [
+    "T01 explorer 已给出最小切片和 allowed_paths 建议",
+    "T02 worker 已完成最小代码切片并通过 repo-side gates"
+  ],
+  "not_completed": [
+    "T03 review 还未完成最终 blocking verdict"
+  ],
+  "conflicts": [
+    "docs/change-evidence/README.md 仍需由主控串行并回，避免与其他切片冲突"
+  ],
+  "tests": [
+    {
+      "name": "uv run --project .\\runtime\\host-orchestrator python -m pytest",
+      "status": "pass",
+      "evidence_ref": "runtime/host-orchestrator/tests"
+    },
+    {
+      "name": "python .\\scripts\\verify-planning-status.py",
+      "status": "pass",
+      "evidence_ref": "docs/architecture/planning-status.json"
+    },
+    {
+      "name": "pwsh .\\scripts\\governance\\preflight.ps1 -DisableAutoCommit -Json",
+      "status": "pass",
+      "evidence_ref": "docs/change-evidence/README.md"
+    }
+  ],
+  "evidence_refs": [
+    "docs/change-evidence/20260707-subagent-worktree-contract-assets.md",
+    ".ai/runs/<run_id>/T02/result.json",
+    ".ai/runs/<run_id>/T02/verification_summary.json",
+    ".ai/runs/<run_id>/T02/cost_summary.json",
+    ".ai/runs/<run_id>/T02/evidence_index.json"
+  ],
+  "cleanup_status": "cleaned",
+  "cleanup_owner": "master-agent",
+  "branches_removed": [
+    "codex/t02-runtime-slice"
+  ],
+  "worktrees_removed": [
+    ".worktrees/t02-runtime-slice"
+  ],
+  "residual_risks": [
+    "review adapter 仍未进入 live wiring",
+    "dispatch_state 还只是 operator asset，不是 runtime 强制状态机"
+  ],
+  "repo_side_done": [
+    "manifest 已对齐 canonical task contract 的核心字段",
+    "dispatch_state 与 closeout_bundle 已有 repo-owned 模板和 schema",
+    "pytest 已覆盖这些模板的基本 contract 自检"
+  ],
+  "still_open": [
+    "platform/live acceptance",
+    "runtime-level worktree manager",
+    "runtime-level review adapter wiring"
+  ],
+  "next_action": "finish_review_then_merge_and_cleanup"
+}

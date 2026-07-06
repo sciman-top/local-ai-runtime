@@ -10,6 +10,7 @@
 - `AgentBridge results/*.md` 当前仍是 compatibility projection
 - repo-side 当前已验证 `AgentBridge/tasks/*.md -> host_local -> result.json -> AgentBridge/results/*.md` 的 projection parity 闭环
 - repo-side 当前已允许 `planner_required` 任务在未接 live planner 时写出 `waiting_handoff` 正式结果
+- repo-side 当前已允许 `review_required` 任务在 worker / verification 完成后写出 `needs_review` 正式结果
 - 当前代码层字段名仍是 `lane`
 - 当前字段名仍是 `compatibility_projection_ref`
 

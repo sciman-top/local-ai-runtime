@@ -9,6 +9,8 @@
 - git diff <BASE_SHA>..<HEAD_SHA>
 - 任务定义 <GOAL>
 - 完成判据 <DONE_WHEN>
+- `allowed_paths / forbidden_paths / write_access`
+- 输出尽量贴近 `templates/review-result.example.json`
 
 规则：
 - 不相信实现摘要，直接看代码和测试。
@@ -21,10 +23,24 @@
 - 是否越过 forbidden scope
 
 输出格式：
+- Reviewer kind
+- Review mode
+- Risk
 - Findings
+- Blocking reasons
+- Missing tests
+- Recommended action
+- Source evidence refs
 - Ready to merge: Yes | No
 
 如果没有问题，明确写：
+- Reviewer kind: codex_review
+- Review mode: advisory | blocking
+- Risk: <risk_level>
 - No findings
+- Blocking reasons: []
+- Missing tests: []
+- Recommended action: approve
+- Source evidence refs: [<path>]
 - Ready to merge: Yes
 ```

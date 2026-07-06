@@ -51,10 +51,10 @@ def _canonical_task_payload(task_id: str) -> dict[str, object]:
         "base_branch": "main",
         "branch_name": "codex/host-local-test",
         "worktree_path": ".",
-        "allowed_paths": ["runtime/host-orchestrator/**", "docs/**"],
+        "allowed_paths": ["runtime/host-orchestrator/**"],
         "forbidden_paths": [".env", ".env.*", ".git/config"],
-        "write_access": True,
-        "risk_level": "medium",
+        "write_access": False,
+        "risk_level": "low",
         "merge_policy": "manual_merge_only",
         "execution_lane": "host_local",
         "requires_network": False,
@@ -245,6 +245,7 @@ def test_host_local_runner_writes_result_and_runtime_state(tmp_path: Path) -> No
     assert result_payload["lane"] == "host_local"
     assert result_payload["sandbox_profile"] == "workspace_write"
     assert result_payload["network_profile"] == "off"
+    assert result_payload["status"] == "succeeded"
     assert result_payload["compatibility_projection_ref"] == f"AgentBridge/results/{task_id}.md"
 
     verification_path = result_path.parent / "verification_summary.json"
@@ -439,10 +440,12 @@ def test_wave1_smoke_suite_writes_summary_and_generated_agentbridge_root(tmp_pat
 
     assert summary.ok is True
     assert summary.sample_count == 3
-    assert summary.completed_task_count == 3
+    assert summary.completed_task_count == 0
+    assert summary.terminal_task_count == 3
     assert summary.route_decision_count == 3
     assert summary.event_count == 6
     assert summary.worker_status == "idle"
+    assert summary.state_counts == {"needs_review": 3}
     assert summary.summary_path.exists()
     assert not (summary.run_root / "canonical-tasks").exists()
 
@@ -467,5 +470,7 @@ def test_wave1_smoke_suite_writes_summary_and_generated_agentbridge_root(tmp_pat
             (repo_root / outcome.evidence_index_path).read_text(encoding="utf-8")
         )
         indexed_paths = {entry["relative_path"] for entry in evidence_payload["entries"]}
+        assert result_payload["status"] == "needs_review"
+        assert result_payload["handoff_required"] is True
         assert result_payload["compatibility_projection_ref"] == expected_projection_ref
         assert expected_projection_ref in indexed_paths

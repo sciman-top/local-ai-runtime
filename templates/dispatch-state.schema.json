@@ -1,0 +1,117 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "DispatchState",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "run_id",
+    "task_id",
+    "agent_role",
+    "model_policy",
+    "repo_root",
+    "target_repo",
+    "branch_name",
+    "worktree_path",
+    "allowed_paths",
+    "forbidden_paths",
+    "source_manifest_ref",
+    "lease_owner",
+    "started_at",
+    "heartbeat_at",
+    "status",
+    "next_action"
+  ],
+  "properties": {
+    "run_id": {
+      "type": "string"
+    },
+    "task_id": {
+      "type": "string"
+    },
+    "agent_role": {
+      "enum": [
+        "master",
+        "explorer",
+        "worker",
+        "spec_reviewer",
+        "quality_reviewer",
+        "closeout"
+      ]
+    },
+    "model_policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "model",
+        "reasoning_effort"
+      ],
+      "properties": {
+        "model": {
+          "const": "gpt-5.4"
+        },
+        "reasoning_effort": {
+          "const": "xhigh"
+        }
+      }
+    },
+    "repo_root": {
+      "type": "string"
+    },
+    "target_repo": {
+      "type": "string"
+    },
+    "branch_name": {
+      "type": "string"
+    },
+    "worktree_path": {
+      "type": "string"
+    },
+    "allowed_paths": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "forbidden_paths": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "source_manifest_ref": {
+      "type": "string"
+    },
+    "lease_owner": {
+      "type": "string"
+    },
+    "started_at": {
+      "type": "string"
+    },
+    "heartbeat_at": {
+      "type": "string"
+    },
+    "status": {
+      "enum": [
+        "pending",
+        "running",
+        "completed",
+        "failed",
+        "blocked",
+        "stale",
+        "closed"
+      ]
+    },
+    "next_action": {
+      "type": "string"
+    },
+    "last_result_ref": {
+      "type": "string"
+    },
+    "notes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

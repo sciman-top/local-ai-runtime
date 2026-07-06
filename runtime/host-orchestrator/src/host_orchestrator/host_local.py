@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
+from fnmatch import fnmatchcase
 from pathlib import Path
 from typing import Any
 
@@ -15,6 +16,7 @@ from host_orchestrator.worker import WorkerLike, WorkerRequest, WorkerResult, Wo
 
 
 PLANNER_HANDOFF_NEXT_ACTION = "planner handoff required before worker execution"
+REVIEW_HANDOFF_NEXT_ACTION = "heterogeneous review required before downstream use"
 
 
 @dataclass(frozen=True)
@@ -177,6 +179,9 @@ class HostLocalRunner:
                 task=task,
                 workspace_root=self._config.workspace_root,
             )
+            review_required = (
+                verification_payload.get("status") != "failed" and self._review_required(task)
+            )
 
             result_bundle = write_result_bundle(
                 layout=self._config.layout,
@@ -194,8 +199,26 @@ class HostLocalRunner:
                         worker_profile=worker_profile,
                         worker_result=worker_result,
                         artifacts=artifacts,
+                        status="needs_review" if review_required else "succeeded",
+                        human_review_required=review_required,
+                        handoff_required=review_required,
+                        next_action=REVIEW_HANDOFF_NEXT_ACTION if review_required else "none",
+                        extra_observations=(
+                            [
+                                "- Review gate was derived from repo-side risk/write/policy predicates.",
+                                "- Repo-side runtime produced formal result artifacts but stopped before downstream flow.",
+                            ]
+                            if review_required
+                            else None
+                        ),
                     )
                 ),
+                result_status="needs_review" if review_required else None,
+                termination_reason=(
+                    "review_required_before_downstream" if review_required else None
+                ),
+                handoff_required=review_required,
+                next_action=REVIEW_HANDOFF_NEXT_ACTION if review_required else "none",
             )
 
             relative_result_path = str(
@@ -205,10 +228,12 @@ class HostLocalRunner:
             evidence_index_path = str(
                 result_bundle.artifacts.evidence_index.relative_to(self._config.layout.repo_root)
             ).replace("\\", "/")
+            runtime_state = "needs_review" if review_required else "completed"
+            completion_event_type = "task_needs_review" if review_required else "task_completed"
             db.upsert_runtime_task(
                 self._config.layout.control_plane_db,
                 task_id=task.task_id,
-                state="completed",
+                state=runtime_state,
                 execution_lane=worker_profile.lane,
                 worker_profile=worker_profile.name,
                 created_at=started_at,
@@ -218,12 +243,14 @@ class HostLocalRunner:
             db.append_event(
                 self._config.layout.control_plane_db,
                 task_id=task.task_id,
-                event_type="task_completed",
+                event_type=completion_event_type,
                 payload={
                     "result_path": relative_result_path,
                     "compatibility_projection_ref": projection_path,
                     "evidence_index_ref": evidence_index_path,
                     "usage": self._usage_payload(worker_result.usage),
+                    "handoff_required": review_required,
+                    "next_action": REVIEW_HANDOFF_NEXT_ACTION if review_required else "none",
                 },
                 created_at=finished_at,
             )
@@ -289,6 +316,7 @@ class HostLocalRunner:
         worker_result: object,
         artifacts: object,
         status: str = "succeeded",
+        human_review_required: bool = False,
         handoff_required: bool = False,
         next_action: str = "none",
         emit_worker_artifact: bool = True,
@@ -339,7 +367,7 @@ class HostLocalRunner:
             artifact=artifact,
             failures=[],
             observations=observations,
-            human_review_required=False,
+            human_review_required=human_review_required,
             handoff_required=handoff_required,
             next_action=next_action,
         )
@@ -361,6 +389,51 @@ class HostLocalRunner:
             "estimated_cost": None,
             "usage": None,
         }
+
+    def _review_required(self, task: CanonicalTask) -> bool:
+        return task.review_required or self._touches_policy_surface(task)
+
+    def _touches_policy_surface(self, task: CanonicalTask) -> bool:
+        return any(
+            self._globs_overlap(allowed_path, policy_surface)
+            for allowed_path in task.allowed_paths
+            for policy_surface in self._runtime_config.policies.policy_surface_globs
+        )
+
+    @staticmethod
+    def _globs_overlap(left: str, right: str) -> bool:
+        normalized_left = left.replace("\\", "/").strip()
+        normalized_right = right.replace("\\", "/").strip()
+        if normalized_left == normalized_right:
+            return True
+
+        left_prefix = HostLocalRunner._glob_prefix(normalized_left)
+        right_prefix = HostLocalRunner._glob_prefix(normalized_right)
+        if left_prefix and right_prefix:
+            if left_prefix == right_prefix:
+                return True
+            if left_prefix.startswith(right_prefix.rstrip("/") + "/"):
+                return True
+            if right_prefix.startswith(left_prefix.rstrip("/") + "/"):
+                return True
+
+        # Fall back to one-way glob checks when a literal or narrower pattern exists.
+        if "*" not in normalized_left and fnmatchcase(normalized_left, normalized_right):
+            return True
+        if "*" not in normalized_right and fnmatchcase(normalized_right, normalized_left):
+            return True
+        return False
+
+    @staticmethod
+    def _glob_prefix(pattern: str) -> str:
+        normalized = pattern.replace("\\", "/").strip()
+        wildcard_index = min(
+            [index for index in (normalized.find("*"), normalized.find("?")) if index != -1],
+            default=-1,
+        )
+        if wildcard_index != -1:
+            normalized = normalized[:wildcard_index]
+        return normalized.rstrip("/")
 
     @staticmethod
     def _build_usage_observations(usage: WorkerUsage | None) -> list[str]:

@@ -92,8 +92,20 @@
     - `result.json`、`verification_summary.json`、`cost_summary.json`、`evidence_index.json` 在 handoff 路径上保持齐全
   - Status note:
     - 2026-07-07 已完成 repo-side 最小 planner handoff；当前仍不是 live `Direct GPT-5.4 API` planner
-- [ ] `P4-T02` review adapter
-- [ ] `P4-T03` 正反触发谓词测试
+- [x] `P4-T02` review adapter
+  - Done when:
+    - `review_required` 在当前 materialized 条件下完成 repo-side 派生
+    - review-gated task 在 worker / verification 之后停在 `needs_review`
+    - `result.json`、`verification_summary.json`、`cost_summary.json`、`evidence_index.json` 在 review 路径上保持齐全
+  - Status note:
+    - 2026-07-07 已完成 repo-side 最小 review gate；当前仍不是 live `Claude Code + GLM-5.2` review adapter
+- [x] `P4-T03` 正反触发谓词测试
+  - Done when:
+    - `planner_required` 与 `review_required` 的正反分支都有 repo-side 测试覆盖
+    - `user_forced_planner / user_forced_review` force-on overrides 被 canonical task 与 manifest contract 实际承接
+    - `false` force-off override 被明确拒绝，避免伪造“强制关闭 gate”
+  - Status note:
+    - 2026-07-07 已完成 repo-side 谓词正反覆盖；下一最小切片切回 `P3-T02` path guard
 
 ## Phase 5
 

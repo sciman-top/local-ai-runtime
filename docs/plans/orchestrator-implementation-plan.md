@@ -147,7 +147,8 @@
 ## Next Bounded Execution Queue
 
 - `P4-T01` planner adapter：completed（repo-side minimal handoff）
-- `P4-T02` review adapter
-- `P4-T03` 正反触发谓词测试
+- `P4-T02` review adapter：completed（repo-side minimal `needs_review` gate）
+- `P4-T03` 正反触发谓词测试：completed（repo-side positive/negative predicate coverage + force-on overrides）
+- next: `P3-T02` path guard（官方与社区研究都表明 worktree 不是完整状态隔离，当前最值钱的下一刀是把 cwd / branch / allowed-path guard 从 prompt 约定推进到 runtime guard）
 
 其中 `planner/review` 继续保留在 repo `Phase 4`，不并回容器或资源 phase。

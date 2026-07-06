@@ -43,6 +43,7 @@ REQUIRED_VERIFICATION_COMMAND_KEYS = {
     "hotspot",
 }
 PLANNER_REQUIRED_RISK_LEVELS = {"high", "critical"}
+REVIEW_REQUIRED_RISK_LEVELS = {"medium", "high", "critical"}
 
 
 class CanonicalTaskError(ValueError):
@@ -81,10 +82,24 @@ class CanonicalTask:
     artifacts_out: tuple[str, ...]
     handoff_policy: str
     verification_commands: VerificationCommands
+    user_forced_planner: bool = False
+    user_forced_review: bool = False
 
     @property
     def planner_required(self) -> bool:
-        return self.risk_level in PLANNER_REQUIRED_RISK_LEVELS or bool(self.depends_on)
+        return (
+            self.risk_level in PLANNER_REQUIRED_RISK_LEVELS
+            or bool(self.depends_on)
+            or self.user_forced_planner
+        )
+
+    @property
+    def review_required(self) -> bool:
+        return (
+            self.risk_level in REVIEW_REQUIRED_RISK_LEVELS
+            or self.write_access
+            or self.user_forced_review
+        )
 
     def render_worker_prompt(self) -> str:
         lines = [
@@ -145,6 +160,8 @@ def task_from_payload(path: Path, payload: dict[str, Any]) -> CanonicalTask:
         execution_lane=_require_string(payload, "execution_lane"),
         requires_network=_require_bool(payload, "requires_network"),
         requires_gui=_require_bool(payload, "requires_gui"),
+        user_forced_planner=_optional_force_on(payload, "user_forced_planner"),
+        user_forced_review=_optional_force_on(payload, "user_forced_review"),
         depends_on=tuple(_require_string_list(payload, "depends_on")),
         artifacts_out=tuple(_require_string_list(payload, "artifacts_out")),
         handoff_policy=_require_string(payload, "handoff_policy"),
@@ -226,3 +243,15 @@ def _optional_command(payload: dict[str, Any], key: str) -> str | None:
         raise CanonicalTaskError(f"verification_commands.{key} must be a string or null")
     stripped = value.strip()
     return stripped or None
+
+
+def _optional_force_on(payload: dict[str, Any], key: str) -> bool:
+    if key not in payload:
+        return False
+
+    value = payload.get(key)
+    if not isinstance(value, bool):
+        raise CanonicalTaskError(f"{key} must be a boolean when present")
+    if value is not True:
+        raise CanonicalTaskError(f"{key} only allows true when present; omit the field instead")
+    return True

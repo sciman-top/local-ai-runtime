@@ -4,6 +4,8 @@ import json
 from pathlib import Path
 import sqlite3
 
+import pytest
+
 from host_orchestrator.host_local import HostLocalConfig, HostLocalRunner
 from host_orchestrator.paths import RuntimeLayout
 from host_orchestrator.worker import WorkerRequest, WorkerResult
@@ -12,6 +14,7 @@ from support import canonical_task_payload, copy_runtime_config
 
 
 PLANNER_NEXT_ACTION = "planner handoff required before worker execution"
+REVIEW_NEXT_ACTION = "heterogeneous review required before downstream use"
 
 
 def _write_markdown_task(path: Path, front_matter: str, body: str) -> Path:
@@ -33,6 +36,12 @@ def test_planner_required_is_derived_from_high_risk_or_dependencies(tmp_path: Pa
     dependency_payload["depends_on"] = ["TASK-20260707-upstream"]
     write_task(dependency_path, dependency_payload)
 
+    forced_path = tmp_path / "forced-planner.json"
+    forced_payload = canonical_task_payload("TASK-20260707-forced-planner")
+    forced_payload["risk_level"] = "low"
+    forced_payload["user_forced_planner"] = True
+    write_task(forced_path, forced_payload)
+
     low_risk_path = tmp_path / "low-risk.json"
     low_risk_payload = canonical_task_payload("TASK-20260707-low-risk")
     low_risk_payload["risk_level"] = "low"
@@ -40,6 +49,7 @@ def test_planner_required_is_derived_from_high_risk_or_dependencies(tmp_path: Pa
 
     assert load_task(high_risk_path).planner_required is True
     assert load_task(dependency_path).planner_required is True
+    assert load_task(forced_path).planner_required is True
     assert load_task(low_risk_path).planner_required is False
 
 
@@ -192,6 +202,8 @@ def test_low_risk_non_planner_task_keeps_success_path(tmp_path: Path) -> None:
     task_path = repo_root / "tasks" / f"{task_id}.json"
     payload = canonical_task_payload(task_id)
     payload["risk_level"] = "low"
+    payload["write_access"] = False
+    payload["allowed_paths"] = ["runtime/host-orchestrator/**"]
     write_task(task_path, payload)
 
     class FakeWorker:
@@ -224,3 +236,173 @@ def test_low_risk_non_planner_task_keeps_success_path(tmp_path: Path) -> None:
     assert result_payload["status"] == "succeeded"
     assert result_payload["handoff_required"] is False
     assert result_payload["next_action"] == "none"
+
+
+def test_review_required_is_derived_from_materialized_fields(tmp_path: Path) -> None:
+    from host_orchestrator.canonical_task import load_task, write_task
+
+    medium_risk_path = tmp_path / "medium-risk.json"
+    medium_risk_payload = canonical_task_payload("TASK-20260707-medium-review")
+    medium_risk_payload["risk_level"] = "medium"
+    medium_risk_payload["write_access"] = False
+    write_task(medium_risk_path, medium_risk_payload)
+
+    write_access_path = tmp_path / "write-access.json"
+    write_access_payload = canonical_task_payload("TASK-20260707-write-access-review")
+    write_access_payload["risk_level"] = "low"
+    write_access_payload["write_access"] = True
+    write_task(write_access_path, write_access_payload)
+
+    forced_review_path = tmp_path / "forced-review.json"
+    forced_review_payload = canonical_task_payload("TASK-20260707-forced-review")
+    forced_review_payload["risk_level"] = "low"
+    forced_review_payload["write_access"] = False
+    forced_review_payload["user_forced_review"] = True
+    write_task(forced_review_path, forced_review_payload)
+
+    no_review_path = tmp_path / "no-review.json"
+    no_review_payload = canonical_task_payload("TASK-20260707-no-review")
+    no_review_payload["risk_level"] = "low"
+    no_review_payload["write_access"] = False
+    write_task(no_review_path, no_review_payload)
+
+    assert load_task(medium_risk_path).review_required is True
+    assert load_task(write_access_path).review_required is True
+    assert load_task(forced_review_path).review_required is True
+    assert load_task(no_review_path).review_required is False
+
+
+def test_force_on_overrides_reject_false_values(tmp_path: Path) -> None:
+    from host_orchestrator.canonical_task import CanonicalTaskError, load_task, write_task
+
+    forced_planner_off_path = tmp_path / "forced-planner-off.json"
+    forced_planner_off_payload = canonical_task_payload("TASK-20260707-forced-planner-off")
+    forced_planner_off_payload["user_forced_planner"] = False
+    write_task(forced_planner_off_path, forced_planner_off_payload)
+
+    forced_review_off_path = tmp_path / "forced-review-off.json"
+    forced_review_off_payload = canonical_task_payload("TASK-20260707-forced-review-off")
+    forced_review_off_payload["user_forced_review"] = False
+    write_task(forced_review_off_path, forced_review_off_payload)
+
+    with pytest.raises(CanonicalTaskError, match="user_forced_planner only allows true"):
+        load_task(forced_planner_off_path)
+
+    with pytest.raises(CanonicalTaskError, match="user_forced_review only allows true"):
+        load_task(forced_review_off_path)
+
+
+def test_host_local_runner_marks_review_required_tasks_as_needs_review_after_worker_execution(
+    tmp_path: Path,
+) -> None:
+    from host_orchestrator.canonical_task import write_task
+
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir()
+    (repo_root / "AGENTS.md").write_text("stub", encoding="utf-8")
+    copy_runtime_config(repo_root)
+
+    task_id = "TASK-20260707-review-handoff"
+    task_path = repo_root / "tasks" / f"{task_id}.json"
+    payload = canonical_task_payload(task_id)
+    payload["risk_level"] = "medium"
+    payload["write_access"] = True
+    write_task(task_path, payload)
+
+    class FakeWorker:
+        def __init__(self) -> None:
+            self.call_count = 0
+
+        def run(self, request: WorkerRequest) -> WorkerResult:
+            self.call_count += 1
+            return WorkerResult(
+                final_response="REVIEW_GATE_OK",
+                raw_result={"kind": "fake"},
+            )
+
+    worker = FakeWorker()
+    agentbridge_root = repo_root / "AgentBridge"
+    runner = HostLocalRunner(
+        HostLocalConfig(
+            workspace_root=repo_root,
+            layout=RuntimeLayout.from_repo_root(repo_root),
+            agentbridge_root=agentbridge_root,
+            run_id="review-handoff-test",
+        ),
+        worker,
+    )
+
+    result_path = runner.run_task(task_path)
+    result_payload = json.loads(result_path.read_text(encoding="utf-8"))
+    verification_payload = json.loads((result_path.parent / "verification_summary.json").read_text(encoding="utf-8"))
+    projection_text = (agentbridge_root / "results" / f"{task_id}.md").read_text(encoding="utf-8")
+
+    assert worker.call_count == 1
+    assert result_payload["status"] == "needs_review"
+    assert result_payload["termination_reason"] == "review_required_before_downstream"
+    assert result_payload["handoff_required"] is True
+    assert result_payload["next_action"] == REVIEW_NEXT_ACTION
+    assert verification_payload["status"] == "pass"
+    assert "status: needs_review" in projection_text
+    assert "human_review_required: true" in projection_text
+    assert "handoff_required: true" in projection_text
+    assert f"next_action: {REVIEW_NEXT_ACTION}" in projection_text
+
+    with sqlite3.connect(repo_root / ".ai" / "state" / "control-plane.db") as connection:
+        runtime_task = connection.execute(
+            "SELECT state, result_path FROM runtime_tasks WHERE task_id = ?",
+            (task_id,),
+        ).fetchone()
+        events = connection.execute(
+            "SELECT event_type, payload_json FROM events ORDER BY created_at"
+        ).fetchall()
+
+    assert runtime_task == (
+        "needs_review",
+        f".ai/runs/review-handoff-test/{task_id}/result.json",
+    )
+    assert [event_type for (event_type, _) in events] == ["task_started", "task_needs_review"]
+    review_payload = json.loads(events[1][1])
+    assert review_payload["handoff_required"] is True
+    assert review_payload["next_action"] == REVIEW_NEXT_ACTION
+
+
+def test_policy_surface_tasks_also_stop_at_needs_review(tmp_path: Path) -> None:
+    from host_orchestrator.canonical_task import write_task
+
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir()
+    (repo_root / "AGENTS.md").write_text("stub", encoding="utf-8")
+    copy_runtime_config(repo_root)
+
+    task_id = "TASK-20260707-policy-review"
+    task_path = repo_root / "tasks" / f"{task_id}.json"
+    payload = canonical_task_payload(task_id)
+    payload["risk_level"] = "low"
+    payload["write_access"] = False
+    payload["allowed_paths"] = ["docs/architecture/**"]
+    write_task(task_path, payload)
+
+    class FakeWorker:
+        def run(self, request: WorkerRequest) -> WorkerResult:
+            return WorkerResult(
+                final_response="POLICY_REVIEW_OK",
+                raw_result={"kind": "fake"},
+            )
+
+    runner = HostLocalRunner(
+        HostLocalConfig(
+            workspace_root=repo_root,
+            layout=RuntimeLayout.from_repo_root(repo_root),
+            agentbridge_root=repo_root / "AgentBridge",
+            run_id="policy-review-test",
+        ),
+        FakeWorker(),
+    )
+
+    result_path = runner.run_task(task_path)
+    result_payload = json.loads(result_path.read_text(encoding="utf-8"))
+
+    assert result_payload["status"] == "needs_review"
+    assert result_payload["handoff_required"] is True
+    assert result_payload["next_action"] == REVIEW_NEXT_ACTION

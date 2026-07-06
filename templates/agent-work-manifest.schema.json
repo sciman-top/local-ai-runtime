@@ -2,6 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "AgentWorkManifest",
   "type": "object",
+  "additionalProperties": false,
   "required": [
     "run_id",
     "repo_root",
@@ -22,6 +23,7 @@
     },
     "model_policy": {
       "type": "object",
+      "additionalProperties": false,
       "required": [
         "model",
         "reasoning_effort"
@@ -37,6 +39,7 @@
     },
     "truth_sources": {
       "type": "array",
+      "minItems": 1,
       "items": {
         "type": "string"
       }
@@ -49,21 +52,40 @@
     },
     "tasks": {
       "type": "array",
+      "minItems": 1,
       "items": {
         "type": "object",
+        "additionalProperties": false,
         "required": [
           "task_id",
+          "title",
           "kind",
           "goal",
+          "target_repo",
+          "base_branch",
+          "branch_name",
+          "worktree_path",
           "read_set",
           "write_set",
-          "done_when",
-          "tests",
+          "allowed_paths",
+          "forbidden_paths",
+          "write_access",
           "risk_level",
-          "blocked_by"
+          "merge_policy",
+          "execution_lane",
+          "requires_network",
+          "requires_gui",
+          "depends_on",
+          "artifacts_out",
+          "handoff_policy",
+          "verification_commands",
+          "done_when"
         ],
         "properties": {
           "task_id": {
+            "type": "string"
+          },
+          "title": {
             "type": "string"
           },
           "kind": {
@@ -78,6 +100,18 @@
           "goal": {
             "type": "string"
           },
+          "target_repo": {
+            "type": "string"
+          },
+          "base_branch": {
+            "type": "string"
+          },
+          "branch_name": {
+            "type": "string"
+          },
+          "worktree_path": {
+            "type": "string"
+          },
           "read_set": {
             "type": "array",
             "items": {
@@ -90,17 +124,20 @@
               "type": "string"
             }
           },
-          "done_when": {
+          "allowed_paths": {
             "type": "array",
             "items": {
               "type": "string"
             }
           },
-          "tests": {
+          "forbidden_paths": {
             "type": "array",
             "items": {
               "type": "string"
             }
+          },
+          "write_access": {
+            "type": "boolean"
           },
           "risk_level": {
             "enum": [
@@ -110,22 +147,110 @@
               "critical"
             ]
           },
-          "blocked_by": {
+          "merge_policy": {
+            "enum": [
+              "draft_pr_only",
+              "manual_merge_only",
+              "never_merge"
+            ]
+          },
+          "execution_lane": {
+            "enum": [
+              "host_local",
+              "remote_non_gui",
+              "vm_gui"
+            ]
+          },
+          "requires_network": {
+            "type": "boolean"
+          },
+          "requires_gui": {
+            "type": "boolean"
+          },
+          "user_forced_planner": {
+            "const": true
+          },
+          "user_forced_review": {
+            "const": true
+          },
+          "depends_on": {
             "type": "array",
             "items": {
               "type": "string"
             }
           },
-          "forbidden_scope": {
+          "artifacts_out": {
             "type": "array",
             "items": {
               "type": "string"
             }
           },
-          "worktree_name": {
-            "type": "string"
+          "handoff_policy": {
+            "enum": [
+              "none",
+              "handoff_on_risk",
+              "handoff_before_merge",
+              "handoff_always"
+            ]
           },
-          "branch_name": {
+          "verification_commands": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "build",
+              "test",
+              "lint",
+              "typecheck",
+              "contract",
+              "hotspot"
+            ],
+            "properties": {
+              "build": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "test": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "lint": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "typecheck": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "contract": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "hotspot": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            }
+          },
+          "done_when": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "string"
+            }
+          },
+          "worker_profile": {
             "type": "string"
           }
         }

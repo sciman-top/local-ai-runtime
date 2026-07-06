@@ -1,5 +1,11 @@
 # Status: repo-owned reusable template asset.
 # Replace placeholders before dispatching the run.
+# This manifest is an operator-facing dispatch contract that stays aligned
+# with the canonical task contract while preserving dispatch-only fields
+# such as read_set and write_set.
+# Optional force-on overrides are supported only as:
+#   user_forced_planner: true
+#   user_forced_review: true
 
 run_id: "20260707-example"
 repo_root: "D:/CODE/your-repo"
@@ -13,8 +19,9 @@ truth_sources:
   - "README.md"
   - "docs/README.md"
   - "docs/architecture/planning-status.json"
-  - "docs/backlog/task-list.md"
-  - "docs/plans/implementation-plan.md"
+  - "docs/specs/task-contract.md"
+  - "docs/specs/result-contract.md"
+  - "docs/specs/review-contract.md"
 
 global_forbidden_scope:
   - "不要擅自扩 scope"
@@ -23,51 +30,131 @@ global_forbidden_scope:
 
 tasks:
   - task_id: "T01"
+    title: "只读提炼当前最小切片"
     kind: "explore"
-    goal: "提炼最小切片与冲突点"
+    goal: "提炼最小切片、allowed_paths、write_set 与 gate 建议"
+    target_repo: "local-ai-dev-orchestrator"
+    base_branch: "main"
+    branch_name: "codex/t01-explore-slice"
+    worktree_path: ".worktrees/t01-explore-slice"
     read_set:
       - "runtime/**"
       - "docs/**"
     write_set: []
+    allowed_paths: []
+    forbidden_paths:
+      - ".env"
+      - ".env.*"
+      - ".git/config"
+    write_access: false
+    risk_level: "low"
+    merge_policy: "never_merge"
+    execution_lane: "host_local"
+    requires_network: false
+    requires_gui: false
+    depends_on: []
+    artifacts_out:
+      - "reports/T01-explore-summary.md"
+    handoff_policy: "none"
+    verification_commands:
+      build: null
+      test: null
+      lint: null
+      typecheck: null
+      contract: null
+      hotspot: null
     done_when:
       - "给出最小切片"
-      - "给出建议 write_set"
-      - "给出建议 tests"
-    tests: []
-    risk_level: "low"
-    blocked_by: []
+      - "给出 allowed_paths"
+      - "给出 write_set"
+      - "给出 verification_commands 建议"
 
   - task_id: "T02"
+    title: "实现当前最小代码切片"
     kind: "implement"
-    goal: "实现当前最小代码切片"
+    goal: "在独立 worktree 中完成当前最小代码切片并留下正式工件引用"
+    target_repo: "local-ai-dev-orchestrator"
+    base_branch: "main"
+    branch_name: "codex/t02-runtime-slice"
+    worktree_path: ".worktrees/t02-runtime-slice"
     read_set:
-      - "runtime/**"
+      - "runtime/host-orchestrator/**"
+      - "docs/**"
       - "tests/**"
     write_set:
-      - "runtime/module_a.py"
-      - "tests/test_module_a.py"
+      - "runtime/host-orchestrator/src/host_orchestrator/module_a.py"
+      - "runtime/host-orchestrator/tests/test_module_a.py"
+      - "docs/change-evidence/20260707-t02-runtime-slice.md"
+    allowed_paths:
+      - "runtime/host-orchestrator/**"
+      - "docs/change-evidence/**"
+    forbidden_paths:
+      - ".env"
+      - ".env.*"
+      - ".git/config"
+      - ".ai/config/**"
+    write_access: true
+    risk_level: "medium"
+    merge_policy: "manual_merge_only"
+    execution_lane: "host_local"
+    requires_network: false
+    requires_gui: false
+    depends_on:
+      - "T01"
+    artifacts_out:
+      - ".ai/runs/<run_id>/T02/result.json"
+      - ".ai/runs/<run_id>/T02/verification_summary.json"
+      - ".ai/runs/<run_id>/T02/cost_summary.json"
+      - ".ai/runs/<run_id>/T02/evidence_index.json"
+    handoff_policy: "handoff_on_risk"
+    verification_commands:
+      build: null
+      test: "uv run --project .\\runtime\\host-orchestrator python -m pytest"
+      lint: null
+      typecheck: null
+      contract: "python .\\scripts\\verify-planning-status.py"
+      hotspot: null
     done_when:
       - "功能满足验收条件"
       - "相关测试通过"
-    tests:
-      - "pytest tests/test_module_a.py"
-    risk_level: "medium"
-    blocked_by:
-      - "T01"
-    forbidden_scope:
-      - "不要修改 ownership 外文件"
-    worktree_name: ".worktrees/t02-module-a"
-    branch_name: "codex/t02-module-a"
+      - "正式工件引用齐全"
+    worker_profile: "local_maint"
 
   - task_id: "T03"
+    title: "执行异质 review 与收口建议"
     kind: "review"
-    goal: "复核规格、正确性、安全性、测试覆盖"
+    goal: "复核规格、正确性、安全性、测试覆盖，并输出结构化审查结论"
+    target_repo: "local-ai-dev-orchestrator"
+    base_branch: "main"
+    branch_name: "codex/t03-review-slice"
+    worktree_path: ".worktrees/t03-review-slice"
     read_set:
       - "git diff BASE..HEAD"
+      - ".ai/runs/<run_id>/T02/**"
     write_set: []
+    allowed_paths: []
+    forbidden_paths:
+      - ".env"
+      - ".env.*"
+      - ".git/config"
+    write_access: false
+    risk_level: "medium"
+    merge_policy: "never_merge"
+    execution_lane: "host_local"
+    requires_network: false
+    requires_gui: false
+    depends_on:
+      - "T02"
+    artifacts_out:
+      - "reports/T03-review-result.json"
+    handoff_policy: "handoff_before_merge"
+    verification_commands:
+      build: null
+      test: null
+      lint: null
+      typecheck: null
+      contract: null
+      hotspot: null
     done_when:
       - "给出 findings 或 no findings"
-    tests: []
-    risk_level: "low"
-    blocked_by:
-      - "T02"
+      - "输出 review-contract 对齐字段"

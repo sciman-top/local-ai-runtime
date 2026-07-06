@@ -14,15 +14,18 @@
 
 任务：
 1. 基于最新真源，提炼最小可落实现实。
-2. 给出建议写入集合。
-3. 给出建议测试集合。
-4. 给出与其他任务的冲突点。
-5. 明确哪些范围本轮不要做。
+2. 给出建议 `allowed_paths`。
+3. 给出建议 `write_set`。
+4. 给出建议 `verification_commands` 与 `artifacts_out`。
+5. 给出与其他任务的冲突点。
+6. 明确哪些范围本轮不要做。
 
 输出格式：
 - Conclusion
 - Minimal slice
+- Suggested allowed paths
 - Suggested write set
-- Suggested tests
+- Suggested verification commands
+- Suggested artifacts
 - Conflict avoidance
 ```

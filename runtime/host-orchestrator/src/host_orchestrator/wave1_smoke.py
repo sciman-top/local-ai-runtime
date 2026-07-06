@@ -15,6 +15,7 @@ from host_orchestrator.worker import WorkerRequest, WorkerResult
 
 TASK_ID_PATTERN = re.compile(r"(?m)^(?:id|task_id):\s*(?P<value>[^\n]+?)\s*$")
 EXPECTED_CATEGORIES = {"code_refactor", "docs_sync", "script_contract"}
+TERMINAL_RUNTIME_STATES = {"completed", "needs_review", "waiting_handoff"}
 
 
 @dataclass(frozen=True)
@@ -46,9 +47,11 @@ class Wave1SmokeSummary:
     control_plane_db: Path
     sample_count: int
     completed_task_count: int
+    terminal_task_count: int
     route_decision_count: int
     event_count: int
     worker_status: str | None
+    state_counts: dict[str, int]
     task_outcomes: list[Wave1SmokeTaskOutcome]
     ok: bool
     issues: list[str]
@@ -62,9 +65,11 @@ class Wave1SmokeSummary:
             "control_plane_db": str(self.control_plane_db),
             "sample_count": self.sample_count,
             "completed_task_count": self.completed_task_count,
+            "terminal_task_count": self.terminal_task_count,
             "route_decision_count": self.route_decision_count,
             "event_count": self.event_count,
             "worker_status": self.worker_status,
+            "state_counts": dict(self.state_counts),
             "task_outcomes": [asdict(outcome) for outcome in self.task_outcomes],
             "ok": self.ok,
             "issues": list(self.issues),
@@ -184,6 +189,9 @@ def collect_wave1_smoke_summary(
         completed_task_count = connection.execute(
             "SELECT COUNT(*) FROM runtime_tasks WHERE state = 'completed'"
         ).fetchone()[0]
+        state_rows = connection.execute(
+            "SELECT state, COUNT(*) FROM runtime_tasks GROUP BY state ORDER BY state"
+        ).fetchall()
         route_decision_count = connection.execute(
             "SELECT COUNT(*) FROM route_decisions"
         ).fetchone()[0]
@@ -195,6 +203,10 @@ def collect_wave1_smoke_summary(
 
     worker_status = worker_row[0] if worker_row else None
     sample_map = {sample.task_id: sample for sample in samples}
+    state_counts = {state: count for state, count in state_rows}
+    terminal_task_count = sum(
+        count for state, count in state_counts.items() if state in TERMINAL_RUNTIME_STATES
+    )
     issues: list[str] = []
 
     if {sample.category for sample in samples} != EXPECTED_CATEGORIES:
@@ -203,9 +215,9 @@ def collect_wave1_smoke_summary(
     if len(samples) != 3:
         issues.append(f"Expected 3 Wave 1 smoke samples, found {len(samples)}.")
 
-    if completed_task_count != len(samples):
+    if terminal_task_count != len(samples):
         issues.append(
-            f"Expected {len(samples)} completed runtime tasks, found {completed_task_count}."
+            f"Expected {len(samples)} terminal runtime tasks, found {terminal_task_count}."
         )
 
     if route_decision_count != len(samples):
@@ -278,9 +290,11 @@ def collect_wave1_smoke_summary(
         control_plane_db=layout.control_plane_db,
         sample_count=len(samples),
         completed_task_count=completed_task_count,
+        terminal_task_count=terminal_task_count,
         route_decision_count=route_decision_count,
         event_count=event_count,
         worker_status=worker_status,
+        state_counts=state_counts,
         task_outcomes=outcomes,
         ok=not issues,
         issues=issues,

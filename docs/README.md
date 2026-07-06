@@ -42,6 +42,9 @@
 - `AgentBridge-first intake` 已以安全边界接入 `host_local`；markdown task 先归一化到 repo-owned canonical 默认值，并对 execution-critical override fail closed
 - `P2-T03` 的 repo-side AgentBridge round-trip parity 已落地，但尚未自动升级为 `platform compatibility green`
 - `P4-T01` 的 repo-side planner handoff 已落地；当前只把 planner-gated task 停在 `waiting_handoff`，尚未宣称 live `Direct GPT-5.4 API` planner 已接线
+- `P4-T02` 的 repo-side review gate 已落地；当前会把 review-gated task 在 worker / verification 之后停在 `needs_review`，但尚未宣称 live heterogeneous review adapter 已接线
+- `P4-T03` 的 repo-side 谓词正反覆盖已落地；`user_forced_planner / user_forced_review` 现在是 contract 承认的 force-on override，而不是文档漂浮字段
+- 基于 2026-07-07 的官方与社区研究，下一最值钱的 repo-side 执行切片转向 `P3-T02` path guard，因为 worktree 只是 Git 级隔离，不是完整状态隔离
 - `compatibility_projection_ref` 与 `lane` 字段名当前不改；是否迁移留到 Phase E parity 后再决定
 - 当前 active queue 仍是 `PHASE-1-VERTICAL-SLICE`；repo-side exit gates 已闭环，但 live posture 仍停在 `live probe ready`
 
@@ -58,6 +61,9 @@
 - 协作模式说明：[docs/主控-子代理-worktree-协作模式.md](D:/CODE/local-ai-dev-orchestrator/docs/主控-子代理-worktree-协作模式.md)
 - prompt 资产入口：[prompts/subagent-worktree/README.md](D:/CODE/local-ai-dev-orchestrator/prompts/subagent-worktree/README.md)
 - manifest 模板：[templates/agent-work-manifest.example.yaml](D:/CODE/local-ai-dev-orchestrator/templates/agent-work-manifest.example.yaml)
+- dispatch state 模板：[templates/dispatch-state.example.json](D:/CODE/local-ai-dev-orchestrator/templates/dispatch-state.example.json)
+- review 结果模板：[templates/review-result.example.json](D:/CODE/local-ai-dev-orchestrator/templates/review-result.example.json)
+- closeout bundle 模板：[templates/closeout-bundle.example.json](D:/CODE/local-ai-dev-orchestrator/templates/closeout-bundle.example.json)
 - closeout 清单：[templates/closeout-checklist.md](D:/CODE/local-ai-dev-orchestrator/templates/closeout-checklist.md)
 - 当前 selector 预期结果仍是 `promote_phase1_execution`
 - GPT-5.4 gateway 与 `codex exec` prerequisite probes 已 ready，但 `network_proxy` 仍是 `platform_na`，所以 live execution 仍先限纯本地任务

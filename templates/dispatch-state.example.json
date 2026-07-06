@@ -1,0 +1,34 @@
+{
+  "run_id": "20260707-example",
+  "task_id": "T02",
+  "agent_role": "worker",
+  "model_policy": {
+    "model": "gpt-5.4",
+    "reasoning_effort": "xhigh"
+  },
+  "repo_root": "D:/CODE/your-repo",
+  "target_repo": "local-ai-dev-orchestrator",
+  "branch_name": "codex/t02-runtime-slice",
+  "worktree_path": "D:/CODE/your-repo/.worktrees/t02-runtime-slice",
+  "allowed_paths": [
+    "runtime/host-orchestrator/**",
+    "docs/change-evidence/**"
+  ],
+  "forbidden_paths": [
+    ".env",
+    ".env.*",
+    ".git/config",
+    ".ai/config/**"
+  ],
+  "source_manifest_ref": "templates/agent-work-manifest.example.yaml#tasks[T02]",
+  "lease_owner": "master-agent",
+  "started_at": "2026-07-07T01:00:00Z",
+  "heartbeat_at": "2026-07-07T01:05:00Z",
+  "status": "running",
+  "next_action": "wait_for_worker_result",
+  "last_result_ref": ".ai/runs/20260707-example/T02/result.json",
+  "notes": [
+    "worker 只在 assigned worktree 中执行",
+    "write_set 是 allowed_paths 的更窄操作子集"
+  ]
+}

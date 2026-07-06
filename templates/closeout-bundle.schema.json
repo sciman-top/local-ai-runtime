@@ -1,0 +1,139 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "CloseoutBundle",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "run_id",
+    "repo_root",
+    "objective",
+    "status",
+    "completed",
+    "not_completed",
+    "conflicts",
+    "tests",
+    "evidence_refs",
+    "cleanup_status",
+    "cleanup_owner",
+    "branches_removed",
+    "worktrees_removed",
+    "residual_risks",
+    "repo_side_done",
+    "still_open",
+    "next_action"
+  ],
+  "properties": {
+    "run_id": {
+      "type": "string"
+    },
+    "repo_root": {
+      "type": "string"
+    },
+    "objective": {
+      "type": "string"
+    },
+    "status": {
+      "enum": [
+        "succeeded",
+        "partial",
+        "blocked"
+      ]
+    },
+    "completed": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "not_completed": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "conflicts": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "tests": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name",
+          "status",
+          "evidence_ref"
+        ],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "pass",
+              "fail",
+              "skipped",
+              "gate_na"
+            ]
+          },
+          "evidence_ref": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "evidence_refs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "cleanup_status": {
+      "enum": [
+        "deferred",
+        "inline_only",
+        "cleaned",
+        "cleanup_failed"
+      ]
+    },
+    "cleanup_owner": {
+      "type": "string"
+    },
+    "branches_removed": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "worktrees_removed": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "residual_risks": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "repo_side_done": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "still_open": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "next_action": {
+      "type": "string"
+    }
+  }
+}
