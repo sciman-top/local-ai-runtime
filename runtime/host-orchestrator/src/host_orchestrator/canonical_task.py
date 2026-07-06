@@ -101,7 +101,10 @@ class CanonicalTask:
 
 
 def load_task(path: Path) -> CanonicalTask:
-    payload = _load_payload(path)
+    return task_from_payload(path, _load_payload(path))
+
+
+def task_from_payload(path: Path, payload: dict[str, Any]) -> CanonicalTask:
     if unexpected := [field for field in DERIVED_FIELDS if field in payload]:
         raise CanonicalTaskError(
             "Derived fields must not be authored in canonical task input: " + ", ".join(sorted(unexpected))

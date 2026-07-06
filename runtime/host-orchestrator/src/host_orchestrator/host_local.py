@@ -7,7 +7,7 @@ from typing import Any
 
 from host_orchestrator import agentbridge, db
 from host_orchestrator.canonical_result import build_run_id, write_result_bundle
-from host_orchestrator.canonical_task import CanonicalTask, load_task
+from host_orchestrator.canonical_task import CanonicalTask, load_task, task_from_payload
 from host_orchestrator.config_runtime import RuntimeConfigBundle, WorkerProfile, load_runtime_config
 from host_orchestrator.paths import RuntimeLayout
 from host_orchestrator.verification import run_verification
@@ -35,7 +35,7 @@ class HostLocalRunner:
         self._runtime_config = load_runtime_config(config.layout.repo_root)
 
     def run_task(self, task_path: Path) -> Path:
-        task = load_task(task_path)
+        task = self._load_intake_task(task_path)
         worker_profile = self._runtime_config.worker_profile(self._config.worker_profile)
         run_id = self._config.run_id or build_run_id(
             prefix=self._runtime_config.orchestrator.run_id_prefix
@@ -194,6 +194,17 @@ class HostLocalRunner:
                 status="idle",
                 heartbeat_at=finished_at,
             )
+
+    def _load_intake_task(self, task_path: Path) -> CanonicalTask:
+        if task_path.suffix.lower() != ".md":
+            return load_task(task_path)
+
+        projection = agentbridge.load_markdown_task(task_path)
+        payload = agentbridge.markdown_task_to_canonical_payload(
+            projection,
+            repo_root=self._config.layout.repo_root,
+        )
+        return task_from_payload(task_path, payload)
 
     def _write_compatibility_projection(
         self,

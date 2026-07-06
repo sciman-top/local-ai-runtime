@@ -16,6 +16,26 @@ FRONT_MATTER_PATTERN = re.compile(r"(?s)^---\n(.*?)\n---\n")
 SUMMARY_SECTION_PATTERN = re.compile(
     r"(?ms)^# Summary\s*(?P<body>.*?)(?=^# |\Z)"
 )
+DEFAULT_FORBIDDEN_PATHS = [
+    ".env",
+    ".env.*",
+    ".git/config",
+    ".ssh/**",
+    "secrets/**",
+]
+DEFAULT_VERIFICATION_COMMANDS = {
+    "build": None,
+    "test": None,
+    "lint": None,
+    "typecheck": None,
+    "contract": None,
+    "hotspot": None,
+}
+APPROVAL_LEVEL_TO_RISK = {
+    "safe": "low",
+    "review": "medium",
+    "manual_only": "high",
+}
 
 
 class CompatibilityAdapterError(ValueError):
@@ -82,40 +102,66 @@ def markdown_task_to_canonical_payload(
     repo_root: Path,
 ) -> dict[str, Any]:
     front_matter = task.front_matter
-    goal = _string_value(front_matter.get("goal"))
-    title = _extract_summary_title(task.raw_text) or goal or task.task_id
-    requires_gui = _bool_value(front_matter.get("requires_gui"))
-    approval_level = _string_value(front_matter.get("approval_level")) or "review"
-    risk_level = "medium" if approval_level == "review" else "low"
-    artifacts_out = _string_list(front_matter.get("artifacts_out"))
+    goal = _require_string(front_matter, "goal", source=str(task.path))
+    front_matter_title = _optional_front_matter_string(front_matter, "title", source=str(task.path))
+    title = front_matter_title
+    if title is None:
+        title = _extract_summary_title(task.raw_text) or goal or task.task_id
+
+    approval_level = _require_string(front_matter, "approval_level", source=str(task.path))
+    target_repo = _optional_front_matter_string(front_matter, "target_repo", source=str(task.path))
+    base_branch = _optional_front_matter_string(front_matter, "base_branch", source=str(task.path))
+    branch_name = _optional_front_matter_string(front_matter, "branch_name", source=str(task.path))
+    worktree_path = _optional_front_matter_string(front_matter, "worktree_path", source=str(task.path))
+    allowed_paths = _optional_front_matter_string_list(
+        front_matter, "allowed_paths", source=str(task.path)
+    )
+    forbidden_paths = _optional_front_matter_string_list(
+        front_matter, "forbidden_paths", source=str(task.path)
+    )
+    risk_level = _optional_front_matter_string(front_matter, "risk_level", source=str(task.path))
+    merge_policy = _optional_front_matter_string(front_matter, "merge_policy", source=str(task.path))
+    execution_lane = _optional_front_matter_string(front_matter, "execution_lane", source=str(task.path))
+    handoff_policy = _optional_front_matter_string(front_matter, "handoff_policy", source=str(task.path))
+    write_access = _optional_front_matter_bool(front_matter, "write_access", source=str(task.path))
+    requires_network = _optional_front_matter_bool(
+        front_matter, "requires_network", source=str(task.path)
+    )
+    requires_gui = _optional_front_matter_bool(front_matter, "requires_gui", source=str(task.path))
+    depends_on = _optional_front_matter_string_list(front_matter, "depends_on", source=str(task.path))
+    artifacts_out = _optional_front_matter_string_list(
+        front_matter, "artifacts_out", source=str(task.path)
+    )
+    verification_commands = _optional_verification_commands(
+        front_matter, "verification_commands", source=str(task.path)
+    )
 
     return {
         "task_id": task.task_id,
         "title": title,
         "description": task.raw_text.strip(),
-        "target_repo": repo_root.name,
-        "base_branch": "main",
-        "branch_name": f"compat/{task.task_id}",
-        "worktree_path": ".",
-        "allowed_paths": ["**"],
-        "forbidden_paths": [".env", ".env.*", ".git/config", ".ssh/**", "secrets/**"],
-        "write_access": True,
-        "risk_level": risk_level,
-        "merge_policy": "manual_merge_only",
-        "execution_lane": "host_local",
-        "requires_network": False,
-        "requires_gui": requires_gui,
-        "depends_on": [],
-        "artifacts_out": artifacts_out,
-        "handoff_policy": "handoff_on_risk",
-        "verification_commands": {
-            "build": None,
-            "test": None,
-            "lint": None,
-            "typecheck": None,
-            "contract": None,
-            "hotspot": None,
-        },
+        "target_repo": repo_root.name if target_repo is None else target_repo,
+        "base_branch": "main" if base_branch is None else base_branch,
+        "branch_name": f"compat/{task.task_id}" if branch_name is None else branch_name,
+        "worktree_path": "." if worktree_path is None else worktree_path,
+        "allowed_paths": ["**"] if allowed_paths is None else allowed_paths,
+        "forbidden_paths": list(DEFAULT_FORBIDDEN_PATHS) if forbidden_paths is None else forbidden_paths,
+        "write_access": True if write_access is None else write_access,
+        "risk_level": APPROVAL_LEVEL_TO_RISK.get(approval_level, "medium")
+        if risk_level is None
+        else risk_level,
+        "merge_policy": "manual_merge_only" if merge_policy is None else merge_policy,
+        "execution_lane": "host_local" if execution_lane is None else execution_lane,
+        "requires_network": False if requires_network is None else requires_network,
+        "requires_gui": False if requires_gui is None else requires_gui,
+        "depends_on": [] if depends_on is None else depends_on,
+        "artifacts_out": [] if artifacts_out is None else artifacts_out,
+        "handoff_policy": "handoff_on_risk" if handoff_policy is None else handoff_policy,
+        "verification_commands": (
+            dict(DEFAULT_VERIFICATION_COMMANDS)
+            if verification_commands is None
+            else verification_commands
+        ),
     }
 
 
@@ -263,24 +309,83 @@ def _extract_summary_title(raw_text: str) -> str:
     return lines[0] if lines else ""
 
 
-def _bool_value(value: Any) -> bool:
+def _optional_front_matter_bool(
+    front_matter: dict[str, Any],
+    key: str,
+    *,
+    source: str,
+) -> bool | None:
+    if key not in front_matter:
+        return None
+
+    value = front_matter[key]
     if isinstance(value, bool):
         return value
     if isinstance(value, str):
-        return value.strip().lower() == "true"
-    return False
+        lowered = value.strip().lower()
+        if lowered == "true":
+            return True
+        if lowered == "false":
+            return False
+    raise CompatibilityAdapterError(f"{source}:{key} must be a boolean")
 
 
-def _string_list(value: Any) -> list[str]:
-    if not isinstance(value, list):
-        return []
-    return [item.strip() for item in value if isinstance(item, str) and item.strip()]
+def _optional_front_matter_string_list(
+    front_matter: dict[str, Any],
+    key: str,
+    *,
+    source: str,
+) -> list[str] | None:
+    if key not in front_matter:
+        return None
+
+    value = front_matter[key]
+    if not isinstance(value, list) or not all(isinstance(item, str) for item in value):
+        raise CompatibilityAdapterError(f"{source}:{key} must be a list of strings")
+    return [item.strip() for item in value]
 
 
-def _string_value(value: Any) -> str:
+def _optional_front_matter_string(
+    front_matter: dict[str, Any],
+    key: str,
+    *,
+    source: str,
+) -> str | None:
+    if key not in front_matter:
+        return None
+
+    value = front_matter[key]
     if not isinstance(value, str):
-        return ""
+        raise CompatibilityAdapterError(f"{source}:{key} must be a string")
     return value.strip()
+
+
+def _optional_verification_commands(
+    front_matter: dict[str, Any],
+    key: str,
+    *,
+    source: str,
+) -> dict[str, str | None] | None:
+    if key not in front_matter:
+        return None
+
+    value = front_matter[key]
+    if not isinstance(value, dict):
+        raise CompatibilityAdapterError(f"{source}:{key} must be a mapping")
+
+    commands: dict[str, str | None] = dict(DEFAULT_VERIFICATION_COMMANDS)
+    for command_key in DEFAULT_VERIFICATION_COMMANDS:
+        raw_command = value.get(command_key)
+        if raw_command is None:
+            commands[command_key] = None
+            continue
+        if not isinstance(raw_command, str):
+            raise CompatibilityAdapterError(
+                f"{source}:{key}.{command_key} must be a string or null"
+            )
+        stripped = raw_command.strip()
+        commands[command_key] = stripped or None
+    return commands
 
 
 def _require_string(payload: dict[str, Any], key: str, *, source: str) -> str:
