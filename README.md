@@ -4,7 +4,7 @@
 - 当前主产品线：`Hermes -> AgentBridge -> Codex`
 - 历史仓库 slug 与当前本地工作目录仍为 `local-ai-dev-orchestrator`（`D:\CODE\local-ai-dev-orchestrator`）；本次只统一项目展示名，不执行目录迁移。
 
-Local AI Runtime is a Windows-first local orchestration runtime for audited AI coding work. The current mainline keeps a strict three-layer product narrative, retains canonical normalization plus `result.json` as formal evidence, and treats AgentBridge markdown output as the current compatibility projection while allowing compliant AgentBridge markdown tasks to enter `host_local` through a fail-closed intake adapter and complete a repo-side projection parity loop.
+Local AI Runtime is a Windows-first local orchestration runtime for audited AI coding work. The current mainline keeps a strict three-layer product narrative, retains canonical normalization plus `result.json` as formal evidence, and treats AgentBridge markdown output as the current compatibility projection while allowing compliant AgentBridge markdown tasks to enter `host_local` through a fail-closed intake adapter, complete a repo-side projection parity loop, and stop planner-gated tasks at a repo-side `waiting_handoff` boundary.
 
 如果你是第一次进入这个仓库，先看这三处：
 
@@ -32,6 +32,7 @@ Local AI Runtime is a Windows-first local orchestration runtime for audited AI c
 - `host_local > remote_non_gui > vm_gui` 是终态能力范围与分级晋升顺序，不是同等级当前交付义务
 - `AgentBridge-first intake` 已以安全边界接入 `host_local`；execution-critical override 与 markdown 侧 gate 命令仍按 fail-closed 处理
 - `P2-T03` 的 repo-side projection parity 已落地，但这还不等于 `platform compatibility green` 或 `live accepted`
+- `P4-T01` 的 repo-side planner handoff 已落地；`planner_required` 任务当前会先停在 `waiting_handoff`，这仍不等于 live `Direct GPT-5.4` planner 已接线
 
 ## Governance Overlay
 

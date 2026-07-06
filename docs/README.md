@@ -41,6 +41,7 @@
 - `host_local > remote_non_gui > vm_gui` 是终态能力范围与分级晋升顺序
 - `AgentBridge-first intake` 已以安全边界接入 `host_local`；markdown task 先归一化到 repo-owned canonical 默认值，并对 execution-critical override fail closed
 - `P2-T03` 的 repo-side AgentBridge round-trip parity 已落地，但尚未自动升级为 `platform compatibility green`
+- `P4-T01` 的 repo-side planner handoff 已落地；当前只把 planner-gated task 停在 `waiting_handoff`，尚未宣称 live `Direct GPT-5.4 API` planner 已接线
 - `compatibility_projection_ref` 与 `lane` 字段名当前不改；是否迁移留到 Phase E parity 后再决定
 - 当前 active queue 仍是 `PHASE-1-VERTICAL-SLICE`；repo-side exit gates 已闭环，但 live posture 仍停在 `live probe ready`
 

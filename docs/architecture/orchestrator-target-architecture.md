@@ -117,6 +117,7 @@
 - 校验 markdown front matter contract，并拒绝 execution-critical override / gate command injection
 - repo-side parity 当前已验证到 `result.json`、`evidence_index.json`、以及 `AgentBridge/results/*.md` projection 闭环
 - 派生 `planner_required` / `review_required` / `touches_policy_surface`
+- 当前 repo-side 已先把 `planner_required` 的 risk/dependency 触发接到 `waiting_handoff` handoff 路径；`review_required` 仍待后续接线
 - 盖章运行时字段
 
 依赖契约：

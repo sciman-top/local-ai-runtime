@@ -1,28 +1,28 @@
 {
   "schema_version": "1.0",
   "status_id": "orchestrator-rebaseline-status",
-  "updated_on": "2026-07-06",
+  "updated_on": "2026-07-07",
   "current_active_queue": {
     "queue_id": "PHASE-1-VERTICAL-SLICE",
     "label": "Real SDK Vertical Slice And Canonical Runtime Evidence",
     "status": "in_progress",
     "source_plan": "docs/plans/orchestrator-implementation-plan.md",
     "source_backlog": "docs/backlog/orchestrator-task-list.md",
-    "why_now": "Local AI Runtime keeps the same active queue after the strategic return. The repo now accepts compliant AgentBridge markdown task intake on host_local through a fail-closed adapter, completes a repo-side projection parity loop from markdown task to result.json plus markdown projection, and still keeps result.json as formal evidence with AgentBridge markdown as compatibility projection. With host_local crash recovery, lease helpers, exec fallback process-guard, the minimal verification runner, the safe intake adapter, and repo-side parity now landed, the next bounded execution sequence moves to Phase 4 planner/review adapter entry work while the selector stays at promote_phase1_execution."
+    "why_now": "Local AI Runtime keeps the same active queue after the strategic return. The repo now accepts compliant AgentBridge markdown task intake on host_local through a fail-closed adapter, completes a repo-side projection parity loop from markdown task to result.json plus markdown projection, and still keeps result.json as formal evidence with AgentBridge markdown as compatibility projection. With host_local crash recovery, lease helpers, exec fallback process-guard, the minimal verification runner, the safe intake adapter, repo-side parity, and the repo-side planner handoff now landed, the next bounded execution sequence moves to `P4-T02 review adapter` while the selector stays at promote_phase1_execution."
   },
   "current_decision_gate": {
     "selector": "promote_phase1_execution",
     "selector_source": "scripts/select-next-work.py",
-    "as_of": "2026-07-06",
-    "proof_ref": "docs/change-evidence/20260706-agentbridge-round-trip-parity.md",
+    "as_of": "2026-07-07",
+    "proof_ref": "docs/change-evidence/20260707-planner-handoff-minimal-slice.md",
     "blocking_reasons": []
   },
   "current_live_posture": {
     "status": "live_probe_ready",
     "gpt54_gateway_probe_status": "ready",
     "codex_exec_probe_status": "ready",
-    "as_of": "2026-07-06",
-    "summary": "Local AI Runtime currently executes repo-side through canonical normalization on host_local, writes result.json as formal evidence, and keeps AgentBridge results as compatibility projection. host_local crash recovery, minimal lease lifecycle helpers, exec fallback process-tree guarding, the minimal verification runner, a fail-closed AgentBridge markdown intake adapter, and repo-side projection parity are now landed. Hermes -> AgentBridge -> Codex remains the product mainline and migration target; non-host_local runners are still not wired, execution-critical markdown overrides remain intentionally unsupported, and this repo-side parity claim does not yet promote the repo to platform compatibility green or live accepted. The GPT-5.4 gateway probe and the codex exec minimum probe are ready; network_proxy remains platform_na, so current live execution should still stay within pure local task boundaries."
+    "as_of": "2026-07-07",
+    "summary": "Local AI Runtime currently executes repo-side through canonical normalization on host_local, writes result.json as formal evidence, and keeps AgentBridge results as compatibility projection. host_local crash recovery, minimal lease lifecycle helpers, exec fallback process-tree guarding, the minimal verification runner, a fail-closed AgentBridge markdown intake adapter, repo-side projection parity, and a repo-side planner handoff gate are now landed. Planner-gated tasks currently stop at `waiting_handoff` before any live planner or primary worker execution. Hermes -> AgentBridge -> Codex remains the product mainline and migration target; non-host_local runners are still not wired, execution-critical markdown overrides remain intentionally unsupported, and this repo-side planner handoff claim does not yet mean live `Direct GPT-5.4` planner, platform compatibility green, or live accepted. The GPT-5.4 gateway probe and the codex exec minimum probe are ready; network_proxy remains platform_na, so current live execution should still stay within pure local task boundaries."
   },
   "certified_baseline": {
     "queue_id": "HERMES-AGENTBRIDGE-BASELINE",

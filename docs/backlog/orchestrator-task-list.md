@@ -85,7 +85,13 @@
 
 ## Phase 4
 
-- [ ] `P4-T01` planner adapter
+- [x] `P4-T01` planner adapter
+  - Done when:
+    - `planner_required` 基于当前 risk/dependency 字段在 intake 后完成机器派生
+    - planner-gated task 在主 worker 前停在 `waiting_handoff`
+    - `result.json`、`verification_summary.json`、`cost_summary.json`、`evidence_index.json` 在 handoff 路径上保持齐全
+  - Status note:
+    - 2026-07-07 已完成 repo-side 最小 planner handoff；当前仍不是 live `Direct GPT-5.4 API` planner
 - [ ] `P4-T02` review adapter
 - [ ] `P4-T03` 正反触发谓词测试
 

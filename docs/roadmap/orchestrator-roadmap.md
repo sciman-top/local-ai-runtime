@@ -107,6 +107,10 @@
 ### Phase 4 Planner / Review
 
 - 目标：`Direct GPT-5.4 API` planner + `Claude Code + GLM-5.2` review adapter
+- 当前状态：
+  - `P4-T01` 的 repo-side planner handoff 已落地
+  - 当前只在 `planner_required` 命中时停在 `waiting_handoff`
+  - 尚未宣称 live `Direct GPT-5.4 API` planner 或 review adapter 已接线
 - 出口门禁：planner/review 谓词正反分支全绿
 
 ### Phase 5 多仓多 worker

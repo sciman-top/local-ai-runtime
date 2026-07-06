@@ -28,6 +28,7 @@
 - [20260706 Rule Governance Pilot Coordination](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260706-rule-governance-pilot-coordination.md)
 - [20260706 AgentBridge Safe Intake Upgrade](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260706-agentbridge-safe-intake-upgrade.md)
 - [20260706 AgentBridge Round-Trip Parity](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260706-agentbridge-round-trip-parity.md)
+- [20260707 Planner Handoff Minimal Slice](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260707-planner-handoff-minimal-slice.md)
 
 当前最新结论：
 
@@ -41,6 +42,7 @@
 - selector policy、acceptance tiers、run-state/handoff foundation 与 impl_pack stale demotion 已进入 authoritative/verifier 同步面
 - 安全版 AgentBridge-first intake 已落 repo-side；`host_local` 可直接接收合规 markdown task，并对 execution-critical override / markdown 侧 gate 命令输入 fail closed
 - `P2-T03` 的 repo-side projection parity 已落地：markdown task 现已通过 `host_local` 主入口写出 `result.json`、projection markdown、artifact 与 evidence index 闭环
+- `P4-T01` 的 repo-side planner handoff 已落地：`planner_required` 命中时当前会在主 worker 前停在 `waiting_handoff`，并仍写正式四件套与 compatibility projection
 - GPT-5.4 gateway probe 与 `codex exec` minimum probe 已 ready，当前 selector 预期结果已提升到 `promote_phase1_execution`
 - 一次非 mock 的 `Codex SDK` canonical runtime vertical slice 已成功写出正式 `.ai/runs/...` 工件
 - `P1-T05` 的 `evidence_index.json` sha256 / byte_count 独立重算入口已落盘，并能回放 real SDK 产物
@@ -48,4 +50,4 @@
 - Python repo-level line-ending policy 已显式覆盖 `*.py -> LF`
 - 本仓已接入 `AGENTS.md` 共同项目规则主体 + `CLAUDE.md` thin wrapper 试点；全局规则真源仍在 `D:\CODE\governed-ai-coding-runtime`
 - 当前 active queue 仍是 `PHASE-1-VERTICAL-SLICE`
-- 当前预期 next action 仍是粗粒度的 `promote_phase1_execution`；repo-side parity 已完成，后续进入 planner/review adapter 主线
+- 当前预期 next action 仍是粗粒度的 `promote_phase1_execution`；repo-side planner handoff 已完成，后续进入 `P4-T02 review adapter`

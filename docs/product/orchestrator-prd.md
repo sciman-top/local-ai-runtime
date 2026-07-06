@@ -65,6 +65,7 @@
 - `Direct GPT-5.4 API` 条件必经 planner
 - `Claude Code + GLM-5.2` 条件必经 heterogeneous review
 - `subagents` 读多写少，写任务需独立 worktree + lease + allowlist
+- 当前 repo-side 只先把 planner-gated task 停在 `waiting_handoff`；这不是 live planner 已执行
 
 ### 能力范围与晋升顺序
 
@@ -94,7 +95,7 @@
 
 ### 中期
 
-- `host_local` 正确性、verification runner、安全边界下的 AgentBridge-first intake、以及 repo-side projection parity 已落地；后续才进入更高阶 planner/review 与 Hermes parity
+- `host_local` 正确性、verification runner、安全边界下的 AgentBridge-first intake、repo-side projection parity、以及 repo-side planner handoff 已落地；后续才进入更高阶 review adapter、live planner wiring 与 Hermes parity
 - planner/review 触发条件全是机器可判定字段
 - AgentBridge round-trip 与 Hermes parity 能在不反转 repo truth 的前提下推进
 

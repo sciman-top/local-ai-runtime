@@ -146,7 +146,8 @@
 
 ## Next Bounded Execution Queue
 
-- `P4-T01` planner adapter
+- `P4-T01` planner adapter：completed（repo-side minimal handoff）
 - `P4-T02` review adapter
+- `P4-T03` 正反触发谓词测试
 
 其中 `planner/review` 继续保留在 repo `Phase 4`，不并回容器或资源 phase。
