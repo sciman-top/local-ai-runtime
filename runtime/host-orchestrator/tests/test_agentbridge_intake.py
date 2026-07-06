@@ -265,10 +265,12 @@ def test_host_local_runner_accepts_agentbridge_markdown_task_without_sidecar(
                 raw_result={"kind": "fake"},
             )
 
+    agentbridge_root = repo_root / "AgentBridge"
     runner = HostLocalRunner(
         HostLocalConfig(
             workspace_root=repo_root,
             layout=RuntimeLayout.from_repo_root(repo_root),
+            agentbridge_root=agentbridge_root,
             run_id="markdown-intake-test",
         ),
         FakeWorker(),
@@ -279,11 +281,23 @@ def test_host_local_runner_accepts_agentbridge_markdown_task_without_sidecar(
     verification_payload = json.loads(
         (result_path.parent / "verification_summary.json").read_text(encoding="utf-8")
     )
+    evidence_payload = json.loads(
+        (result_path.parent / "evidence_index.json").read_text(encoding="utf-8")
+    )
+    projection_path = agentbridge_root / "results" / f"{task_id}.md"
+    artifact_path = agentbridge_root / "artifacts" / f"{task_id}-worker-output.txt"
+    indexed_paths = {entry["relative_path"] for entry in evidence_payload["entries"]}
 
     assert result_path == (
         repo_root / ".ai" / "runs" / "markdown-intake-test" / task_id / "result.json"
     )
     assert result_payload["task_id"] == task_id
     assert result_payload["lane"] == "host_local"
+    assert result_payload["compatibility_projection_ref"] == f"AgentBridge/results/{task_id}.md"
     assert verification_payload["status"] == "no_commands_configured"
+    assert projection_path.exists()
+    assert artifact_path.exists()
+    assert artifact_path.read_text(encoding="utf-8") == "MARKDOWN_OK"
+    assert f".ai/runs/markdown-intake-test/{task_id}/result.json" in indexed_paths
+    assert f"AgentBridge/results/{task_id}.md" in indexed_paths
     assert not (task_path.with_suffix(".json")).exists()

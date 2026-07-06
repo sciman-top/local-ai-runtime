@@ -444,6 +444,7 @@ def test_wave1_smoke_suite_writes_summary_and_generated_agentbridge_root(tmp_pat
     assert summary.event_count == 6
     assert summary.worker_status == "idle"
     assert summary.summary_path.exists()
+    assert not (summary.run_root / "canonical-tasks").exists()
 
     summary_text = summary.summary_path.read_text(encoding="utf-8")
     assert '"ok": true' in summary_text
@@ -451,8 +452,20 @@ def test_wave1_smoke_suite_writes_summary_and_generated_agentbridge_root(tmp_pat
     assert (summary.agentbridge_root / "results" / "_TEMPLATE.md").exists()
 
     for outcome in summary.task_outcomes:
-        assert (repo_root / outcome.canonical_task_path).exists()
+        expected_projection_ref = str(
+            (summary.agentbridge_root / outcome.projection_path).relative_to(repo_root)
+        ).replace("\\", "/")
+        assert (summary.agentbridge_root / outcome.markdown_task_path).exists()
         assert (repo_root / outcome.result_json_path).exists()
         assert (repo_root / outcome.evidence_index_path).exists()
         assert (summary.agentbridge_root / outcome.projection_path).exists()
         assert (summary.agentbridge_root / outcome.artifact_path).exists()
+        result_payload = json.loads(
+            (repo_root / outcome.result_json_path).read_text(encoding="utf-8")
+        )
+        evidence_payload = json.loads(
+            (repo_root / outcome.evidence_index_path).read_text(encoding="utf-8")
+        )
+        indexed_paths = {entry["relative_path"] for entry in evidence_payload["entries"]}
+        assert result_payload["compatibility_projection_ref"] == expected_projection_ref
+        assert expected_projection_ref in indexed_paths

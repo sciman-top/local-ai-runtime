@@ -8,7 +8,6 @@ import re
 import shutil
 import sqlite3
 
-from host_orchestrator import agentbridge
 from host_orchestrator.host_local import HostLocalConfig, HostLocalRunner
 from host_orchestrator.paths import RuntimeLayout
 from host_orchestrator.worker import WorkerRequest, WorkerResult
@@ -31,7 +30,7 @@ class Wave1SmokeSample:
 class Wave1SmokeTaskOutcome:
     task_id: str
     category: str
-    canonical_task_path: str
+    markdown_task_path: str
     result_json_path: str
     evidence_index_path: str
     projection_path: str
@@ -224,15 +223,18 @@ def collect_wave1_smoke_summary(
     if len(outcomes) != len(samples):
         issues.append(f"Expected {len(samples)} task outcomes, found {len(outcomes)}.")
 
+    if (run_root / "canonical-tasks").exists():
+        issues.append("Wave 1 smoke unexpectedly materialized canonical task sidecars.")
+
     for outcome in outcomes:
-        canonical_task_path = repo_root / outcome.canonical_task_path
+        markdown_task_path = agentbridge_root / outcome.markdown_task_path
         result_json_path = repo_root / outcome.result_json_path
         evidence_index_path = repo_root / outcome.evidence_index_path
         projection_path = agentbridge_root / outcome.projection_path
         artifact_path = agentbridge_root / outcome.artifact_path
 
-        if not canonical_task_path.exists():
-            issues.append(f"Missing canonical smoke task: {canonical_task_path}")
+        if not markdown_task_path.exists():
+            issues.append(f"Missing markdown smoke task: {markdown_task_path}")
             continue
         if not result_json_path.exists():
             issues.append(f"Missing canonical result.json: {result_json_path}")
@@ -250,8 +252,12 @@ def collect_wave1_smoke_summary(
         result_payload = json.loads(result_json_path.read_text(encoding="utf-8"))
         if result_payload.get("worker_profile") != "wave1_smoke":
             issues.append(f"Canonical result lost wave1_smoke worker profile: {result_json_path}")
-        if result_payload.get("compatibility_projection_ref") is None:
-            issues.append(f"Canonical result is missing compatibility projection ref: {result_json_path}")
+        expected_projection_ref = str(projection_path.relative_to(repo_root)).replace("\\", "/")
+        if result_payload.get("compatibility_projection_ref") != expected_projection_ref:
+            issues.append(
+                "Canonical result projection ref drifted from markdown projection: "
+                f"{result_json_path}"
+            )
 
         projection_text = projection_path.read_text(encoding="utf-8")
         if f"task_id: {outcome.task_id}" not in projection_text:
@@ -322,22 +328,16 @@ def run_wave1_smokes(
         ScriptedWave1SmokeWorker(responses_by_task_id),
     )
 
-    canonical_tasks_root = run_root / "canonical-tasks"
     outcomes: list[Wave1SmokeTaskOutcome] = []
     for sample in samples:
         markdown_task_path = agentbridge_root / "tasks" / sample.task_path.name
-        canonical_task_path = agentbridge.project_markdown_task_to_canonical(
-            markdown_task_path,
-            canonical_tasks_root / f"{sample.task_id}.json",
-            repo_root=repo_root,
-        )
-        result_path = runner.run_task(canonical_task_path)
+        result_path = runner.run_task(markdown_task_path)
         result_payload = json.loads(result_path.read_text(encoding="utf-8"))
         outcomes.append(
             Wave1SmokeTaskOutcome(
                 task_id=sample.task_id,
                 category=sample.category,
-                canonical_task_path=str(canonical_task_path.relative_to(repo_root)).replace("\\", "/"),
+                markdown_task_path=str(markdown_task_path.relative_to(agentbridge_root)).replace("\\", "/"),
                 result_json_path=str(result_path.relative_to(repo_root)).replace("\\", "/"),
                 evidence_index_path=str(
                     (result_path.parent / "evidence_index.json").relative_to(repo_root)
