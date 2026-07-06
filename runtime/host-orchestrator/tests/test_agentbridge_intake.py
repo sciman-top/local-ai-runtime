@@ -3,6 +3,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import pytest
+
 from host_orchestrator import agentbridge
 from host_orchestrator.canonical_task import REQUIRED_FIELDS, task_from_payload
 from host_orchestrator.host_local import HostLocalConfig, HostLocalRunner
@@ -18,13 +20,13 @@ def _write_agentbridge_task(path: Path, front_matter: str, body: str) -> Path:
     return path
 
 
-def test_markdown_task_to_canonical_payload_preserves_explicit_canonical_fields(
+def test_markdown_task_to_canonical_payload_uses_repo_owned_defaults(
     tmp_path: Path,
 ) -> None:
     repo_root = tmp_path / "repo"
     repo_root.mkdir()
 
-    task_id = "T-20260706-100001-lossless-intake"
+    task_id = "T-20260706-100001-safe-intake"
     task_path = _write_agentbridge_task(
         repo_root / "AgentBridge" / "tasks" / f"{task_id}.md",
         "\n".join(
@@ -35,40 +37,16 @@ def test_markdown_task_to_canonical_payload_preserves_explicit_canonical_fields(
                 "source_runtime: hermes",
                 "source_model: gpt-5.5",
                 "source_provider: third-party-openai-compatible",
+                "title: Explicit markdown intake task title.",
                 "goal: >",
-                "  Preserve every canonical intake field from markdown front matter.",
+                "  Prove markdown intake normalizes into repo-owned canonical defaults.",
                 "constraints:",
                 "  - Stay inside the worktree.",
                 "runner: codex",
                 "approval_level: manual_only",
-                "target_repo: external-repo-alias",
-                "base_branch: release/2026-07",
-                "branch_name: codex/d-t01-explicit",
-                "worktree_path: .worktrees/d-t01-explicit",
-                "allowed_paths:",
-                "  - runtime/host-orchestrator/**",
-                "  - docs/specs/**",
-                "forbidden_paths:",
-                "  - docs/backlog/**",
-                "  - .env",
-                "write_access: false",
-                "risk_level: critical",
-                "merge_policy: draft_pr_only",
-                "execution_lane: host_local",
-                "requires_network: true",
                 "requires_gui: true",
-                "depends_on:",
-                "  - D-T00",
                 "artifacts_out:",
-                "  - .ai/runs/<run_id>/T-20260706-100001-lossless-intake/result.json",
-                "handoff_policy: handoff_always",
-                "verification_commands:",
-                "  build: uv run --project ./runtime/host-orchestrator python -m pytest",
-                "  test: uv run --project ./runtime/host-orchestrator python -m pytest -k intake",
-                "  lint: null",
-                "  typecheck: null",
-                "  contract: python ./scripts/verify-planning-status.py",
-                "  hotspot: null",
+                "  - .ai/runs/<run_id>/T-20260706-100001-safe-intake/result.json",
             ]
         ),
         "\n".join(
@@ -92,32 +70,146 @@ def test_markdown_task_to_canonical_payload_preserves_explicit_canonical_fields(
     assert canonical_task.path == task_path
     assert canonical_task.task_id == task_id
     assert canonical_task.title == "Explicit markdown intake task title."
-    assert canonical_task.target_repo == "external-repo-alias"
-    assert canonical_task.base_branch == "release/2026-07"
-    assert canonical_task.branch_name == "codex/d-t01-explicit"
-    assert canonical_task.worktree_path == ".worktrees/d-t01-explicit"
-    assert canonical_task.allowed_paths == (
-        "runtime/host-orchestrator/**",
-        "docs/specs/**",
+    assert canonical_task.target_repo == repo_root.name
+    assert canonical_task.base_branch == "main"
+    assert canonical_task.branch_name == f"compat/{task_id}"
+    assert canonical_task.worktree_path == "."
+    assert canonical_task.allowed_paths == ("**",)
+    assert canonical_task.forbidden_paths == (
+        ".env",
+        ".env.*",
+        ".git/config",
+        ".ssh/**",
+        "secrets/**",
     )
-    assert canonical_task.forbidden_paths == ("docs/backlog/**", ".env")
-    assert canonical_task.write_access is False
-    assert canonical_task.risk_level == "critical"
-    assert canonical_task.merge_policy == "draft_pr_only"
+    assert canonical_task.write_access is True
+    assert canonical_task.risk_level == "high"
+    assert canonical_task.merge_policy == "manual_merge_only"
     assert canonical_task.execution_lane == "host_local"
-    assert canonical_task.requires_network is True
+    assert canonical_task.requires_network is False
     assert canonical_task.requires_gui is True
-    assert canonical_task.depends_on == ("D-T00",)
+    assert canonical_task.depends_on == ()
     assert canonical_task.artifacts_out == (
-        ".ai/runs/<run_id>/T-20260706-100001-lossless-intake/result.json",
+        ".ai/runs/<run_id>/T-20260706-100001-safe-intake/result.json",
     )
-    assert canonical_task.handoff_policy == "handoff_always"
-    assert (
-        canonical_task.verification_commands.test
-        == "uv run --project ./runtime/host-orchestrator python -m pytest -k intake"
+    assert canonical_task.handoff_policy == "handoff_on_risk"
+    assert canonical_task.verification_commands.build is None
+    assert canonical_task.verification_commands.test is None
+    assert canonical_task.verification_commands.contract is None
+    assert canonical_task.description.startswith("---\nid: T-20260706-100001-safe-intake")
+
+
+def test_markdown_task_rejects_verification_command_injection(tmp_path: Path) -> None:
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir()
+
+    task_id = "T-20260706-100003-reject-verification-injection"
+    task_path = _write_agentbridge_task(
+        repo_root / "AgentBridge" / "tasks" / f"{task_id}.md",
+        "\n".join(
+            [
+                f"id: {task_id}",
+                "created_at: 2026-07-06T10:00:03Z",
+                "requested_by: hermes",
+                "source_runtime: hermes",
+                "source_model: gpt-5.5",
+                "source_provider: third-party-openai-compatible",
+                "goal: >",
+                "  Attempt to smuggle shell commands through markdown intake.",
+                "constraints:",
+                "  - Stay inside the worktree.",
+                "runner: codex",
+                "approval_level: review",
+                "requires_gui: false",
+                "artifacts_out:",
+                "  - artifacts/example-output.txt",
+                "verification_commands:",
+                "  test: python -c \"print('SHOULD_NOT_RUN')\"",
+            ]
+        ),
+        "# Summary\n\nReject injected verification commands.\n",
     )
-    assert canonical_task.verification_commands.contract == "python ./scripts/verify-planning-status.py"
-    assert canonical_task.description.startswith("---\nid: T-20260706-100001-lossless-intake")
+
+    with pytest.raises(
+        agentbridge.CompatibilityAdapterError,
+        match="Unsupported markdown execution override\\(s\\): verification_commands",
+    ):
+        agentbridge.load_markdown_task(task_path)
+
+
+def test_markdown_task_rejects_execution_critical_overrides(tmp_path: Path) -> None:
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir()
+
+    task_id = "T-20260706-100004-reject-execution-override"
+    task_path = _write_agentbridge_task(
+        repo_root / "AgentBridge" / "tasks" / f"{task_id}.md",
+        "\n".join(
+            [
+                f"id: {task_id}",
+                "created_at: 2026-07-06T10:00:04Z",
+                "requested_by: hermes",
+                "source_runtime: hermes",
+                "source_model: gpt-5.5",
+                "source_provider: third-party-openai-compatible",
+                "goal: >",
+                "  Attempt to override execution-critical runtime behavior.",
+                "constraints:",
+                "  - Stay inside the worktree.",
+                "runner: codex",
+                "approval_level: review",
+                "requires_gui: false",
+                "artifacts_out:",
+                "  - artifacts/example-output.txt",
+                "target_repo: some-other-repo",
+                "write_access: false",
+                "execution_lane: remote_non_gui",
+                "requires_network: true",
+            ]
+        ),
+        "# Summary\n\nReject execution overrides.\n",
+    )
+
+    with pytest.raises(
+        agentbridge.CompatibilityAdapterError,
+        match="Unsupported markdown execution override\\(s\\): execution_lane, requires_network, target_repo, write_access",
+    ):
+        agentbridge.load_markdown_task(task_path)
+
+
+def test_markdown_task_rejects_incomplete_front_matter(tmp_path: Path) -> None:
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir()
+
+    task_id = "T-20260706-100005-incomplete-markdown"
+    task_path = _write_agentbridge_task(
+        repo_root / "AgentBridge" / "tasks" / f"{task_id}.md",
+        "\n".join(
+            [
+                f"id: {task_id}",
+                "created_at: 2026-07-06T10:00:05Z",
+                "requested_by: hermes",
+                "source_runtime: hermes",
+                "source_model: gpt-5.5",
+                "source_provider: third-party-openai-compatible",
+                "goal: >",
+                "  Missing approval_level should fail closed.",
+                "constraints:",
+                "  - Stay inside the worktree.",
+                "runner: codex",
+                "requires_gui: false",
+                "artifacts_out:",
+                "  - artifacts/example-output.txt",
+            ]
+        ),
+        "# Summary\n\nReject incomplete markdown.\n",
+    )
+
+    with pytest.raises(
+        agentbridge.CompatibilityAdapterError,
+        match="Missing required markdown task fields: approval_level",
+    ):
+        agentbridge.load_markdown_task(task_path)
 
 
 def test_host_local_runner_accepts_agentbridge_markdown_task_without_sidecar(
@@ -148,13 +240,6 @@ def test_host_local_runner_accepts_agentbridge_markdown_task_without_sidecar(
                 "approval_level: manual_only",
                 "artifacts_out:",
                 "  - .ai/runs/<run_id>/T-20260706-100002-host-local-intake/result.json",
-                "verification_commands:",
-                "  build: null",
-                "  test: python -c \"print('TEST_OK')\"",
-                "  lint: null",
-                "  typecheck: null",
-                "  contract: python -c \"print('CONTRACT_OK')\"",
-                "  hotspot: null",
             ]
         ),
         "\n".join(
@@ -200,5 +285,5 @@ def test_host_local_runner_accepts_agentbridge_markdown_task_without_sidecar(
     )
     assert result_payload["task_id"] == task_id
     assert result_payload["lane"] == "host_local"
-    assert verification_payload["status"] == "pass"
+    assert verification_payload["status"] == "no_commands_configured"
     assert not (task_path.with_suffix(".json")).exists()

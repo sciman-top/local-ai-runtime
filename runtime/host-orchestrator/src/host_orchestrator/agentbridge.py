@@ -36,6 +36,40 @@ APPROVAL_LEVEL_TO_RISK = {
     "review": "medium",
     "manual_only": "high",
 }
+REQUIRED_MARKDOWN_TASK_KEYS = {
+    "id",
+    "created_at",
+    "requested_by",
+    "source_runtime",
+    "source_model",
+    "source_provider",
+    "goal",
+    "constraints",
+    "runner",
+    "requires_gui",
+    "approval_level",
+    "artifacts_out",
+}
+OPTIONAL_MARKDOWN_TASK_KEYS = {
+    "title",
+}
+UNSAFE_MARKDOWN_OVERRIDE_KEYS = {
+    "target_repo",
+    "base_branch",
+    "branch_name",
+    "worktree_path",
+    "allowed_paths",
+    "forbidden_paths",
+    "write_access",
+    "risk_level",
+    "merge_policy",
+    "execution_lane",
+    "requires_network",
+    "depends_on",
+    "handoff_policy",
+    "verification_commands",
+}
+SUPPORTED_MARKDOWN_TASK_KEYS = REQUIRED_MARKDOWN_TASK_KEYS | OPTIONAL_MARKDOWN_TASK_KEYS
 
 
 class CompatibilityAdapterError(ValueError):
@@ -83,6 +117,7 @@ def load_markdown_task(path: Path) -> MarkdownTaskProjection:
     task_id = _require_string(front_matter, "id", source=str(path))
     if path.stem != task_id:
         raise CompatibilityAdapterError(f"Task basename and front matter id differ: {path}")
+    _validate_markdown_task_front_matter(front_matter, source=str(path))
 
     return MarkdownTaskProjection(
         task_id=task_id,
@@ -109,59 +144,27 @@ def markdown_task_to_canonical_payload(
         title = _extract_summary_title(task.raw_text) or goal or task.task_id
 
     approval_level = _require_string(front_matter, "approval_level", source=str(task.path))
-    target_repo = _optional_front_matter_string(front_matter, "target_repo", source=str(task.path))
-    base_branch = _optional_front_matter_string(front_matter, "base_branch", source=str(task.path))
-    branch_name = _optional_front_matter_string(front_matter, "branch_name", source=str(task.path))
-    worktree_path = _optional_front_matter_string(front_matter, "worktree_path", source=str(task.path))
-    allowed_paths = _optional_front_matter_string_list(
-        front_matter, "allowed_paths", source=str(task.path)
-    )
-    forbidden_paths = _optional_front_matter_string_list(
-        front_matter, "forbidden_paths", source=str(task.path)
-    )
-    risk_level = _optional_front_matter_string(front_matter, "risk_level", source=str(task.path))
-    merge_policy = _optional_front_matter_string(front_matter, "merge_policy", source=str(task.path))
-    execution_lane = _optional_front_matter_string(front_matter, "execution_lane", source=str(task.path))
-    handoff_policy = _optional_front_matter_string(front_matter, "handoff_policy", source=str(task.path))
-    write_access = _optional_front_matter_bool(front_matter, "write_access", source=str(task.path))
-    requires_network = _optional_front_matter_bool(
-        front_matter, "requires_network", source=str(task.path)
-    )
-    requires_gui = _optional_front_matter_bool(front_matter, "requires_gui", source=str(task.path))
-    depends_on = _optional_front_matter_string_list(front_matter, "depends_on", source=str(task.path))
-    artifacts_out = _optional_front_matter_string_list(
-        front_matter, "artifacts_out", source=str(task.path)
-    )
-    verification_commands = _optional_verification_commands(
-        front_matter, "verification_commands", source=str(task.path)
-    )
 
     return {
         "task_id": task.task_id,
         "title": title,
         "description": task.raw_text.strip(),
-        "target_repo": repo_root.name if target_repo is None else target_repo,
-        "base_branch": "main" if base_branch is None else base_branch,
-        "branch_name": f"compat/{task.task_id}" if branch_name is None else branch_name,
-        "worktree_path": "." if worktree_path is None else worktree_path,
-        "allowed_paths": ["**"] if allowed_paths is None else allowed_paths,
-        "forbidden_paths": list(DEFAULT_FORBIDDEN_PATHS) if forbidden_paths is None else forbidden_paths,
-        "write_access": True if write_access is None else write_access,
-        "risk_level": APPROVAL_LEVEL_TO_RISK.get(approval_level, "medium")
-        if risk_level is None
-        else risk_level,
-        "merge_policy": "manual_merge_only" if merge_policy is None else merge_policy,
-        "execution_lane": "host_local" if execution_lane is None else execution_lane,
-        "requires_network": False if requires_network is None else requires_network,
-        "requires_gui": False if requires_gui is None else requires_gui,
-        "depends_on": [] if depends_on is None else depends_on,
-        "artifacts_out": [] if artifacts_out is None else artifacts_out,
-        "handoff_policy": "handoff_on_risk" if handoff_policy is None else handoff_policy,
-        "verification_commands": (
-            dict(DEFAULT_VERIFICATION_COMMANDS)
-            if verification_commands is None
-            else verification_commands
-        ),
+        "target_repo": repo_root.name,
+        "base_branch": "main",
+        "branch_name": f"compat/{task.task_id}",
+        "worktree_path": ".",
+        "allowed_paths": ["**"],
+        "forbidden_paths": list(DEFAULT_FORBIDDEN_PATHS),
+        "write_access": True,
+        "risk_level": APPROVAL_LEVEL_TO_RISK[approval_level],
+        "merge_policy": "manual_merge_only",
+        "execution_lane": "host_local",
+        "requires_network": False,
+        "requires_gui": _require_bool(front_matter, "requires_gui", source=str(task.path)),
+        "depends_on": [],
+        "artifacts_out": _require_string_list(front_matter, "artifacts_out", source=str(task.path)),
+        "handoff_policy": "handoff_on_risk",
+        "verification_commands": dict(DEFAULT_VERIFICATION_COMMANDS),
     }
 
 
@@ -309,42 +312,6 @@ def _extract_summary_title(raw_text: str) -> str:
     return lines[0] if lines else ""
 
 
-def _optional_front_matter_bool(
-    front_matter: dict[str, Any],
-    key: str,
-    *,
-    source: str,
-) -> bool | None:
-    if key not in front_matter:
-        return None
-
-    value = front_matter[key]
-    if isinstance(value, bool):
-        return value
-    if isinstance(value, str):
-        lowered = value.strip().lower()
-        if lowered == "true":
-            return True
-        if lowered == "false":
-            return False
-    raise CompatibilityAdapterError(f"{source}:{key} must be a boolean")
-
-
-def _optional_front_matter_string_list(
-    front_matter: dict[str, Any],
-    key: str,
-    *,
-    source: str,
-) -> list[str] | None:
-    if key not in front_matter:
-        return None
-
-    value = front_matter[key]
-    if not isinstance(value, list) or not all(isinstance(item, str) for item in value):
-        raise CompatibilityAdapterError(f"{source}:{key} must be a list of strings")
-    return [item.strip() for item in value]
-
-
 def _optional_front_matter_string(
     front_matter: dict[str, Any],
     key: str,
@@ -360,32 +327,53 @@ def _optional_front_matter_string(
     return value.strip()
 
 
-def _optional_verification_commands(
-    front_matter: dict[str, Any],
-    key: str,
-    *,
-    source: str,
-) -> dict[str, str | None] | None:
-    if key not in front_matter:
-        return None
+def _validate_markdown_task_front_matter(front_matter: dict[str, Any], *, source: str) -> None:
+    missing = sorted(REQUIRED_MARKDOWN_TASK_KEYS - front_matter.keys())
+    if missing:
+        raise CompatibilityAdapterError(
+            "Missing required markdown task fields: " + ", ".join(missing)
+        )
 
-    value = front_matter[key]
-    if not isinstance(value, dict):
-        raise CompatibilityAdapterError(f"{source}:{key} must be a mapping")
+    unsafe_keys = sorted(UNSAFE_MARKDOWN_OVERRIDE_KEYS & front_matter.keys())
+    if unsafe_keys:
+        raise CompatibilityAdapterError(
+            "Unsupported markdown execution override(s): " + ", ".join(unsafe_keys)
+        )
 
-    commands: dict[str, str | None] = dict(DEFAULT_VERIFICATION_COMMANDS)
-    for command_key in DEFAULT_VERIFICATION_COMMANDS:
-        raw_command = value.get(command_key)
-        if raw_command is None:
-            commands[command_key] = None
-            continue
-        if not isinstance(raw_command, str):
-            raise CompatibilityAdapterError(
-                f"{source}:{key}.{command_key} must be a string or null"
-            )
-        stripped = raw_command.strip()
-        commands[command_key] = stripped or None
-    return commands
+    unknown_keys = sorted(front_matter.keys() - SUPPORTED_MARKDOWN_TASK_KEYS - UNSAFE_MARKDOWN_OVERRIDE_KEYS)
+    if unknown_keys:
+        raise CompatibilityAdapterError(
+            "Unsupported markdown task field(s): " + ", ".join(unknown_keys)
+        )
+
+    for key in [
+        "requested_by",
+        "source_runtime",
+        "source_model",
+        "source_provider",
+        "goal",
+        "runner",
+        "approval_level",
+    ]:
+        _require_string(front_matter, key, source=source)
+
+    _require_timestamp_candidate(front_matter, "created_at", source=source)
+    _require_string_list(front_matter, "constraints", source=source)
+    _require_string_list(front_matter, "artifacts_out", source=source)
+    _require_bool(front_matter, "requires_gui", source=source)
+
+    runner = _require_string(front_matter, "runner", source=source)
+    if runner != "codex":
+        raise CompatibilityAdapterError(f"{source}:runner must be 'codex'")
+
+    approval_level = _require_string(front_matter, "approval_level", source=source)
+    if approval_level not in APPROVAL_LEVEL_TO_RISK:
+        raise CompatibilityAdapterError(
+            f"{source}:approval_level must be one of {', '.join(sorted(APPROVAL_LEVEL_TO_RISK))}"
+        )
+
+    if "title" in front_matter:
+        _optional_front_matter_string(front_matter, "title", source=source)
 
 
 def _require_string(payload: dict[str, Any], key: str, *, source: str) -> str:
@@ -393,3 +381,26 @@ def _require_string(payload: dict[str, Any], key: str, *, source: str) -> str:
     if not isinstance(value, str) or not value.strip():
         raise CompatibilityAdapterError(f"{source}:{key} must be a non-empty string")
     return value.strip()
+
+
+def _require_string_list(payload: dict[str, Any], key: str, *, source: str) -> list[str]:
+    value = payload.get(key)
+    if not isinstance(value, list) or not all(isinstance(item, str) and item.strip() for item in value):
+        raise CompatibilityAdapterError(f"{source}:{key} must be a list of non-empty strings")
+    return [item.strip() for item in value]
+
+
+def _require_bool(payload: dict[str, Any], key: str, *, source: str) -> bool:
+    value = payload.get(key)
+    if not isinstance(value, bool):
+        raise CompatibilityAdapterError(f"{source}:{key} must be a boolean")
+    return value
+
+
+def _require_timestamp_candidate(payload: dict[str, Any], key: str, *, source: str) -> str:
+    value = payload.get(key)
+    if isinstance(value, datetime):
+        return value.isoformat()
+    if isinstance(value, str) and value.strip():
+        return value.strip()
+    raise CompatibilityAdapterError(f"{source}:{key} must be a timestamp string")
