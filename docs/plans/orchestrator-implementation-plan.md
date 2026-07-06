@@ -22,7 +22,7 @@
 
 当前预期 selector 结果：
 
-- `phase1_prereq_probe_first`
+- `promote_phase1_execution`
 
 ### GOV-T01 formalize governed reference companion
 
@@ -154,8 +154,9 @@
 
 - Status: pending
 - Preconditions:
-  - GPT-5.4 gateway 可用
-  - `codex exec` 最小命令可用
+  - GPT-5.4 gateway 可用：已满足
+  - `codex exec` 最小命令可用：已满足
+  - 当前范围限制：`network_proxy` 仍为 `platform_na`，先按纯本地任务推进
 
 ### P1-T05 `evidence_index.json` sha256 可重算
 

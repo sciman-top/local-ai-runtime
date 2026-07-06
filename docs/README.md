@@ -36,7 +36,7 @@
 治理增强层是当前主线的 cross-cutting overlay，不替代 `Phase 1 -> Phase 6` 产品路线图。
 
 - `selector + change-evidence + preflight + reference governance` 是 Phase 1 推进前和推进过程中的治理增强面。
-- 当前 selector 预期结果是 `phase1_prereq_probe_first`，直到 GPT-5.4 gateway 与 `codex exec` prerequisite probes 被刷新为 ready。
+- 当前 selector 预期结果是 `promote_phase1_execution`；GPT-5.4 gateway 与 `codex exec` prerequisite probes 已 ready，但 `network_proxy` 仍是 `platform_na`，所以 `Phase 1` 先限纯本地执行。
 - `governed-ai-coding-runtime` 已被纳入正式 `governance-sidecar` companion，但它只提供治理机制参考，不定义当前主线实现真相。
 
 当前治理入口：

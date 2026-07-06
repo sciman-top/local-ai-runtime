@@ -8,24 +8,21 @@
     "status": "in_progress",
     "source_plan": "docs/plans/orchestrator-implementation-plan.md",
     "source_backlog": "docs/backlog/orchestrator-task-list.md",
-    "why_now": "P1-T01/P1-T02/P1-T03 plus repo-owned config contract are now landed repo-side on runtime/host-orchestrator. The remaining bounded next action is still the Phase 1 prerequisite probe path before claiming live acceptance."
+    "why_now": "P1-T01/P1-T02/P1-T03 plus repo-owned config contract are landed repo-side, and the Phase 1 prerequisite probes are now ready. The next bounded action is the first non-mock real SDK execution slice on top of the canonical runtime."
   },
   "current_decision_gate": {
-    "selector": "phase1_prereq_probe_first",
+    "selector": "promote_phase1_execution",
     "selector_source": "scripts/select-next-work.py",
     "as_of": "2026-07-06",
-    "proof_ref": "docs/change-evidence/20260706-selector-policy-promoted-to-verifier-scope.md",
-    "blocking_reasons": [
-      "gpt54_gateway_probe_pending",
-      "codex_exec_minimum_probe_pending"
-    ]
+    "proof_ref": "docs/change-evidence/20260706-phase1-prereq-probes-ready.md",
+    "blocking_reasons": []
   },
   "current_live_posture": {
-    "status": "prereq_probe_pending",
-    "gpt54_gateway_probe_status": "pending",
-    "codex_exec_probe_status": "pending",
+    "status": "live_probe_ready",
+    "gpt54_gateway_probe_status": "ready",
+    "codex_exec_probe_status": "ready",
     "as_of": "2026-07-06",
-    "summary": "The repo-side Phase 1 runtime slice is now canonical-task-first with result.json plus compatibility projection. Governance Overlay remains green, but live prerequisite probes are still pending, so the next action stays `phase1_prereq_probe_first`."
+    "summary": "The repo-side Phase 1 runtime slice is canonical-task-first with result.json plus compatibility projection, and both the GPT-5.4 gateway probe and the codex exec minimum probe are now ready. network_proxy remains platform_na, so the next real execution step should stay within pure local task boundaries."
   },
   "certified_baseline": {
     "queue_id": "HERMES-AGENTBRIDGE-BASELINE",
@@ -63,7 +60,7 @@
     "Phase 1 垂直切片",
     "双写过渡方案 A",
     "Governance Overlay",
-    "phase1_prereq_probe_first",
+    "promote_phase1_execution",
     "mock green",
     "live probe ready",
     "selector + change-evidence + preflight + reference governance"
@@ -72,5 +69,5 @@
     "当前主线仍是 `single worker / single repo / no push / PR`",
     "`single worker / single repo / pure local tasks / SDK first / codex exec fallback / no auto_continue / no auto-merge`"
   ],
-  "rollback_ref": "git revert the planning-status.json + authoritative docs + canonical runtime + impl_pack demotion bundle as one change set"
+  "rollback_ref": "git revert the planning-status.json + capability probe evidence + authoritative docs bundle as one change set"
 }

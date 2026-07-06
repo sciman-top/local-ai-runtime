@@ -12,7 +12,7 @@
 - repo-owned `config / worker_profile / policies` 契约已吸收
 - selector policy 已进入 verifier 视野，impl_pack stale/legacy demotion 也已机器可检
 
-当前 selector 预期结果仍是 `phase1_prereq_probe_first`。
+当前 selector 预期结果已提升到 `promote_phase1_execution`。
 
 ## Governance Overlay
 
@@ -43,16 +43,17 @@
 - 目标：canonical task -> 真实 SDK -> `result.json` -> markdown projection
 - 当前状态：
   - repo-side canonical runtime 已闭环
-  - live prerequisite probes 仍待刷新
+  - prerequisite probes 已 ready
+  - `network_proxy` 仍为 `platform_na`
 - 已完成：
   - 默认 layout 迁移
   - canonical task intake
   - canonical result writer
   - compatibility projection
   - repo-owned config / worker-profile contract
-- 未完成：
-  - 真实 GPT-5.4 gateway probe
+  - GPT-5.4 gateway probe
   - `codex exec` minimum probe
+- 未完成：
   - 非 mock live vertical slice
   - `evidence_index.json` sha256 独立校验脚本
 - 入口条件：

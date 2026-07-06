@@ -54,7 +54,7 @@
     },
     {
       "path": "docs/backlog/orchestrator-task-list.md",
-      "contains": "phase1_prereq_probe_first"
+      "contains": "promote_phase1_execution"
     },
     {
       "path": "docs/specs/config-and-worker-profiles.md",

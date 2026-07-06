@@ -31,7 +31,7 @@
     - `scripts/select-next-work.py` 独立返回下一步动作
     - `scripts/verify-planning-status.py` 只做一致性校验
   - Status note:
-    - 2026-07-06 当前 selector 预期结果为 `phase1_prereq_probe_first`
+    - 2026-07-06 prerequisite probes ready 后，当前 selector 预期结果已提升为 `promote_phase1_execution`
 - [x] `GOV-T03` add repo-level change-evidence index
   - Done when:
     - `docs/change-evidence/README.md` 与 dated evidence note 已落盘
@@ -64,7 +64,7 @@
 治理任务完成后：
 
 - 当前产品 active queue 仍然是 `PHASE-1-VERTICAL-SLICE`
-- 当前预期 next action 仍然是 `phase1_prereq_probe_first`
+- 当前预期 next action 已是 `promote_phase1_execution`
 
 ## Phase 1
 
@@ -94,6 +94,8 @@
   - Done when:
     - 真实 task run 成功
     - mock 未被记为 live green
+  - Status note:
+    - 2026-07-06 prerequisite probes 已 ready；当前只剩真实 SDK vertical slice 本身未执行
 - [ ] `P1-T05` `evidence_index.json` sha256 可重算
   - Done when:
     - index 校验脚本通过

@@ -34,12 +34,12 @@ SUPPLEMENTAL_REQUIRED_TOKENS = [
 REQUIRED_DOC_SNIPPETS = {
     "README.md": [
         "Governance Overlay",
-        "phase1_prereq_probe_first",
+        "promote_phase1_execution",
         "config-and-worker-profiles.md",
     ],
     "docs/README.md": [
         "Governance Overlay",
-        "phase1_prereq_probe_first",
+        "promote_phase1_execution",
         "next-work-selection-policy.json",
         "config-and-worker-profiles.md",
     ],
@@ -74,17 +74,17 @@ REQUIRED_DOC_SNIPPETS = {
     ],
     "docs/roadmap/orchestrator-roadmap.md": [
         "Governance Overlay",
-        "phase1_prereq_probe_first",
+        "promote_phase1_execution",
     ],
     "docs/plans/orchestrator-implementation-plan.md": [
         "Governance Overlay",
         "GOV-T01",
-        "phase1_prereq_probe_first",
+        "promote_phase1_execution",
     ],
     "docs/backlog/orchestrator-task-list.md": [
         "GOV-T01",
         "PHASE-1-VERTICAL-SLICE",
-        "phase1_prereq_probe_first",
+        "promote_phase1_execution",
     ],
 }
 DEMOTED_FILE_MARKERS = {
