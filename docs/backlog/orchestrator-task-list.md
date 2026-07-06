@@ -96,7 +96,11 @@
     - mock 未被记为 live green
   - Status note:
     - 2026-07-06 已用 `Codex SDK` 在隔离工作区中完成一次非 mock canonical runtime vertical slice
-- [ ] `P1-T05` `evidence_index.json` sha256 可重算
+- [x] `P1-T05` `evidence_index.json` sha256 可重算
+  - Done when:
+    - index 校验入口通过
+  - Status note:
+    - 2026-07-06 已补独立 revalidation entrypoint，并能对 real SDK 产物重算 sha256 / byte_count
   - Done when:
     - index 校验脚本通过
 

@@ -20,7 +20,7 @@
 当前主线额外叠加一层 **Governance Overlay**，但它不是新的产品 phase，也不把本仓改写成 `governed-ai-coding-runtime` 的翻版。
 
 - `selector + change-evidence + preflight + reference governance` 是 Phase 1 推进前和推进过程中的 cross-cutting 治理增强面
-- 当前预期 next action 是 `promote_phase1_execution`
+- 当前预期 next action 是 `promote_phase1_execution`；repo-side Phase 1 exit gates 已补齐，但 live posture 仍停在 `live probe ready`
 - `governed-ai-coding-runtime` 现在是正式的 `governance-sidecar` reference companion，用来借鉴 gate / evidence / selector 治理机制，而不是当前主线实现真源
 
 当前治理入口：

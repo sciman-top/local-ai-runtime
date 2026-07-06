@@ -148,7 +148,7 @@
   - `ai_dev_orchestrator_impl_pack/14_HANDOFF_MESSAGE_TO_CODEX.md`
   - `scripts/verify-planning-status.py`
 
-## Remaining Phase 1 Work
+## Phase 1 Closeout Status
 
 ### P1-T04 真实 SDK 切片
 
@@ -162,21 +162,32 @@
 
 ### P1-T05 `evidence_index.json` sha256 可重算
 
-- Status: pending
-- Gap:
-  - 仍缺独立 index 校验脚本
+- Status: completed (repo-side)
+- Outputs:
+  - `runtime/host-orchestrator/src/host_orchestrator/evidence_index.py`
+  - `uv run --project .\runtime\host-orchestrator python -m host_orchestrator --repo-root . --revalidate-evidence-index <path-to-evidence_index.json>`
+  - `runtime/host-orchestrator/tests/test_wave1_execution.py` 中的重算通过 / 篡改失败断言
+- Boundary:
+  - 这补齐了 `repo-side green` 所需的 evidence integrity 口径
+  - 当前 live posture 仍然只是 `live probe ready`
 
 ## Phase 2 And Beyond
 
-### P2-T01 schema / contract hardening
+### P2-T01 acceptance / gates foundation
 
 - Status:
-  - config / acceptance / run-state foundation docs 已落盘
-  - formal schema validation tests 仍待实现
+  - completed (contract layer)
 
-### P2-T02 AgentBridge round-trip
+### P2-T02 run-state / handoff foundation
+
+- Status:
+  - completed (contract layer)
+
+### P2-T03 AgentBridge round-trip parity
 
 - Status: pending
+- Next bounded slice:
+  - compatibility projection 与 canonical result/review 的 round-trip parity
 
 ### P3-T01 verification runner
 

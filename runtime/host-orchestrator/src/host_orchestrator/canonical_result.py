@@ -1,26 +1,22 @@
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass, replace
+from dataclasses import dataclass, replace
 from datetime import datetime, timezone
-import hashlib
 import json
 from pathlib import Path
 from typing import Any, Callable
 
 from host_orchestrator.canonical_task import CanonicalTask
 from host_orchestrator.config_runtime import WorkerProfile
+from host_orchestrator.evidence_index import (
+    build_evidence_index_payload,
+    render_relative_path,
+)
 from host_orchestrator.paths import RuntimeLayout
 from host_orchestrator.worker import WorkerResult, WorkerUsage
 
 
 ProjectionWriter = Callable[["RunArtifacts"], Path | None]
-
-
-@dataclass(frozen=True)
-class ArtifactDigest:
-    relative_path: str
-    sha256: str
-    byte_count: int
 
 
 @dataclass(frozen=True)
@@ -108,11 +104,11 @@ def write_result_bundle(
     projection_path = projection_writer(artifacts) if projection_writer is not None else None
     artifacts = replace(artifacts, projection_markdown=projection_path)
 
-    relative_stdout = _relative(layout.repo_root, artifacts.stdout_log)
-    relative_stderr = _relative(layout.repo_root, artifacts.stderr_log)
-    relative_verification = _relative(layout.repo_root, artifacts.verification_summary)
-    relative_cost = _relative(layout.repo_root, artifacts.cost_summary)
-    relative_worker_output = _relative(layout.repo_root, artifacts.worker_output)
+    relative_stdout = render_relative_path(layout.repo_root, artifacts.stdout_log)
+    relative_stderr = render_relative_path(layout.repo_root, artifacts.stderr_log)
+    relative_verification = render_relative_path(layout.repo_root, artifacts.verification_summary)
+    relative_cost = render_relative_path(layout.repo_root, artifacts.cost_summary)
+    relative_worker_output = render_relative_path(layout.repo_root, artifacts.worker_output)
 
     result_payload = {
         "task_id": task.task_id,
@@ -134,7 +130,7 @@ def write_result_bundle(
         "cleanup_status": "deferred",
         "artifacts": [relative_worker_output],
         "compatibility_projection_ref": (
-            _relative(layout.repo_root, projection_path) if projection_path is not None else None
+            render_relative_path(layout.repo_root, projection_path) if projection_path is not None else None
         ),
         "handoff_required": False,
         "next_action": "none",
@@ -152,11 +148,12 @@ def write_result_bundle(
     if projection_path is not None:
         indexed_paths.append(projection_path)
 
-    evidence_index_payload = {
-        "task_id": task.task_id,
-        "run_id": run_id,
-        "entries": [asdict(_digest_file(layout.repo_root, path)) for path in indexed_paths],
-    }
+    evidence_index_payload = build_evidence_index_payload(
+        repo_root=layout.repo_root,
+        task_id=task.task_id,
+        run_id=run_id,
+        indexed_paths=indexed_paths,
+    )
     _write_json(artifacts.evidence_index, evidence_index_payload)
 
     return ResultBundle(
@@ -176,20 +173,6 @@ def _extract_stderr_text(worker_result: WorkerResult) -> str:
     if worker_result.stderr_text is not None:
         return worker_result.stderr_text
     return ""
-
-
-def _digest_file(repo_root: Path, path: Path) -> ArtifactDigest:
-    payload = path.read_bytes()
-    return ArtifactDigest(
-        relative_path=_relative(repo_root, path),
-        sha256=hashlib.sha256(payload).hexdigest(),
-        byte_count=len(payload),
-    )
-
-
-def _relative(repo_root: Path, path: Path) -> str:
-    return str(path.relative_to(repo_root)).replace("\\", "/")
-
 
 def _usage_payload(usage: WorkerUsage | None) -> dict[str, Any] | None:
     if usage is None:

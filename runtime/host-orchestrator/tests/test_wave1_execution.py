@@ -10,7 +10,9 @@ import pytest
 
 from host_orchestrator.canonical_task import CanonicalTaskError, load_task as load_canonical_task, write_task
 from host_orchestrator import db
+from host_orchestrator.cli import main as cli_main
 from host_orchestrator.config_runtime import RuntimeConfigError
+from host_orchestrator.evidence_index import revalidate_evidence_index
 from host_orchestrator.exec_fallback import (
     CodexExecFallbackWorker,
     CommandResult,
@@ -71,6 +73,64 @@ def _canonical_task_payload(task_id: str) -> dict[str, object]:
             "hotspot": None,
         },
     }
+
+
+def _run_fake_host_local_task(
+    tmp_path: Path,
+    *,
+    task_id: str,
+) -> tuple[Path, RuntimeLayout, Path, Path]:
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir()
+    (repo_root / "AGENTS.md").write_text("stub", encoding="utf-8")
+    _copy_runtime_config(repo_root)
+
+    agentbridge_root = repo_root / "AgentBridge"
+    for name in ["tasks", "results", "artifacts"]:
+        (agentbridge_root / name).mkdir(parents=True, exist_ok=True)
+
+    task_path = repo_root / "tasks" / f"{task_id}.json"
+    write_task(task_path, _canonical_task_payload(task_id))
+
+    class FakeWorker:
+        def run(self, request: WorkerRequest) -> WorkerResult:
+            assert f"task_id: {task_id}" in request.prompt
+            return WorkerResult(
+                final_response="HOST_LOCAL_OK",
+                raw_result={"kind": "fake"},
+                usage=WorkerUsage(
+                    source="sdk_structured",
+                    last=UsageBreakdown(
+                        cached_input_tokens=3,
+                        input_tokens=120,
+                        output_tokens=20,
+                        reasoning_output_tokens=6,
+                        total_tokens=146,
+                    ),
+                    total=UsageBreakdown(
+                        cached_input_tokens=3,
+                        input_tokens=120,
+                        output_tokens=20,
+                        reasoning_output_tokens=6,
+                        total_tokens=146,
+                    ),
+                    model_context_window=272000,
+                ),
+            )
+
+    layout = RuntimeLayout.from_repo_root(repo_root)
+    runner = HostLocalRunner(
+        HostLocalConfig(
+            agentbridge_root=agentbridge_root,
+            workspace_root=repo_root,
+            layout=layout,
+            run_id="host-local-test",
+        ),
+        FakeWorker(),
+    )
+
+    result_path = runner.run_task(task_path)
+    return repo_root, layout, agentbridge_root, result_path
 
 
 def test_exec_fallback_builds_expected_codex_exec_command(tmp_path: Path) -> None:
@@ -170,57 +230,11 @@ def test_host_local_runner_requires_repo_owned_config(tmp_path: Path) -> None:
 
 
 def test_host_local_runner_writes_result_and_runtime_state(tmp_path: Path) -> None:
-    repo_root = tmp_path / "repo"
-    repo_root.mkdir()
-    (repo_root / "AGENTS.md").write_text("stub", encoding="utf-8")
-    _copy_runtime_config(repo_root)
-
-    agentbridge_root = repo_root / "AgentBridge"
-    for name in ["tasks", "results", "artifacts"]:
-        (agentbridge_root / name).mkdir(parents=True, exist_ok=True)
-
     task_id = "T-20260628-000001-wave1-smoke"
-    task_path = repo_root / "tasks" / f"{task_id}.json"
-    write_task(task_path, _canonical_task_payload(task_id))
-
-    class FakeWorker:
-        def run(self, request: WorkerRequest) -> WorkerResult:
-            assert "task_id: T-20260628-000001-wave1-smoke" in request.prompt
-            return WorkerResult(
-                final_response="HOST_LOCAL_OK",
-                raw_result={"kind": "fake"},
-                usage=WorkerUsage(
-                    source="sdk_structured",
-                    last=UsageBreakdown(
-                        cached_input_tokens=3,
-                        input_tokens=120,
-                        output_tokens=20,
-                        reasoning_output_tokens=6,
-                        total_tokens=146,
-                    ),
-                    total=UsageBreakdown(
-                        cached_input_tokens=3,
-                        input_tokens=120,
-                        output_tokens=20,
-                        reasoning_output_tokens=6,
-                        total_tokens=146,
-                    ),
-                    model_context_window=272000,
-                ),
-            )
-
-    layout = RuntimeLayout.from_repo_root(repo_root)
-    runner = HostLocalRunner(
-        HostLocalConfig(
-            agentbridge_root=agentbridge_root,
-            workspace_root=repo_root,
-            layout=layout,
-            run_id="host-local-test",
-        ),
-        FakeWorker(),
+    repo_root, layout, agentbridge_root, result_path = _run_fake_host_local_task(
+        tmp_path,
+        task_id=task_id,
     )
-
-    result_path = runner.run_task(task_path)
 
     assert result_path == repo_root / ".ai" / "runs" / "host-local-test" / task_id / "result.json"
     assert result_path.exists()
@@ -310,6 +324,68 @@ def test_host_local_runner_writes_result_and_runtime_state(tmp_path: Path) -> No
         "model_context_window": 272000,
     }
     assert routes == [("host_local",)]
+
+
+def test_evidence_index_revalidation_passes_for_host_local_result(tmp_path: Path) -> None:
+    task_id = "TASK-20260706-evidence-ok"
+    repo_root, _, _, result_path = _run_fake_host_local_task(tmp_path, task_id=task_id)
+
+    validation = revalidate_evidence_index(
+        repo_root=repo_root,
+        evidence_index_path=result_path.parent / "evidence_index.json",
+    )
+
+    assert validation.ok is True
+    assert validation.task_id == task_id
+    assert validation.run_id == "host-local-test"
+    assert validation.issue_count == 0
+    assert validation.checked_entry_count == 7
+    assert {entry.status for entry in validation.entries} == {"ok"}
+
+
+def test_evidence_index_revalidation_detects_tampered_projection(tmp_path: Path) -> None:
+    task_id = "TASK-20260706-evidence-tamper"
+    repo_root, _, agentbridge_root, result_path = _run_fake_host_local_task(tmp_path, task_id=task_id)
+
+    projection_path = agentbridge_root / "results" / f"{task_id}.md"
+    projection_path.write_text(
+        projection_path.read_text(encoding="utf-8") + "\nTAMPERED\n",
+        encoding="utf-8",
+    )
+
+    validation = revalidate_evidence_index(
+        repo_root=repo_root,
+        evidence_index_path=result_path.parent / "evidence_index.json",
+    )
+
+    assert validation.ok is False
+    projection_entry = next(
+        entry for entry in validation.entries if entry.relative_path == f"AgentBridge/results/{task_id}.md"
+    )
+    assert projection_entry.status == "sha256_and_byte_count_mismatch"
+    assert projection_entry.actual_sha256 != projection_entry.expected_sha256
+    assert projection_entry.actual_byte_count != projection_entry.expected_byte_count
+
+
+def test_cli_revalidates_evidence_index(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    task_id = "TASK-20260706-evidence-cli"
+    repo_root, _, _, result_path = _run_fake_host_local_task(tmp_path, task_id=task_id)
+
+    exit_code = cli_main(
+        [
+            "--repo-root",
+            str(repo_root),
+            "--revalidate-evidence-index",
+            str(result_path.parent / "evidence_index.json"),
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+
+    assert exit_code == 0
+    assert payload["ok"] is True
+    assert payload["task_id"] == task_id
+    assert payload["checked_entry_count"] == 7
 
 
 def test_wave1_smoke_manifest_covers_three_categories() -> None:

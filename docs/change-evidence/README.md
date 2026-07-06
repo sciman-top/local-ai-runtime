@@ -18,6 +18,7 @@
 - [20260706 Selector Policy Promoted To Verifier Scope](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260706-selector-policy-promoted-to-verifier-scope.md)
 - [20260706 Phase1 Prereq Probes Ready](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260706-phase1-prereq-probes-ready.md)
 - [20260706 Phase1 Real SDK Vertical Slice](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260706-phase1-real-sdk-vertical-slice.md)
+- [20260706 Phase1 Evidence Index Revalidation](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260706-phase1-evidence-index-revalidation.md)
 - [20260706 impl_pack Stale Demotion And Verifier Coverage](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260706-impl-pack-stale-demotion-and-verifier-coverage.md)
 - [20260706 Governed Governance Absorption](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260706-governed-governance-absorption.md)
 - [20260706 Preflight Line-Ending Hygiene Closeout](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260706-preflight-line-ending-hygiene-closeout.md)
@@ -30,7 +31,8 @@
 - selector policy、acceptance tiers、run-state/handoff foundation 与 impl_pack stale demotion 已进入 authoritative/verifier 同步面
 - GPT-5.4 gateway probe 与 `codex exec` minimum probe 已 ready，当前 selector 预期结果已提升到 `promote_phase1_execution`
 - 一次非 mock 的 `Codex SDK` canonical runtime vertical slice 已成功写出正式 `.ai/runs/...` 工件
+- `P1-T05` 的 `evidence_index.json` sha256 / byte_count 独立重算入口已落盘，并能回放 real SDK 产物
 - `network_proxy` 仍是 `platform_na`，所以当前 `Phase 1` 真实执行应先限纯本地任务
 - Python repo-level line-ending policy 已显式覆盖 `*.py -> LF`
 - 当前 active queue 仍是 `PHASE-1-VERTICAL-SLICE`
-- 当前预期 next action 已是 `promote_phase1_execution`
+- 当前预期 next action 仍是粗粒度的 `promote_phase1_execution`；其内部下一最小实现切片是 `P2-T03 AgentBridge round-trip parity`

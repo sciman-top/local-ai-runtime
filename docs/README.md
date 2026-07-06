@@ -29,14 +29,14 @@
 - `.ai/runs/<run_id>/<task_id>/` 是正式 evidence 面。
 - `.ai/config/*.yaml` 是 repo-owned 运行时配置真源。
 - `Hermes/AgentBridge 兼容线` 不再承载当前主线 authoritative truth。
-- 当前下一编码队列是 `Phase 1 垂直切片`，重点是 canonical task、真实 SDK 执行、双写过渡方案 A。
+- 当前 active queue 仍是 `Phase 1 垂直切片`；repo-side exit gates 已闭环，下一 bounded slice 是 `P2-T03 AgentBridge round-trip parity`，但 live posture 仍停在 `live probe ready`。
 
 ## Governance Overlay
 
 治理增强层是当前主线的 cross-cutting overlay，不替代 `Phase 1 -> Phase 6` 产品路线图。
 
 - `selector + change-evidence + preflight + reference governance` 是 Phase 1 推进前和推进过程中的治理增强面。
-- 当前 selector 预期结果是 `promote_phase1_execution`；GPT-5.4 gateway 与 `codex exec` prerequisite probes 已 ready，但 `network_proxy` 仍是 `platform_na`，所以 `Phase 1` 先限纯本地执行。
+- 当前 selector 预期结果是 `promote_phase1_execution`；GPT-5.4 gateway 与 `codex exec` prerequisite probes 已 ready，`P1-T05` evidence integrity 也已补齐，但 `network_proxy` 仍是 `platform_na`，所以 live execution 仍先限纯本地任务。
 - `governed-ai-coding-runtime` 已被纳入正式 `governance-sidecar` companion，但它只提供治理机制参考，不定义当前主线实现真相。
 
 当前治理入口：

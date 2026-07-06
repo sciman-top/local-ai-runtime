@@ -4,6 +4,7 @@ import argparse
 import json
 from pathlib import Path
 
+from host_orchestrator.evidence_index import revalidate_evidence_index
 from host_orchestrator.paths import RuntimeLayout, discover_repo_root
 from host_orchestrator.wave1_smoke import run_wave1_smokes
 
@@ -34,6 +35,12 @@ def build_parser() -> argparse.ArgumentParser:
         default=None,
         help="Optional run id override for the Wave 1 smoke suite.",
     )
+    parser.add_argument(
+        "--revalidate-evidence-index",
+        type=Path,
+        default=None,
+        help="Recompute sha256/byte_count for an existing evidence_index.json and exit non-zero on mismatch.",
+    )
     return parser
 
 
@@ -51,6 +58,17 @@ def main(argv: list[str] | None = None) -> int:
         )
         print(json.dumps(summary.to_dict(), indent=2, ensure_ascii=True))
         return 0
+
+    if args.revalidate_evidence_index is not None:
+        evidence_index_path = args.revalidate_evidence_index
+        if not evidence_index_path.is_absolute():
+            evidence_index_path = repo_root / evidence_index_path
+        result = revalidate_evidence_index(
+            repo_root=repo_root,
+            evidence_index_path=evidence_index_path.resolve(strict=False),
+        )
+        print(json.dumps(result.to_dict(), indent=2, ensure_ascii=False))
+        return 0 if result.ok else 1
 
     if args.print_layout:
         print(
