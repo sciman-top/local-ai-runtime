@@ -66,10 +66,10 @@ def _canonical_task_payload(task_id: str) -> dict[str, object]:
         "handoff_policy": "handoff_on_risk",
         "verification_commands": {
             "build": None,
-            "test": "uv run --project ./runtime/host-orchestrator python -m pytest",
+            "test": "python -c \"print('TEST_OK')\"",
             "lint": None,
             "typecheck": None,
-            "contract": "python ./scripts/verify-planning-status.py",
+            "contract": "python -c \"print('CONTRACT_OK')\"",
             "hotspot": None,
         },
     }
@@ -260,7 +260,20 @@ def test_host_local_runner_writes_result_and_runtime_state(tmp_path: Path) -> No
     assert stderr_log_path.read_text(encoding="utf-8") == ""
 
     verification_payload = json.loads(verification_path.read_text(encoding="utf-8"))
-    assert verification_payload == {"status": "no_commands_configured", "commands_run": []}
+    assert verification_payload["status"] == "pass"
+    assert [entry["gate"] for entry in verification_payload["commands_run"]] == [
+        "build",
+        "lint",
+        "typecheck",
+        "test",
+        "contract",
+        "hotspot",
+    ]
+    assert verification_payload["commands_run"][0]["status"] == "gate_na"
+    assert verification_payload["commands_run"][3]["status"] == "pass"
+    assert "TEST_OK" in verification_payload["commands_run"][3]["stdout"]
+    assert verification_payload["commands_run"][4]["status"] == "pass"
+    assert "CONTRACT_OK" in verification_payload["commands_run"][4]["stdout"]
 
     cost_payload = json.loads(cost_path.read_text(encoding="utf-8"))
     assert cost_payload["mode"] == "token_only"

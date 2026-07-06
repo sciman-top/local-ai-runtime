@@ -1,1 +1,1 @@
-"""Phase 1 host orchestrator package for the generic local AI Dev Orchestrator."""
+"""Local AI Runtime host orchestrator package for the current Hermes -> AgentBridge -> Codex mainline."""

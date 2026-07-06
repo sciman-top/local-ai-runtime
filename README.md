@@ -1,27 +1,38 @@
-# local-ai-dev-orchestrator
+# Local AI Runtime
 
-本仓当前主产品线已经切换为 **通用本地 AI Dev Orchestrator** 的文档与实现种子仓。
+- 中文名：**本地 AI 运行时**
+- 当前主产品线：`Hermes -> AgentBridge -> Codex`
+- 历史仓库 slug 与当前本地工作目录仍为 `local-ai-dev-orchestrator`（`D:\CODE\local-ai-dev-orchestrator`）；本次只统一项目展示名，不执行目录迁移。
+
+本仓当前主产品线回调为 **Hermes -> AgentBridge -> Codex** 三层闭环。当前 repo truth 仍明确保留三条边界：
+
+- canonical `JSON/YAML` intake 仍是当前运行主路径
+- `.ai/runs/<run_id>/<task_id>/result.json` 仍是正式 task-level evidence 主体
+- `AgentBridge results/*.md` 当前仍是 compatibility projection，而不是已完成的主协议反转
 
 ## 当前主真源
 
 - 机器可读规划真源：[docs/architecture/planning-status.json](D:/CODE/local-ai-dev-orchestrator/docs/architecture/planning-status.json)
 - 文档入口：[docs/README.md](D:/CODE/local-ai-dev-orchestrator/docs/README.md)
 
-当前主线明确采用以下口径：
+当前主线采用以下 repo truth：
 
-- 在现有 `runtime/host-orchestrator` 骨架上就地演进
-- `.ai/config/*.yaml` 是 repo-owned runtime contract
+- `runtime/host-orchestrator` 是 `host_local` 可信运行时内核，不新建平行顶层包
+- `.ai/config/*.yaml` 是 repo-owned runtime contract；正式定义见 [docs/specs/config-and-worker-profiles.md](D:/CODE/local-ai-dev-orchestrator/docs/specs/config-and-worker-profiles.md)
 - `.ai/state/control-plane.db` 是调度真源
 - `.ai/runs/<run_id>/<task_id>/` 是正式 evidence 面
-- `Hermes/AgentBridge` 只保留为兼容线与历史基线
+- `host_local > remote_non_gui > vm_gui` 是终态能力范围与分级晋升顺序，不是同等级当前交付义务
+- `AgentBridge-first intake` 仍待后续接线；当前不得把它写成既成事实
 
 ## Governance Overlay
 
-当前主线额外叠加一层 **Governance Overlay**，但它不是新的产品 phase，也不把本仓改写成 `governed-ai-coding-runtime` 的翻版。
+当前主线继续叠加 **Governance Overlay**，但它是 cross-cutting 治理增强面，不替代产品 phase。
 
-- `selector + change-evidence + preflight + reference governance` 是 Phase 1 推进前和推进过程中的 cross-cutting 治理增强面
-- 当前预期 next action 是 `promote_phase1_execution`；repo-side Phase 1 exit gates 已补齐，但 live posture 仍停在 `live probe ready`
-- `governed-ai-coding-runtime` 现在是正式的 `governance-sidecar` reference companion，用来借鉴 gate / evidence / selector 治理机制，而不是当前主线实现真源
+- `selector + change-evidence + preflight + reference governance` 是当前 repo-side 治理入口
+- 当前预期 next action 仍是 `promote_phase1_execution`
+- 当前 active queue 仍是 `PHASE-1-VERTICAL-SLICE`
+- repo-side gate 已闭环，但 live posture 仍停在 `live probe ready`
+- `governed-ai-coding-runtime` 仍只作为 `governance-sidecar` reference companion，不替代本仓 runtime truth
 
 当前治理入口：
 
@@ -46,21 +57,23 @@
 5. [docs/roadmap/orchestrator-roadmap.md](D:/CODE/local-ai-dev-orchestrator/docs/roadmap/orchestrator-roadmap.md)
 6. [docs/plans/orchestrator-implementation-plan.md](D:/CODE/local-ai-dev-orchestrator/docs/plans/orchestrator-implementation-plan.md)
 7. [docs/backlog/orchestrator-task-list.md](D:/CODE/local-ai-dev-orchestrator/docs/backlog/orchestrator-task-list.md)
-8. [docs/specs/config-and-worker-profiles.md](D:/CODE/local-ai-dev-orchestrator/docs/specs/config-and-worker-profiles.md)
-9. [docs/specs/acceptance-and-gates.md](D:/CODE/local-ai-dev-orchestrator/docs/specs/acceptance-and-gates.md)
-10. [docs/specs/run-state-and-handoff.md](D:/CODE/local-ai-dev-orchestrator/docs/specs/run-state-and-handoff.md)
-11. [docs/change-evidence/README.md](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/README.md)
+8. [docs/specs/task-contract.md](D:/CODE/local-ai-dev-orchestrator/docs/specs/task-contract.md)
+9. [docs/specs/result-contract.md](D:/CODE/local-ai-dev-orchestrator/docs/specs/result-contract.md)
+10. [docs/specs/config-and-worker-profiles.md](D:/CODE/local-ai-dev-orchestrator/docs/specs/config-and-worker-profiles.md)
+11. [docs/specs/acceptance-and-gates.md](D:/CODE/local-ai-dev-orchestrator/docs/specs/acceptance-and-gates.md)
+12. [docs/specs/run-state-and-handoff.md](D:/CODE/local-ai-dev-orchestrator/docs/specs/run-state-and-handoff.md)
+13. [docs/change-evidence/20260706-strategic-regression.md](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260706-strategic-regression.md)
 
-## 兼容线
+## 历史与兼容
 
 Hermes/AgentBridge 历史基线与兼容资料入口：
 
 - [docs/platforms/hermes/README.md](D:/CODE/local-ai-dev-orchestrator/docs/platforms/hermes/README.md)
 - [docs/migrations/hermes-compatibility-demotion.md](D:/CODE/local-ai-dev-orchestrator/docs/migrations/hermes-compatibility-demotion.md)
 
-原 `docs/实施计划.md`、`docs/任务清单.md`、`docs/当前交接摘要.md` 等旧入口仍保留原路径，但现在只作为降级指针页，避免后续 AI 再把旧 Hermes 主线误判为当前 authoritative truth。
+这些资料仍是 `certified_baseline` 与边界证据，但不反转当前 canonical intake / `result.json` / compatibility projection 的 repo truth。
 
-## 当前实现种子
+## 当前实现内核
 
 后续编码默认从以下现有目录开始，而不是新建平行顶层包：
 

@@ -1,7 +1,9 @@
 @AGENTS.md
 
-# CLAUDE.md — local-ai-dev-orchestrator（Claude 项目级 wrapper）
-**项目**: local-ai-dev-orchestrator
+# CLAUDE.md — Local AI Runtime（Claude 项目级 wrapper）
+**项目展示名**: `Local AI Runtime`
+**中文名**: `本地 AI 运行时`
+**历史仓库 slug / 当前本地目录**: `local-ai-dev-orchestrator`
 **承接来源**: `GlobalUser/CLAUDE.md v9.54`
 **共同项目规则**: `AGENTS.md`
 **适用范围**: 项目级（仓库根）

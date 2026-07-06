@@ -1,5 +1,7 @@
-# AGENTS.md — local-ai-dev-orchestrator（共同项目规则 / Codex 直接读取）
-**项目**: local-ai-dev-orchestrator
+# AGENTS.md — Local AI Runtime（共同项目规则 / Codex 直接读取）
+**项目展示名**: `Local AI Runtime`
+**中文名**: `本地 AI 运行时`
+**历史仓库 slug / 当前本地目录**: `local-ai-dev-orchestrator`
 **承接来源**: `GlobalUser/AGENTS.md v9.54`
 **适用范围**: 项目级（仓库根）
 **最后更新**: 2026-07-06
@@ -7,7 +9,7 @@
 ## 1. 阅读指引
 - 本文件只写本仓事实、门禁命令、证据路径、回滚入口和规则协同边界，不复述全局 `R/E` 正文。
 - 本文件是 Codex / Claude 共同项目规则主体；Codex 直接读取，Claude 通过仓根 `CLAUDE.md` 的 `@AGENTS.md` thin wrapper 承接并只追加平台差异。
-- 当前产品主线仍是 **通用本地 AI Dev Orchestrator**；`Governance Overlay` 是 cross-cutting 治理层，不替代 `Phase 1 -> Phase 6` 产品路线图。
+- 当前产品主线回调为 **Hermes -> AgentBridge -> Codex**；`Governance Overlay` 是 cross-cutting 治理层，不替代 `Phase 1 -> Phase 6` 产品路线图。
 - 全局规则真源在 `D:\CODE\governed-ai-coding-runtime`；本仓是受管目标仓试点，不负责全局规则分发，也不把自己改造成 governance hub。
 - 四层边界固定为：`global rules -> project rules -> wrappers -> enforcement`。其中 deterministic enforcement 落在 `.codex`、`.claude/settings.json`、hooks、CI 或其他工具配置，不靠 prose 规则替代。
 
@@ -15,12 +17,15 @@
 ### A.1 事实边界
 - 机器可读规划真源：`docs/architecture/planning-status.json`。
 - 当前产品 active queue：`PHASE-1-VERTICAL-SLICE`；当前 selector 预期结果：`promote_phase1_execution`；当前 live posture：`live_probe_ready`。
-- 当前主线代码落点：`runtime/host-orchestrator`；不要新建平行顶层 `orchestrator/` 包。
+- 产品主线是 `Hermes -> AgentBridge -> Codex`，但当前 repo truth 仍保留 canonical `JSON/YAML` intake、`result.json` 正式 evidence、以及 AgentBridge results 当前仍是 compatibility projection。
+- 当前主线代码落点：`runtime/host-orchestrator`；它是 `host_local` 可信运行时内核；不要新建平行顶层 `orchestrator/` 包。
 - 调度真源：`.ai/state/control-plane.db`。
 - 正式 task-level evidence 面：`.ai/runs/<run_id>/<task_id>/`。
 - repo-level governance evidence index：`docs/change-evidence/README.md`；它不替代 task-level `evidence_index.json`。
 - `.ai/config/orchestrator.yaml`、`.ai/config/workers.yaml`、`.ai/config/policies.yaml` 是 repo-owned runtime contract。
-- `snapshots/agentbridge-20260628/` 与 `docs/platforms/hermes/` 只保留 Hermes/AgentBridge 兼容线与历史基线，不再定义当前主线实现真相。
+- `AgentBridge` 是跨层唯一文件契约；`AgentBridge-first intake` 仍待后续接线，不得写成当前既成事实。
+- topology 能力范围按 `host_local > remote_non_gui > vm_gui` 分级推进；`vm_gui` 无真实 GUI-only workload 证据时不进入同等级 closeout。
+- `snapshots/agentbridge-20260628/` 与 `docs/platforms/hermes/` 保留 Hermes/AgentBridge 历史基线与边界证据，但不反转当前 canonical intake / `result.json` / compatibility projection 的 repo truth。
 
 ### A.2 门禁命令与顺序（硬门禁）
 - 固定顺序：`build -> test -> contract/invariant -> hotspot`。
@@ -61,11 +66,11 @@
 ### C.2 Global Rule -> Repo Action
 - `R1`：改动前先定 `当前落点 -> 目标归宿`；本仓默认落点只能是 `runtime/host-orchestrator`、`docs/`、`.ai/config/`、`scripts/` 或兼容线历史面。
 - `R2`：按小步闭环推进；docs/rules/scripts/evidence 必须同切片收口，不把无关 runtime lane 混进来。
-- `R3`：若对 Hermes/AgentBridge 兼容线做止血补丁，必须明确它是兼容面临时收口，不得伪装成当前主线实现归宿。
+- `R3`：若对 Hermes/AgentBridge 历史基线或 compatibility projection 做止血补丁，必须明确它是历史/兼容收口，不得把目标态或未接线能力伪装成当前主线实现归宿。
 - `R4`：低风险 docs/rules/evidence 可直接执行；live probe、provider/auth、本机凭据、历史兼容运行态改动必须先说明边界与回滚。
 - `R5`：不新增平行顶层 orchestrator 包，不把本仓改写成 governance hub，不盲吸收控制仓的非必要 runtime 机制。
 - `R6`：交付前遵守 `build -> test -> contract/invariant -> hotspot` 顺序；本仓当前 build/hotspot 真实 gate 缺席时按 `gate_na` 口径记录。
-- `R7`：保持 canonical task/result/review 契约、`.ai` 目录真源、以及 Hermes 历史基线边界不被未授权破坏。
+- `R7`：保持 canonical task/result/review 契约、AgentBridge 唯一跨层文件契约边界、`.ai` 目录真源、以及 Hermes 历史基线边界不被未授权破坏。
 - `R8`：repo-level 变更留在 `docs/change-evidence/`；task-level 运行工件留在 `.ai/runs/<run_id>/<task_id>/`；两类证据不得混用。
 - `E4`：`planning-status.json`、README/docs index、selector、preflight 一起承接当前 repo-side 健康/状态口径。
 - `E5`：高漂移治理面先看 `references/` 与 `D:\CODE\governed-ai-coding-runtime` 的 companion 机制，再决定本仓是否吸收。

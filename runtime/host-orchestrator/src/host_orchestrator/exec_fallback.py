@@ -8,6 +8,7 @@ from typing import Protocol
 
 from openai_codex import ApprovalMode, Sandbox
 
+from host_orchestrator.process_guard import run_guarded_process
 from host_orchestrator.worker import WorkerRequest, WorkerResult
 
 
@@ -24,19 +25,20 @@ class CommandExecutor(Protocol):
 
 
 class SubprocessCommandExecutor:
+    def __init__(self, *, timeout_seconds: float | None = None) -> None:
+        self._timeout_seconds = timeout_seconds
+
     def run(self, argv: list[str], cwd: Path) -> CommandResult:
-        completed = subprocess.run(
+        completed = run_guarded_process(
             argv,
             cwd=cwd,
-            text=True,
-            capture_output=True,
-            check=False,
+            timeout_seconds=self._timeout_seconds,
         )
         return CommandResult(
             argv=list(argv),
-            returncode=completed.returncode,
-            stdout=completed.stdout,
-            stderr=completed.stderr,
+            returncode=int(completed.returncode),
+            stdout=str(completed.stdout),
+            stderr=str(completed.stderr),
         )
 
 

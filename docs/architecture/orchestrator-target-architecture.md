@@ -1,13 +1,71 @@
-# 通用本地 AI Dev Orchestrator 目标架构
+# Local AI Runtime 目标架构
 
 ## 总原则
 
-- 就地演进 `runtime/host-orchestrator`
+- 项目展示名：`Local AI Runtime`
+- 中文名：`本地 AI 运行时`
+- 当前主产品线：`Hermes -> AgentBridge -> Codex`
+- 历史仓库 slug / 当前本地目录仍为 `local-ai-dev-orchestrator`
+
+- 产品主线回调为 `Hermes -> AgentBridge -> Codex`
+- `runtime/host-orchestrator` 是 `host_local` 可信运行时内核
 - 不新建平行顶层 `orchestrator/` 包
 - `.ai/state/control-plane.db` 是调度真源
 - `.ai/runs/<run_id>/<task_id>/` 是正式 evidence 面
 - `private-local/` 只保留密钥、探针、非正式 smoke
-- `Hermes/AgentBridge 兼容线` 是 adapter，不是主协议
+
+## 当前 repo truth 与迁移窗口
+
+当前仓还没有完成协议反转；以下事实必须显式保留：
+
+- 当前 intake 主路径仍是 canonical `task.json` / `task.yaml`
+- `AgentBridge-first intake` 尚未接线
+- `.ai/runs/<run_id>/<task_id>/result.json` 仍是正式结果主面
+- `AgentBridge results/*.md` 当前仍是 compatibility projection
+- `remote_non_gui` / `vm_gui` 目前只有 contract 枚举，没有 runner 实现
+- `compatibility_projection_ref` 与 `lane` 字段名当前仍保持代码层 truth；迁移是否发生留到 Phase E parity 后决定
+
+## 三层职责
+
+### 1. Hermes
+
+职责：
+
+- 编排 / 学习 / 历史安全边界
+- 为三层主线提供隔离与历史 baseline
+- 在 parity 阶段承接 container lifecycle 与历史映射验证
+
+边界：
+
+- 当前 repo truth 不把 Hermes 写成“只剩兼容残留”
+- 也不把 Hermes 当前就写成已接管 host runtime 的执行入口
+
+### 2. AgentBridge
+
+职责：
+
+- AgentBridge 是跨层主契约
+- Hermes 与 Codex 之间的唯一文件交换面
+- 终态承接 markdown task / result / review round-trip
+
+边界：
+
+- 当前 task intake 仍不是 markdown-first
+- 当前 result markdown 仍是 compatibility projection
+
+### 3. Codex
+
+职责：
+
+- 当前执行层主入口
+- 通过 `runtime/host-orchestrator` 消费 canonical task
+- 产出 `result.json`、`verification_summary.json`、`cost_summary.json` 与 `evidence_index.json`
+
+边界：
+
+- 当前只落地 `host_local`
+- `remote_non_gui` 次级推进
+- `vm_gui` 仅条件晋升
 
 ## Governance Overlay
 
@@ -34,13 +92,27 @@
 - enforcement：`.codex`、`.claude/settings.json`、`.claude/rules/`、hooks、CI；它们是确定性限制面，不由 prose 规则副本代替。
 - 目标仓与控制仓之间只允许 `audit + integration + verification` 协同；不恢复 blind target-repo rule distribution。
 
+## 正交维度
+
+| 维度 | 当前含义 | 当前口径 |
+| --- | --- | --- |
+| `execution_lane` | topology | contract 层定义 `host_local / remote_non_gui / vm_gui` |
+| `worker_kind` | executor adapter | `codex_sdk / codex_exec / scripted / gpt54_direct / claude_glm` |
+| `worker_profile` | repo-owned 具名配置档 | `.ai/config/workers.yaml` |
+
+补充说明：
+
+- 当前 result surface 中代码字段名仍是 `lane`
+- 这不否认 contract 层的 `execution_lane` 定义
+- 命名统一是后置迁移决策，不在本轮 truth reset 中提前执行
+
 ## 组件边界
 
-### 1. Intake / Normalization
+### Intake / Normalization
 
 职责：
 
-- 读取 canonical `task.json` / `task.yaml`
+- 当前读取 canonical `task.json` / `task.yaml`
 - 校验 schema
 - 派生 `planner_required` / `review_required` / `touches_policy_surface`
 - 盖章运行时字段
@@ -50,7 +122,7 @@
 - `docs/specs/task-contract.md`
 - `docs/specs/config-and-worker-profiles.md`
 
-### 1A. Config Resolution
+### Config Resolution
 
 职责：
 
@@ -60,11 +132,7 @@
 - 把 repo-owned abstraction 映射到实际执行参数
 - 对缺失/错误配置给出 deterministic contract error
 
-落点：
-
-- `runtime/host-orchestrator/src/host_orchestrator/`
-
-### 2. Worker Adapters
+### Worker Adapters
 
 职责：
 
@@ -78,14 +146,15 @@
 - `worker_kind` 描述 adapter 路径
 - `worker_profile` 描述 `.ai/config/workers.yaml` 中的具名配置档
 
-### 3. Verification Runner
+### Verification Runner
 
 职责：
 
 - 按固定顺序执行 `build -> [lint -> typecheck] -> test -> contract -> hotspot`
 - 产出 `verification_summary.json`
+- 当前真实 gate 仍待后续 Phase C 接线
 
-### 4. Evidence Writer
+### Evidence Writer
 
 职责：
 
@@ -94,26 +163,20 @@
 - 落盘 `verification_summary.json`
 - 落盘 `cost_summary.json`
 - 落盘 `evidence_index.json`
-- 落盘 `compatibility_projection_ref`（如启用 dual-write）
+- 落盘 `compatibility_projection_ref`
 
 依赖契约：
 
 - `docs/specs/result-contract.md`
 - `docs/specs/run-state-and-handoff.md`
 
-### 5. Compatibility Adapter
-
-职责：
-
-- `AgentBridge markdown -> canonical task`
-- `canonical result / review -> markdown projection`
-
-边界：
-
-- 只服务 Hermes/AgentBridge 兼容线
-- 不再承载当前主线 authoritative truth
-
 ## 存储拆分
+
+### AgentBridge 文件面
+
+- 跨层契约正文
+- 终态由 Hermes 与 Codex 共享
+- 当前 task intake 尚未切到此主路径
 
 ### 调度真源
 
@@ -131,11 +194,6 @@
 - 保存 selector / preflight / reference governance 这类 repo-side 治理证据
 - 不替代 task-level `evidence_index.json`
 
-### 非正式隔离态
-
-- `private-local/wave-smokes/`
-- `private-local/` 下的密钥、本机探针、非正式回放态
-
 ## 当前代码落点
 
 后续实现一律从以下现有路径开始，而不是新建 parallel package：
@@ -151,11 +209,11 @@
 - `runtime/host-orchestrator/src/host_orchestrator/worker.py`
 - `runtime/host-orchestrator/src/host_orchestrator/exec_fallback.py`
 
-## 兼容线位置
+## 历史基线位置
 
 Hermes/AgentBridge 历史与兼容资料位于：
 
 - `docs/platforms/hermes/`
 - `snapshots/agentbridge-20260628/`
 
-当前主线只引用它们作为 `certified_baseline`，不再以它们定义当前 active queue。
+当前主线只引用它们作为 `certified_baseline` 与边界证据，不再把它们当作当前 active queue 的直接运行时 truth。

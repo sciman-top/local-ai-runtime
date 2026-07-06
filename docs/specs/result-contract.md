@@ -4,6 +4,13 @@
 
 定义正式 `result.json` 以及相关必备运行工件。
 
+## 当前事实边界
+
+- `.ai/runs/<run_id>/<task_id>/result.json` 是当前正式 result 主体
+- `AgentBridge results/*.md` 当前仍是 compatibility projection
+- 当前代码层字段名仍是 `lane`
+- 当前字段名仍是 `compatibility_projection_ref`
+
 ## 必填字段
 
 | 字段 | 类型 | 说明 |
@@ -30,6 +37,20 @@
 | `handoff_required` | boolean | 是否需要人工接管 |
 | `next_action` | string | 下一步动作 |
 
+## 目标态与迁移窗口
+
+目标态：
+
+- AgentBridge result / review 可以与 canonical result surface 做稳定 round-trip
+- verification 输出由真实 gate executor 驱动
+- 若 parity 足够稳定，再评估 schema rename
+
+迁移窗口：
+
+- 在 Phase E parity 绿之前，`compatibility_projection_ref` 不改名
+- 在同一时间窗之前，`lane` 不提前改成 `execution_lane`
+- truth reset 只允许补充说明，不允许把这些改名写成当前事实
+
 ## worker_kind
 
 固定枚举：
@@ -51,7 +72,13 @@
 
 从 `Phase 1` 起必存在。
 
-如果当前任务没有配置真实验证命令，也必须写出最小文件：
+当前最小真实 runner 已落地：
+
+- 固定 gate 顺序仍是 `build -> [lint -> typecheck] -> test -> contract -> hotspot`
+- 当前只真实执行 `test` 与 `contract`
+- `build / lint / typecheck / hotspot` 继续按 `gate_na` 留痕
+
+如果任务当前没有配置 `test` 与 `contract` 真实命令，则仍写出最小文件：
 
 ```json
 {
@@ -59,6 +86,8 @@
   "commands_run": []
 }
 ```
+
+如果 `test` 或 `contract` 已配置，则 `verification_summary.json` 必须反映真实执行结果，而不是硬编码默认成功路径。
 
 ## cost_summary.json
 

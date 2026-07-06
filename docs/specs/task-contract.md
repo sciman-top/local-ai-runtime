@@ -2,13 +2,34 @@
 
 ## 目的
 
-定义通用本地 AI Dev Orchestrator 的正式任务协议。
+定义当前 repo 内部 normalized task 协议。
 
 当前主协议是 `JSON/YAML`，不是 `AgentBridge markdown`。
 
 `worker_profile`、policy surface 派生、以及 repo-owned 执行抽象的正式定义，见：
 
 - `docs/specs/config-and-worker-profiles.md`
+
+## 当前事实边界
+
+- 当前 `host_local` 主路径先读取 canonical `task.json` / `task.yaml`
+- `AgentBridge-first intake` 仍待后续接线，不能写成当前既成事实
+- `execution_lane` 是 contract 层 topology 字段
+- 当前代码层 result surface 仍保留 `lane` 字段名；命名统一不是本轮 truth reset 的目标
+
+## 目标态与迁移窗口
+
+目标态：
+
+- Hermes 侧产出的 AgentBridge markdown task 能进入 `runtime/host-orchestrator`
+- front matter 被无损映射到 canonical 18 字段
+- worker 执行前仍以 canonical payload 为内部真源
+
+迁移窗口：
+
+- 在 Phase D 接线完成前，canonical `JSON/YAML` 仍是当前主协议
+- 作者仍不得手写派生字段
+- 即使未来引入 markdown-first intake，也不改变 canonical schema 的内部归一化地位
 
 ## 必填字段
 

@@ -10,6 +10,9 @@
 
 当前入口：
 
+- [20260706 Verification Runner Minimal Gates](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260706-verification-runner-minimal-gates.md)
+- [20260706 Host Local Robustness And Lease Helpers](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260706-host-local-robustness-and-lease-helpers.md)
+- [20260706 Strategic Regression](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260706-strategic-regression.md)
 - [20260706 Layout Defaults To AI State](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260706-layout-defaults-to-ai-state.md)
 - [20260706 Canonical Runtime Cuts Over From AgentBridge](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260706-canonical-runtime-cuts-over-from-agentbridge.md)
 - [20260706 Config And Worker Profile Contract](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260706-config-and-worker-profile-contract.md)
@@ -26,6 +29,10 @@
 
 当前最新结论：
 
+- authoritative docs 已回调为 `Hermes -> AgentBridge -> Codex` 三层主线
+- 当前 repo truth 仍保持 canonical intake、`result.json` 正式 evidence、以及 compatibility projection
+- `host_local` 失败收口、最小 lease lifecycle helpers、以及 exec fallback 进程守卫已落 repo-side
+- 最小 verification runner 已落 repo-side，`verification_summary.json` 在配置 `test / contract` 时会反映真实 gate 结果
 - Governance Overlay 已作为当前主线的 cross-cutting layer 落盘
 - `P1-T01 / P1-T02 / P1-T03` 的 repo-side code slice 已闭环到 canonical runtime + compatibility projection
 - repo-owned config / worker-profile contract 已落盘，host runtime 不再依赖散落硬编码默认值

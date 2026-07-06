@@ -37,6 +37,7 @@
   ],
   "required_entrypoints": [
     "docs/change-evidence/README.md",
+    "docs/change-evidence/20260706-strategic-regression.md",
     "docs/change-evidence/20260706-governed-governance-absorption.md",
     "scripts/select-next-work.py",
     "scripts/governance/preflight.ps1",
@@ -46,15 +47,15 @@
   "required_doc_refs": [
     {
       "path": "docs/roadmap/orchestrator-roadmap.md",
-      "contains": "Governance Overlay"
+      "contains": "Phase A — Truth Reset"
     },
     {
       "path": "docs/plans/orchestrator-implementation-plan.md",
-      "contains": "GOV-T01"
+      "contains": "Phase A — Truth Reset"
     },
     {
       "path": "docs/backlog/orchestrator-task-list.md",
-      "contains": "promote_phase1_execution"
+      "contains": "host_local > remote_non_gui > vm_gui"
     },
     {
       "path": "docs/specs/config-and-worker-profiles.md",

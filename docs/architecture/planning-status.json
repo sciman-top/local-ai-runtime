@@ -8,13 +8,13 @@
     "status": "in_progress",
     "source_plan": "docs/plans/orchestrator-implementation-plan.md",
     "source_backlog": "docs/backlog/orchestrator-task-list.md",
-    "why_now": "P1-T01/P1-T02/P1-T03 plus repo-owned config contract and P1-T05 evidence-index revalidation are now landed repo-side. The selector remains intentionally coarse at promote_phase1_execution; inside that envelope, the next bounded implementation slice is AgentBridge round-trip parity while live posture still stays at live_probe_ready."
+    "why_now": "Local AI Runtime keeps the same active queue after the strategic return. The repo still runs through canonical JSON/YAML intake on host_local, writes result.json as formal evidence, and keeps AgentBridge markdown as compatibility projection. With host_local crash recovery, lease helpers, exec fallback process-guard, and the minimal verification runner now landed, the next bounded execution sequence is AgentBridge-first intake wiring while the selector stays at promote_phase1_execution."
   },
   "current_decision_gate": {
     "selector": "promote_phase1_execution",
     "selector_source": "scripts/select-next-work.py",
     "as_of": "2026-07-06",
-    "proof_ref": "docs/change-evidence/20260706-phase1-evidence-index-revalidation.md",
+    "proof_ref": "docs/change-evidence/20260706-verification-runner-minimal-gates.md",
     "blocking_reasons": []
   },
   "current_live_posture": {
@@ -22,14 +22,14 @@
     "gpt54_gateway_probe_status": "ready",
     "codex_exec_probe_status": "ready",
     "as_of": "2026-07-06",
-    "summary": "The repo-side Phase 1 runtime slice now has canonical task/result flow, compatibility projection, and independently revalidated evidence_index integrity. The GPT-5.4 gateway probe and the codex exec minimum probe are ready, and one isolated non-mock Codex SDK run has already succeeded. network_proxy remains platform_na, so current live execution should still stay within pure local task boundaries."
+    "summary": "Local AI Runtime currently executes repo-side through canonical JSON/YAML intake on host_local, writes result.json as formal evidence, and keeps AgentBridge results as compatibility projection. host_local crash recovery, minimal lease lifecycle helpers, exec fallback process-tree guarding, and the minimal verification runner are now landed repo-side. Hermes -> AgentBridge -> Codex remains the product mainline and migration target, but AgentBridge-first intake and non-host_local runners are not wired yet. The GPT-5.4 gateway probe and the codex exec minimum probe are ready; network_proxy remains platform_na, so current live execution should still stay within pure local task boundaries."
   },
   "certified_baseline": {
     "queue_id": "HERMES-AGENTBRIDGE-BASELINE",
-    "label": "Hermes AgentBridge Compatibility Baseline",
+    "label": "Hermes AgentBridge Historical Baseline And Strategic Reference",
     "status": "certified_historical_baseline",
     "evidence_ref": "docs/platforms/hermes/README.md",
-    "claim_boundary": "Hermes/AgentBridge remains the certified historical and compatibility baseline. It no longer defines the current generic orchestrator mainline."
+    "claim_boundary": "Hermes/AgentBridge remains the certified historical baseline and strategic north-star reference for Local AI Runtime as a three-layer product line. Current repo runtime truth still stays on canonical JSON/YAML intake plus result.json evidence and compatibility projection until later phases wire AgentBridge-first intake."
   },
   "authoritative_docs": [
     "README.md",
@@ -50,24 +50,33 @@
     "docs/migrations/hermes-compatibility-demotion.md"
   ],
   "required_consistency_tokens": [
-    "通用本地 AI Dev Orchestrator",
+    "Hermes -> AgentBridge -> Codex",
     "planning-status.json",
     "runtime/host-orchestrator",
     ".ai/config/orchestrator.yaml",
     ".ai/state/control-plane.db",
     ".ai/runs/<run_id>/<task_id>/",
-    "Hermes/AgentBridge 兼容线",
+    "canonical JSON/YAML",
+    "compatibility projection",
     "Phase 1 垂直切片",
+    "PHASE-1-VERTICAL-SLICE",
     "双写过渡方案 A",
     "Governance Overlay",
     "promote_phase1_execution",
     "mock green",
     "live probe ready",
-    "selector + change-evidence + preflight + reference governance"
+    "Local AI Runtime",
+    "本地 AI 运行时",
+    "selector + change-evidence + preflight + reference governance",
+    "host_local",
+    "remote_non_gui",
+    "vm_gui"
   ],
   "unexpected_tokens": [
-    "当前主线仍是 `single worker / single repo / no push / PR`",
-    "`single worker / single repo / pure local tasks / SDK first / codex exec fallback / no auto_continue / no auto-merge`"
+    "当前仓库的唯一主线是 **通用本地 AI Dev Orchestrator**。",
+    "`Hermes/AgentBridge 兼容线` 是 adapter，不是主协议",
+    "目标：Hermes/AgentBridge 兼容线三绿",
+    "本仓当前主产品线是 **通用本地 AI Dev Orchestrator**"
   ],
-  "rollback_ref": "git revert the planning-status.json + capability probe evidence + authoritative docs bundle as one change set"
+  "rollback_ref": "git revert the strategic return docs, planning-status, selector policy, verifier, and evidence bundle as one change set"
 }

@@ -1,50 +1,35 @@
 # Hermes Compatibility Demotion
 
+> Status: superseded by `docs/change-evidence/20260706-strategic-regression.md`
+
 ## 目的
 
-把 Hermes/AgentBridge 从“当前主线真源”降级为“历史基线 + 兼容产品线”。
+本文件保留为历史迁移记录，但不再代表当前 authoritative truth。
 
-## 现在的结构
+旧 demotion 叙事的有效部分仍然存在：
 
-### 当前主线
+- Hermes/AgentBridge 仍是 `certified_baseline`
+- 旧 Hermes 主线文档仍保留历史入口与兼容资料
 
-- `README.md`
-- `docs/README.md`
-- `docs/architecture/planning-status.json`
-- `docs/product/*`
-- `docs/architecture/*`
-- `docs/specs/*`
-- `docs/roadmap/*`
-- `docs/plans/*`
-- `docs/backlog/*`
+被本次 strategic return supersede 的部分是：
 
-### Hermes 兼容线
+- “当前主线只能写成 generic orchestrator”
+- “Hermes 只剩 compatibility lane 的当前主叙事”
+- “AgentBridge 不再作为跨层主契约的目标态”
 
-- `docs/platforms/hermes/`
-- `snapshots/agentbridge-20260628/`
+## 当前 authoritative 口径
 
-## 下沉规则
-
-- 旧 Hermes 主线文档不删除
-- 顶层旧入口改成降级说明或指针页
-- Hermes 历史内容迁到 `docs/platforms/hermes/`
-- `planning-status.json.certified_baseline` 指向 Hermes compatibility baseline
-
-## Claim Boundary
-
-- 可以宣称：
-  - Hermes/AgentBridge 是已验收历史基线
-  - Hermes/AgentBridge 仍是兼容线
-- 不可以宣称：
-  - Hermes/AgentBridge 仍定义当前 generic orchestrator 主线
-  - 旧 `实施计划 / 任务清单 / 当前交接摘要` 仍是当前 authoritative truth
-
-## 后续 AI 执行入口
-
-后续 AI 编码应先读：
+当前 authoritative truth 以以下文件为准：
 
 1. `docs/architecture/planning-status.json`
-2. `docs/plans/orchestrator-implementation-plan.md`
-3. `docs/backlog/orchestrator-task-list.md`
+2. `docs/product/orchestrator-prd.md`
+3. `docs/architecture/orchestrator-target-architecture.md`
+4. `docs/plans/orchestrator-implementation-plan.md`
+5. `docs/backlog/orchestrator-task-list.md`
+6. `docs/change-evidence/20260706-strategic-regression.md`
 
-而不是再从 Hermes 历史文档回溯当前主线意图。
+## 仍然保留的边界
+
+- `docs/platforms/hermes/` 与 `snapshots/agentbridge-20260628/` 继续作为历史基线与边界证据
+- 当前 canonical intake / `result.json` / compatibility projection 的 repo truth 不因 strategic return 被反转
+- 后续 AI 仍应从当前 authoritative docs 读取主线，而不是从本文件倒推出当前实现真相

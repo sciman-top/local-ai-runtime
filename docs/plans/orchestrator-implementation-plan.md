@@ -1,14 +1,21 @@
-# Orchestrator Implementation Plan
+# Local AI Runtime 实施计划
+
+项目展示名是 `Local AI Runtime`，中文名是 `本地 AI 运行时`。当前主产品线是 `Hermes -> AgentBridge -> Codex`；历史仓库 slug / 当前本地目录仍为 `local-ai-dev-orchestrator`。
 
 ## Goal
 
-把当前仓库从 Hermes-oriented 文档维护仓，收敛成一个可直接编码的通用本地 AI Dev Orchestrator 主仓，同时保留 Hermes/AgentBridge 兼容线。
+把当前仓库回调为 **Hermes -> AgentBridge -> Codex** 三层主线，同时严格保留当前 repo truth：
+
+- canonical `JSON/YAML` intake 仍是当前主路径
+- `.ai/runs/<run_id>/<task_id>/result.json` 仍是正式 evidence 主体
+- `AgentBridge results/*.md` 当前仍是 compatibility projection
+- `runtime/host-orchestrator` 是 `host_local` 可信运行时内核
 
 ## Working Rules
 
 - 代码一律在 `runtime/host-orchestrator` 上就地演进
 - 文档主线以 `planning-status.json` + authoritative docs 为准
-- `Phase 1` 采用双写过渡方案 A
+- `Phase 1` 继续采用双写过渡方案 A
 - `Wave 1 smoke` 继续隔离在 `private-local/wave-smokes/`
 - gate 顺序固定为 `build -> [lint -> typecheck] -> test -> contract -> hotspot`
 
@@ -27,201 +34,118 @@
 ### GOV-T01 formalize governed reference companion
 
 - Status: completed
-- Verification:
-  - `pwsh .\scripts\refresh-reference-repos.ps1 -FetchOnly -SkipDirtyRepos -RepoNames governed-ai-coding-runtime`
 
 ### GOV-T02 split selector from verifier
 
 - Status: completed
-- Verification:
-  - `python .\scripts\verify-planning-status.py`
-  - `python .\scripts\select-next-work.py`
 
 ### GOV-T03 add repo-level change-evidence index
 
 - Status: completed
-- Verification:
-  - `docs/change-evidence/README.md` references dated evidence notes
 
 ### GOV-T04 add release-style preflight entrypoint
 
 - Status: completed
-- Verification:
-  - `pwsh .\scripts\governance\preflight.ps1 -DisableAutoCommit`
 
 ### GOV-T05 wire docs, AGENTS, and proof routing
 
 - Status: completed
-- Verification:
-  - `python .\scripts\verify-planning-status.py`
 
 ### GOV-T08 absorb control-repo global-only rule governance
 
 - Status: completed
-- Verification:
-  - `python D:\CODE\governed-ai-coding-runtime\scripts\verify-agent-rule-family.py`
-  - `pwsh D:\CODE\governed-ai-coding-runtime\scripts\sync-agent-rules.ps1 -Scope All -Apply`
 
 ### GOV-T09 add target-project `AGENTS.md + CLAUDE.md` coordination pilot
 
 - Status: completed
-- Verification:
-  - `python D:\CODE\governed-ai-coding-runtime\scripts\verify-target-project-rules.py --targets local-ai-dev-orchestrator`
 
 ### GOV-T10 align docs, wrapper boundary, and repo-level evidence for the pilot
 
 - Status: completed
-- Verification:
-  - `python .\scripts\verify-planning-status.py`
-  - `python .\scripts\select-next-work.py`
-  - `pwsh .\scripts\governance\preflight.ps1 -DisableAutoCommit`
 
-## Ordered Changes Status
+## Strategic Return Landing Order
 
-### Step 1. P1-T01 默认 layout 迁到 `.ai/state` 与 `.ai/runs`
-
-- Status: completed
-- Files:
-  - `runtime/host-orchestrator/src/host_orchestrator/paths.py`
-  - `runtime/host-orchestrator/tests/test_scaffold.py`
-  - `docs/change-evidence/20260706-layout-defaults-to-ai-state.md`
-- Verification:
-  - `uv run --project .\runtime\host-orchestrator python -m pytest runtime/host-orchestrator/tests/test_scaffold.py -q`
-
-### Step 2. P1-T02 / P1-T03 canonical intake + canonical result writer
+### Phase A — Truth Reset
 
 - Status: completed (repo-side)
-- Files:
-  - `runtime/host-orchestrator/src/host_orchestrator/host_local.py`
-  - `runtime/host-orchestrator/src/host_orchestrator/agentbridge.py`
-  - `runtime/host-orchestrator/src/host_orchestrator/canonical_task.py`
-  - `runtime/host-orchestrator/src/host_orchestrator/canonical_result.py`
-  - `runtime/host-orchestrator/src/host_orchestrator/wave1_smoke.py`
-  - `runtime/host-orchestrator/tests/test_wave1_execution.py`
-- Outputs:
-  - canonical `task.json` / `task.yaml` intake
-  - `.ai/runs/<run_id>/<task_id>/result.json`
-  - `.ai/runs/<run_id>/<task_id>/verification_summary.json`
-  - `.ai/runs/<run_id>/<task_id>/cost_summary.json`
-  - `.ai/runs/<run_id>/<task_id>/evidence_index.json`
-  - compatibility markdown projection
-- Verification:
-  - `uv run --project .\runtime\host-orchestrator python -m pytest runtime/host-orchestrator/tests/test_wave1_execution.py -q`
-
-### Step 3. P1-3 config / worker-profile contract absorption
-
-- Status: completed (repo-side)
-- Files:
-  - `docs/specs/config-and-worker-profiles.md`
-  - `.ai/config/orchestrator.yaml`
-  - `.ai/config/workers.yaml`
-  - `.ai/config/policies.yaml`
-  - `runtime/host-orchestrator/src/host_orchestrator/config_runtime.py`
-- Outputs:
-  - repo-owned config truth
-  - deterministic contract error on missing/invalid config
-  - no silent fallback to hardcoded defaults
-- Verification:
-  - `uv run --project .\runtime\host-orchestrator python -m pytest runtime/host-orchestrator/tests/test_wave1_execution.py -q`
-
-### Step 4. acceptance-and-gates authoritative spec
-
-- Status: completed (contract layer)
-- Files:
-  - `docs/specs/acceptance-and-gates.md`
-  - `docs/product/orchestrator-prd.md`
-  - `scripts/governance/preflight.ps1`
-- Outputs:
-  - PRD 四档 acceptance tiers 显式映射
-  - `mock green` / `live probe ready` 不再与 PRD 四档打架
-
-### Step 5. run-state / handoff contract foundation
-
-- Status: completed (contract layer)
-- Files:
-  - `docs/specs/run-state-and-handoff.md`
-  - `docs/specs/state-and-db.md`
-- Outputs:
-  - `run_id / attempt / resume_point / retry_rewind / handoff_required / next_action` 最小契约
-
-### Step 6. selector policy verifier coverage
-
-- Status: completed
-- Files:
-  - `docs/architecture/planning-status.json`
-  - `docs/architecture/next-work-selection-policy.json`
-  - `scripts/verify-planning-status.py`
-  - `scripts/select-next-work.py`
-
-### Step 7. impl_pack stale / legacy demotion
-
-- Status: completed
-- Files:
-  - `ai_dev_orchestrator_impl_pack/00_README_FIRST.md`
-  - `ai_dev_orchestrator_impl_pack/03_IMPLEMENTATION_ROADMAP.md`
-  - `ai_dev_orchestrator_impl_pack/05_TASK_CONTRACT_SCHEMA.json`
-  - `ai_dev_orchestrator_impl_pack/05_SAMPLE_TASKS.json`
-  - `ai_dev_orchestrator_impl_pack/06_STATE_MACHINE.md`
-  - `ai_dev_orchestrator_impl_pack/07_AGENT_ROLE_MATRIX.md`
-  - `ai_dev_orchestrator_impl_pack/08_AGENTS.md`
-  - `ai_dev_orchestrator_impl_pack/09_CODEX_MASTER_PROMPT.md`
-  - `ai_dev_orchestrator_impl_pack/10_GLM_REVIEW_PROMPT.md`
-  - `ai_dev_orchestrator_impl_pack/14_HANDOFF_MESSAGE_TO_CODEX.md`
-  - `scripts/verify-planning-status.py`
-
-## Phase 1 Closeout Status
-
-### P1-T04 真实 SDK 切片
-
-- Status: completed
-- Preconditions:
-  - GPT-5.4 gateway 可用：已满足
-  - `codex exec` 最小命令可用：已满足
-  - 当前范围限制：`network_proxy` 仍为 `platform_na`，先按纯本地任务推进
-- Evidence:
-  - `docs/change-evidence/20260706-phase1-real-sdk-vertical-slice.md`
-
-### P1-T05 `evidence_index.json` sha256 可重算
-
-- Status: completed (repo-side)
-- Outputs:
-  - `runtime/host-orchestrator/src/host_orchestrator/evidence_index.py`
-  - `uv run --project .\runtime\host-orchestrator python -m host_orchestrator --repo-root . --revalidate-evidence-index <path-to-evidence_index.json>`
-  - `runtime/host-orchestrator/tests/test_wave1_execution.py` 中的重算通过 / 篡改失败断言
+- Scope:
+  - authoritative docs
+  - `planning-status.json`
+  - selector policy / verifier
+  - change-evidence
 - Boundary:
-  - 这补齐了 `repo-side green` 所需的 evidence integrity 口径
-  - 当前 live posture 仍然只是 `live probe ready`
+  - 不反转当前 canonical intake / `result.json` / compatibility projection 事实
+  - 不提前落 `compatibility_projection_ref` 或 `lane` 改名
+  - 不把 `AgentBridge-first intake` 写成已完成
 
-## Phase 2 And Beyond
+### Phase B — Host_local Robustness
 
-### P2-T01 acceptance / gates foundation
+- Status: completed (repo-side)
+- Goal:
+  - `host_local` 异常收口
+  - 当前 `leases` 表最小函数
+  - worker crash 后 `task failed + worker idle`
+- Outputs:
+  - `acquire_lease / renew_lease / release_lease / reap_stale_leases`
+  - `host_local` failure path now records `task_failed`, flips runtime task to `failed`, restores worker to `idle`, and releases the lease
+  - `codex exec` fallback now runs behind a process-tree guard
 
-- Status:
-  - completed (contract layer)
+### Phase C — Verification Runner
 
-### P2-T02 run-state / handoff foundation
+- Status: completed (repo-side)
+- Goal:
+  - 最小真实 gate executor
+  - 替换 `verification_summary.json` 的硬编码默认成功口径
+- Outputs:
+  - `verification.py` 最小 gate executor
+  - 当前只真实执行 `test + contract`
+  - `build / lint / typecheck / hotspot` 继续按 `gate_na` 或 `not_configured` 留痕
 
-- Status:
-  - completed (contract layer)
-
-### P2-T03 AgentBridge round-trip parity
-
-- Status: pending
-- Next bounded slice:
-  - compatibility projection 与 canonical result/review 的 round-trip parity
-
-### P3-T01 verification runner
-
-- Status: pending
-
-### P3-T02 worktree manager / cleanup manager
-
-- Status: pending
-
-### P4-T01 planner adapter
+### Phase D — AgentBridge-first Intake Upgrade
 
 - Status: pending
+- Goal:
+  - markdown task 无损映射 canonical 18 字段
+  - `load_task` 前加入 intake source dispatch
 
-### P4-T02 review adapter
+### Phase E — Hermes Parity + Container Lifecycle
 
 - Status: pending
+- Goal:
+  - Hermes parity
+  - container lifecycle
+  - historical baseline mapping
+  - 后置控制面扩展
+- Boundary:
+  - 只有在 parity 绿后才评估 `compatibility_projection_ref` 与 `lane` 的 schema rename
+
+### Phase F — Topology Expansion
+
+- Status: pending
+- Goal:
+  - `remote_non_gui` 次级推进
+  - `vm_gui` 条件晋升
+
+## Current Repo-Side Foundations
+
+### Phase 1 closeout already landed repo-side
+
+- `P1-T01` 默认 layout 已迁到 `.ai/state` 与 `.ai/runs`
+- `P1-T02` canonical task intake 已落地
+- `P1-T03` 正式 `result.json` + compatibility markdown projection 已落地
+- `P1-T03A` repo-owned config / worker-profile contract 已吸收
+- `P1-T04` 一次非 mock 的 `Codex SDK` real vertical slice 已完成
+- `P1-T05` `evidence_index.json` sha256 可重算入口已落地
+
+### Phase 2 contract foundations already landed repo-side
+
+- `P2-T01` acceptance / gates foundation：completed
+- `P2-T02` run-state / handoff foundation：completed
+
+## Next Bounded Execution Queue
+
+- `D-T01` AgentBridge-first intake upgrade
+- `P4-T01` planner adapter
+- `P4-T02` review adapter
+
+其中 `planner/review` 继续保留在 repo `Phase 4`，不并回容器或资源 phase。

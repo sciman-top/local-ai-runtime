@@ -76,6 +76,7 @@ def write_result_bundle(
     worker_result: WorkerResult,
     started_at: str,
     finished_at: str,
+    verification_payload: dict[str, Any] | None = None,
     projection_writer: ProjectionWriter | None = None,
 ) -> ResultBundle:
     artifacts = build_run_artifacts(layout=layout, run_id=run_id, task_id=task.task_id)
@@ -86,7 +87,7 @@ def write_result_bundle(
     artifacts.stderr_log.write_text(_extract_stderr_text(worker_result), encoding="utf-8")
     artifacts.worker_output.write_text(worker_result.final_response or "", encoding="utf-8")
 
-    verification_payload = {
+    verification_payload = verification_payload or {
         "status": "no_commands_configured",
         "commands_run": [],
     }
@@ -110,6 +111,11 @@ def write_result_bundle(
     relative_cost = render_relative_path(layout.repo_root, artifacts.cost_summary)
     relative_worker_output = render_relative_path(layout.repo_root, artifacts.worker_output)
 
+    result_status = "failed" if verification_payload.get("status") == "failed" else "succeeded"
+    termination_reason = (
+        "verification_failed" if verification_payload.get("status") == "failed" else "worker_completed"
+    )
+
     result_payload = {
         "task_id": task.task_id,
         "run_id": run_id,
@@ -119,14 +125,14 @@ def write_result_bundle(
         "lane": worker_profile.lane,
         "sandbox_profile": worker_profile.sandbox_profile,
         "network_profile": worker_profile.network_profile,
-        "status": "succeeded",
+        "status": result_status,
         "started_at": started_at,
         "finished_at": finished_at,
         "stdout_log": relative_stdout,
         "stderr_log": relative_stderr,
         "verification_summary_ref": relative_verification,
         "cost_summary": relative_cost,
-        "termination_reason": "worker_completed",
+        "termination_reason": termination_reason,
         "cleanup_status": "deferred",
         "artifacts": [relative_worker_output],
         "compatibility_projection_ref": (

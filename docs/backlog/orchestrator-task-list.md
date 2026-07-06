@@ -1,138 +1,71 @@
-# Orchestrator Task List
+# Local AI Runtime 任务清单
 
-## Phase 0'
+项目展示名是 `Local AI Runtime`，中文名是 `本地 AI 运行时`。当前主产品线是 `Hermes -> AgentBridge -> Codex`；历史仓库 slug / 当前本地目录仍为 `local-ai-dev-orchestrator`。
 
-- [x] `P0'-T01` 落主真源与 verifier
+当前 active queue 仍然是 `PHASE-1-VERTICAL-SLICE`，当前预期 next action 仍是 `promote_phase1_execution`。
+
+## Strategic Return Overlay
+
+- [x] `A-T01` authoritative docs / planning-status / policy / verifier / change-evidence truth reset
   - Done when:
-    - `docs/architecture/planning-status.json` 存在
-    - `python scripts/verify-planning-status.py` 通过
+    - `Hermes -> AgentBridge -> Codex` 成为 authoritative docs 的主叙事
+    - canonical intake / `result.json` / compatibility projection 当前事实仍被显式保留
+    - `python .\scripts\verify-planning-status.py` 通过
   - Status note:
-    - 2026-07-06 已落盘并可通过 verifier
-- [x] `P0'-T02` 改写 impl_pack 四入口
+    - 2026-07-06 已完成 repo-side 落盘
+- [x] `B-T01` host_local crash recovery and lease helpers
   - Done when:
-    - 不再出现 greenfield 口径
+    - worker crash 后 `task failed + worker idle`
+    - 当前 `leases` 表具备 acquire / renew / release / reap 最小函数
   - Status note:
-    - 2026-07-06 已统一为基于 `runtime/host-orchestrator` 的落点说明
-- [x] `P0'-T03` 下沉 Hermes 主线文档
+    - 2026-07-06 已落 `host_local` 失败收口、lease helpers、以及 exec fallback 进程守卫
+- [x] `C-T01` verification runner
   - Done when:
-    - 顶层旧入口全部变成明确指针页或降级页
+    - `verification_summary.json` 不再默认 `no_commands_configured`
+    - 最小 `test + contract` gate 真实执行
   - Status note:
-    - 2026-07-06 顶层旧 Hermes 入口已降级为指针页，兼容正文下沉到 `docs/platforms/hermes/`
+    - 2026-07-06 已落最小真实 gate executor；`build / lint / typecheck / hotspot` 继续按 `gate_na` 或 `not_configured` 留痕
+- [ ] `D-T01` AgentBridge-first intake upgrade
+  - Done when:
+    - markdown task 能无损映射 canonical 18 字段
+    - `host_local` 主路径能接收 canonical JSON/YAML 与 AgentBridge markdown
+- [ ] `E-T01` Hermes parity and container lifecycle
+  - Done when:
+    - parity / historical mapping / container lifecycle 进入同一闭环
+    - 是否做 `compatibility_projection_ref` 与 `lane` rename 有明确决策
+- [ ] `F-T01` topology expansion
+  - Done when:
+    - `remote_non_gui` 进入 simulation
+    - `vm_gui` 只有在真实 GUI-only workload 证据下才升级
+
+能力范围与晋升顺序固定为：`host_local > remote_non_gui > vm_gui`。
 
 ## Governance Overlay
 
 - [x] `GOV-T01` formalize governed reference companion
-  - Done when:
-    - `governed-ai-coding-runtime` 以 `governance-sidecar` 进入 manifest / references / observation surfaces
-  - Status note:
-    - 2026-07-06 已正式纳入 companion 参考面，不进入 `default_refresh_set`
 - [x] `GOV-T02` split selector from verifier
-  - Done when:
-    - `scripts/select-next-work.py` 独立返回下一步动作
-    - `scripts/verify-planning-status.py` 只做一致性校验
-  - Status note:
-    - 2026-07-06 prerequisite probes ready 后，当前 selector 预期结果已提升为 `promote_phase1_execution`
 - [x] `GOV-T03` add repo-level change-evidence index
-  - Done when:
-    - `docs/change-evidence/README.md` 与 dated evidence note 已落盘
-  - Status note:
-    - 2026-07-06 已补齐 repo-level change evidence index
 - [x] `GOV-T04` add release-style preflight entrypoint
-  - Done when:
-    - `scripts/governance/preflight.ps1` 可执行
-    - build / hotspot 缺口用 `gate_na` 明示
-  - Status note:
-    - 2026-07-06 已固化 repo-owned release-style preflight
 - [x] `GOV-T05` wire docs, AGENTS, and proof routing
-  - Done when:
-    - README / docs / AGENTS 对 Governance Overlay 口径一致
-  - Status note:
-    - 2026-07-06 已完成 proof routing 与入口同步
 - [x] `GOV-T06` selector policy verifier coverage
-  - Done when:
-    - `next-work-selection-policy.json` 进入 authoritative/verifier 视野
-    - `review_expires_at` 只做存在性与 ISO 形状校验
-  - Status note:
-    - 2026-07-06 verifier 与 selector 的 policy 边界已分离
 - [x] `GOV-T07` impl_pack stale demotion and machine checks
-  - Done when:
-    - stale/legacy marker 可被 verifier 机器检查
-    - `00_README_FIRST.md` 不再把 stale `05` 当主读入口
-  - Status note:
-    - 2026-07-06 impl_pack stale/legacy 标识与 verifier 覆盖已同步
 - [x] `GOV-T08` absorb control-repo global-only rule governance
-  - Done when:
-    - `governed-ai-coding-runtime` 只把 `Codex + Claude` 纳入 managed global rule family
-    - 当前试点仓不再把 blind target-repo distribution 当作方案真源
-  - Status note:
-    - 2026-07-06 已切换到 global-only sync + target-project audit 边界
 - [x] `GOV-T09` add target-project `AGENTS.md + CLAUDE.md` coordination pilot
-  - Done when:
-    - 根 `AGENTS.md` 成为共同项目规则主体
-    - 根 `CLAUDE.md` 成为 thin wrapper
-  - Status note:
-    - 2026-07-06 本仓已作为受管目标仓试点接入共享主体 + thin wrapper 模型
 - [x] `GOV-T10` align docs, wrapper boundary, and repo-level evidence for the pilot
-  - Done when:
-    - README / docs / AGENTS / CLAUDE / change-evidence 对规则边界说法一致
-  - Status note:
-    - 2026-07-06 已把控制仓 vs 目标仓、共同规则 vs wrapper、规则 vs enforcement 的边界写入正式文档
-
-治理任务完成后：
-
-- 当前产品 active queue 仍然是 `PHASE-1-VERTICAL-SLICE`
-- 当前预期 next action 已是 `promote_phase1_execution`
 
 ## Phase 1
 
 - [x] `P1-T01` 默认 layout 迁到 `.ai/state` 与 `.ai/runs`
-  - Done when:
-    - `test_scaffold.py` 新断言为绿
-  - Status note:
-    - 2026-07-06 `RuntimeLayout` 默认路径已切到 `.ai/state/control-plane.db` 与 `.ai/runs`
 - [x] `P1-T02` canonical task intake 落地
-  - Done when:
-    - task loader 拒绝作者手写 `planner_required / review_required`
-  - Status note:
-    - 2026-07-06 canonical task loader 与 authored-derived-field 拒绝测试已落盘
 - [x] `P1-T03` 正式 `result.json` + markdown projection 双写
-  - Done when:
-    - `result.json` 存在
-    - markdown projection 仍存在
-  - Status note:
-    - 2026-07-06 host-local runtime 已写出 canonical run artifacts 与 compatibility projection
 - [x] `P1-T03A` repo-owned config / worker-profile contract
-  - Done when:
-    - `.ai/config/*.yaml` 成为运行时真源
-    - 缺失配置返回 deterministic contract error
-  - Status note:
-    - 2026-07-06 已移除运行时代码中的静默默认值回退
 - [x] `P1-T04` 一次真实 SDK 垂直切片
-  - Done when:
-    - 真实 task run 成功
-    - mock 未被记为 live green
-  - Status note:
-    - 2026-07-06 已用 `Codex SDK` 在隔离工作区中完成一次非 mock canonical runtime vertical slice
 - [x] `P1-T05` `evidence_index.json` sha256 可重算
-  - Done when:
-    - index 校验入口通过
-  - Status note:
-    - 2026-07-06 已补独立 revalidation entrypoint，并能对 real SDK 产物重算 sha256 / byte_count
-  - Done when:
-    - index 校验脚本通过
 
 ## Phase 2
 
 - [x] `P2-T01` acceptance-and-gates authoritative spec
-  - Done when:
-    - PRD 四档 acceptance tiers 与 `mock green` / `live probe ready` 映射固定
-  - Status note:
-    - 2026-07-06 新 spec 已落盘，未新增冲突 tier
 - [x] `P2-T02` run-state-and-handoff foundation
-  - Done when:
-    - `run_id / attempt / handoff_required / next_action` 契约已落盘
-  - Status note:
-    - 2026-07-06 已明确 Phase 1-4 foundation 边界
 - [ ] `P2-T03` AgentBridge round-trip parity
 
 ## Phase 3
@@ -150,12 +83,12 @@
 
 ## Phase 5
 
-- [ ] `P5-T01` 控制面新增 4 表
-- [ ] `P5-T02` repo/branch/worker quota
-- [ ] `P5-T03` multi-worker simulation
+- [ ] `P5-T01` leases / retry / route / quota 收口
+- [ ] `P5-T02` multi-worker simulation
+- [ ] `P5-T03` remote_non_gui promotion evidence
 
 ## Phase 6
 
 - [ ] `P6-T01` Hermes parity closeout
 - [ ] `P6-T02` historical snapshot mapping
-- [ ] `P6-T03` markdown projection compatibility
+- [ ] `P6-T03` vm_gui conditional promotion evidence
