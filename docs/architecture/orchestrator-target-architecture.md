@@ -115,6 +115,7 @@
 - 当前读取 canonical `task.json` / `task.yaml`，并在 `host_local` 主路径接受合规 AgentBridge markdown task 后归一化到 canonical payload
 - 校验 schema
 - 校验 markdown front matter contract，并拒绝 execution-critical override / gate command injection
+- repo-side parity 当前已验证到 `result.json`、`evidence_index.json`、以及 `AgentBridge/results/*.md` projection 闭环
 - 派生 `planner_required` / `review_required` / `touches_policy_surface`
 - 盖章运行时字段
 

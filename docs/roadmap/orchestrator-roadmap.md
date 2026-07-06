@@ -95,7 +95,8 @@
 - 目标：task/result/review/run-state/acceptance contract 固化，并在安全 intake 接线后推进 AgentBridge round-trip parity
 - 当前状态：
   - config / acceptance / run-state foundation docs 已落盘
-  - 下一最小切片仍是 `P2-T03 AgentBridge round-trip parity`
+  - repo-side projection parity 已落地
+  - 尚未自动升级为 `platform compatibility green`
 - 出口门禁：schema tests + projection parity 全绿
 
 ### Phase 3 执行与验证

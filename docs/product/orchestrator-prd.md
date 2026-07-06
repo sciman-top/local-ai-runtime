@@ -33,7 +33,7 @@
 
 - 唯一跨层文件契约
 - 终态承接 Hermes 任务正文与结果投影
-- 当前 repo truth 下，markdown task intake 已在 `host_local` 主路径接线，但只按 repo-owned canonical 默认值安全归一化；markdown result 仍是 compatibility projection
+- 当前 repo truth 下，markdown task intake 已在 `host_local` 主路径接线，但只按 repo-owned canonical 默认值安全归一化；markdown result 仍是 compatibility projection，且 repo-side projection parity 已验证
 
 ### Codex
 
@@ -94,7 +94,7 @@
 
 ### 中期
 
-- `host_local` 正确性、verification runner、以及安全边界下的 AgentBridge-first intake 已 repo-side 落地；下一步是 parity
+- `host_local` 正确性、verification runner、安全边界下的 AgentBridge-first intake、以及 repo-side projection parity 已落地；后续才进入更高阶 planner/review 与 Hermes parity
 - planner/review 触发条件全是机器可判定字段
 - AgentBridge round-trip 与 Hermes parity 能在不反转 repo truth 的前提下推进
 

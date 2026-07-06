@@ -31,7 +31,7 @@
     - markdown intake 先归一化到 repo-owned canonical 默认值
     - execution-critical override / markdown 侧 gate 命令输入 fail closed
   - Status note:
-    - 2026-07-06 已落安全版 AgentBridge-first intake；下一最小切片转到 `P2-T03`
+    - 2026-07-06 已落安全版 AgentBridge-first intake；随后推进到 `P2-T03`
 - [ ] `E-T01` Hermes parity and container lifecycle
   - Done when:
     - parity / historical mapping / container lifecycle 进入同一闭环
@@ -69,7 +69,12 @@
 
 - [x] `P2-T01` acceptance-and-gates authoritative spec
 - [x] `P2-T02` run-state-and-handoff foundation
-- [ ] `P2-T03` AgentBridge round-trip parity
+- [x] `P2-T03` AgentBridge round-trip parity
+  - Done when:
+    - markdown task 直连 `host_local` 主入口而不再依赖 canonical json sidecar
+    - `result.json`、`verification_summary.json`、`cost_summary.json`、`evidence_index.json`、`AgentBridge/results/*.md`、`artifacts/*.txt` 构成 repo-side parity 闭环
+  - Status note:
+    - 2026-07-06 已完成 repo-side projection parity；仍未自动升级为 `platform compatibility green` 或 `live accepted`
 
 ## Phase 3
 

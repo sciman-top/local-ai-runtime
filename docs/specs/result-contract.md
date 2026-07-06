@@ -8,6 +8,7 @@
 
 - `.ai/runs/<run_id>/<task_id>/result.json` 是当前正式 result 主体
 - `AgentBridge results/*.md` 当前仍是 compatibility projection
+- repo-side 当前已验证 `AgentBridge/tasks/*.md -> host_local -> result.json -> AgentBridge/results/*.md` 的 projection parity 闭环
 - 当前代码层字段名仍是 `lane`
 - 当前字段名仍是 `compatibility_projection_ref`
 
@@ -41,7 +42,7 @@
 
 目标态：
 
-- AgentBridge result / review 可以与 canonical result surface 做稳定 round-trip
+- AgentBridge result / review 可以与 canonical result surface 做更完整的稳定 round-trip
 - verification 输出由真实 gate executor 驱动
 - 若 parity 足够稳定，再评估 schema rename
 

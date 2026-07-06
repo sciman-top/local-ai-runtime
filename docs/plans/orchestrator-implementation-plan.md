@@ -142,10 +142,10 @@
 
 - `P2-T01` acceptance / gates foundation：completed
 - `P2-T02` run-state / handoff foundation：completed
+- `P2-T03` AgentBridge round-trip parity：completed（repo-side）
 
 ## Next Bounded Execution Queue
 
-- `P2-T03` AgentBridge round-trip parity
 - `P4-T01` planner adapter
 - `P4-T02` review adapter
 
