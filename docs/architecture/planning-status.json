@@ -8,13 +8,13 @@
     "status": "in_progress",
     "source_plan": "docs/plans/orchestrator-implementation-plan.md",
     "source_backlog": "docs/backlog/orchestrator-task-list.md",
-    "why_now": "P1-T01/P1-T02/P1-T03 plus repo-owned config contract are landed repo-side, and the Phase 1 prerequisite probes are now ready. The next bounded action is the first non-mock real SDK execution slice on top of the canonical runtime."
+    "why_now": "P1-T01/P1-T02/P1-T03 plus repo-owned config contract are landed repo-side, the Phase 1 prerequisite probes are ready, and one non-mock real SDK execution slice has already succeeded. The next bounded action inside Phase 1 is evidence-index integrity hardening."
   },
   "current_decision_gate": {
     "selector": "promote_phase1_execution",
     "selector_source": "scripts/select-next-work.py",
     "as_of": "2026-07-06",
-    "proof_ref": "docs/change-evidence/20260706-phase1-prereq-probes-ready.md",
+    "proof_ref": "docs/change-evidence/20260706-phase1-real-sdk-vertical-slice.md",
     "blocking_reasons": []
   },
   "current_live_posture": {
@@ -22,7 +22,7 @@
     "gpt54_gateway_probe_status": "ready",
     "codex_exec_probe_status": "ready",
     "as_of": "2026-07-06",
-    "summary": "The repo-side Phase 1 runtime slice is canonical-task-first with result.json plus compatibility projection, and both the GPT-5.4 gateway probe and the codex exec minimum probe are now ready. network_proxy remains platform_na, so the next real execution step should stay within pure local task boundaries."
+    "summary": "The repo-side Phase 1 runtime slice is canonical-task-first with result.json plus compatibility projection, the GPT-5.4 gateway probe and the codex exec minimum probe are ready, and one isolated non-mock Codex SDK run has already succeeded. network_proxy remains platform_na, so current live execution should still stay within pure local task boundaries."
   },
   "certified_baseline": {
     "queue_id": "HERMES-AGENTBRIDGE-BASELINE",

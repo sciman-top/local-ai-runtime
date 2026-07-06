@@ -53,8 +53,8 @@
   - repo-owned config / worker-profile contract
   - GPT-5.4 gateway probe
   - `codex exec` minimum probe
+  - 一次非 mock 的 `Codex SDK` real vertical slice
 - 未完成：
-  - 非 mock live vertical slice
   - `evidence_index.json` sha256 独立校验脚本
 - 入口条件：
   - Governance Overlay 已落盘并可通过 repo-side gate

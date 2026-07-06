@@ -152,11 +152,13 @@
 
 ### P1-T04 真实 SDK 切片
 
-- Status: pending
+- Status: completed
 - Preconditions:
   - GPT-5.4 gateway 可用：已满足
   - `codex exec` 最小命令可用：已满足
   - 当前范围限制：`network_proxy` 仍为 `platform_na`，先按纯本地任务推进
+- Evidence:
+  - `docs/change-evidence/20260706-phase1-real-sdk-vertical-slice.md`
 
 ### P1-T05 `evidence_index.json` sha256 可重算
 

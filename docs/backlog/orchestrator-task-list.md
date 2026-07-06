@@ -90,12 +90,12 @@
     - 缺失配置返回 deterministic contract error
   - Status note:
     - 2026-07-06 已移除运行时代码中的静默默认值回退
-- [ ] `P1-T04` 一次真实 SDK 垂直切片
+- [x] `P1-T04` 一次真实 SDK 垂直切片
   - Done when:
     - 真实 task run 成功
     - mock 未被记为 live green
   - Status note:
-    - 2026-07-06 prerequisite probes 已 ready；当前只剩真实 SDK vertical slice 本身未执行
+    - 2026-07-06 已用 `Codex SDK` 在隔离工作区中完成一次非 mock canonical runtime vertical slice
 - [ ] `P1-T05` `evidence_index.json` sha256 可重算
   - Done when:
     - index 校验脚本通过
