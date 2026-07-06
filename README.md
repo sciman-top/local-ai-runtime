@@ -4,6 +4,14 @@
 - 当前主产品线：`Hermes -> AgentBridge -> Codex`
 - 历史仓库 slug 与当前本地工作目录仍为 `local-ai-dev-orchestrator`（`D:\CODE\local-ai-dev-orchestrator`）；本次只统一项目展示名，不执行目录迁移。
 
+Local AI Runtime is a Windows-first local orchestration runtime for audited AI coding work. The current mainline keeps a strict three-layer product narrative, retains canonical `JSON/YAML` intake plus `result.json` as formal evidence, and treats AgentBridge markdown output as the current compatibility projection instead of claiming a completed protocol reversal.
+
+如果你是第一次进入这个仓库，先看这三处：
+
+1. [docs/README.md](D:/CODE/local-ai-dev-orchestrator/docs/README.md)
+2. [docs/architecture/planning-status.json](D:/CODE/local-ai-dev-orchestrator/docs/architecture/planning-status.json)
+3. [runtime/host-orchestrator](D:/CODE/local-ai-dev-orchestrator/runtime/host-orchestrator/README.md)
+
 本仓当前主产品线回调为 **Hermes -> AgentBridge -> Codex** 三层闭环。当前 repo truth 仍明确保留三条边界：
 
 - canonical `JSON/YAML` intake 仍是当前运行主路径
