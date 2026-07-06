@@ -60,6 +60,23 @@
     - `00_README_FIRST.md` 不再把 stale `05` 当主读入口
   - Status note:
     - 2026-07-06 impl_pack stale/legacy 标识与 verifier 覆盖已同步
+- [x] `GOV-T08` absorb control-repo global-only rule governance
+  - Done when:
+    - `governed-ai-coding-runtime` 只把 `Codex + Claude` 纳入 managed global rule family
+    - 当前试点仓不再把 blind target-repo distribution 当作方案真源
+  - Status note:
+    - 2026-07-06 已切换到 global-only sync + target-project audit 边界
+- [x] `GOV-T09` add target-project `AGENTS.md + CLAUDE.md` coordination pilot
+  - Done when:
+    - 根 `AGENTS.md` 成为共同项目规则主体
+    - 根 `CLAUDE.md` 成为 thin wrapper
+  - Status note:
+    - 2026-07-06 本仓已作为受管目标仓试点接入共享主体 + thin wrapper 模型
+- [x] `GOV-T10` align docs, wrapper boundary, and repo-level evidence for the pilot
+  - Done when:
+    - README / docs / AGENTS / CLAUDE / change-evidence 对规则边界说法一致
+  - Status note:
+    - 2026-07-06 已把控制仓 vs 目标仓、共同规则 vs wrapper、规则 vs enforcement 的边界写入正式文档
 
 治理任务完成后：
 

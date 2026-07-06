@@ -55,6 +55,27 @@
 - Verification:
   - `python .\scripts\verify-planning-status.py`
 
+### GOV-T08 absorb control-repo global-only rule governance
+
+- Status: completed
+- Verification:
+  - `python D:\CODE\governed-ai-coding-runtime\scripts\verify-agent-rule-family.py`
+  - `pwsh D:\CODE\governed-ai-coding-runtime\scripts\sync-agent-rules.ps1 -Scope All -Apply`
+
+### GOV-T09 add target-project `AGENTS.md + CLAUDE.md` coordination pilot
+
+- Status: completed
+- Verification:
+  - `python D:\CODE\governed-ai-coding-runtime\scripts\verify-target-project-rules.py --targets local-ai-dev-orchestrator`
+
+### GOV-T10 align docs, wrapper boundary, and repo-level evidence for the pilot
+
+- Status: completed
+- Verification:
+  - `python .\scripts\verify-planning-status.py`
+  - `python .\scripts\select-next-work.py`
+  - `pwsh .\scripts\governance\preflight.ps1 -DisableAutoCommit`
+
 ## Ordered Changes Status
 
 ### Step 1. P1-T01 默认 layout 迁到 `.ai/state` 与 `.ai/runs`

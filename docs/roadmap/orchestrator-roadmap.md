@@ -30,6 +30,9 @@
 - `GOV-T03` add repo-level change-evidence index：已完成
 - `GOV-T04` add release-style preflight entrypoint：已完成
 - `GOV-T05` wire docs, AGENTS, and proof routing：已完成
+- `GOV-T08` absorb control-repo global-only rule governance：已完成
+- `GOV-T09` add target-project `AGENTS.md + CLAUDE.md` coordination pilot：已完成
+- `GOV-T10` align docs, wrapper boundary, and repo-level evidence for the pilot：已完成
 
 ## 阶段总表
 

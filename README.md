@@ -31,6 +31,12 @@
 - `pwsh .\scripts\governance\preflight.ps1 -DisableAutoCommit`
 - [references/README.md](D:/CODE/local-ai-dev-orchestrator/references/README.md)
 
+## 规则协同
+
+- [AGENTS.md](D:/CODE/local-ai-dev-orchestrator/AGENTS.md) 是本仓共同项目规则真源，负责 repo truth、真实 gate、证据与回滚。
+- [CLAUDE.md](D:/CODE/local-ai-dev-orchestrator/CLAUDE.md) 是 Claude thin wrapper；它通过 `@AGENTS.md` 承接共同正文，不复制共同项目事实。
+- `D:\CODE\governed-ai-coding-runtime` 是全局规则控制仓；本仓只吸收其 `Codex + Claude` global rule source 与 target-project audit 机制，不接受 blind distribution。
+
 ## 阅读顺序
 
 1. [docs/README.md](D:/CODE/local-ai-dev-orchestrator/docs/README.md)

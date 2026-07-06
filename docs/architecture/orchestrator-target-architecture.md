@@ -26,6 +26,14 @@
 - 它不替代 `.ai/runs/<run_id>/<task_id>/evidence_index.json`
 - `governed-ai-coding-runtime` 只作为 `governance-sidecar` companion 参与治理借鉴，不定义当前主线运行时协议
 
+## 规则协同边界
+
+- global rules：`D:\CODE\governed-ai-coding-runtime` 中的 `Codex + Claude` 全局规则源。
+- project rules：本仓根 `AGENTS.md`，负责 repo truth、gate、evidence、rollback。
+- wrappers：本仓根 `CLAUDE.md`，只写 Claude 差异，不复制共同项目正文。
+- enforcement：`.codex`、`.claude/settings.json`、`.claude/rules/`、hooks、CI；它们是确定性限制面，不由 prose 规则副本代替。
+- 目标仓与控制仓之间只允许 `audit + integration + verification` 协同；不恢复 blind target-repo rule distribution。
+
 ## 组件边界
 
 ### 1. Intake / Normalization

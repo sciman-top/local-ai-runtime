@@ -22,6 +22,7 @@
 - [20260706 impl_pack Stale Demotion And Verifier Coverage](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260706-impl-pack-stale-demotion-and-verifier-coverage.md)
 - [20260706 Governed Governance Absorption](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260706-governed-governance-absorption.md)
 - [20260706 Preflight Line-Ending Hygiene Closeout](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260706-preflight-line-ending-hygiene-closeout.md)
+- [20260706 Rule Governance Pilot Coordination](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260706-rule-governance-pilot-coordination.md)
 
 当前最新结论：
 
@@ -34,5 +35,6 @@
 - `P1-T05` 的 `evidence_index.json` sha256 / byte_count 独立重算入口已落盘，并能回放 real SDK 产物
 - `network_proxy` 仍是 `platform_na`，所以当前 `Phase 1` 真实执行应先限纯本地任务
 - Python repo-level line-ending policy 已显式覆盖 `*.py -> LF`
+- 本仓已接入 `AGENTS.md` 共同项目规则主体 + `CLAUDE.md` thin wrapper 试点；全局规则真源仍在 `D:\CODE\governed-ai-coding-runtime`
 - 当前 active queue 仍是 `PHASE-1-VERTICAL-SLICE`
 - 当前预期 next action 仍是粗粒度的 `promote_phase1_execution`；其内部下一最小实现切片是 `P2-T03 AgentBridge round-trip parity`

@@ -45,6 +45,13 @@
 - [change-evidence/README.md](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/README.md)
 - [references/README.md](D:/CODE/local-ai-dev-orchestrator/references/README.md)
 
+## Rule Coordination
+
+- [AGENTS.md](D:/CODE/local-ai-dev-orchestrator/AGENTS.md) 是本仓共同项目规则主体。
+- [CLAUDE.md](D:/CODE/local-ai-dev-orchestrator/CLAUDE.md) 是 Claude thin wrapper；首个非空行是独立 `@AGENTS.md`。
+- `D:\CODE\governed-ai-coding-runtime` 是全局规则控制仓，只负责 `Codex + Claude` global-only rule sync 与 target-project audit；本仓不负责全局规则分发。
+- 本仓项目规则差异必须通过 `audit + integration + verification` 闭环解决，不允许 blind overwrite。
+
 ## 兼容与历史
 
 Hermes/AgentBridge 历史基线与兼容资料入口：

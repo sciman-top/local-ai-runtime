@@ -22,6 +22,7 @@
 - `.ai/state/control-plane.db` 调度真源
 - `.ai/runs/<run_id>/<task_id>/` 正式 evidence 面
 - Governance Overlay：`planning truth / selector split / repo-level change-evidence / release-style preflight / formal reference governance companion`
+- `AGENTS.md` 共同项目规则主体 + `CLAUDE.md` thin wrapper + 控制仓 global rule source / target-project audit 协同边界
 - `runtime/host-orchestrator` 就地演进
 
 ### 执行面
@@ -99,3 +100,4 @@
 - planner/review 失败、缺 gateway、缺 credentials 只能降级，不能伪装成 live success
 - `Hermes/AgentBridge 兼容线` 只保留兼容与历史承载，不恢复为当前主线 authoritative truth
 - `governed-ai-coding-runtime` 只作为 `governance-sidecar` companion 提供 gate / evidence / selector 机制参考，不替代当前主线实现真源
+- 全局规则真源在控制仓；本仓只维护 repo-specific truth，并通过 audit + integration + verification 吸收规则治理能力
