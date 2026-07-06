@@ -4,7 +4,7 @@
 - 当前主产品线：`Hermes -> AgentBridge -> Codex`
 - 历史仓库 slug 与当前本地工作目录仍为 `local-ai-dev-orchestrator`（`D:\CODE\local-ai-dev-orchestrator`）；本次只统一项目展示名，不执行目录迁移。
 
-Local AI Runtime is a Windows-first local orchestration runtime for audited AI coding work. The current mainline keeps a strict three-layer product narrative, retains canonical `JSON/YAML` intake plus `result.json` as formal evidence, and treats AgentBridge markdown output as the current compatibility projection instead of claiming a completed protocol reversal.
+Local AI Runtime is a Windows-first local orchestration runtime for audited AI coding work. The current mainline keeps a strict three-layer product narrative, retains canonical normalization plus `result.json` as formal evidence, and treats AgentBridge markdown output as the current compatibility projection while allowing compliant AgentBridge markdown tasks to enter `host_local` through a fail-closed intake adapter.
 
 如果你是第一次进入这个仓库，先看这三处：
 
@@ -14,7 +14,7 @@ Local AI Runtime is a Windows-first local orchestration runtime for audited AI c
 
 本仓当前主产品线回调为 **Hermes -> AgentBridge -> Codex** 三层闭环。当前 repo truth 仍明确保留三条边界：
 
-- canonical `JSON/YAML` intake 仍是当前运行主路径
+- canonical `JSON/YAML` task contract 仍是当前内部归一化真源；`host_local` 主路径现已可直接接收合规 AgentBridge markdown task
 - `.ai/runs/<run_id>/<task_id>/result.json` 仍是正式 task-level evidence 主体
 - `AgentBridge results/*.md` 当前仍是 compatibility projection，而不是已完成的主协议反转
 
@@ -30,7 +30,7 @@ Local AI Runtime is a Windows-first local orchestration runtime for audited AI c
 - `.ai/state/control-plane.db` 是调度真源
 - `.ai/runs/<run_id>/<task_id>/` 是正式 evidence 面
 - `host_local > remote_non_gui > vm_gui` 是终态能力范围与分级晋升顺序，不是同等级当前交付义务
-- `AgentBridge-first intake` 仍待后续接线；当前不得把它写成既成事实
+- `AgentBridge-first intake` 已以安全边界接入 `host_local`；execution-critical override 与 markdown 侧 gate 命令仍按 fail-closed 处理
 
 ## Governance Overlay
 

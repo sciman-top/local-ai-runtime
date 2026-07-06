@@ -33,7 +33,7 @@
 
 - 唯一跨层文件契约
 - 终态承接 Hermes 任务正文与结果投影
-- 当前 repo truth 下，markdown task intake 仍待后续接线，markdown result 仍是 compatibility projection
+- 当前 repo truth 下，markdown task intake 已在 `host_local` 主路径接线，但只按 repo-owned canonical 默认值安全归一化；markdown result 仍是 compatibility projection
 
 ### Codex
 
@@ -79,7 +79,7 @@
 - 不做多租户 SaaS
 - 不做云端共享控制面
 - 不把当前仓重塑成通用 governance hub
-- 不把 `AgentBridge-first intake` 写成已完成
+- 不把 AgentBridge round-trip parity、execution-critical override live support、或字段改名写成已完成
 - 不在 Phase E parity 前做 `compatibility_projection_ref` 或 `lane` 字段改名
 - 不在无真实 GUI-only workload 证据时强行把 `vm_gui` 纳入同等级 live closeout
 
@@ -94,7 +94,7 @@
 
 ### 中期
 
-- `host_local` 正确性、verification runner、AgentBridge-first intake 依次落地
+- `host_local` 正确性、verification runner、以及安全边界下的 AgentBridge-first intake 已 repo-side 落地；下一步是 parity
 - planner/review 触发条件全是机器可判定字段
 - AgentBridge round-trip 与 Hermes parity 能在不反转 repo truth 的前提下推进
 

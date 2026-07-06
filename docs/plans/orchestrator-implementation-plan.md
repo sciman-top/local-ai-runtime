@@ -76,7 +76,7 @@
 - Boundary:
   - 不反转当前 canonical intake / `result.json` / compatibility projection 事实
   - 不提前落 `compatibility_projection_ref` 或 `lane` 改名
-  - 不把 `AgentBridge-first intake` 写成已完成
+  - 不把 AgentBridge round-trip parity、execution-critical override live support、或字段改名写成已完成
 
 ### Phase B — Host_local Robustness
 
@@ -103,10 +103,11 @@
 
 ### Phase D — AgentBridge-first Intake Upgrade
 
-- Status: pending
+- Status: completed (repo-side, safe intake boundary)
 - Goal:
-  - markdown task 无损映射 canonical 18 字段
-  - `load_task` 前加入 intake source dispatch
+  - 合规 AgentBridge markdown task 可直接进入 `host_local` 主路径
+  - markdown intake 先归一化到 repo-owned canonical 默认值
+  - execution-critical override / markdown 侧 gate 命令输入 fail closed
 
 ### Phase E — Hermes Parity + Container Lifecycle
 
@@ -144,7 +145,7 @@
 
 ## Next Bounded Execution Queue
 
-- `D-T01` AgentBridge-first intake upgrade
+- `P2-T03` AgentBridge round-trip parity
 - `P4-T01` planner adapter
 - `P4-T02` review adapter
 

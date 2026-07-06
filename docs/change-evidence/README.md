@@ -26,6 +26,7 @@
 - [20260706 Governed Governance Absorption](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260706-governed-governance-absorption.md)
 - [20260706 Preflight Line-Ending Hygiene Closeout](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260706-preflight-line-ending-hygiene-closeout.md)
 - [20260706 Rule Governance Pilot Coordination](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260706-rule-governance-pilot-coordination.md)
+- [20260706 AgentBridge Safe Intake Upgrade](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260706-agentbridge-safe-intake-upgrade.md)
 
 当前最新结论：
 
@@ -37,6 +38,7 @@
 - `P1-T01 / P1-T02 / P1-T03` 的 repo-side code slice 已闭环到 canonical runtime + compatibility projection
 - repo-owned config / worker-profile contract 已落盘，host runtime 不再依赖散落硬编码默认值
 - selector policy、acceptance tiers、run-state/handoff foundation 与 impl_pack stale demotion 已进入 authoritative/verifier 同步面
+- 安全版 AgentBridge-first intake 已落 repo-side；`host_local` 可直接接收合规 markdown task，并对 execution-critical override / markdown 侧 gate 命令输入 fail closed
 - GPT-5.4 gateway probe 与 `codex exec` minimum probe 已 ready，当前 selector 预期结果已提升到 `promote_phase1_execution`
 - 一次非 mock 的 `Codex SDK` canonical runtime vertical slice 已成功写出正式 `.ai/runs/...` 工件
 - `P1-T05` 的 `evidence_index.json` sha256 / byte_count 独立重算入口已落盘，并能回放 real SDK 产物

@@ -6,7 +6,7 @@
 
 当前主产品线回调为 **Hermes -> AgentBridge -> Codex** 三层闭环。当前 authoritative truth 同时保留三条 repo-side 事实：
 
-- canonical `JSON/YAML` intake 仍是当前运行主路径
+- canonical `JSON/YAML` intake / canonical JSON/YAML task contract 仍是当前内部归一化真源；`host_local` 主路径现已可直接接收合规 AgentBridge markdown task
 - `.ai/runs/<run_id>/<task_id>/result.json` 仍是正式 task-level evidence 主体
 - `AgentBridge results/*.md` 当前仍是 compatibility projection
 
@@ -39,7 +39,7 @@
 - `.ai/runs/<run_id>/<task_id>/` 是正式 evidence 面
 - `.ai/config/*.yaml` 是 repo-owned 运行时配置真源
 - `host_local > remote_non_gui > vm_gui` 是终态能力范围与分级晋升顺序
-- `AgentBridge-first intake` 尚未接线；canonical `JSON/YAML` intake 仍是当前 truth
+- `AgentBridge-first intake` 已以安全边界接入 `host_local`；markdown task 先归一化到 repo-owned canonical 默认值，并对 execution-critical override fail closed
 - `compatibility_projection_ref` 与 `lane` 字段名当前不改；是否迁移留到 Phase E parity 后再决定
 - 当前 active queue 仍是 `PHASE-1-VERTICAL-SLICE`；repo-side exit gates 已闭环，但 live posture 仍停在 `live probe ready`
 

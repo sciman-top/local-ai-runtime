@@ -42,7 +42,7 @@
 
 - 目标：同步 authoritative docs、planning-status、policy、verifier 与 evidence note
 - 当前状态：已落 repo-side
-- 边界：保留 canonical intake / `result.json` / compatibility projection 当前事实，不提前宣称 AgentBridge-first intake 或字段改名已完成
+- 边界：保留 canonical internal normalization / `result.json` / compatibility projection 当前事实，不提前宣称 parity、execution-critical override live support、或字段改名已完成
 
 ### Phase B — Host_local Robustness
 
@@ -56,8 +56,8 @@
 
 ### Phase D — AgentBridge-first Intake Upgrade
 
-- 目标：markdown task 无损映射 canonical 18 字段并接入主路径
-- 当前状态：待实现
+- 目标：合规 markdown task 安全接入主路径，并归一化到 repo-owned canonical 默认值
+- 当前状态：已完成（repo-side，safe intake boundary）
 
 ### Phase E — Hermes Parity + Container Lifecycle
 
@@ -92,7 +92,7 @@
 
 ### Phase 2 契约与 intake parity
 
-- 目标：task/result/review/run-state/acceptance contract 固化，并为 AgentBridge-first intake 做好迁移窗口
+- 目标：task/result/review/run-state/acceptance contract 固化，并在安全 intake 接线后推进 AgentBridge round-trip parity
 - 当前状态：
   - config / acceptance / run-state foundation docs 已落盘
   - 下一最小切片仍是 `P2-T03 AgentBridge round-trip parity`

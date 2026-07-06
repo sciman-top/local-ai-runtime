@@ -25,10 +25,13 @@
     - 最小 `test + contract` gate 真实执行
   - Status note:
     - 2026-07-06 已落最小真实 gate executor；`build / lint / typecheck / hotspot` 继续按 `gate_na` 或 `not_configured` 留痕
-- [ ] `D-T01` AgentBridge-first intake upgrade
+- [x] `D-T01` AgentBridge-first intake upgrade
   - Done when:
-    - markdown task 能无损映射 canonical 18 字段
-    - `host_local` 主路径能接收 canonical JSON/YAML 与 AgentBridge markdown
+    - 合规 markdown task 可直接进入 `host_local` 主路径
+    - markdown intake 先归一化到 repo-owned canonical 默认值
+    - execution-critical override / markdown 侧 gate 命令输入 fail closed
+  - Status note:
+    - 2026-07-06 已落安全版 AgentBridge-first intake；下一最小切片转到 `P2-T03`
 - [ ] `E-T01` Hermes parity and container lifecycle
   - Done when:
     - parity / historical mapping / container lifecycle 进入同一闭环

@@ -18,8 +18,8 @@
 
 当前仓还没有完成协议反转；以下事实必须显式保留：
 
-- 当前 intake 主路径仍是 canonical `task.json` / `task.yaml`
-- `AgentBridge-first intake` 尚未接线
+- 当前 intake 主路径支持 canonical `task.json` / `task.yaml`，并在 `host_local` 边界接收合规 AgentBridge markdown task
+- markdown intake 已接线，但只把受支持字段归一化到 repo-owned canonical 默认值；execution-critical override 与 gate 命令输入保持 fail-closed
 - `.ai/runs/<run_id>/<task_id>/result.json` 仍是正式结果主面
 - `AgentBridge results/*.md` 当前仍是 compatibility projection
 - `remote_non_gui` / `vm_gui` 目前只有 contract 枚举，没有 runner 实现
@@ -112,8 +112,9 @@
 
 职责：
 
-- 当前读取 canonical `task.json` / `task.yaml`
+- 当前读取 canonical `task.json` / `task.yaml`，并在 `host_local` 主路径接受合规 AgentBridge markdown task 后归一化到 canonical payload
 - 校验 schema
+- 校验 markdown front matter contract，并拒绝 execution-critical override / gate command injection
 - 派生 `planner_required` / `review_required` / `touches_policy_surface`
 - 盖章运行时字段
 

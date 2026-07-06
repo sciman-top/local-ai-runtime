@@ -4,7 +4,7 @@
 
 定义当前 repo 内部 normalized task 协议。
 
-当前主协议是 `JSON/YAML`，不是 `AgentBridge markdown`。
+当前主协议是 `JSON/YAML`；当前内部归一化主协议仍是 canonical task contract，当前直接 intake 允许 `task.json` / `task.yaml` 与受限 AgentBridge markdown task。
 
 `worker_profile`、policy surface 派生、以及 repo-owned 执行抽象的正式定义，见：
 
@@ -12,8 +12,8 @@
 
 ## 当前事实边界
 
-- 当前 `host_local` 主路径先读取 canonical `task.json` / `task.yaml`
-- `AgentBridge-first intake` 仍待后续接线，不能写成当前既成事实
+- 当前 `host_local` 主路径可直接读取 canonical `task.json` / `task.yaml`，也可接收合规 AgentBridge markdown task
+- markdown intake 会先归一化为 repo-owned canonical 默认值，并对 execution-critical override / gate command injection fail closed
 - `execution_lane` 是 contract 层 topology 字段
 - 当前代码层 result surface 仍保留 `lane` 字段名；命名统一不是本轮 truth reset 的目标
 
@@ -27,7 +27,7 @@
 
 迁移窗口：
 
-- 在 Phase D 接线完成前，canonical `JSON/YAML` 仍是当前主协议
+- 当前已完成 Phase D 的安全 intake 接线；canonical `JSON/YAML` 不再是唯一直接输入形态，但仍是当前内部主协议
 - 作者仍不得手写派生字段
 - 即使未来引入 markdown-first intake，也不改变 canonical schema 的内部归一化地位
 

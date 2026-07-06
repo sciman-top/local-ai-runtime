@@ -197,7 +197,7 @@ def _run_verifier(*, repo_root: Path, status_path: Path, verifier_path: Path) ->
         cwd=repo_root,
         capture_output=True,
         text=True,
-        encoding="utf-8",
+        errors="replace",
     )
     payload = None
     if result.returncode == 0 and result.stdout.strip():
@@ -208,8 +208,8 @@ def _run_verifier(*, repo_root: Path, status_path: Path, verifier_path: Path) ->
     return {
         "command": " ".join(command),
         "exit_code": result.returncode,
-        "stdout": result.stdout.strip(),
-        "stderr": result.stderr.strip(),
+        "stdout": (result.stdout or "").strip(),
+        "stderr": (result.stderr or "").strip(),
         "payload": payload,
     }
 
