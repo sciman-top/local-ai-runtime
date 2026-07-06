@@ -210,6 +210,7 @@ def write_result_projection(
     failures: list[str],
     observations: list[str],
     human_review_required: bool,
+    handoff_required: bool,
     next_action: str,
 ) -> Path:
     result_path = agentbridge_root / "results" / f"{task_id}.md"
@@ -267,7 +268,7 @@ def write_result_projection(
             f"next_action: {next_action}",
             "memory_candidate: false",
             f"human_review_required: {'true' if human_review_required else 'false'}",
-            "handoff_required: false",
+            f"handoff_required: {'true' if handoff_required else 'false'}",
             (
                 f"evidence_paths: {evidence_paths_block}"
                 if evidence_paths_block == "[]"

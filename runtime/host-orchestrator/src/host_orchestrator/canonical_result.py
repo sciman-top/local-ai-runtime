@@ -78,6 +78,11 @@ def write_result_bundle(
     finished_at: str,
     verification_payload: dict[str, Any] | None = None,
     projection_writer: ProjectionWriter | None = None,
+    result_status: str | None = None,
+    termination_reason: str | None = None,
+    handoff_required: bool = False,
+    next_action: str = "none",
+    cost_payload_override: dict[str, Any] | None = None,
 ) -> ResultBundle:
     artifacts = build_run_artifacts(layout=layout, run_id=run_id, task_id=task.task_id)
     artifacts.task_root.mkdir(parents=True, exist_ok=True)
@@ -93,7 +98,7 @@ def write_result_bundle(
     }
     _write_json(artifacts.verification_summary, verification_payload)
 
-    cost_payload = {
+    cost_payload = cost_payload_override or {
         "mode": "token_only",
         "source": worker_result.usage.source if worker_result.usage is not None else "worker_usage_unavailable",
         "currency": None,
@@ -111,8 +116,10 @@ def write_result_bundle(
     relative_cost = render_relative_path(layout.repo_root, artifacts.cost_summary)
     relative_worker_output = render_relative_path(layout.repo_root, artifacts.worker_output)
 
-    result_status = "failed" if verification_payload.get("status") == "failed" else "succeeded"
-    termination_reason = (
+    result_status = result_status or (
+        "failed" if verification_payload.get("status") == "failed" else "succeeded"
+    )
+    termination_reason = termination_reason or (
         "verification_failed" if verification_payload.get("status") == "failed" else "worker_completed"
     )
 
@@ -138,8 +145,8 @@ def write_result_bundle(
         "compatibility_projection_ref": (
             render_relative_path(layout.repo_root, projection_path) if projection_path is not None else None
         ),
-        "handoff_required": False,
-        "next_action": "none",
+        "handoff_required": handoff_required,
+        "next_action": next_action,
     }
     _write_json(artifacts.result_json, result_payload)
 

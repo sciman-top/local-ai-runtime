@@ -42,6 +42,7 @@ REQUIRED_VERIFICATION_COMMAND_KEYS = {
     "contract",
     "hotspot",
 }
+PLANNER_REQUIRED_RISK_LEVELS = {"high", "critical"}
 
 
 class CanonicalTaskError(ValueError):
@@ -80,6 +81,10 @@ class CanonicalTask:
     artifacts_out: tuple[str, ...]
     handoff_policy: str
     verification_commands: VerificationCommands
+
+    @property
+    def planner_required(self) -> bool:
+        return self.risk_level in PLANNER_REQUIRED_RISK_LEVELS or bool(self.depends_on)
 
     def render_worker_prompt(self) -> str:
         lines = [

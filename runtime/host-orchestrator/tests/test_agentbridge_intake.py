@@ -257,13 +257,7 @@ def test_host_local_runner_accepts_agentbridge_markdown_task_without_sidecar(
 
     class FakeWorker:
         def run(self, request: WorkerRequest) -> WorkerResult:
-            assert f"task_id: {task_id}" in request.prompt
-            assert "title: Markdown intake through host_local." in request.prompt
-            assert "risk_level: high" in request.prompt
-            return WorkerResult(
-                final_response="MARKDOWN_OK",
-                raw_result={"kind": "fake"},
-            )
+            raise AssertionError("manual_only markdown intake must stop at planner handoff before worker execution")
 
     agentbridge_root = repo_root / "AgentBridge"
     runner = HostLocalRunner(
@@ -293,11 +287,13 @@ def test_host_local_runner_accepts_agentbridge_markdown_task_without_sidecar(
     )
     assert result_payload["task_id"] == task_id
     assert result_payload["lane"] == "host_local"
+    assert result_payload["status"] == "waiting_handoff"
+    assert result_payload["handoff_required"] is True
+    assert result_payload["next_action"] == "planner handoff required before worker execution"
     assert result_payload["compatibility_projection_ref"] == f"AgentBridge/results/{task_id}.md"
-    assert verification_payload["status"] == "no_commands_configured"
+    assert verification_payload["status"] == "waiting_handoff"
     assert projection_path.exists()
-    assert artifact_path.exists()
-    assert artifact_path.read_text(encoding="utf-8") == "MARKDOWN_OK"
+    assert not artifact_path.exists()
     assert f".ai/runs/markdown-intake-test/{task_id}/result.json" in indexed_paths
     assert f"AgentBridge/results/{task_id}.md" in indexed_paths
     assert not (task_path.with_suffix(".json")).exists()

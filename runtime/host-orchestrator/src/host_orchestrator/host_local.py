@@ -11,7 +11,10 @@ from host_orchestrator.canonical_task import CanonicalTask, load_task, task_from
 from host_orchestrator.config_runtime import RuntimeConfigBundle, WorkerProfile, load_runtime_config
 from host_orchestrator.paths import RuntimeLayout
 from host_orchestrator.verification import run_verification
-from host_orchestrator.worker import WorkerLike, WorkerRequest, WorkerUsage
+from host_orchestrator.worker import WorkerLike, WorkerRequest, WorkerResult, WorkerUsage
+
+
+PLANNER_HANDOFF_NEXT_ACTION = "planner handoff required before worker execution"
 
 
 @dataclass(frozen=True)
@@ -88,6 +91,78 @@ class HostLocalRunner:
                 },
                 created_at=started_at,
             )
+
+            if task.planner_required:
+                finished_at = agentbridge.utc_now_iso()
+                worker_result = WorkerResult(
+                    final_response=None,
+                    raw_result={"kind": "planner_handoff"},
+                    stdout_text="",
+                    stderr_text="",
+                )
+                result_bundle = write_result_bundle(
+                    layout=self._config.layout,
+                    task=task,
+                    run_id=run_id,
+                    attempt=self._config.attempt,
+                    worker_profile=worker_profile,
+                    worker_result=worker_result,
+                    started_at=started_at,
+                    finished_at=finished_at,
+                    verification_payload=self._planner_handoff_verification_payload(),
+                    projection_writer=(
+                        lambda artifacts: self._write_compatibility_projection(
+                            task=task,
+                            worker_profile=worker_profile,
+                            worker_result=worker_result,
+                            artifacts=artifacts,
+                            status="waiting_handoff",
+                            handoff_required=True,
+                            next_action=PLANNER_HANDOFF_NEXT_ACTION,
+                            emit_worker_artifact=False,
+                            extra_observations=[
+                                "- Planner handoff was derived from canonical risk/dependency gates.",
+                                "- Repo-side runtime stopped before any live planner or worker execution.",
+                            ],
+                        )
+                    ),
+                    result_status="waiting_handoff",
+                    termination_reason="planner_handoff_required",
+                    handoff_required=True,
+                    next_action=PLANNER_HANDOFF_NEXT_ACTION,
+                    cost_payload_override=self._planner_handoff_cost_payload(),
+                )
+                relative_result_path = str(
+                    result_bundle.artifacts.result_json.relative_to(self._config.layout.repo_root)
+                ).replace("\\", "/")
+                projection_path = result_bundle.result_payload.get("compatibility_projection_ref")
+                evidence_index_path = str(
+                    result_bundle.artifacts.evidence_index.relative_to(self._config.layout.repo_root)
+                ).replace("\\", "/")
+                db.upsert_runtime_task(
+                    self._config.layout.control_plane_db,
+                    task_id=task.task_id,
+                    state="waiting_handoff",
+                    execution_lane=worker_profile.lane,
+                    worker_profile=worker_profile.name,
+                    created_at=started_at,
+                    updated_at=finished_at,
+                    result_path=relative_result_path,
+                )
+                db.append_event(
+                    self._config.layout.control_plane_db,
+                    task_id=task.task_id,
+                    event_type="task_waiting_handoff",
+                    payload={
+                        "result_path": relative_result_path,
+                        "compatibility_projection_ref": projection_path,
+                        "evidence_index_ref": evidence_index_path,
+                        "handoff_required": True,
+                        "next_action": PLANNER_HANDOFF_NEXT_ACTION,
+                    },
+                    created_at=finished_at,
+                )
+                return result_bundle.artifacts.result_json
 
             request = WorkerRequest(
                 prompt=task.render_worker_prompt(),
@@ -213,6 +288,11 @@ class HostLocalRunner:
         worker_profile: WorkerProfile,
         worker_result: object,
         artifacts: object,
+        status: str = "succeeded",
+        handoff_required: bool = False,
+        next_action: str = "none",
+        emit_worker_artifact: bool = True,
+        extra_observations: list[str] | None = None,
     ) -> Path | None:
         if self._config.agentbridge_root is None:
             return None
@@ -229,33 +309,58 @@ class HostLocalRunner:
         (compatibility_root / "results").mkdir(parents=True, exist_ok=True)
         (compatibility_root / "artifacts").mkdir(parents=True, exist_ok=True)
 
-        artifact = agentbridge.write_text_artifact(
-            compatibility_root,
-            task.task_id,
-            getattr(worker_result, "final_response", None) or "",
-        )
+        final_response = getattr(worker_result, "final_response", None)
+        artifact = None
+        if emit_worker_artifact:
+            artifact = agentbridge.write_text_artifact(
+                compatibility_root,
+                task.task_id,
+                final_response or "",
+            )
         observations = [
             "- Markdown result remains a compatibility projection from canonical runtime output.",
             "- The formal runtime truth lives under `.ai/runs/<run_id>/<task_id>/result.json`.",
-            *self._build_usage_observations(getattr(worker_result, "usage", None)),
         ]
+        if emit_worker_artifact:
+            observations.extend(self._build_usage_observations(getattr(worker_result, "usage", None)))
+        if extra_observations:
+            observations.extend(extra_observations)
         return agentbridge.write_result_projection(
             agentbridge_root=compatibility_root,
             task_id=task.task_id,
-            status="succeeded",
+            status=status,
             model=worker_profile.model,
             provider=worker_profile.provider,
             worker_id=self._config.worker_id,
             lane=worker_profile.lane,
             sandbox_mode=worker_profile.sandbox_profile,
             network_mode=worker_profile.network_profile,
-            final_response=getattr(worker_result, "final_response", None),
+            final_response=final_response if emit_worker_artifact else None,
             artifact=artifact,
             failures=[],
             observations=observations,
             human_review_required=False,
-            next_action="none",
+            handoff_required=handoff_required,
+            next_action=next_action,
         )
+
+    @staticmethod
+    def _planner_handoff_verification_payload() -> dict[str, Any]:
+        return {
+            "status": "waiting_handoff",
+            "commands_run": [],
+            "reason": "planner_required was derived from risk_level/depends_on, and no live planner is wired yet.",
+        }
+
+    @staticmethod
+    def _planner_handoff_cost_payload() -> dict[str, Any]:
+        return {
+            "mode": "token_only",
+            "source": "planner_handoff_no_worker_usage",
+            "currency": None,
+            "estimated_cost": None,
+            "usage": None,
+        }
 
     @staticmethod
     def _build_usage_observations(usage: WorkerUsage | None) -> list[str]:
