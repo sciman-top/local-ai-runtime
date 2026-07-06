@@ -8,12 +8,13 @@ import re
 import shutil
 import sqlite3
 
+from host_orchestrator import agentbridge
 from host_orchestrator.host_local import HostLocalConfig, HostLocalRunner
 from host_orchestrator.paths import RuntimeLayout
 from host_orchestrator.worker import WorkerRequest, WorkerResult
 
 
-TASK_ID_PATTERN = re.compile(r"(?m)^id:\s*(?P<value>[^\n]+?)\s*$")
+TASK_ID_PATTERN = re.compile(r"(?m)^(?:id|task_id):\s*(?P<value>[^\n]+?)\s*$")
 EXPECTED_CATEGORIES = {"code_refactor", "docs_sync", "script_contract"}
 
 
@@ -30,7 +31,10 @@ class Wave1SmokeSample:
 class Wave1SmokeTaskOutcome:
     task_id: str
     category: str
-    result_path: str
+    canonical_task_path: str
+    result_json_path: str
+    evidence_index_path: str
+    projection_path: str
     artifact_path: str
 
 
@@ -76,9 +80,12 @@ class ScriptedWave1SmokeWorker:
         task_id = extract_task_id(request.prompt)
         if task_id not in self._responses_by_task_id:
             raise KeyError(f"Wave 1 smoke response not found for task: {task_id}")
+        final_response = self._responses_by_task_id[task_id]
         return WorkerResult(
-            final_response=self._responses_by_task_id[task_id],
+            final_response=final_response,
             raw_result={"mode": "scripted-wave1-smoke", "task_id": task_id},
+            stdout_text=final_response,
+            stderr_text="",
         )
 
 
@@ -97,7 +104,7 @@ def build_wave1_smoke_run_id() -> str:
 def extract_task_id(raw_text: str) -> str:
     task_id_match = TASK_ID_PATTERN.search(raw_text)
     if not task_id_match:
-        raise ValueError("Wave 1 smoke task content is missing an id field.")
+        raise ValueError("Wave 1 smoke task content is missing an id/task_id field.")
     return task_id_match.group("value").strip()
 
 
@@ -134,9 +141,12 @@ def load_wave1_smoke_samples(fixtures_root: Path) -> list[Wave1SmokeSample]:
 
 
 def build_wave1_smoke_layout(repo_root: Path, run_root: Path) -> RuntimeLayout:
+    ai_root = repo_root / ".ai"
     control_plane_root = run_root / "control-plane"
     return RuntimeLayout(
         repo_root=repo_root,
+        ai_root=ai_root,
+        runs_root=ai_root / "runs",
         control_plane_root=control_plane_root,
         control_plane_db=control_plane_root / "control-plane.db",
         control_plane_logs=control_plane_root / "logs",
@@ -161,6 +171,7 @@ def initialize_agentbridge_smoke_root(agentbridge_root: Path, snapshot_root: Pat
 
 def collect_wave1_smoke_summary(
     *,
+    repo_root: Path,
     run_id: str,
     run_root: Path,
     summary_path: Path,
@@ -188,9 +199,7 @@ def collect_wave1_smoke_summary(
     issues: list[str] = []
 
     if {sample.category for sample in samples} != EXPECTED_CATEGORIES:
-        issues.append(
-            "Wave 1 smoke categories drifted from the expected three-sample set."
-        )
+        issues.append("Wave 1 smoke categories drifted from the expected three-sample set.")
 
     if len(samples) != 3:
         issues.append(f"Expected 3 Wave 1 smoke samples, found {len(samples)}.")
@@ -207,33 +216,48 @@ def collect_wave1_smoke_summary(
 
     expected_event_count = len(samples) * 2
     if event_count != expected_event_count:
-        issues.append(
-            f"Expected {expected_event_count} lifecycle events, found {event_count}."
-        )
+        issues.append(f"Expected {expected_event_count} lifecycle events, found {event_count}.")
 
     if worker_status != "idle":
         issues.append(f"Expected worker status 'idle', found {worker_status!r}.")
 
     if len(outcomes) != len(samples):
-        issues.append(
-            f"Expected {len(samples)} task outcomes, found {len(outcomes)}."
-        )
+        issues.append(f"Expected {len(samples)} task outcomes, found {len(outcomes)}.")
 
     for outcome in outcomes:
-        result_path = agentbridge_root / outcome.result_path
+        canonical_task_path = repo_root / outcome.canonical_task_path
+        result_json_path = repo_root / outcome.result_json_path
+        evidence_index_path = repo_root / outcome.evidence_index_path
+        projection_path = agentbridge_root / outcome.projection_path
         artifact_path = agentbridge_root / outcome.artifact_path
-        if not result_path.exists():
-            issues.append(f"Missing Wave 1 smoke result: {result_path}")
+
+        if not canonical_task_path.exists():
+            issues.append(f"Missing canonical smoke task: {canonical_task_path}")
+            continue
+        if not result_json_path.exists():
+            issues.append(f"Missing canonical result.json: {result_json_path}")
+            continue
+        if not evidence_index_path.exists():
+            issues.append(f"Missing evidence index: {evidence_index_path}")
+            continue
+        if not projection_path.exists():
+            issues.append(f"Missing compatibility projection: {projection_path}")
             continue
         if not artifact_path.exists():
             issues.append(f"Missing Wave 1 smoke artifact: {artifact_path}")
             continue
 
-        result_text = result_path.read_text(encoding="utf-8")
-        if f"task_id: {outcome.task_id}" not in result_text:
-            issues.append(f"Result file is missing task id {outcome.task_id}: {result_path}")
-        if "provider: wave1-scripted-fake-worker" not in result_text:
-            issues.append(f"Result file lost the scripted provider marker: {result_path}")
+        result_payload = json.loads(result_json_path.read_text(encoding="utf-8"))
+        if result_payload.get("worker_profile") != "wave1_smoke":
+            issues.append(f"Canonical result lost wave1_smoke worker profile: {result_json_path}")
+        if result_payload.get("compatibility_projection_ref") is None:
+            issues.append(f"Canonical result is missing compatibility projection ref: {result_json_path}")
+
+        projection_text = projection_path.read_text(encoding="utf-8")
+        if f"task_id: {outcome.task_id}" not in projection_text:
+            issues.append(f"Projection file is missing task id {outcome.task_id}: {projection_path}")
+        if "provider: wave1-scripted-fake-worker" not in projection_text:
+            issues.append(f"Projection file lost the scripted provider marker: {projection_path}")
 
         expected_artifact = sample_map[outcome.task_id].response_path.read_text(encoding="utf-8")
         actual_artifact = artifact_path.read_text(encoding="utf-8")
@@ -292,26 +316,42 @@ def run_wave1_smokes(
             layout=layout,
             worker_id=worker_id,
             worker_profile="wave1_smoke",
-            provider="wave1-scripted-fake-worker",
+            run_id=actual_run_id,
+            route_reason="Wave 1 smoke compatibility projection lane",
         ),
         ScriptedWave1SmokeWorker(responses_by_task_id),
     )
 
+    canonical_tasks_root = run_root / "canonical-tasks"
     outcomes: list[Wave1SmokeTaskOutcome] = []
     for sample in samples:
-        task_path = agentbridge_root / "tasks" / sample.task_path.name
-        result_path = runner.run_task(task_path)
+        markdown_task_path = agentbridge_root / "tasks" / sample.task_path.name
+        canonical_task_path = agentbridge.project_markdown_task_to_canonical(
+            markdown_task_path,
+            canonical_tasks_root / f"{sample.task_id}.json",
+            repo_root=repo_root,
+        )
+        result_path = runner.run_task(canonical_task_path)
+        result_payload = json.loads(result_path.read_text(encoding="utf-8"))
         outcomes.append(
             Wave1SmokeTaskOutcome(
                 task_id=sample.task_id,
                 category=sample.category,
-                result_path=str(result_path.relative_to(agentbridge_root)).replace("\\", "/"),
+                canonical_task_path=str(canonical_task_path.relative_to(repo_root)).replace("\\", "/"),
+                result_json_path=str(result_path.relative_to(repo_root)).replace("\\", "/"),
+                evidence_index_path=str(
+                    (result_path.parent / "evidence_index.json").relative_to(repo_root)
+                ).replace("\\", "/"),
+                projection_path="results/" + sample.task_id + ".md",
                 artifact_path=f"artifacts/{sample.task_id}-worker-output.txt",
             )
         )
+        if result_payload.get("compatibility_projection_ref") is None:
+            raise RuntimeError(f"Wave 1 smoke task did not emit compatibility projection: {sample.task_id}")
 
     summary_path = run_root / "wave1-smoke-summary.json"
     summary = collect_wave1_smoke_summary(
+        repo_root=repo_root,
         run_id=actual_run_id,
         run_root=run_root,
         summary_path=summary_path,
@@ -328,8 +368,6 @@ def run_wave1_smokes(
     )
 
     if not summary.ok:
-        raise RuntimeError(
-            "Wave 1 smoke suite found issues: " + "; ".join(summary.issues)
-        )
+        raise RuntimeError("Wave 1 smoke suite found issues: " + "; ".join(summary.issues))
 
     return summary

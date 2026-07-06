@@ -1,5 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$comment": "stale / incompatible with current canonical contract; authoritative replacement: docs/specs/task-contract.md",
+  "_status_marker": "stale / incompatible with current canonical contract",
+  "_authoritative_replacement": "docs/specs/task-contract.md",
   "title": "Task Contract",
   "type": "object",
   "required": [

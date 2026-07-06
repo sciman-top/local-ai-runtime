@@ -36,25 +36,30 @@
   - Done when:
     - `docs/change-evidence/README.md` 与 dated evidence note 已落盘
   - Status note:
-    - 2026-07-06 已补第一份 governed absorption evidence
+    - 2026-07-06 已补齐 repo-level change evidence index
 - [x] `GOV-T04` add release-style preflight entrypoint
   - Done when:
     - `scripts/governance/preflight.ps1` 可执行
     - build / hotspot 缺口用 `gate_na` 明示
   - Status note:
     - 2026-07-06 已固化 repo-owned release-style preflight
-- [x] `GOV-T04A` preflight line-ending hygiene closeout
-  - Done when:
-    - `.gitattributes` 显式覆盖 `*.py text eol=lf`
-    - 当前治理脚本切片的 Python 文件不再触发 CRLF warning
-    - `git diff --check` 回到零噪声
-  - Status note:
-    - 2026-07-06 已按“规则 + 定向修复”收敛 Python 行尾策略与当前 warning
 - [x] `GOV-T05` wire docs, AGENTS, and proof routing
   - Done when:
     - README / docs / AGENTS 对 Governance Overlay 口径一致
   - Status note:
     - 2026-07-06 已完成 proof routing 与入口同步
+- [x] `GOV-T06` selector policy verifier coverage
+  - Done when:
+    - `next-work-selection-policy.json` 进入 authoritative/verifier 视野
+    - `review_expires_at` 只做存在性与 ISO 形状校验
+  - Status note:
+    - 2026-07-06 verifier 与 selector 的 policy 边界已分离
+- [x] `GOV-T07` impl_pack stale demotion and machine checks
+  - Done when:
+    - stale/legacy marker 可被 verifier 机器检查
+    - `00_README_FIRST.md` 不再把 stale `05` 当主读入口
+  - Status note:
+    - 2026-07-06 impl_pack stale/legacy 标识与 verifier 覆盖已同步
 
 治理任务完成后：
 
@@ -63,16 +68,28 @@
 
 ## Phase 1
 
-- [ ] `P1-T01` 默认 layout 迁到 `.ai/state` 与 `.ai/runs`
+- [x] `P1-T01` 默认 layout 迁到 `.ai/state` 与 `.ai/runs`
   - Done when:
     - `test_scaffold.py` 新断言为绿
-- [ ] `P1-T02` canonical task intake 落地
+  - Status note:
+    - 2026-07-06 `RuntimeLayout` 默认路径已切到 `.ai/state/control-plane.db` 与 `.ai/runs`
+- [x] `P1-T02` canonical task intake 落地
   - Done when:
     - task loader 拒绝作者手写 `planner_required / review_required`
-- [ ] `P1-T03` 正式 `result.json` + markdown projection 双写
+  - Status note:
+    - 2026-07-06 canonical task loader 与 authored-derived-field 拒绝测试已落盘
+- [x] `P1-T03` 正式 `result.json` + markdown projection 双写
   - Done when:
     - `result.json` 存在
     - markdown projection 仍存在
+  - Status note:
+    - 2026-07-06 host-local runtime 已写出 canonical run artifacts 与 compatibility projection
+- [x] `P1-T03A` repo-owned config / worker-profile contract
+  - Done when:
+    - `.ai/config/*.yaml` 成为运行时真源
+    - 缺失配置返回 deterministic contract error
+  - Status note:
+    - 2026-07-06 已移除运行时代码中的静默默认值回退
 - [ ] `P1-T04` 一次真实 SDK 垂直切片
   - Done when:
     - 真实 task run 成功
@@ -83,8 +100,17 @@
 
 ## Phase 2
 
-- [ ] `P2-T01` 固化 task/result/review/run-index schema
-- [ ] `P2-T02` AgentBridge round-trip parity
+- [x] `P2-T01` acceptance-and-gates authoritative spec
+  - Done when:
+    - PRD 四档 acceptance tiers 与 `mock green` / `live probe ready` 映射固定
+  - Status note:
+    - 2026-07-06 新 spec 已落盘，未新增冲突 tier
+- [x] `P2-T02` run-state-and-handoff foundation
+  - Done when:
+    - `run_id / attempt / handoff_required / next_action` 契约已落盘
+  - Status note:
+    - 2026-07-06 已明确 Phase 1-4 foundation 边界
+- [ ] `P2-T03` AgentBridge round-trip parity
 
 ## Phase 3
 

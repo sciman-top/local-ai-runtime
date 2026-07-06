@@ -5,115 +5,127 @@ from pathlib import Path
 from typing import Any
 
 from host_orchestrator import agentbridge, db
+from host_orchestrator.canonical_result import build_run_id, write_result_bundle
+from host_orchestrator.canonical_task import CanonicalTask, load_task
+from host_orchestrator.config_runtime import RuntimeConfigBundle, WorkerProfile, load_runtime_config
 from host_orchestrator.paths import RuntimeLayout
 from host_orchestrator.worker import WorkerLike, WorkerRequest, WorkerUsage
 
 
 @dataclass(frozen=True)
 class HostLocalConfig:
-    agentbridge_root: Path
     workspace_root: Path
     layout: RuntimeLayout
+    agentbridge_root: Path | None = None
     worker_id: str = "host-local-default"
-    worker_profile: str = "local_maint"
-    lane: str = "host_local"
-    model: str = "gpt-5.4"
-    provider: str = "openai-codex-sdk"
-    network_mode: str = "off"
+    worker_profile: str | None = None
+    run_id: str | None = None
+    attempt: int = 1
+    route_reason: str = "Phase 1 single worker default host_local lane"
 
 
 class HostLocalRunner:
     def __init__(self, config: HostLocalConfig, worker: WorkerLike) -> None:
         self._config = config
         self._worker = worker
+        self._runtime_config = load_runtime_config(config.layout.repo_root)
 
     def run_task(self, task_path: Path) -> Path:
-        task = agentbridge.load_task(task_path)
-        now = agentbridge.utc_now_iso()
+        task = load_task(task_path)
+        worker_profile = self._runtime_config.worker_profile(self._config.worker_profile)
+        run_id = self._config.run_id or build_run_id(
+            prefix=self._runtime_config.orchestrator.run_id_prefix
+        )
+        started_at = agentbridge.utc_now_iso()
 
         db.initialize_control_plane(self._config.layout.control_plane_db)
         db.upsert_worker(
             self._config.layout.control_plane_db,
             worker_id=self._config.worker_id,
-            lane=self._config.lane,
+            lane=worker_profile.lane,
             status="busy",
-            heartbeat_at=now,
+            heartbeat_at=started_at,
         )
         db.record_route_decision(
             self._config.layout.control_plane_db,
             task_id=task.task_id,
-            selected_lane=self._config.lane,
-            reason="Wave 1 single worker default host_local lane",
-            created_at=now,
+            selected_lane=worker_profile.lane,
+            reason=self._config.route_reason,
+            created_at=started_at,
         )
         db.upsert_runtime_task(
             self._config.layout.control_plane_db,
             task_id=task.task_id,
             state="running",
-            execution_lane=self._config.lane,
-            worker_profile=self._config.worker_profile,
-            created_at=now,
-            updated_at=now,
+            execution_lane=worker_profile.lane,
+            worker_profile=worker_profile.name,
+            created_at=started_at,
+            updated_at=started_at,
         )
         db.append_event(
             self._config.layout.control_plane_db,
             task_id=task.task_id,
             event_type="task_started",
-            payload={"lane": self._config.lane, "worker_id": self._config.worker_id},
-            created_at=now,
+            payload={
+                "lane": worker_profile.lane,
+                "worker_id": self._config.worker_id,
+                "worker_profile": worker_profile.name,
+                "run_id": run_id,
+                "attempt": self._config.attempt,
+            },
+            created_at=started_at,
         )
 
         request = WorkerRequest(
-            prompt=task.raw_text,
+            prompt=task.render_worker_prompt(),
             cwd=self._config.workspace_root,
-            model=self._config.model,
+            model=worker_profile.model,
+            sandbox=worker_profile.sandbox(),
+            approval_mode=worker_profile.approval_mode(),
         )
         worker_result = self._worker.run(request)
-        usage_observations = self._build_usage_observations(worker_result.usage)
-        artifact = agentbridge.write_text_artifact(
-            self._config.agentbridge_root,
-            task.task_id,
-            worker_result.final_response or "",
-        )
-        result_path = agentbridge.write_result(
-            agentbridge_root=self._config.agentbridge_root,
-            task_id=task.task_id,
-            basename=task.path.stem,
-            status="succeeded",
-            model=self._config.model,
-            provider=self._config.provider,
-            worker_id=self._config.worker_id,
-            lane=self._config.lane,
-            sandbox_mode="workspace-write",
-            network_mode=self._config.network_mode,
-            final_response=worker_result.final_response,
-            artifact=artifact,
-            failures=[],
-            observations=[
-                "- Result file was written by the host-local orchestrator slice.",
-                "- This path still uses fake-first verification; live SDK execution remains a separate acceptance step.",
-                *usage_observations,
-            ],
-            human_review_required=False,
-            next_action="none",
+        finished_at = agentbridge.utc_now_iso()
+
+        result_bundle = write_result_bundle(
+            layout=self._config.layout,
+            task=task,
+            run_id=run_id,
+            attempt=self._config.attempt,
+            worker_profile=worker_profile,
+            worker_result=worker_result,
+            started_at=started_at,
+            finished_at=finished_at,
+            projection_writer=(
+                lambda artifacts: self._write_compatibility_projection(
+                    task=task,
+                    worker_profile=worker_profile,
+                    worker_result=worker_result,
+                    artifacts=artifacts,
+                )
+            ),
         )
 
-        finished_at = agentbridge.utc_now_iso()
-        relative_result_path = str(result_path.relative_to(self._config.agentbridge_root)).replace("\\", "/")
+        relative_result_path = str(
+            result_bundle.artifacts.result_json.relative_to(self._config.layout.repo_root)
+        ).replace("\\", "/")
+        projection_path = result_bundle.result_payload.get("compatibility_projection_ref")
+        evidence_index_path = str(
+            result_bundle.artifacts.evidence_index.relative_to(self._config.layout.repo_root)
+        ).replace("\\", "/")
         db.upsert_runtime_task(
             self._config.layout.control_plane_db,
             task_id=task.task_id,
             state="completed",
-            execution_lane=self._config.lane,
-            worker_profile=self._config.worker_profile,
-            created_at=now,
+            execution_lane=worker_profile.lane,
+            worker_profile=worker_profile.name,
+            created_at=started_at,
             updated_at=finished_at,
             result_path=relative_result_path,
         )
         db.upsert_worker(
             self._config.layout.control_plane_db,
             worker_id=self._config.worker_id,
-            lane=self._config.lane,
+            lane=worker_profile.lane,
             status="idle",
             heartbeat_at=finished_at,
         )
@@ -123,12 +135,64 @@ class HostLocalRunner:
             event_type="task_completed",
             payload={
                 "result_path": relative_result_path,
-                "artifact": artifact.relative_path,
+                "compatibility_projection_ref": projection_path,
+                "evidence_index_ref": evidence_index_path,
                 "usage": self._usage_payload(worker_result.usage),
             },
             created_at=finished_at,
         )
-        return result_path
+        return result_bundle.artifacts.result_json
+
+    def _write_compatibility_projection(
+        self,
+        *,
+        task: CanonicalTask,
+        worker_profile: WorkerProfile,
+        worker_result: object,
+        artifacts: object,
+    ) -> Path | None:
+        if self._config.agentbridge_root is None:
+            return None
+        if not self._runtime_config.orchestrator.projection_required:
+            return None
+        if worker_profile.projection_mode != "compatibility_dual_write":
+            return None
+
+        if not isinstance(worker_result, object) or not hasattr(artifacts, "worker_output"):
+            return None
+
+        compatibility_root = self._config.agentbridge_root
+        compatibility_root.mkdir(parents=True, exist_ok=True)
+        (compatibility_root / "results").mkdir(parents=True, exist_ok=True)
+        (compatibility_root / "artifacts").mkdir(parents=True, exist_ok=True)
+
+        artifact = agentbridge.write_text_artifact(
+            compatibility_root,
+            task.task_id,
+            getattr(worker_result, "final_response", None) or "",
+        )
+        observations = [
+            "- Markdown result remains a compatibility projection from canonical runtime output.",
+            "- The formal runtime truth lives under `.ai/runs/<run_id>/<task_id>/result.json`.",
+            *self._build_usage_observations(getattr(worker_result, "usage", None)),
+        ]
+        return agentbridge.write_result_projection(
+            agentbridge_root=compatibility_root,
+            task_id=task.task_id,
+            status="succeeded",
+            model=worker_profile.model,
+            provider=worker_profile.provider,
+            worker_id=self._config.worker_id,
+            lane=worker_profile.lane,
+            sandbox_mode=worker_profile.sandbox_profile,
+            network_mode=worker_profile.network_profile,
+            final_response=getattr(worker_result, "final_response", None),
+            artifact=artifact,
+            failures=[],
+            observations=observations,
+            human_review_required=False,
+            next_action="none",
+        )
 
     @staticmethod
     def _build_usage_observations(usage: WorkerUsage | None) -> list[str]:

@@ -1,5 +1,7 @@
 # 交给 Codex + GPT-5.4 的主实施提示词
 
+> Status: non-authoritative operational prompt asset. Do not treat this file as runtime truth.
+
 你现在要实现一个名为 **Local AI Dev Orchestrator** 的本地 AI 软件工程编排器。请按以下要求工作：
 
 ## 目标

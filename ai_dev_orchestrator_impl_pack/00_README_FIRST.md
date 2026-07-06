@@ -1,5 +1,7 @@
 # AI Dev Orchestrator 实现包（交付给 Codex + GPT-5.4）
 
+> Status: mixed reference pack. Authoritative runtime truth has moved to `docs/README.md`, `docs/architecture/planning-status.json`, and `runtime/host-orchestrator/`.
+
 ## 这是什么
 这是一个**可直接交给 Codex + GPT-5.4 实施**的实现资料包。目标是落地一套本地 AI 软件工程编排系统：
 
@@ -11,22 +13,40 @@
 - **Git worktree**：每任务独立工作区
 - **GitHub CLI / Git**：分支、PR、清理
 
-## 你要让 Codex 做什么
-请让 Codex 先阅读本包中的以下文件，顺序如下：
+## 你要让 Codex 先读什么
+
+当前 authoritative 阅读顺序已经迁到主仓文档：
+
+1. `docs/README.md`
+2. `docs/architecture/planning-status.json`
+3. `docs/product/orchestrator-prd.md`
+4. `docs/architecture/orchestrator-target-architecture.md`
+5. `docs/specs/task-contract.md`
+6. `docs/specs/result-contract.md`
+7. `docs/specs/config-and-worker-profiles.md`
+8. `docs/specs/acceptance-and-gates.md`
+9. `docs/specs/run-state-and-handoff.md`
+10. `docs/roadmap/orchestrator-roadmap.md`
+11. `docs/plans/orchestrator-implementation-plan.md`
+12. `docs/backlog/orchestrator-task-list.md`
+
+本包中仍可参考的文件：
 
 1. `01_PRODUCT_REQUIREMENTS.md`
 2. `02_TARGET_ARCHITECTURE.md`
-3. `03_IMPLEMENTATION_ROADMAP.md`
-4. `04_REPOSITORY_LAYOUT.md`
-5. `05_TASK_CONTRACT_SCHEMA.json`
-6. `06_STATE_MACHINE.md`
-7. `07_AGENT_ROLE_MATRIX.md`
-8. `08_AGENTS.md`
-9. `09_CODEX_MASTER_PROMPT.md`
-10. `10_GLM_REVIEW_PROMPT.md`
-11. `11_CONFIG_TEMPLATES.md`
-12. `12_ACCEPTANCE_CRITERIA.md`
-13. `13_BOOTSTRAP_CHECKLIST.md`
+3. `04_REPOSITORY_LAYOUT.md`
+4. `11_CONFIG_TEMPLATES.md`
+5. `12_ACCEPTANCE_CRITERIA.md`
+6. `13_BOOTSTRAP_CHECKLIST.md`
+
+已降级文件：
+
+- `03_IMPLEMENTATION_ROADMAP.md` -> superseded by roadmap/plan/task-list/planning-status
+- `05_TASK_CONTRACT_SCHEMA.json` -> stale / incompatible with current canonical contract
+- `05_SAMPLE_TASKS.json` -> stale greenfield sample
+- `06_STATE_MACHINE.md` -> concept-only legacy note
+- `07_AGENT_ROLE_MATRIX.md` -> role-superseded
+- `08_AGENTS.md` / `09_CODEX_MASTER_PROMPT.md` / `10_GLM_REVIEW_PROMPT.md` / `14_HANDOFF_MESSAGE_TO_CODEX.md` -> non-authoritative operational prompt assets
 
 ## 建议实施顺序
 ### Phase 1 — MVP

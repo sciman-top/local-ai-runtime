@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+from datetime import date
 import json
 import sys
 from pathlib import Path
@@ -8,11 +9,13 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_STATUS_PATH = ROOT / "docs" / "architecture" / "planning-status.json"
+SELECTOR_POLICY_PATH = ROOT / "docs" / "architecture" / "next-work-selection-policy.json"
 SUPPLEMENTAL_SYNC_FILES = [
     ROOT / "ai_dev_orchestrator_impl_pack" / "00_README_FIRST.md",
     ROOT / "ai_dev_orchestrator_impl_pack" / "04_REPOSITORY_LAYOUT.md",
     ROOT / "ai_dev_orchestrator_impl_pack" / "13_BOOTSTRAP_CHECKLIST.md",
     ROOT / "ai_dev_orchestrator_impl_pack" / "14_HANDOFF_MESSAGE_TO_CODEX.md",
+    ROOT / "AGENTS.md",
 ]
 SUPPLEMENTAL_FORBIDDEN_TOKENS = [
     "创建项目目录骨架",
@@ -32,24 +35,45 @@ REQUIRED_DOC_SNIPPETS = {
     "README.md": [
         "Governance Overlay",
         "phase1_prereq_probe_first",
+        "config-and-worker-profiles.md",
     ],
     "docs/README.md": [
         "Governance Overlay",
         "phase1_prereq_probe_first",
+        "next-work-selection-policy.json",
+        "config-and-worker-profiles.md",
     ],
     "docs/product/orchestrator-prd.md": [
         "selector + change-evidence + preflight + reference governance",
+        "mock green",
+        "live probe ready",
     ],
     "docs/architecture/orchestrator-target-architecture.md": [
         "Governance Overlay",
         "docs/change-evidence/README.md",
+        "docs/specs/config-and-worker-profiles.md",
     ],
     "docs/specs/result-contract.md": [
         "docs/change-evidence/README.md",
+        "compatibility_projection_ref",
+        "scripted",
+    ],
+    "docs/specs/config-and-worker-profiles.md": [
+        ".ai/config/orchestrator.yaml",
+        "worker_profile",
+    ],
+    "docs/specs/acceptance-and-gates.md": [
+        "mock green",
+        "live probe ready",
+        "build -> [lint -> typecheck] -> test -> contract -> hotspot",
+    ],
+    "docs/specs/run-state-and-handoff.md": [
+        "Phase 1-4",
+        "run_id",
+        "handoff_required",
     ],
     "docs/roadmap/orchestrator-roadmap.md": [
         "Governance Overlay",
-        "GOV-T01",
         "phase1_prereq_probe_first",
     ],
     "docs/plans/orchestrator-implementation-plan.md": [
@@ -61,6 +85,39 @@ REQUIRED_DOC_SNIPPETS = {
         "GOV-T01",
         "PHASE-1-VERTICAL-SLICE",
         "phase1_prereq_probe_first",
+    ],
+}
+DEMOTED_FILE_MARKERS = {
+    "ai_dev_orchestrator_impl_pack/03_IMPLEMENTATION_ROADMAP.md": [
+        "Status: superseded by roadmap/plan/task-list/planning-status",
+    ],
+    "ai_dev_orchestrator_impl_pack/05_TASK_CONTRACT_SCHEMA.json": [
+        "\"_status_marker\": \"stale / incompatible with current canonical contract\"",
+        "\"_authoritative_replacement\": \"docs/specs/task-contract.md\"",
+    ],
+    "ai_dev_orchestrator_impl_pack/05_SAMPLE_TASKS.json": [
+        "\"status_marker\": \"stale greenfield sample\"",
+        "\"authoritative_replacement\": \"docs/specs/task-contract.md\"",
+    ],
+    "ai_dev_orchestrator_impl_pack/06_STATE_MACHINE.md": [
+        "Status: concept-only legacy note.",
+    ],
+    "ai_dev_orchestrator_impl_pack/07_AGENT_ROLE_MATRIX.md": [
+        "Status: role-superseded.",
+        "docs/specs/config-and-worker-profiles.md",
+    ],
+    "ai_dev_orchestrator_impl_pack/08_AGENTS.md": [
+        "Status: non-authoritative operational prompt asset.",
+    ],
+    "ai_dev_orchestrator_impl_pack/09_CODEX_MASTER_PROMPT.md": [
+        "Status: non-authoritative operational prompt asset.",
+    ],
+    "ai_dev_orchestrator_impl_pack/10_GLM_REVIEW_PROMPT.md": [
+        "Status: non-authoritative operational prompt asset.",
+        "Phase 4 review adapter",
+    ],
+    "ai_dev_orchestrator_impl_pack/14_HANDOFF_MESSAGE_TO_CODEX.md": [
+        "Status: non-authoritative operational prompt asset.",
     ],
 }
 
@@ -174,6 +231,37 @@ def verify(*, repo_root: Path, status_path: Path) -> dict[str, object]:
         token for token in SUPPLEMENTAL_REQUIRED_TOKENS if token not in supplemental_aggregate
     ]
 
+    demotion_marker_failures: list[str] = []
+    for relative_path, markers in DEMOTED_FILE_MARKERS.items():
+        path = root / relative_path
+        if not path.exists():
+            demotion_marker_failures.append(f"{relative_path}:missing file")
+            continue
+        text = path.read_text(encoding="utf-8")
+        for marker in markers:
+            if marker not in text:
+                demotion_marker_failures.append(f"{relative_path}:{marker}")
+
+    readme_first_path = root / "ai_dev_orchestrator_impl_pack" / "00_README_FIRST.md"
+    if readme_first_path.exists():
+        readme_first_text = readme_first_path.read_text(encoding="utf-8")
+        if "5. `05_TASK_CONTRACT_SCHEMA.json`" in readme_first_text:
+            demotion_marker_failures.append(
+                "ai_dev_orchestrator_impl_pack/00_README_FIRST.md:stale 05 still appears in primary reading order"
+            )
+        for required_pointer in [
+            "docs/README.md",
+            "docs/specs/config-and-worker-profiles.md",
+            "docs/specs/acceptance-and-gates.md",
+            "docs/specs/run-state-and-handoff.md",
+        ]:
+            if required_pointer not in readme_first_text:
+                demotion_marker_failures.append(
+                    f"ai_dev_orchestrator_impl_pack/00_README_FIRST.md:{required_pointer}"
+                )
+
+    policy_failures = _verify_selector_policy(root)
+
     failures: list[str] = []
     if missing_fields:
         failures.append("missing fields: " + ", ".join(missing_fields))
@@ -195,6 +283,10 @@ def verify(*, repo_root: Path, status_path: Path) -> dict[str, object]:
         failures.append(
             "missing supplemental required tokens: " + ", ".join(missing_supplemental_tokens)
         )
+    if demotion_marker_failures:
+        failures.append("demotion marker failures: " + ", ".join(demotion_marker_failures))
+    if policy_failures:
+        failures.append("selector policy failures: " + ", ".join(policy_failures))
 
     if failures:
         raise ValueError("planning status verification failed: " + "; ".join(failures))
@@ -208,7 +300,83 @@ def verify(*, repo_root: Path, status_path: Path) -> dict[str, object]:
         "supplemental_sync_files": [
             str(path.relative_to(root)).replace("\\", "/") for path in SUPPLEMENTAL_SYNC_FILES
         ],
+        "demoted_files_checked": sorted(DEMOTED_FILE_MARKERS.keys()),
     }
+
+
+def _verify_selector_policy(root: Path) -> list[str]:
+    failures: list[str] = []
+    payload = _load_json(SELECTOR_POLICY_PATH)
+    required_fields = [
+        "policy_id",
+        "reviewed_on",
+        "review_expires_at",
+        "allowed_next_actions",
+        "selection_order",
+        "required_entrypoints",
+        "required_doc_refs",
+        "rollback_ref",
+    ]
+    missing_fields = [field for field in required_fields if field not in payload]
+    if missing_fields:
+        failures.append("missing fields: " + ", ".join(missing_fields))
+        return failures
+
+    if not isinstance(payload.get("allowed_next_actions"), list) or not payload["allowed_next_actions"]:
+        failures.append("allowed_next_actions must be a non-empty array")
+    if not isinstance(payload.get("selection_order"), list) or not payload["selection_order"]:
+        failures.append("selection_order must be a non-empty array")
+    if not isinstance(payload.get("required_entrypoints"), list) or not payload["required_entrypoints"]:
+        failures.append("required_entrypoints must be a non-empty array")
+    if not isinstance(payload.get("required_doc_refs"), list) or not payload["required_doc_refs"]:
+        failures.append("required_doc_refs must be a non-empty array")
+
+    review_expires_at = payload.get("review_expires_at")
+    if not isinstance(review_expires_at, str) or not review_expires_at.strip():
+        failures.append("review_expires_at must be a non-empty string")
+    else:
+        try:
+            date.fromisoformat(review_expires_at)
+        except ValueError:
+            failures.append("review_expires_at must be a valid ISO date")
+
+    for entry in payload.get("selection_order", []):
+        if not isinstance(entry, dict):
+            failures.append("selection_order entries must be objects")
+            continue
+        for key in ["next_action", "why"]:
+            value = entry.get(key)
+            if not isinstance(value, str) or not value.strip():
+                failures.append(f"selection_order entry missing {key}")
+
+    for relative_path in payload.get("required_entrypoints", []):
+        if not isinstance(relative_path, str) or not relative_path.strip():
+            failures.append("required_entrypoints entries must be non-empty strings")
+            continue
+        if not (root / relative_path).exists():
+            failures.append(f"missing required entrypoint: {relative_path}")
+
+    for item in payload.get("required_doc_refs", []):
+        if not isinstance(item, dict):
+            failures.append("required_doc_refs entries must be objects")
+            continue
+        path = item.get("path")
+        contains = item.get("contains")
+        if not isinstance(path, str) or not path.strip():
+            failures.append("required_doc_refs.path must be a non-empty string")
+            continue
+        if not isinstance(contains, str) or not contains.strip():
+            failures.append(f"required_doc_refs.contains must be a non-empty string: {path}")
+            continue
+        document_path = root / path
+        if not document_path.exists():
+            failures.append(f"missing required_doc_refs path: {path}")
+            continue
+        text = document_path.read_text(encoding="utf-8")
+        if contains not in text:
+            failures.append(f"required_doc_refs token missing: {path}:{contains}")
+
+    return failures
 
 
 def _render_relative(*, root: Path, path: Path) -> str:

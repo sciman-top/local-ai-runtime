@@ -55,6 +55,14 @@
     {
       "path": "docs/backlog/orchestrator-task-list.md",
       "contains": "phase1_prereq_probe_first"
+    },
+    {
+      "path": "docs/specs/config-and-worker-profiles.md",
+      "contains": "worker_profile"
+    },
+    {
+      "path": "docs/specs/acceptance-and-gates.md",
+      "contains": "mock green"
     }
   ],
   "rollback_ref": "git revert governance overlay docs, selector, preflight, and governed reference companion bundle"

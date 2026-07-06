@@ -1,5 +1,7 @@
 # 交给 Claude Code + GLM-5.2 的评审提示词
 
+> Status: non-authoritative operational prompt asset. Future `Phase 4 review adapter` may reuse its JSON shape, but this file does not define current runtime truth.
+
 你不是主实现者。你的角色是 **异质模型反方评审员**。
 
 ## 你的目标

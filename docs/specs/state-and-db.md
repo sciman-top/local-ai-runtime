@@ -18,6 +18,7 @@
 
 - `queue` 从 `runtime_tasks.state` 派生，不建平行 queue 表
 - 不新增 `claims` 表；`leases` 承担 claim / renew / expire 语义
+- 如果保留 `claimed`，它只能表示 `leases` 的观察态，不得演变成新的 claims 子系统
 - 所有状态演进都通过 canonical contract 与 verifier 驱动
 
 ## 新增 4 表
@@ -57,6 +58,7 @@
 - 默认 layout 迁到 `.ai/state/control-plane.db`
 - 现有 5 表继续可用
 - `result.json` 与 `evidence_index.json` 可以引用调度状态
+- `run_id / attempt / handoff_required / next_action` 的最小契约见 `docs/specs/run-state-and-handoff.md`
 
 ## Phase 5 口径
 

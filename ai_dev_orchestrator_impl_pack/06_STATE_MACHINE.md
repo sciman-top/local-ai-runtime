@@ -1,5 +1,7 @@
 # 状态机设计
 
+> Status: concept-only legacy note. Authoritative state truth now lives in `docs/specs/state-and-db.md` and `docs/specs/run-state-and-handoff.md`.
+
 ## 任务状态
 - `queued`
 - `claimed`

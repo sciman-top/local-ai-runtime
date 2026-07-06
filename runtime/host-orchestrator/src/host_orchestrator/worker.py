@@ -38,6 +38,8 @@ class WorkerResult:
     final_response: str | None
     raw_result: object
     usage: WorkerUsage | None = None
+    stdout_text: str | None = None
+    stderr_text: str | None = None
 
 
 class ThreadLike(Protocol):
@@ -125,6 +127,8 @@ def execute_request(request: WorkerRequest, codex: CodexLike) -> WorkerResult:
         final_response=getattr(result, "final_response", None),
         raw_result=result,
         usage=extract_worker_usage(result),
+        stdout_text=None,
+        stderr_text=None,
     )
 
 

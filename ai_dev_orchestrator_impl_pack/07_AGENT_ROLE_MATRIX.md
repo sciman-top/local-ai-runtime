@@ -1,5 +1,7 @@
 # Agent 角色矩阵
 
+> Status: role-superseded. Authoritative worker/profile truth now lives in `docs/specs/config-and-worker-profiles.md`.
+
 ## 总原则
 - GPT-5.4 是主力实现者和主裁判
 - GLM-5.2 是异质模型反方评审

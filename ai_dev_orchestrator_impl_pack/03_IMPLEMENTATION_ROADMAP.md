@@ -1,5 +1,7 @@
 # 实施路线图
 
+> Status: superseded by roadmap/plan/task-list/planning-status. Keep only as historical greenfield roadmap.
+
 ## 阶段 1：MVP（必须先完成）
 ### 目标
 在单仓库中跑通 1~3 个结构化任务的最小闭环。

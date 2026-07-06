@@ -26,6 +26,7 @@
 | `termination_reason` | string | 退出原因 |
 | `cleanup_status` | enum | `deferred / inline_only / cleaned / cleanup_failed` |
 | `artifacts` | string[] | 工件相对路径 |
+| `compatibility_projection_ref` | string \| null | markdown projection 相对路径 |
 | `handoff_required` | boolean | 是否需要人工接管 |
 | `next_action` | string | 下一步动作 |
 
@@ -35,6 +36,7 @@
 
 - `codex_sdk`
 - `codex_exec`
+- `scripted`
 - `gpt54_direct`
 - `claude_glm`
 
@@ -43,6 +45,7 @@
 - `worker_kind` 只描述 adapter 路径
 - `worker_profile` 只描述具名配置档
 - 两者不可混用
+- `scripted` 仅允许作为 repo-side mock / smoke worker_kind；不能支撑 `live accepted`
 
 ## verification_summary.json
 

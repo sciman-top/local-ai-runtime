@@ -5,16 +5,16 @@
   "current_active_queue": {
     "queue_id": "PHASE-1-VERTICAL-SLICE",
     "label": "Real SDK Vertical Slice And Canonical Runtime Evidence",
-    "status": "prepared_next",
+    "status": "in_progress",
     "source_plan": "docs/plans/orchestrator-implementation-plan.md",
     "source_backlog": "docs/backlog/orchestrator-task-list.md",
-    "why_now": "Phase 0' truth convergence and documentation rebaseline are now documented. The next executable queue is the Phase 1 vertical slice on top of runtime/host-orchestrator."
+    "why_now": "P1-T01/P1-T02/P1-T03 plus repo-owned config contract are now landed repo-side on runtime/host-orchestrator. The remaining bounded next action is still the Phase 1 prerequisite probe path before claiming live acceptance."
   },
   "current_decision_gate": {
     "selector": "phase1_prereq_probe_first",
     "selector_source": "scripts/select-next-work.py",
     "as_of": "2026-07-06",
-    "proof_ref": "docs/change-evidence/20260706-governed-governance-absorption.md",
+    "proof_ref": "docs/change-evidence/20260706-selector-policy-promoted-to-verifier-scope.md",
     "blocking_reasons": [
       "gpt54_gateway_probe_pending",
       "codex_exec_minimum_probe_pending"
@@ -25,7 +25,7 @@
     "gpt54_gateway_probe_status": "pending",
     "codex_exec_probe_status": "pending",
     "as_of": "2026-07-06",
-    "summary": "Governance Overlay is now the cross-cutting repo-side gate layer, but the Phase 1 live prerequisite probes are still pending. The expected next action remains `phase1_prereq_probe_first` until fresh GPT-5.4 gateway and codex exec readiness evidence are recorded."
+    "summary": "The repo-side Phase 1 runtime slice is now canonical-task-first with result.json plus compatibility projection. Governance Overlay remains green, but live prerequisite probes are still pending, so the next action stays `phase1_prereq_probe_first`."
   },
   "certified_baseline": {
     "queue_id": "HERMES-AGENTBRIDGE-BASELINE",
@@ -39,10 +39,14 @@
     "docs/README.md",
     "docs/product/orchestrator-prd.md",
     "docs/architecture/orchestrator-target-architecture.md",
+    "docs/architecture/next-work-selection-policy.json",
     "docs/specs/task-contract.md",
     "docs/specs/result-contract.md",
     "docs/specs/review-contract.md",
     "docs/specs/state-and-db.md",
+    "docs/specs/config-and-worker-profiles.md",
+    "docs/specs/acceptance-and-gates.md",
+    "docs/specs/run-state-and-handoff.md",
     "docs/roadmap/orchestrator-roadmap.md",
     "docs/plans/orchestrator-implementation-plan.md",
     "docs/backlog/orchestrator-task-list.md",
@@ -52,6 +56,7 @@
     "通用本地 AI Dev Orchestrator",
     "planning-status.json",
     "runtime/host-orchestrator",
+    ".ai/config/orchestrator.yaml",
     ".ai/state/control-plane.db",
     ".ai/runs/<run_id>/<task_id>/",
     "Hermes/AgentBridge 兼容线",
@@ -59,11 +64,13 @@
     "双写过渡方案 A",
     "Governance Overlay",
     "phase1_prereq_probe_first",
+    "mock green",
+    "live probe ready",
     "selector + change-evidence + preflight + reference governance"
   ],
   "unexpected_tokens": [
     "当前主线仍是 `single worker / single repo / no push / PR`",
     "`single worker / single repo / pure local tasks / SDK first / codex exec fallback / no auto_continue / no auto-merge`"
   ],
-  "rollback_ref": "git revert the planning-status.json + authoritative docs + hermes compatibility demotion bundle as one change set"
+  "rollback_ref": "git revert the planning-status.json + authoritative docs + canonical runtime + impl_pack demotion bundle as one change set"
 }

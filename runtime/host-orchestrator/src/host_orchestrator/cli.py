@@ -57,6 +57,8 @@ def main(argv: list[str] | None = None) -> int:
             json.dumps(
                 {
                     "repo_root": str(layout.repo_root),
+                    "ai_root": str(layout.ai_root),
+                    "runs_root": str(layout.runs_root),
                     "control_plane_root": str(layout.control_plane_root),
                     "control_plane_db": str(layout.control_plane_db),
                     "control_plane_logs": str(layout.control_plane_logs),

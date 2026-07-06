@@ -5,6 +5,7 @@ This repository is the mainline repo for the generic local AI Dev Orchestrator, 
 
 - `docs/`: current authoritative product, architecture, contract, roadmap, migration, and compatibility docs.
 - `docs/change-evidence/`: repo-level governance evidence index and dated closeout notes.
+- `.ai/config/`: repo-owned runtime config contract for worker profiles, policies, and orchestrator defaults.
 - `runtime/host-orchestrator/`: current Python implementation seed and test surface for the orchestrator mainline.
 - `snapshots/agentbridge-20260628/`: accepted `AgentBridge` snapshot, including `scripts/`, `docs/`, `tasks/`, `results/`, `artifacts/`, and `logs/`.
 - `references/`: reference-repo notes, governance companions, and refresh summaries. Keep upstream code outside this repo.

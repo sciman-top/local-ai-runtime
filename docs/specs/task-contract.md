@@ -6,6 +6,10 @@
 
 当前主协议是 `JSON/YAML`，不是 `AgentBridge markdown`。
 
+`worker_profile`、policy surface 派生、以及 repo-owned 执行抽象的正式定义，见：
+
+- `docs/specs/config-and-worker-profiles.md`
+
 ## 必填字段
 
 | 字段 | 类型 | 说明 |
@@ -44,6 +48,10 @@
 
 `build -> [lint -> typecheck] -> test -> contract -> hotspot`
 
+固定 gate 口径与 acceptance tier 映射，见：
+
+- `docs/specs/acceptance-and-gates.md`
+
 ## 派生字段
 
 以下字段由 orchestrator 在 intake 时派生并盖章，任务作者不能手写：
@@ -77,6 +85,12 @@
 不是作者输入字段；派生规则为：
 
 - `allowed_paths` 与 `.ai/config/policies.yaml` 中的 `policy_surface_globs` 命中即为 true
+
+## worker_profile 选择
+
+- `worker_profile` 是 repo-owned abstraction，不允许继续作为 ad hoc string 漂浮在 task 外层
+- canonical task 当前可以省略 `worker_profile`，由 orchestrator 使用 `.ai/config/orchestrator.yaml` 的默认档补齐
+- 若显式指定，必须命中 `.ai/config/workers.yaml`
 
 ## Override 规则
 

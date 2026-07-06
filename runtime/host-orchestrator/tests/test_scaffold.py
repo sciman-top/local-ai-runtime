@@ -32,13 +32,15 @@ def test_host_orchestrator_scaffold_has_expected_layout() -> None:
     assert not missing, f"Missing scaffold entries: {missing}"
 
 
-def test_layout_defaults_point_to_repo_private_local() -> None:
+def test_layout_defaults_point_to_repo_ai_state() -> None:
     from host_orchestrator.paths import RuntimeLayout
 
     layout = RuntimeLayout.from_repo_root(REPO_ROOT)
 
-    assert layout.control_plane_db == REPO_ROOT / "private-local" / "control-plane" / "control-plane.db"
-    assert layout.control_plane_logs == REPO_ROOT / "private-local" / "control-plane" / "logs"
+    assert layout.ai_root == REPO_ROOT / ".ai"
+    assert layout.runs_root == REPO_ROOT / ".ai" / "runs"
+    assert layout.control_plane_db == REPO_ROOT / ".ai" / "state" / "control-plane.db"
+    assert layout.control_plane_logs == REPO_ROOT / ".ai" / "state" / "logs"
     assert layout.wave_smokes == REPO_ROOT / "private-local" / "wave-smokes"
 
 

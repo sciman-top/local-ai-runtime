@@ -92,7 +92,7 @@ $repoRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 $records = New-Object System.Collections.Generic.List[object]
 $failures = New-Object System.Collections.Generic.List[string]
 
-$records.Add((New-GateRecord -Gate 'build' -Status 'gate_na' -Reason 'repo-owned build gate is not defined yet for the generic orchestrator mainline' -AlternativeVerification 'uv run --project .\runtime\host-orchestrator python -m pytest' -EvidenceLink 'docs/plans/orchestrator-implementation-plan.md' -ExpiresAt 'when a repo-owned build gate is introduced'))
+$records.Add((New-GateRecord -Gate 'build' -Status 'gate_na' -Reason 'repo-owned build gate is not defined yet for the generic orchestrator mainline' -AlternativeVerification 'uv run --project .\runtime\host-orchestrator python -m pytest' -EvidenceLink 'docs/specs/acceptance-and-gates.md' -ExpiresAt 'when a repo-owned build gate is introduced'))
 
 $testResult = Invoke-CheckedCommand -Command 'uv run --project .\runtime\host-orchestrator python -m pytest' -Action {
     uv run --project .\runtime\host-orchestrator python -m pytest
@@ -114,7 +114,7 @@ if ($contractResult.exit_code -ne 0) {
     $records.Add((New-GateRecord -Gate 'contract/invariant' -Status 'pass' -Command $contractResult.command -KeyOutput $contractResult.output))
 }
 
-$records.Add((New-GateRecord -Gate 'hotspot' -Status 'gate_na' -Reason 'repo-owned hotspot gate is not defined yet for the generic orchestrator mainline' -AlternativeVerification 'repo-side proof is currently limited to verifier + pytest + diff hygiene' -EvidenceLink 'docs/roadmap/orchestrator-roadmap.md' -ExpiresAt 'when a repo-owned hotspot gate is introduced'))
+$records.Add((New-GateRecord -Gate 'hotspot' -Status 'gate_na' -Reason 'repo-owned hotspot gate is not defined yet for the generic orchestrator mainline' -AlternativeVerification 'repo-side proof is currently limited to verifier + pytest + diff hygiene' -EvidenceLink 'docs/specs/acceptance-and-gates.md' -ExpiresAt 'when a repo-owned hotspot gate is introduced'))
 
 $docsResult = Invoke-CheckedCommand -Command 'python .\scripts\verify-planning-status.py' -Action {
     python .\scripts\verify-planning-status.py

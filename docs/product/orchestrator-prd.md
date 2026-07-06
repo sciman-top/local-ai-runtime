@@ -18,6 +18,7 @@
 
 - Python 确定性 orchestrator
 - canonical `JSON/YAML` task contract
+- repo-owned `config / worker_profile / policies` contract
 - `.ai/state/control-plane.db` 调度真源
 - `.ai/runs/<run_id>/<task_id>/` 正式 evidence 面
 - Governance Overlay：`planning truth / selector split / repo-level change-evidence / release-style preflight / formal reference governance companion`
@@ -79,9 +80,22 @@
 - 中期目标：单仓 1-2 writers，read-heavy workers 4+
 - 后续目标：多仓并行、route-based worker orchestration
 
+## Acceptance Mapping
+
+当前 acceptance tiers 的 authoritative mapping 固定为：
+
+| tier | 细分状态 |
+| --- | --- |
+| `repo-side green` | 可包含 `mock green` |
+| `multi-worker simulation green` | 无额外子状态要求 |
+| `platform compatibility green` | 无额外子状态要求 |
+| `live accepted` | 进入前必须先满足 `live probe ready` |
+
 ## 风险边界
 
 - 所有 live claim 必须服从四档验收：`repo-side green`、`multi-worker simulation green`、`platform compatibility green`、`live accepted`
+- `mock green` 只是 `repo-side green` 的子状态，不是新的 acceptance tier
+- `live probe ready` 只是进入 `live accepted` 前的 readiness gate，不是新的 acceptance tier
 - planner/review 失败、缺 gateway、缺 credentials 只能降级，不能伪装成 live success
 - `Hermes/AgentBridge 兼容线` 只保留兼容与历史承载，不恢复为当前主线 authoritative truth
 - `governed-ai-coding-runtime` 只作为 `governance-sidecar` companion 提供 gate / evidence / selector 机制参考，不替代当前主线实现真源

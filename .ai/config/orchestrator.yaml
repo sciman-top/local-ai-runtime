@@ -1,0 +1,16 @@
+run:
+  default_worker_profile: local_maint
+  run_id_prefix: host-local
+
+verification:
+  default_commands:
+    build: null
+    lint: null
+    typecheck: null
+    test: null
+    contract: null
+    hotspot: null
+
+acceptance:
+  projection_required: true
+  projection_mode: compatibility_dual_write

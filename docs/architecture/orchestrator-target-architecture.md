@@ -37,6 +37,21 @@
 - 派生 `planner_required` / `review_required` / `touches_policy_surface`
 - 盖章运行时字段
 
+依赖契约：
+
+- `docs/specs/task-contract.md`
+- `docs/specs/config-and-worker-profiles.md`
+
+### 1A. Config Resolution
+
+职责：
+
+- 读取 `.ai/config/orchestrator.yaml`
+- 读取 `.ai/config/workers.yaml`
+- 读取 `.ai/config/policies.yaml`
+- 把 repo-owned abstraction 映射到实际执行参数
+- 对缺失/错误配置给出 deterministic contract error
+
 落点：
 
 - `runtime/host-orchestrator/src/host_orchestrator/`
@@ -71,6 +86,12 @@
 - 落盘 `verification_summary.json`
 - 落盘 `cost_summary.json`
 - 落盘 `evidence_index.json`
+- 落盘 `compatibility_projection_ref`（如启用 dual-write）
+
+依赖契约：
+
+- `docs/specs/result-contract.md`
+- `docs/specs/run-state-and-handoff.md`
 
 ### 5. Compatibility Adapter
 
@@ -113,7 +134,11 @@
 
 - `runtime/host-orchestrator/src/host_orchestrator/cli.py`
 - `runtime/host-orchestrator/src/host_orchestrator/paths.py`
+- `runtime/host-orchestrator/src/host_orchestrator/config_runtime.py`
+- `runtime/host-orchestrator/src/host_orchestrator/canonical_task.py`
+- `runtime/host-orchestrator/src/host_orchestrator/canonical_result.py`
 - `runtime/host-orchestrator/src/host_orchestrator/host_local.py`
+- `runtime/host-orchestrator/src/host_orchestrator/agentbridge.py`
 - `runtime/host-orchestrator/src/host_orchestrator/db.py`
 - `runtime/host-orchestrator/src/host_orchestrator/worker.py`
 - `runtime/host-orchestrator/src/host_orchestrator/exec_fallback.py`

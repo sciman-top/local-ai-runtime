@@ -1,5 +1,7 @@
 请阅读当前实现包内的全部文档，并严格按下列顺序开始工作：
 
+> Status: non-authoritative operational prompt asset. Use only as a handoff helper, not as runtime truth.
+
 1. 先输出一份 `implementation_plan.md`，按 Phase 1 MVP 列出模块、依赖和顺序；
 2. 再说明如何在现有 `runtime/host-orchestrator` 骨架上扩展，而不是新建平行顶层包；
 3. 再实现：

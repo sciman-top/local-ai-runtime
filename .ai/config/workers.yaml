@@ -1,0 +1,20 @@
+workers:
+  local_maint:
+    worker_kind: codex_sdk
+    lane: host_local
+    model: gpt-5.4
+    provider: openai-codex-sdk
+    sandbox_profile: workspace_write
+    approval_policy: never
+    network_profile: "off"
+    projection_mode: compatibility_dual_write
+
+  wave1_smoke:
+    worker_kind: scripted
+    lane: host_local
+    model: gpt-5.4
+    provider: wave1-scripted-fake-worker
+    sandbox_profile: workspace_write
+    approval_policy: never
+    network_profile: "off"
+    projection_mode: compatibility_dual_write

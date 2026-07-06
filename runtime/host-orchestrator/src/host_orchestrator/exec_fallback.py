@@ -87,4 +87,9 @@ class CodexExecFallbackWorker:
                 )
 
             final_response = output_path.read_text(encoding="utf-8") if output_path.exists() else None
-            return WorkerResult(final_response=final_response, raw_result=result)
+            return WorkerResult(
+                final_response=final_response,
+                raw_result=result,
+                stdout_text=result.stdout,
+                stderr_text=result.stderr,
+            )

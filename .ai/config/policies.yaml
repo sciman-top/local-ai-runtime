@@ -1,0 +1,12 @@
+policy_surface_globs:
+  - AGENTS.md
+  - docs/specs/**
+  - scripts/governance/**
+  - docs/architecture/**
+
+sensitive_paths:
+  - .env
+  - .env.*
+  - .git/config
+  - .ssh/**
+  - secrets/**

@@ -11,9 +11,10 @@
 - `W1-T03` 所需的 `codex exec` fallback 参数构造与输出读取包装
 - `W1-T04` 所需的 `control-plane.db` 初始化与基础表结构
 - `W1-T05` 所需的 fake-first `host_local` 单任务闭环：
-  - 读取 `AgentBridge/tasks/*.md`
-  - 写入一对一 `results/*.md`
-  - 生成 artifact
+  - 读取 canonical `task.json` / `task.yaml`
+  - 写入 `.ai/runs/<run_id>/<task_id>/result.json`
+  - 双写 compatibility markdown projection
+  - 生成 canonical artifact 与 projection artifact
   - 写入基础运行态表与事件
 - `W1-T06` 所需的三类 Wave 1 smoke 样本任务集：
   - `code_refactor`
@@ -40,6 +41,7 @@
   - `snapshots/agentbridge-20260628/scripts/test-agentbridge-contract.ps1`
   - `private-local/wave-smokes/` 下的 deterministic smoke suite
 - 以上只证明 repo-side 结构、契约、样本任务与 fake-first 验收资产成立
+- `AgentBridge` 当前只保留为 compatibility adapter，不再作为主协议输入
 - 还不等于 `Phase 1 accepted`
 
 后续原子任务会在这个骨架上继续叠加。

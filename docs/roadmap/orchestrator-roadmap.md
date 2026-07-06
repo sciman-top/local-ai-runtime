@@ -4,9 +4,15 @@
 
 当前主产品线是 **通用本地 AI Dev Orchestrator**。
 
-当前下一执行队列是 `Phase 1 垂直切片`，前置是 `Phase 0' 真源收敛` 已落盘并通过 verifier。
+当前 active queue 仍是 `PHASE-1-VERTICAL-SLICE`，但 `Phase 1` 的 repo-side 硬伤已经完成第一轮收口：
 
-当前 selector 预期结果是 `phase1_prereq_probe_first`。
+- `P1-T01` 默认 layout 已迁到 `.ai/state` 与 `.ai/runs`
+- `P1-T02` canonical task intake 已落地
+- `P1-T03` 正式 `result.json` + compatibility markdown projection 已落地
+- repo-owned `config / worker_profile / policies` 契约已吸收
+- selector policy 已进入 verifier 视野，impl_pack stale/legacy demotion 也已机器可检
+
+当前 selector 预期结果仍是 `phase1_prereq_probe_first`。
 
 ## Governance Overlay
 
@@ -16,25 +22,39 @@
 - 当前 companion：`governed-ai-coding-runtime`，定位为 `governance-sidecar`
 - 当前规则：Governance Overlay 为绿之后，才允许把真实 Phase 1 prerequisite probes 推进到 ready
 
-治理任务包：
+治理任务包状态：
 
-- `GOV-T01`：formalize governed reference companion
-- `GOV-T02`：split selector from verifier
-- `GOV-T03`：add repo-level change-evidence index
-- `GOV-T04`：add release-style preflight entrypoint
-- `GOV-T05`：wire docs, AGENTS, and proof routing
+- `GOV-T01` formalize governed reference companion：已完成
+- `GOV-T02` split selector from verifier：已完成
+- `GOV-T03` add repo-level change-evidence index：已完成
+- `GOV-T04` add release-style preflight entrypoint：已完成
+- `GOV-T05` wire docs, AGENTS, and proof routing：已完成
 
 ## 阶段总表
 
 ### Phase 0'
 
 - 目标：真源收敛、主入口改写、Hermes 文档降级、`planning-status.json` + verifier 上线
+- 当前状态：已完成
 - 出口门禁：authoritative docs 零冲突、impl_pack 不再是 greenfield 叙事
-- 回滚：整体 revert 文档与 verifier 变更
 
 ### Phase 1 垂直切片
 
 - 目标：canonical task -> 真实 SDK -> `result.json` -> markdown projection
+- 当前状态：
+  - repo-side canonical runtime 已闭环
+  - live prerequisite probes 仍待刷新
+- 已完成：
+  - 默认 layout 迁移
+  - canonical task intake
+  - canonical result writer
+  - compatibility projection
+  - repo-owned config / worker-profile contract
+- 未完成：
+  - 真实 GPT-5.4 gateway probe
+  - `codex exec` minimum probe
+  - 非 mock live vertical slice
+  - `evidence_index.json` sha256 独立校验脚本
 - 入口条件：
   - Governance Overlay 已落盘并可通过 repo-side gate
   - GPT-5.4 网关或等效凭据可用
@@ -43,31 +63,29 @@
   - `repo-side green`
   - `evidence_index.json` sha256 可重算
   - 双写过渡方案 A 断言通过
-- 回滚：恢复旧 layout、关闭双写主线
 
 ### Phase 2 契约与兼容面
 
-- 目标：task/result/review/run-index schema + AgentBridge round-trip
+- 目标：task/result/review/run-state/acceptance contract 固化 + AgentBridge round-trip
+- 当前状态：
+  - config / acceptance / run-state foundation docs 已落盘
+  - schema tests、round-trip parity 仍待实现
 - 出口门禁：schema tests + projection parity 全绿
-- 回滚：保留 JSON 主协议，回退兼容 adapter 演进
 
 ### Phase 3 执行与验证
 
 - 目标：verification runner、path guard、worktree manager、cleanup manager
 - 出口门禁：`build -> [lint -> typecheck] -> test -> contract -> hotspot` 统一跑通
-- 回滚：退回 Phase 2 单切片模式
 
 ### Phase 4 Planner / Review
 
 - 目标：`Direct GPT-5.4 API` planner + `Claude Code + GLM-5.2` review adapter
 - 出口门禁：planner/review 谓词正反分支全绿
-- 回滚：降级为人工触发 planner/review
 
 ### Phase 5 多仓多 worker
 
 - 目标：leases/heartbeat/retry/route/quota + 新增 4 表
 - 出口门禁：`multi-worker simulation green`
-- 回滚：恢复单 writer 主线
 
 ### Phase 6 Hermes 兼容收口
 
@@ -76,7 +94,6 @@
   - parity green
   - historical snapshot mapping green
   - markdown projection green
-- 回滚：继续保留 Hermes 顶层旧入口
 
 ## Promotion Rule
 

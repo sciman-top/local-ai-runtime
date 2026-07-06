@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+from datetime import date
 import importlib.util
 import json
 import subprocess
@@ -70,6 +71,18 @@ def select_next_work(
             reason=reasons["refresh_governance_evidence_first"],
             policy_path=policy_path,
             governance_issues=governance_issues,
+            verifier_status=None,
+            preflight_status=None,
+            live_posture=None,
+        )
+
+    review_expires_at = str(policy.get("review_expires_at") or "").strip()
+    if review_expires_at and _is_expired(review_expires_at):
+        return _build_result(
+            action="refresh_governance_evidence_first",
+            reason="Governance selector policy review has expired, so repo-level evidence must be refreshed before promoting product work.",
+            policy_path=policy_path,
+            governance_issues=[],
             verifier_status=None,
             preflight_status=None,
             live_posture=None,
@@ -252,7 +265,18 @@ def _load_policy(path: Path) -> dict[str, object]:
         raise ValueError(
             "next-work selection policy is missing fields: " + ", ".join(missing_fields)
         )
+    review_expires_at = payload.get("review_expires_at")
+    if not isinstance(review_expires_at, str) or not review_expires_at.strip():
+        raise ValueError("next-work selection policy review_expires_at must be a non-empty string")
+    try:
+        date.fromisoformat(review_expires_at)
+    except ValueError as exc:
+        raise ValueError("next-work selection policy review_expires_at must be a valid ISO date") from exc
     return payload
+
+
+def _is_expired(review_expires_at: str) -> bool:
+    return date.fromisoformat(review_expires_at) < date.today()
 
 
 def _load_json(path: Path) -> dict[str, object]:

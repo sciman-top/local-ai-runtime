@@ -1,5 +1,7 @@
 # AGENTS.md
 
+> Status: non-authoritative operational prompt asset. Do not treat this file as runtime truth.
+
 ## 角色
 你正在实现一个本地 AI 软件工程编排器。请严格遵守以下目标与边界。
 

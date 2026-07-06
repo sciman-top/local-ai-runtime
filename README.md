@@ -10,6 +10,7 @@
 当前主线明确采用以下口径：
 
 - 在现有 `runtime/host-orchestrator` 骨架上就地演进
+- `.ai/config/*.yaml` 是 repo-owned runtime contract
 - `.ai/state/control-plane.db` 是调度真源
 - `.ai/runs/<run_id>/<task_id>/` 是正式 evidence 面
 - `Hermes/AgentBridge` 只保留为兼容线与历史基线
@@ -39,7 +40,10 @@
 5. [docs/roadmap/orchestrator-roadmap.md](D:/CODE/local-ai-dev-orchestrator/docs/roadmap/orchestrator-roadmap.md)
 6. [docs/plans/orchestrator-implementation-plan.md](D:/CODE/local-ai-dev-orchestrator/docs/plans/orchestrator-implementation-plan.md)
 7. [docs/backlog/orchestrator-task-list.md](D:/CODE/local-ai-dev-orchestrator/docs/backlog/orchestrator-task-list.md)
-8. [docs/change-evidence/README.md](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/README.md)
+8. [docs/specs/config-and-worker-profiles.md](D:/CODE/local-ai-dev-orchestrator/docs/specs/config-and-worker-profiles.md)
+9. [docs/specs/acceptance-and-gates.md](D:/CODE/local-ai-dev-orchestrator/docs/specs/acceptance-and-gates.md)
+10. [docs/specs/run-state-and-handoff.md](D:/CODE/local-ai-dev-orchestrator/docs/specs/run-state-and-handoff.md)
+11. [docs/change-evidence/README.md](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/README.md)
 
 ## 兼容线
 

@@ -7,6 +7,8 @@ from pathlib import Path
 @dataclass(frozen=True)
 class RuntimeLayout:
     repo_root: Path
+    ai_root: Path
+    runs_root: Path
     control_plane_root: Path
     control_plane_db: Path
     control_plane_logs: Path
@@ -14,10 +16,13 @@ class RuntimeLayout:
 
     @classmethod
     def from_repo_root(cls, repo_root: Path) -> "RuntimeLayout":
+        ai_root = repo_root / ".ai"
         private_local = repo_root / "private-local"
-        control_plane_root = private_local / "control-plane"
+        control_plane_root = ai_root / "state"
         return cls(
             repo_root=repo_root,
+            ai_root=ai_root,
+            runs_root=ai_root / "runs",
             control_plane_root=control_plane_root,
             control_plane_db=control_plane_root / "control-plane.db",
             control_plane_logs=control_plane_root / "logs",
