@@ -34,6 +34,12 @@ Local AI Runtime is a Windows-first local orchestration runtime for audited AI c
 - `P2-T03` 的 repo-side projection parity 已落地，但这还不等于 `platform compatibility green` 或 `live accepted`
 - `P4-T01` 的 repo-side planner handoff 已落地；`planner_required` 任务当前会先停在 `waiting_handoff`，这仍不等于 live `Direct GPT-5.4` planner 已接线
 
+## Operator Assets
+
+- 日常使用 `主控 + 子代理 + worktree` 协作模式时，先看 [docs/主控-子代理-worktree-协作模式.md](D:/CODE/local-ai-dev-orchestrator/docs/主控-子代理-worktree-协作模式.md)
+- 可直接复用的 prompt 资产在 [prompts/subagent-worktree/README.md](D:/CODE/local-ai-dev-orchestrator/prompts/subagent-worktree/README.md)
+- 可直接复制的 manifest / checklist 模板在 [templates/agent-work-manifest.example.yaml](D:/CODE/local-ai-dev-orchestrator/templates/agent-work-manifest.example.yaml) 与 [templates/closeout-checklist.md](D:/CODE/local-ai-dev-orchestrator/templates/closeout-checklist.md)
+
 ## Governance Overlay
 
 当前主线继续叠加 **Governance Overlay**，但它是 cross-cutting 治理增强面，不替代产品 phase。

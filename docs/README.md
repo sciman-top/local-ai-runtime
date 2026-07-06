@@ -50,6 +50,15 @@
 治理增强层是当前主线的 cross-cutting overlay，不替代 `Phase 1 -> Phase 6` 产品路线图。
 
 - `selector + change-evidence + preflight + reference governance` 是当前 repo-side 治理增强面
+
+## Operator Assets
+
+以下文件是 repo-owned 的操作资产，不属于 authoritative runtime truth，但可直接复用：
+
+- 协作模式说明：[docs/主控-子代理-worktree-协作模式.md](D:/CODE/local-ai-dev-orchestrator/docs/主控-子代理-worktree-协作模式.md)
+- prompt 资产入口：[prompts/subagent-worktree/README.md](D:/CODE/local-ai-dev-orchestrator/prompts/subagent-worktree/README.md)
+- manifest 模板：[templates/agent-work-manifest.example.yaml](D:/CODE/local-ai-dev-orchestrator/templates/agent-work-manifest.example.yaml)
+- closeout 清单：[templates/closeout-checklist.md](D:/CODE/local-ai-dev-orchestrator/templates/closeout-checklist.md)
 - 当前 selector 预期结果仍是 `promote_phase1_execution`
 - GPT-5.4 gateway 与 `codex exec` prerequisite probes 已 ready，但 `network_proxy` 仍是 `platform_na`，所以 live execution 仍先限纯本地任务
 - `governed-ai-coding-runtime` 已被纳入正式 `governance-sidecar` companion，但它只提供治理机制参考，不定义当前主线实现真相

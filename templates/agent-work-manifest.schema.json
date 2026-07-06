@@ -1,0 +1,135 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "AgentWorkManifest",
+  "type": "object",
+  "required": [
+    "run_id",
+    "repo_root",
+    "objective",
+    "model_policy",
+    "truth_sources",
+    "tasks"
+  ],
+  "properties": {
+    "run_id": {
+      "type": "string"
+    },
+    "repo_root": {
+      "type": "string"
+    },
+    "objective": {
+      "type": "string"
+    },
+    "model_policy": {
+      "type": "object",
+      "required": [
+        "model",
+        "reasoning_effort"
+      ],
+      "properties": {
+        "model": {
+          "const": "gpt-5.4"
+        },
+        "reasoning_effort": {
+          "const": "xhigh"
+        }
+      }
+    },
+    "truth_sources": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "global_forbidden_scope": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "tasks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "task_id",
+          "kind",
+          "goal",
+          "read_set",
+          "write_set",
+          "done_when",
+          "tests",
+          "risk_level",
+          "blocked_by"
+        ],
+        "properties": {
+          "task_id": {
+            "type": "string"
+          },
+          "kind": {
+            "enum": [
+              "explore",
+              "implement",
+              "review",
+              "docs_sync",
+              "closeout"
+            ]
+          },
+          "goal": {
+            "type": "string"
+          },
+          "read_set": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "write_set": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "done_when": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "tests": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "risk_level": {
+            "enum": [
+              "low",
+              "medium",
+              "high",
+              "critical"
+            ]
+          },
+          "blocked_by": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "forbidden_scope": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "worktree_name": {
+            "type": "string"
+          },
+          "branch_name": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

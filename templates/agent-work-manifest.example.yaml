@@ -1,0 +1,73 @@
+# Status: repo-owned reusable template asset.
+# Replace placeholders before dispatching the run.
+
+run_id: "20260707-example"
+repo_root: "D:/CODE/your-repo"
+objective: "推进当前最小切片"
+
+model_policy:
+  model: "gpt-5.4"
+  reasoning_effort: "xhigh"
+
+truth_sources:
+  - "README.md"
+  - "docs/README.md"
+  - "docs/architecture/planning-status.json"
+  - "docs/backlog/task-list.md"
+  - "docs/plans/implementation-plan.md"
+
+global_forbidden_scope:
+  - "不要擅自扩 scope"
+  - "不要改未授权 schema/字段名"
+  - "不要把 repo-side 说成 live/platform done"
+
+tasks:
+  - task_id: "T01"
+    kind: "explore"
+    goal: "提炼最小切片与冲突点"
+    read_set:
+      - "runtime/**"
+      - "docs/**"
+    write_set: []
+    done_when:
+      - "给出最小切片"
+      - "给出建议 write_set"
+      - "给出建议 tests"
+    tests: []
+    risk_level: "low"
+    blocked_by: []
+
+  - task_id: "T02"
+    kind: "implement"
+    goal: "实现当前最小代码切片"
+    read_set:
+      - "runtime/**"
+      - "tests/**"
+    write_set:
+      - "runtime/module_a.py"
+      - "tests/test_module_a.py"
+    done_when:
+      - "功能满足验收条件"
+      - "相关测试通过"
+    tests:
+      - "pytest tests/test_module_a.py"
+    risk_level: "medium"
+    blocked_by:
+      - "T01"
+    forbidden_scope:
+      - "不要修改 ownership 外文件"
+    worktree_name: ".worktrees/t02-module-a"
+    branch_name: "codex/t02-module-a"
+
+  - task_id: "T03"
+    kind: "review"
+    goal: "复核规格、正确性、安全性、测试覆盖"
+    read_set:
+      - "git diff BASE..HEAD"
+    write_set: []
+    done_when:
+      - "给出 findings 或 no findings"
+    tests: []
+    risk_level: "low"
+    blocked_by:
+      - "T02"
