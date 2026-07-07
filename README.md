@@ -26,8 +26,10 @@ Local AI Runtime is a Windows-first local orchestration runtime for audited AI c
 当前主线采用以下 repo truth：
 
 - `runtime/host-orchestrator` 是 `host_local` 可信运行时内核，不新建平行顶层包
+- `runtime/host-orchestrator/src/host_orchestrator/runtime_v2/` 已作为仓内新内核落地，用于双轨迁移；当前默认入口仍未切到 v2，也不需要改仓库名或本地目录名
 - `.ai/config/*.yaml` 是 repo-owned runtime contract；正式定义见 [docs/specs/config-and-worker-profiles.md](D:/CODE/local-ai-dev-orchestrator/docs/specs/config-and-worker-profiles.md)
 - `.ai/state/control-plane.db` 是调度真源
+- `.ai/state/control-plane-v2.db` 与 `.ai/runs-v2/` 当前只服务于 experimental `runtime_v2` 双轨面
 - `.ai/runs/<run_id>/<task_id>/` 是正式 evidence 面
 - 执行 hot path 当前收敛为 `Codex-first`；Hermes 保留风险编排、runtime ledger、跨执行器适配与历史基线职责，Claude 仍是可插拔 review sidecar
 - repo-owned `host_local` task entrypoint 现已落地：`host-orchestrator --run-task` 与 `runtime/host-orchestrator/scripts/run-host-task.ps1` 当前会通过 worker factory 支持 `codex_sdk / codex_exec`；在现有 built-in profile 中，`local_maint` 直接走 `codex_sdk`，而 `remote_non_gui_probe / vm_gui_probe` 仍会因 non-host_local lane 在 worker 前 handoff
@@ -92,7 +94,8 @@ Local AI Runtime is a Windows-first local orchestration runtime for audited AI c
 10. [docs/specs/config-and-worker-profiles.md](D:/CODE/local-ai-dev-orchestrator/docs/specs/config-and-worker-profiles.md)
 11. [docs/specs/acceptance-and-gates.md](D:/CODE/local-ai-dev-orchestrator/docs/specs/acceptance-and-gates.md)
 12. [docs/specs/run-state-and-handoff.md](D:/CODE/local-ai-dev-orchestrator/docs/specs/run-state-and-handoff.md)
-13. [docs/change-evidence/20260706-strategic-regression.md](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260706-strategic-regression.md)
+13. [docs/specs/runtime-v2-kernel.md](D:/CODE/local-ai-dev-orchestrator/docs/specs/runtime-v2-kernel.md)
+14. [docs/change-evidence/20260706-strategic-regression.md](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260706-strategic-regression.md)
 
 ## 历史与兼容
 

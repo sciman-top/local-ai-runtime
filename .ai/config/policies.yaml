@@ -10,3 +10,42 @@ sensitive_paths:
   - .git/config
   - .ssh/**
   - secrets/**
+
+verification_profiles:
+  fast:
+    build: null
+    lint: null
+    typecheck: null
+    test: "uv run --project .\\runtime\\host-orchestrator python -m pytest"
+    contract: "python .\\scripts\\verify-planning-status.py"
+    hotspot: null
+  full:
+    build: null
+    lint: null
+    typecheck: null
+    test: "uv run --project .\\runtime\\host-orchestrator python -m pytest"
+    contract: "python .\\scripts\\verify-planning-status.py"
+    hotspot: "pwsh -NoProfile -ExecutionPolicy Bypass -File .\\scripts\\governance\\preflight.ps1 -DisableAutoCommit -Json"
+
+continuation_policies:
+  auto:
+    auto_continue: true
+    review_on_risk_levels:
+      - high
+      - critical
+    pause_on_policy_surface: true
+    pause_on_verification_failure: true
+  guarded:
+    auto_continue: false
+    review_on_risk_levels:
+      - medium
+      - high
+      - critical
+    pause_on_policy_surface: true
+    pause_on_verification_failure: true
+
+retry_policies:
+  default:
+    retry_on_gate_failure: true
+    retry_on_worker_failure: true
+    max_attempts: 3

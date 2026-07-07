@@ -9,6 +9,7 @@
 `worker_profile`、policy surface 派生、以及 repo-owned 执行抽象的正式定义，见：
 
 - `docs/specs/config-and-worker-profiles.md`
+- `docs/specs/runtime-v2-kernel.md`（仅描述 experimental dual-track `runtime_v2`，不反转当前 v1 canonical truth）
 
 ## 当前事实边界
 

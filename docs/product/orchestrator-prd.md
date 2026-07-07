@@ -4,6 +4,8 @@
 
 项目展示名是 `Local AI Runtime`，中文名是 `本地 AI 运行时`。当前本地工作目录与历史仓库 slug 仍为 `local-ai-dev-orchestrator`；本次命名统一不等于目录迁移。
 
+当前结论固定为：先不改仓库名、远端 slug、或本地目录名。终态重构通过在同一主仓内引入 `runtime_v2` 新内核完成，而不是通过 rename 或新建平行 repo 完成。
+
 本仓当前主产品线回调为 **Hermes -> AgentBridge -> Codex** 三层闭环，而不是继续沿用“generic orchestrator 主线 + Hermes compatibility lane”的叙事。执行 hot path 当前收敛为 **Codex-first**；Hermes 保留风险编排、runtime ledger、跨执行器适配与历史基线职责，Claude 只作为可插拔 review sidecar。
 
 其中当前 repo truth 仍保持不变：
@@ -51,12 +53,24 @@
 - canonical `JSON/YAML` task contract
 - repo-owned `config / worker_profile / policies` contract
 - `.ai/state/control-plane.db` 调度真源
+- `.ai/state/control-plane-v2.db` 作为 experimental dual-track 控制面，与 `.ai/runs-v2/` 一起服务 `runtime_v2`
 - `.ai/runs/<run_id>/<task_id>/` 正式 evidence 面
 - 统一 `task / result / review / dispatch / closeout` 状态枚举与 `next_action / cleanup_owner / cleanup_status / status_reason`
 - runtime-backed `dispatch_state.json` ledger，与 `result.json` 和 `runtime_tasks` 同步 `attempt / next_action / cleanup_* / status_reason / dispatch_state_ref`
 - Governance Overlay：`selector + change-evidence + preflight + reference governance`
 - `AGENTS.md` 共同项目规则主体 + `CLAUDE.md` thin wrapper + 控制仓 global rule source / target-project audit 协同边界
 - `runtime/host-orchestrator` 就地演进
+
+## Kernel V2 双轨迁移
+
+当前已吸收的终态重构路径是：保留本仓作为唯一主仓，在 `runtime/host-orchestrator/src/host_orchestrator/runtime_v2/` 内实现新内核，并让旧 `host_local` / `db.py` / `verification.py` 继续承担 `legacy_v1` 默认入口，直到 cutover 条件满足。
+
+当前双轨边界：
+
+- `runtime.active_version` 默认仍是 `v1`
+- `runtime.experimental_v2_enabled` 控制 v2 实验入口是否开放
+- `.ai/state/control-plane-v2.db` 与 `.ai/runs-v2/<run_id>/<task_id>/<attempt_id>/` 只属于 v2 双轨面
+- Hermes 与 AgentBridge 当前继续保留 baseline / compatibility / adapter 边界，不再被扩成日常主执行核
 
 ### 执行面
 

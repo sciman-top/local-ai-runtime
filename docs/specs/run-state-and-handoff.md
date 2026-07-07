@@ -21,6 +21,27 @@
 | `route_reason` | 当前 route/worker_profile 选择原因 |
 | `dispatch_state_ref` | 关联的 `dispatch_state.json` 路径 |
 
+## Runtime V2 Attempt-Centric Fields
+
+experimental `runtime_v2` 额外固定：
+
+- `attempt_id`：每次 v2 尝试的稳定标识
+- `resume_point`：恢复操作明确作用到哪个 `attempt_id`
+- `retry_rewind`：重试操作明确从哪个边界回退
+- `gate_report_ref`：v2 `gate_report.json`
+- `trace_manifest_ref`：v2 `trace_manifest.json`
+- `closeout_bundle_ref`：v2 `closeout_bundle.json`
+
+当前 v2 工件面固定为：
+
+- `.ai/runs-v2/<run_id>/<task_id>/<attempt_id>/attempt.json`
+- `.ai/runs-v2/<run_id>/<task_id>/<attempt_id>/result.json`
+- `.ai/runs-v2/<run_id>/<task_id>/<attempt_id>/gate_report.json`
+- `.ai/runs-v2/<run_id>/<task_id>/<attempt_id>/trace_manifest.json`
+- `.ai/runs-v2/<run_id>/<task_id>/<attempt_id>/closeout_bundle.json`
+- `.ai/runs-v2/<run_id>/<task_id>/<attempt_id>/sidecars/planner_result.json`
+- `.ai/runs-v2/<run_id>/<task_id>/<attempt_id>/sidecars/review_result.json`
+
 ## Resume Point
 
 `resume_point` 当前最小枚举：

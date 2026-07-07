@@ -50,6 +50,7 @@
 - [20260707 Official Research: Subagents, Worktrees, Structured Contracts, Review Gates, and Closeout](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260707-official-subagent-worktree-research.md)
 - [20260707 Community Subagent Worktree Patterns](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260707-community-subagent-worktree-patterns.md)
 - [20260707 Reference Shelf Tuning](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260707-reference-shelf-tuning.md)
+- [20260708 Runtime V2 Dual-Track Bootstrap](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260708-runtime-v2-dual-track-bootstrap.md)
 
 当前最新结论：
 
@@ -87,5 +88,6 @@
 - `P6-T03` 的 repo-side `vm_gui` conditional promotion evidence 已完成：current summary 明确固定了 default GUI-only handoff 与 explicit `vm_gui_probe` fail-closed handoff，当前仍未落 vm runner 或真实 GUI-only workload acceptance
 - repo-owned `host_local` task entrypoint 与 worker factory 已完成：`host-orchestrator --run-task` / `run-host-task.ps1` 当前已直接消费 `local_maint` 的 `codex_sdk` 路径，并在结构上支持 `codex_exec`；built-in `codex_exec` profiles 仍保持 non-host-local handoff，而 `scripted / gpt54_direct / claude_glm` 继续 live task execution fail-closed
 - `E-T01` 的字段名决策也已固定：`compatibility_projection_ref` 与 `lane` 继续保持现名，不在当前 repo-side parity / topology closeout 中改名，待 live heterogeneous review sidecar 与 non-host_local runner 真接线后再复评
+- `Kernel V2` 双轨 bootstrap 已吸收到代码、配置、测试、文档与 verifier；当前明确保持同仓演进、repo/目录名不改、默认入口不切、active queue 不变
 - 当前预期 next action 仍是粗粒度的 `promote_phase1_execution`；repo-side planner/review/path-guard/worktree-manager/cleanup-manager/runtime-ledger/lifecycle/receipt、`P5-T01` route/quota、`P5-T02` deterministic multi-worker simulation、`P5-T03` remote_non_gui promotion evidence、`P6-T01` / `P6-T02` Hermes parity / historical snapshot mapping、`P6-T03` vm_gui conditional promotion evidence、repo-owned `host_local` task entrypoint / worker factory、bounded live heterogeneous review sidecar receipt closeout、以及 `E-T01` 字段名决策 已完成，下一 open set 收窄到 non-host_local runner wiring 与后续 review hardening
 - 参考架当前不做大改：`registry` 已补成 conditional 候选；默认刷新集合不变；`skills / hermes-agent-self-evolution / openclaw` 继续保持 archive-on-demand，并作为未来本机瘦身时的第一批本地删除候选

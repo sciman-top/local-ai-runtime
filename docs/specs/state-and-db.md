@@ -14,6 +14,30 @@
 - `route_decisions`
 - `events`
 
+## Experimental Runtime V2 双轨面
+
+当前同仓已落一套 experimental `runtime_v2` 控制面，用于终态重构的双轨迁移；它当前不是默认入口，也不改写 v1 的调度真源。
+
+### 物理路径
+
+- `.ai/state/control-plane-v2.db`
+- `.ai/runs-v2/<run_id>/<task_id>/<attempt_id>/`
+
+### 当前固定 6 表
+
+- `tasks`
+- `task_dependencies`
+- `task_attempts`
+- `leases`
+- `artifacts`
+- `events`
+
+### 当前边界
+
+- `task_attempts` 已把 `resume_point` 与 `retry_rewind` 提升为一等字段
+- v1 的 `runtime_tasks` 与 `.ai/runs/.../dispatch_state.json` 当前不向前兼容为 live v2 状态
+- 旧 v1 数据只通过 migration manifest / archive 进入 `legacy_archived` 语义，不假装成同一 live 控制面
+
 ## 设计原则
 
 - `queue` 从 `runtime_tasks.state` 派生，不建平行 queue 表

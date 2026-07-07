@@ -47,3 +47,29 @@ def canonical_task_payload(task_id: str) -> dict[str, object]:
             "hotspot": None,
         },
     }
+
+
+def runtime_v2_task_payload(task_id: str) -> dict[str, object]:
+    return {
+        "task_id": task_id,
+        "title": "Validate runtime_v2 canonical runtime",
+        "description": "Exercise the experimental runtime_v2 contract through the repo-owned runner.",
+        "target_repo": "local-ai-dev-orchestrator",
+        "base_branch": "main",
+        "branch_name": "codex/runtime-v2-test",
+        "worktree_path": ".",
+        "allowed_paths": ["runtime/host-orchestrator/**", "docs/**"],
+        "forbidden_paths": [".env", ".env.*", ".git/config"],
+        "write_access": False,
+        "risk_level": "low",
+        "merge_policy": "manual_merge_only",
+        "requires_network": False,
+        "requires_gui": False,
+        "dependency_refs": [],
+        "artifacts_out": [
+            f".ai/runs-v2/<run_id>/{task_id}/<attempt_id>/result.json",
+        ],
+        "verification_profile": "fast",
+        "continuation_policy": "auto",
+        "worker_profile": "local_maint",
+    }

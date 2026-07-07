@@ -34,6 +34,20 @@
 - `GOV-T09` add target-project `AGENTS.md + CLAUDE.md` coordination pilot：已完成
 - `GOV-T10` align docs, wrapper boundary, and repo-level evidence for the pilot：已完成
 
+## Kernel V2 双轨迁移
+
+这组工作包已吸收到最新路线图，但当前默认入口未切换，active queue 也不因此改写。
+
+- `WP1` Legacy 冻结与双轨骨架：进行中
+  - `runtime_v2/` 包、实验 CLI、`runtime.*` 配置字段已经落盘
+- `WP2` V2 契约、状态机与存储真源：进行中
+  - v2 canonical task、6 表存储、`.ai/runs-v2/` 工件骨架已落盘
+- `WP3` 调度 / admission / 自动继续内核：进行中
+  - `dependency_refs`、原子 slot admission、`resume_point / retry_rewind` 的 v2 一等字段已落第一批实现
+- `WP4` 执行 / gate / 隔离 / sidecar 收口：待继续
+- `WP5` trace / eval / 证据闭环：待继续
+- `WP6` cutover / archive / 真相面切换：待继续
+
 ## 战略回调 Overlay（A-F）
 
 这组阶段是对现有产品路线图的重新解释顺序，不替代 `Phase 1 -> Phase 6` 编号。

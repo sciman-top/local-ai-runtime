@@ -58,6 +58,21 @@
 - [x] `GOV-T09` add target-project `AGENTS.md + CLAUDE.md` coordination pilot
 - [x] `GOV-T10` align docs, wrapper boundary, and repo-level evidence for the pilot
 
+## Kernel V2
+
+- [x] `K2-T01` runtime_v2 package skeleton + config fields + experimental CLI entrypoints
+  - Status note:
+    - 2026-07-08 已落 `runtime_v2/` 模块骨架、`--run-task-v2 / --resume-task-v2 / --retry-task-v2 / --migrate-control-plane-v2 / --cutover-v2`，以及 `runtime.active_version / experimental_v2_enabled / control_plane_db_v2 / artifact_root_v2`
+- [x] `K2-T02` v2 canonical task / storage / attempt artifact skeleton
+  - Status note:
+    - 2026-07-08 已落 `dependency_refs / verification_profile / continuation_policy`，6 表 v2 控制面，`.ai/runs-v2/<run_id>/<task_id>/<attempt_id>/`，以及 `resume_point / retry_rewind` 的 attempt-level 收口
+- [x] `K2-T03` docs / spec / verifier absorb Kernel V2 without switching active queue
+  - Status note:
+    - 2026-07-08 authoritative docs、路线图、实施计划、任务清单、spec、change-evidence、以及 verifier 已开始承认 `Kernel V2`，但默认入口与 active queue 仍未切换
+- [ ] `K2-T04` deepen autonomous scheduling / review / policy gates on runtime_v2
+- [ ] `K2-T05` add trace / eval / regression fixtures for runtime_v2
+- [ ] `K2-T06` run cutover drill and switch the default entrypoint only after gates are green
+
 ## Phase 1
 
 - [x] `P1-T01` 默认 layout 迁到 `.ai/state` 与 `.ai/runs`

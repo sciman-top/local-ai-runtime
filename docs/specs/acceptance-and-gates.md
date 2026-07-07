@@ -35,6 +35,11 @@ PRD 的四档继续是唯一顶层口径：
 
 `build -> [lint -> typecheck] -> test -> contract -> hotspot`
 
+补充边界：
+
+- experimental `runtime_v2` 的 `gate_report.json` 也固定按同一顺序留痕
+- 当前仓的 build / hotspot 仍维持既有 `gate_na` truth；`runtime_v2` 已有骨架，不等于默认 gate 已切到 v2
+
 当前 repo-level preflight 允许：
 
 - `build = gate_na`

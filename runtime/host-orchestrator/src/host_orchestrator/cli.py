@@ -5,12 +5,15 @@ import json
 from pathlib import Path
 
 from host_orchestrator import agentbridge
+from host_orchestrator.config_runtime import RuntimeConfigError, load_runtime_config
 from host_orchestrator.evidence_index import revalidate_evidence_index
 from host_orchestrator.hermes_parity import run_hermes_parity
 from host_orchestrator.multi_worker_simulation import run_multi_worker_simulation
 from host_orchestrator.remote_non_gui_promotion import run_remote_non_gui_promotion
 from host_orchestrator.paths import RuntimeLayout, discover_repo_root
 from host_orchestrator.host_local import HostLocalConfig, HostLocalRunner
+from host_orchestrator.runtime_v2.migration import perform_cutover, write_migration_manifest
+from host_orchestrator.runtime_v2.runner import RuntimeV2Config, RuntimeV2Runner
 from host_orchestrator.task_lifecycle import (
     RESUME_POINTS,
     cancel_task,
@@ -44,7 +47,13 @@ def build_parser() -> argparse.ArgumentParser:
         "--run-task",
         type=Path,
         default=None,
-        help="Run a canonical JSON/YAML task or AgentBridge markdown task through the repo-owned host_local entrypoint.",
+        help="Run a task through the active repo-owned runtime entrypoint. Before cutover this remains host_local v1; after cutover it follows runtime.active_version.",
+    )
+    parser.add_argument(
+        "--run-task-v2",
+        type=Path,
+        default=None,
+        help="Run a v2 canonical JSON/YAML task through the experimental runtime_v2 entrypoint.",
     )
     parser.add_argument(
         "--agentbridge-root",
@@ -139,6 +148,27 @@ def build_parser() -> argparse.ArgumentParser:
         default=None,
         help="Increment attempt and mark a runtime task as resumed from a retry rewind point.",
     )
+    lifecycle_v2_group = parser.add_mutually_exclusive_group()
+    lifecycle_v2_group.add_argument(
+        "--resume-task-v2",
+        default=None,
+        help="Mark a v2 task attempt as ready from a specific resume point.",
+    )
+    lifecycle_v2_group.add_argument(
+        "--retry-task-v2",
+        default=None,
+        help="Create a new v2 task attempt from a retry rewind point.",
+    )
+    lifecycle_v2_group.add_argument(
+        "--migrate-control-plane-v2",
+        action="store_true",
+        help="Write the repo-side migration manifest for dual-track runtime_v2 storage without switching the default entrypoint.",
+    )
+    lifecycle_v2_group.add_argument(
+        "--cutover-v2",
+        action="store_true",
+        help="Archive legacy v1 control-plane artifacts and switch runtime.active_version to v2.",
+    )
     parser.add_argument(
         "--at",
         default=None,
@@ -170,9 +200,49 @@ def main(argv: list[str] | None = None) -> int:
 
     repo_root = args.repo_root.resolve() if args.repo_root else discover_repo_root()
     layout = RuntimeLayout.from_repo_root(repo_root)
+    runtime_bundle = _load_runtime_bundle_if_available(repo_root)
+    runtime_v2_layout = (
+        layout.with_runtime_v2_paths(
+            control_plane_db_v2=runtime_bundle.runtime.control_plane_db_v2,
+            artifact_root_v2=runtime_bundle.runtime.artifact_root_v2,
+        )
+        if runtime_bundle is not None
+        else layout
+    )
 
     if args.run_task is not None:
         task_path = args.run_task if args.run_task.is_absolute() else (repo_root / args.run_task)
+        active_version = runtime_bundle.runtime.active_version if runtime_bundle is not None else "v1"
+        if active_version == "v2":
+            runner = RuntimeV2Runner(
+                RuntimeV2Config(
+                    workspace_root=repo_root,
+                    layout=runtime_v2_layout,
+                    worker_profile=args.worker_profile,
+                    run_id=args.run_id,
+                ),
+                worker_factory=RuntimeWorkerFactory(),
+            )
+            result_path = runner.run_task(task_path.resolve(strict=False))
+            payload = json.loads(result_path.read_text(encoding="utf-8"))
+            print(
+                json.dumps(
+                    {
+                        "result_path": str(result_path),
+                        "task_id": payload["task_id"],
+                        "run_id": payload["run_id"],
+                        "attempt_id": payload["attempt_id"],
+                        "status": payload["status"],
+                        "worker_profile": payload["worker_profile"],
+                        "verification_profile": payload["verification_profile"],
+                        "continuation_policy": payload["continuation_policy"],
+                        "next_action": payload["next_action"],
+                    },
+                    indent=2,
+                    ensure_ascii=False,
+                )
+            )
+            return 0
         agentbridge_root = (
             args.agentbridge_root.resolve()
             if args.agentbridge_root is not None
@@ -200,6 +270,38 @@ def main(argv: list[str] | None = None) -> int:
                     "worker_profile": payload["worker_profile"],
                     "worker_kind": payload["worker_kind"],
                     "handoff_required": payload["handoff_required"],
+                    "next_action": payload["next_action"],
+                },
+                indent=2,
+                ensure_ascii=False,
+            )
+        )
+        return 0
+
+    if args.run_task_v2 is not None:
+        task_path = args.run_task_v2 if args.run_task_v2.is_absolute() else (repo_root / args.run_task_v2)
+        runner = RuntimeV2Runner(
+            RuntimeV2Config(
+                workspace_root=repo_root,
+                layout=runtime_v2_layout,
+                worker_profile=args.worker_profile,
+                run_id=args.run_id,
+            ),
+            worker_factory=RuntimeWorkerFactory(),
+        )
+        result_path = runner.run_task(task_path.resolve(strict=False))
+        payload = json.loads(result_path.read_text(encoding="utf-8"))
+        print(
+            json.dumps(
+                {
+                    "result_path": str(result_path),
+                    "task_id": payload["task_id"],
+                    "run_id": payload["run_id"],
+                    "attempt_id": payload["attempt_id"],
+                    "status": payload["status"],
+                    "worker_profile": payload["worker_profile"],
+                    "verification_profile": payload["verification_profile"],
+                    "continuation_policy": payload["continuation_policy"],
                     "next_action": payload["next_action"],
                 },
                 indent=2,
@@ -246,6 +348,16 @@ def main(argv: list[str] | None = None) -> int:
             run_id=args.hermes_parity_run_id,
         )
         print(json.dumps(summary.to_dict(), indent=2, ensure_ascii=True))
+        return 0
+
+    if args.migrate_control_plane_v2:
+        payload = write_migration_manifest(layout=runtime_v2_layout)
+        print(json.dumps(payload, indent=2, ensure_ascii=False))
+        return 0
+
+    if args.cutover_v2:
+        payload = perform_cutover(layout=runtime_v2_layout)
+        print(json.dumps(payload, indent=2, ensure_ascii=False))
         return 0
 
     if args.revalidate_evidence_index is not None:
@@ -311,23 +423,73 @@ def main(argv: list[str] | None = None) -> int:
         print(json.dumps(payload, indent=2, ensure_ascii=False))
         return 0
 
+    if args.resume_task_v2 is not None:
+        if args.resume_point is None:
+            parser.error("--resume-task-v2 requires --resume-point")
+        runner = RuntimeV2Runner(
+            RuntimeV2Config(
+                workspace_root=repo_root,
+                layout=runtime_v2_layout,
+                worker_profile=args.worker_profile,
+                run_id=args.run_id,
+            ),
+            worker_factory=RuntimeWorkerFactory(),
+        )
+        payload = runner.resume_attempt(
+            attempt_id=args.resume_task_v2,
+            resume_point=args.resume_point,
+            reason=args.reason or "operator resumed the v2 attempt",
+        )
+        print(json.dumps(payload, indent=2, ensure_ascii=False))
+        return 0
+
+    if args.retry_task_v2 is not None:
+        if args.retry_rewind is None:
+            parser.error("--retry-task-v2 requires --retry-rewind")
+        runner = RuntimeV2Runner(
+            RuntimeV2Config(
+                workspace_root=repo_root,
+                layout=runtime_v2_layout,
+                worker_profile=args.worker_profile,
+                run_id=args.run_id,
+            ),
+            worker_factory=RuntimeWorkerFactory(),
+        )
+        payload = runner.retry_attempt(
+            attempt_id=args.retry_task_v2,
+            retry_rewind=args.retry_rewind,
+            reason=args.reason or "operator retried the v2 attempt",
+        )
+        print(json.dumps(payload, indent=2, ensure_ascii=False))
+        return 0
+
     if args.print_layout:
+        payload = {
+            "repo_root": str(layout.repo_root),
+            "ai_root": str(layout.ai_root),
+            "runs_root": str(layout.runs_root),
+            "runs_v2_root": str(runtime_v2_layout.runs_v2_root),
+            "control_plane_root": str(layout.control_plane_root),
+            "control_plane_db": str(layout.control_plane_db),
+            "control_plane_v2_db": str(runtime_v2_layout.control_plane_v2_db),
+            "control_plane_logs": str(layout.control_plane_logs),
+            "archive_root": str(layout.archive_root),
+            "wave_smokes": str(layout.wave_smokes),
+        }
+        if runtime_bundle is not None:
+            payload["runtime_active_version"] = runtime_bundle.runtime.active_version
+            payload["runtime_experimental_v2_enabled"] = runtime_bundle.runtime.experimental_v2_enabled
         print(
-            json.dumps(
-                {
-                    "repo_root": str(layout.repo_root),
-                    "ai_root": str(layout.ai_root),
-                    "runs_root": str(layout.runs_root),
-                    "control_plane_root": str(layout.control_plane_root),
-                    "control_plane_db": str(layout.control_plane_db),
-                    "control_plane_logs": str(layout.control_plane_logs),
-                    "wave_smokes": str(layout.wave_smokes),
-                },
-                indent=2,
-                ensure_ascii=True,
-            )
+            json.dumps(payload, indent=2, ensure_ascii=True)
         )
         return 0
 
     parser.print_help()
     return 0
+
+
+def _load_runtime_bundle_if_available(repo_root: Path):
+    try:
+        return load_runtime_config(repo_root)
+    except RuntimeConfigError:
+        return None

@@ -18,6 +18,7 @@
 - `Phase 1` 继续采用双写过渡方案 A
 - `Wave 1 smoke` 继续隔离在 `private-local/wave-smokes/`
 - gate 顺序固定为 `build -> [lint -> typecheck] -> test -> contract -> hotspot`
+- 不改仓库名 / 远端 slug / 本地目录名；终态重构通过同仓 `runtime_v2` 新内核完成
 
 ## Governance Overlay
 
@@ -164,3 +165,21 @@
 - next: `non-host_local runner wiring + follow-on review hardening`（bounded live heterogeneous review receipt 已落地；branch deletion 仍不自动化；真实 GUI-only workload acceptance 仍未开始）
 
 其中 `planner/review` 继续保留在 repo `Phase 4`，不并回容器或资源 phase。
+
+## Kernel V2 Dual-Track Migration
+
+当前已接受并落地的实施方式固定为：保留本项目作为唯一主仓，在 `runtime/host-orchestrator/src/host_orchestrator/runtime_v2/` 内实现新内核；旧 `host_local` 保持 `legacy_v1` 默认入口，直到 cutover 条件满足。
+
+### 当前已落地切片
+
+- `WP1`：双轨骨架 + experimental CLI 已落地
+  - 当前入口包括 `--run-task-v2`、`--resume-task-v2`、`--retry-task-v2`、`--migrate-control-plane-v2`、`--cutover-v2`
+- `WP2`：v2 canonical task、6 表存储、attempt-level 工件面已落地
+- `WP3`：dependency block、atomic admission、attempt-centric resume/retry 已落第一批实现
+- 文档/spec/verifier 已开始同步吸收 `Kernel V2`，但 `planning-status.current_active_queue` 仍保持 `PHASE-1-VERTICAL-SLICE`
+
+### 下一步
+
+- 补完 v2 docs/verifier 真相面与 dated evidence
+- 继续收口 `WP4/WP5` 的 gate / sidecar / trace / regression fixture
+- 在真实本地编码任务上跑通一条 v2 自动闭环后，才考虑 `WP6` cutover

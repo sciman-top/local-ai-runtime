@@ -22,6 +22,10 @@
 - `review_worker_profile`
 - `run_id_prefix`
 - `projection_required`
+- `runtime.active_version`
+- `runtime.experimental_v2_enabled`
+- `runtime.control_plane_db_v2`
+- `runtime.artifact_root_v2`
 - `worker_profile` 名称
 - `worker_kind`
 - `lane`
@@ -57,6 +61,12 @@ run:
   review_worker_profile: claude_glm_review
   run_id_prefix: host-local
 
+runtime:
+  active_version: v1
+  experimental_v2_enabled: false
+  control_plane_db_v2: .ai/state/control-plane-v2.db
+  artifact_root_v2: .ai/runs-v2
+
 acceptance:
   projection_required: true
 ```
@@ -67,6 +77,9 @@ acceptance:
 - `review_worker_profile`：当 review-gated host_local 路径需要 live heterogeneous receipt 时使用；当前只消费 bounded runtime summary，不代表 primary task execution
 - `run_id_prefix`：默认 `run_id` 前缀
 - `projection_required`：是否要求写出 compatibility markdown projection
+- `runtime.active_version`：`--run-task` 当前应绑定的默认运行时版本；cutover 前保持 `v1`
+- `runtime.experimental_v2_enabled`：是否允许使用 `--run-task-v2` 等实验入口
+- `runtime.control_plane_db_v2` / `runtime.artifact_root_v2`：v2 双轨期独立状态与工件根路径
 
 ## workers.yaml
 
@@ -100,11 +113,17 @@ acceptance:
 
 - `policy_surface_globs`
 - `sensitive_paths`
+- `verification_profiles`
+- `continuation_policies`
+- `retry_policies`
 
 语义：
 
 - `policy_surface_globs` 用于派生 `touches_policy_surface`
 - `sensitive_paths` 用于 compatibility import 与未来 path guard 的最低保护边界
+- `verification_profiles` 固定承接 `build -> lint -> typecheck -> test -> contract -> hotspot` 的 v2 gate 配置
+- `continuation_policies` 固定承接 `auto / guarded` 这类自动继续与 review/pause 语义
+- `retry_policies` 固定承接 gate failure / worker failure 的 recoverable 语义
 - `workers.yaml` 的 `model` 是 profile 默认值；单次运行仍可在 `dispatch_state.json.model_policy` 中按角色、风险和 lane 上调或下调 reasoning 档
 
 ## Selection Rules

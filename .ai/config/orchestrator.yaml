@@ -3,6 +3,12 @@ run:
   review_worker_profile: claude_glm_review
   run_id_prefix: host-local
 
+runtime:
+  active_version: v1
+  experimental_v2_enabled: false
+  control_plane_db_v2: .ai/state/control-plane-v2.db
+  artifact_root_v2: .ai/runs-v2
+
 verification:
   default_commands:
     build: null

@@ -24,8 +24,19 @@
 - repo-owned `host_local` task entrypoint 现已通过 `host-orchestrator --run-task` 与 `runtime/host-orchestrator/scripts/run-host-task.ps1` 落地，并通过 worker factory 支持 `codex_sdk / codex_exec`
 - `.ai/runs/<run_id>/<task_id>/result.json` 仍是正式结果主面
 - `AgentBridge results/*.md` 当前仍是 compatibility projection
+- `runtime/host-orchestrator/src/host_orchestrator/runtime_v2/` 已作为同仓新内核落地；当前只服务 dual-track migration，不切默认入口，也不要求改仓库/目录名
 - `remote_non_gui` 当前已具备 repo-owned probe profile 与 promotion evidence，但仍没有 runner 实现；`vm_gui` 目前仍只有 contract 枚举
 - `compatibility_projection_ref` 与 `lane` 字段名当前仍保持代码层 truth；当前已明确决定不在 repo-side parity / topology closeout 中改名，待 bounded live heterogeneous review receipt、non-host_local runner wiring、以及后续 review 稳定性都真实落地后再复评
+
+## Kernel V2 Dual-Track
+
+当前吸收的终态重构方式固定为：
+
+- 不新建新 repo
+- 不新建平行顶层 `orchestrator/` 包
+- v2 新代码统一落在 `runtime/host-orchestrator/src/host_orchestrator/runtime_v2/`
+- 双轨期状态与工件固定分面：`.ai/state/control-plane-v2.db` + `.ai/runs-v2/<run_id>/<task_id>/<attempt_id>/`
+- cutover 之前，`--run-task` 的默认入口保持 v1；只有 `runtime.active_version = v2` 后才把默认入口切到 v2
 
 ## 三层职责
 

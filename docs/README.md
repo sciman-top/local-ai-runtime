@@ -22,13 +22,14 @@
 6. [result-contract.md](D:/CODE/local-ai-dev-orchestrator/docs/specs/result-contract.md)
 7. [review-contract.md](D:/CODE/local-ai-dev-orchestrator/docs/specs/review-contract.md)
 8. [state-and-db.md](D:/CODE/local-ai-dev-orchestrator/docs/specs/state-and-db.md)
-9. [config-and-worker-profiles.md](D:/CODE/local-ai-dev-orchestrator/docs/specs/config-and-worker-profiles.md)
-10. [acceptance-and-gates.md](D:/CODE/local-ai-dev-orchestrator/docs/specs/acceptance-and-gates.md)
-11. [run-state-and-handoff.md](D:/CODE/local-ai-dev-orchestrator/docs/specs/run-state-and-handoff.md)
-12. [orchestrator-roadmap.md](D:/CODE/local-ai-dev-orchestrator/docs/roadmap/orchestrator-roadmap.md)
-13. [orchestrator-implementation-plan.md](D:/CODE/local-ai-dev-orchestrator/docs/plans/orchestrator-implementation-plan.md)
-14. [orchestrator-task-list.md](D:/CODE/local-ai-dev-orchestrator/docs/backlog/orchestrator-task-list.md)
-15. [hermes-compatibility-demotion.md](D:/CODE/local-ai-dev-orchestrator/docs/migrations/hermes-compatibility-demotion.md)
+9. [runtime-v2-kernel.md](D:/CODE/local-ai-dev-orchestrator/docs/specs/runtime-v2-kernel.md)
+10. [config-and-worker-profiles.md](D:/CODE/local-ai-dev-orchestrator/docs/specs/config-and-worker-profiles.md)
+11. [acceptance-and-gates.md](D:/CODE/local-ai-dev-orchestrator/docs/specs/acceptance-and-gates.md)
+12. [run-state-and-handoff.md](D:/CODE/local-ai-dev-orchestrator/docs/specs/run-state-and-handoff.md)
+13. [orchestrator-roadmap.md](D:/CODE/local-ai-dev-orchestrator/docs/roadmap/orchestrator-roadmap.md)
+14. [orchestrator-implementation-plan.md](D:/CODE/local-ai-dev-orchestrator/docs/plans/orchestrator-implementation-plan.md)
+15. [orchestrator-task-list.md](D:/CODE/local-ai-dev-orchestrator/docs/backlog/orchestrator-task-list.md)
+16. [hermes-compatibility-demotion.md](D:/CODE/local-ai-dev-orchestrator/docs/migrations/hermes-compatibility-demotion.md)
 
 ## 当前主线口径
 
@@ -36,7 +37,9 @@
 - 当前执行 hot path 收敛为 `Codex-first`；Hermes 保留风险编排、runtime ledger、跨执行器适配与历史基线职责，Claude 仍是可插拔 review sidecar
 - 当前代码仍在 `runtime/host-orchestrator` 上演进，不新建平行顶层包
 - `runtime/host-orchestrator` 是 `host_local` 可信运行时内核
+- `runtime/host-orchestrator/src/host_orchestrator/runtime_v2/` 已作为同仓新内核吸收进 authoritative docs；它当前是 experimental dual-track，不是默认入口，也不要求改 repo slug / 本地目录名
 - `.ai/state/control-plane.db` 是调度真源
+- `.ai/state/control-plane-v2.db` 是 v2 双轨控制面；`.ai/runs-v2/<run_id>/<task_id>/<attempt_id>/` 是 v2 尝试级工件面
 - `.ai/runs/<run_id>/<task_id>/` 是正式 evidence 面
 - `.ai/config/*.yaml` 是 repo-owned 运行时配置真源
 - repo-owned `host_local` task entrypoint 现已落地：`host-orchestrator --run-task` 与 `runtime/host-orchestrator/scripts/run-host-task.ps1` 当前会通过 worker factory 支持 `codex_sdk / codex_exec`；在现有 built-in profile 中，`local_maint` 直接走 `codex_sdk`，而 `remote_non_gui_probe / vm_gui_probe` 仍会因 non-host_local lane 在 worker 前 handoff

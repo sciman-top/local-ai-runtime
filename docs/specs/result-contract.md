@@ -18,6 +18,7 @@
 - repo-side 当前会把 explicit/default `worker_profile` 选择原因写入 `route_reason`，并在 `max_active_leases` 超额时于 worker 前 fail closed 到 handoff
 - 当前代码层字段名仍是 `lane`
 - 当前字段名仍是 `compatibility_projection_ref`
+- `runtime_v2` 的 attempt-level `result.json / gate_report.json / trace_manifest.json / closeout_bundle.json` 见 `docs/specs/runtime-v2-kernel.md`；当前默认主协议仍是本文件描述的 v1 result surface
 
 ## 必填字段
 

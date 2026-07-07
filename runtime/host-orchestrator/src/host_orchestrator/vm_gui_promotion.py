@@ -92,9 +92,12 @@ def build_vm_gui_promotion_layout(repo_root: Path, run_root: Path) -> RuntimeLay
         repo_root=repo_root,
         ai_root=ai_root,
         runs_root=ai_root / "runs",
+        runs_v2_root=ai_root / "runs-v2",
         control_plane_root=control_plane_root,
         control_plane_db=control_plane_root / "control-plane.db",
+        control_plane_v2_db=control_plane_root / "control-plane-v2.db",
         control_plane_logs=control_plane_root / "logs",
+        archive_root=run_root / "archive",
         wave_smokes=repo_root / "private-local" / "wave-smokes",
     )
 
