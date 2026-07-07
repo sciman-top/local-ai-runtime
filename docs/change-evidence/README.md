@@ -30,6 +30,7 @@
 - [20260706 AgentBridge Round-Trip Parity](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260706-agentbridge-round-trip-parity.md)
 - [20260707 Planner Handoff Minimal Slice](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260707-planner-handoff-minimal-slice.md)
 - [20260707 Live Planner Sidecar Receipt](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260707-live-planner-sidecar-receipt.md)
+- [20260707 Live Heterogeneous Review Sidecar Receipt](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260707-live-heterogeneous-review-sidecar-receipt.md)
 - [20260707 Review Adapter Minimal Slice](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260707-review-adapter-minimal-slice.md)
 - [20260707 Predicate Coverage And Force-On Overrides](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260707-predicate-coverage-and-force-on-overrides.md)
 - [20260707 Path Guard Minimal Slice](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260707-path-guard-minimal-slice.md)
@@ -70,6 +71,7 @@
 - `P3-T05` 的 graded-autonomy runtime ledger 已落地：`dispatch_state.json`、`result.json`、以及 `runtime_tasks` 现在共享 `attempt / next_action / cleanup_owner / cleanup_status / status_reason / dispatch_state_ref`
 - `P3-T06` 的 repo-side lifecycle ops 已落地：`task_lifecycle.py` 与 CLI 现在可显式 materialize `stale / cancelled / resumed`，`retry` 通过 `attempt + retry_rewind` 收口
 - `P4-T04` 的 repo-side structured receipts 已落地：live planner-sidecar 路径现在会写 `planner_result.json`，review-gated 路径会写 `review_result.json`，当前 runtime outcome 会写 `closeout_bundle.json`，并由 `result.json / dispatch_state.json / evidence_index.json` 串起引用
+- bounded live heterogeneous review sidecar receipt 已落地：配置 `review_worker_profile = claude_glm_review` 的 host_local review path 当前会 materialize live `review_result.json`，缺少 bounded worker output summary 或 sidecar 失败时仍 fail closed 回 repo-side blocking receipt
 - 一套 repo-owned 的 `主控 + 子代理 + worktree` 操作资产已落盘，可直接复用 master / explorer / worker / reviewer prompt 与 manifest / dispatch_state / closeout bundle 模板
 - operator 侧协作资产现已具备 repo-owned 自检：pytest 会校验 manifest、dispatch_state、review_result、closeout bundle 示例与 schema 关键字段不漂移
 - 官方研究与社区研究都已落成 repo-owned 证据：结论一致指向“保留本仓 canonical contract，并优先补 path guard / durable ledger / closeout receipt，而不是继续加长 prompt”
@@ -84,4 +86,4 @@
 - `P6-T03` 的 repo-side `vm_gui` conditional promotion evidence 已完成：current summary 明确固定了 default GUI-only handoff 与 explicit `vm_gui_probe` fail-closed handoff，当前仍未落 vm runner 或真实 GUI-only workload acceptance
 - repo-owned `host_local` task entrypoint 与 worker factory 已完成：`host-orchestrator --run-task` / `run-host-task.ps1` 当前已直接消费 `local_maint` 的 `codex_sdk` 路径，并在结构上支持 `codex_exec`；built-in `codex_exec` profiles 仍保持 non-host-local handoff，而 `scripted / gpt54_direct / claude_glm` 继续 live task execution fail-closed
 - `E-T01` 的字段名决策也已固定：`compatibility_projection_ref` 与 `lane` 继续保持现名，不在当前 repo-side parity / topology closeout 中改名，待 live heterogeneous review sidecar 与 non-host_local runner 真接线后再复评
-- 当前预期 next action 仍是粗粒度的 `promote_phase1_execution`；repo-side planner/review/path-guard/worktree-manager/cleanup-manager/runtime-ledger/lifecycle/receipt、`P5-T01` route/quota、`P5-T02` deterministic multi-worker simulation、`P5-T03` remote_non_gui promotion evidence、`P6-T01` / `P6-T02` Hermes parity / historical snapshot mapping、`P6-T03` vm_gui conditional promotion evidence、repo-owned `host_local` task entrypoint / worker factory、以及 `E-T01` 字段名决策 已完成，下一 open set 转到 live heterogeneous review sidecar 与 non-host_local runner wiring
+- 当前预期 next action 仍是粗粒度的 `promote_phase1_execution`；repo-side planner/review/path-guard/worktree-manager/cleanup-manager/runtime-ledger/lifecycle/receipt、`P5-T01` route/quota、`P5-T02` deterministic multi-worker simulation、`P5-T03` remote_non_gui promotion evidence、`P6-T01` / `P6-T02` Hermes parity / historical snapshot mapping、`P6-T03` vm_gui conditional promotion evidence、repo-owned `host_local` task entrypoint / worker factory、bounded live heterogeneous review sidecar receipt closeout、以及 `E-T01` 字段名决策 已完成，下一 open set 收窄到 non-host_local runner wiring 与后续 review hardening

@@ -4,7 +4,7 @@
 - 当前主产品线：`Hermes -> AgentBridge -> Codex`
 - 历史仓库 slug 与当前本地工作目录仍为 `local-ai-dev-orchestrator`（`D:\CODE\local-ai-dev-orchestrator`）；本次只统一项目展示名，不执行目录迁移。
 
-Local AI Runtime is a Windows-first local orchestration runtime for audited AI coding work. The current mainline keeps a strict three-layer product narrative, retains canonical normalization plus `result.json` as formal evidence, writes `.ai/runs/<run_id>/<task_id>/dispatch_state.json` as the runtime ledger companion, now materializes repo-side lifecycle ops for `stale / cancelled / resumed / retry`, writes `planner_result.json` on live planner-sidecar paths, writes `review_result.json` on blocking review paths and `closeout_bundle.json` on current runtime outcomes, and treats AgentBridge markdown output as the current compatibility projection while allowing compliant AgentBridge markdown tasks to enter `host_local` through a fail-closed intake adapter.
+Local AI Runtime is a Windows-first local orchestration runtime for audited AI coding work. The current mainline keeps a strict three-layer product narrative, retains canonical normalization plus `result.json` as formal evidence, writes `.ai/runs/<run_id>/<task_id>/dispatch_state.json` as the runtime ledger companion, now materializes repo-side lifecycle ops for `stale / cancelled / resumed / retry`, writes `planner_result.json` on live planner-sidecar paths, writes `review_result.json` on review-gated paths, writes `closeout_bundle.json` on current runtime outcomes, and treats AgentBridge markdown output as the current compatibility projection while allowing compliant AgentBridge markdown tasks to enter `host_local` through a fail-closed intake adapter.
 
 如果你是第一次进入这个仓库，先看这三处：
 
@@ -38,14 +38,14 @@ Local AI Runtime is a Windows-first local orchestration runtime for audited AI c
 - `P4-T02` 的 repo-side review gate 已落地；低风险任务默认自动推进，medium/high/critical 风险、policy surface、以及 force-on review 仍会停在 `needs_review`
 - `P3-T05` 的 graded-autonomy runtime ledger 已落地；`result.json` 现在会盖章 `cleanup_owner / status_reason / dispatch_state_ref`
 - `P3-T06` 的 repo-side lifecycle ops 已落地；`task_lifecycle.py` 与 CLI 现在可显式 materialize `stale / cancelled / resumed`，`retry` 通过 `attempt + retry_rewind` 收口
-- `P4-T04` 的 repo-side structured receipts 已落地；live planner-sidecar 路径现在会写 `planner_result.json`，review-gated 路径会写 `review_result.json`，当前 runtime outcome 会写 `closeout_bundle.json`
+- `P4-T04` 的 repo-side structured receipts 已落地；live planner-sidecar 路径现在会写 `planner_result.json`，review-gated 路径会写 `review_result.json`，当前 runtime outcome 会写 `closeout_bundle.json`；配置 `review_worker_profile = claude_glm_review` 的 host_local review path 当前可 materialize bounded live heterogeneous review receipt
 - `P5-T01` 的 repo-side `leases / route / quota` 收口已落地；explicit/default `worker_profile` 现在会 materialize `route_reason`，selected profile 的 `max_active_leases` 超额时会在 worker 前 handoff
 - `P5-T02` 的 deterministic multi-worker simulation 已落地；当前可复放 `retry / route / quota / review-handoff` summary，但这仍不等于 live 多 worker scheduler
 - `P5-T03` 的 `remote_non_gui` promotion evidence 已落地；repo-owned `remote_non_gui_probe` 现在可被显式选中，但 `host_local` 只会 fail closed 到 handoff 并留下 promotion evidence，不会伪装成 remote runner 已执行
 - `P6-T01` / `P6-T02` 的 repo-side Hermes parity / historical snapshot mapping verifier 已落地；`run-hermes-parity.ps1` 现在会把 certified baseline doc、current known-good / boundary anchors、snapshot contract、known-good validator、以及 env-sensitive bring-up drift 收进同一 summary，但这仍不等于 `platform compatibility green` 或 `live accepted`
 - `P6-T03` 的 repo-side `vm_gui` conditional promotion evidence 已落地；默认 GUI-only 请求现在会在 `host_local` 上因 `execution_lane=vm_gui; requires_gui=true` handoff，显式 `vm_gui_probe` 也只会 fail closed 到 `runner_not_wired`，不会伪装成 vm runner 已执行
-- `compatibility_projection_ref` 与 `lane` 字段名当前明确继续保留；待 live heterogeneous review sidecar 与 non-host_local runner 真接线后再复评是否迁移
-- 当前 `host_local` task entrypoint 虽已接线真实 worker factory，且 live planner sidecar receipt 已能在 codex-backed host_local profile 上 materialize，但这仍不等于 live heterogeneous review sidecar、non-host_local runner、`platform compatibility green`、或 `live accepted`
+- `compatibility_projection_ref` 与 `lane` 字段名当前明确继续保留；待 non-host_local runner wiring 与后续 review 稳定性都真实落地后再复评是否迁移
+- 当前 `host_local` task entrypoint 虽已接线真实 worker factory，且 live planner sidecar receipt 与 bounded live heterogeneous review sidecar receipt 已能在 configured host_local path 上 materialize，但这仍不等于 live `claude_glm` primary task execution、non-host_local runner、`platform compatibility green`、或 `live accepted`
 - `worktree` 当前只代表写入隔离，不代表 memory/provider/session 隔离
 
 ## Operator Assets

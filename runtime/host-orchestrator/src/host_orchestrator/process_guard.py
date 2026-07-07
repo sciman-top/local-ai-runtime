@@ -68,6 +68,8 @@ def run_guarded_process(
     *,
     timeout_seconds: float | None = None,
     process_tree_killer: ProcessTreeKiller | None = None,
+    encoding: str | None = None,
+    errors: str | None = None,
 ) -> GuardedCommandResult:
     killer = process_tree_killer or SystemProcessTreeKiller()
     popen_kwargs: dict[str, object] = {
@@ -76,6 +78,10 @@ def run_guarded_process(
         "stdout": subprocess.PIPE,
         "stderr": subprocess.PIPE,
     }
+    if encoding is not None:
+        popen_kwargs["encoding"] = encoding
+    if errors is not None:
+        popen_kwargs["errors"] = errors
     if os.name == "nt":
         popen_kwargs["creationflags"] = getattr(subprocess, "CREATE_NEW_PROCESS_GROUP", 0)
     else:

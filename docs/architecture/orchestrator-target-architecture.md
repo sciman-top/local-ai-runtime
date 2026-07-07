@@ -25,7 +25,7 @@
 - `.ai/runs/<run_id>/<task_id>/result.json` 仍是正式结果主面
 - `AgentBridge results/*.md` 当前仍是 compatibility projection
 - `remote_non_gui` 当前已具备 repo-owned probe profile 与 promotion evidence，但仍没有 runner 实现；`vm_gui` 目前仍只有 contract 枚举
-- `compatibility_projection_ref` 与 `lane` 字段名当前仍保持代码层 truth；当前已明确决定不在 repo-side parity / topology closeout 中改名，待 live heterogeneous review sidecar 与 non-host_local runner 真接线后再复评
+- `compatibility_projection_ref` 与 `lane` 字段名当前仍保持代码层 truth；当前已明确决定不在 repo-side parity / topology closeout 中改名，待 bounded live heterogeneous review receipt、non-host_local runner wiring、以及后续 review 稳定性都真实落地后再复评
 
 ## 三层职责
 

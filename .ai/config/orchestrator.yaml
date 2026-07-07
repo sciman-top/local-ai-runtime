@@ -1,5 +1,6 @@
 run:
   default_worker_profile: local_maint
+  review_worker_profile: claude_glm_review
   run_id_prefix: host-local
 
 verification:

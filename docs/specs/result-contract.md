@@ -12,7 +12,7 @@
 - repo-side 当前已验证 `AgentBridge/tasks/*.md -> host_local -> result.json -> AgentBridge/results/*.md` 的 projection parity 闭环
 - repo-side 当前已允许 planner-gated 任务在 live planner 未接线或只写 planner receipt 时写出 `waiting_handoff` 正式结果
 - repo-side 当前已允许 review-gated 任务在 worker / verification 完成后写出 `needs_review` 正式结果
-- repo-side 当前会在 live planner-sidecar 路径写出 `planner_result.json` receipt，在 review-gated 路径写出 `review_result.json` blocking receipt，并在当前 planner/review/completed outcome 写出 `closeout_bundle.json`
+- repo-side 当前会在 live planner-sidecar 路径写出 `planner_result.json` receipt，在 review-gated 路径写出 `review_result.json` receipt，并在当前 planner/review/completed outcome 写出 `closeout_bundle.json`；配置 `review_worker_profile = claude_glm_review` 且具备 bounded primary worker output summary 时，`review_result.json` 当前会是 live heterogeneous receipt，否则仍是 repo-side blocking fallback receipt
 - repo-side 当前已让 `cleanup_status` 反映最小 cleanup truth：repo-root inline task 为 `inline_only`；runtime-managed clean isolated worktree 为 `cleaned`；需要人工保留的 isolated worktree 继续保持 `deferred`；`git worktree remove` 失败时写 `cleanup_failed`
 - 低风险写任务当前可在无额外阻断 review 的情况下直接完成；medium/high/critical 风险、policy surface、或 force-on review 仍会停在 `needs_review`
 - repo-side 当前会把 explicit/default `worker_profile` 选择原因写入 `route_reason`，并在 `max_active_leases` 超额时于 worker 前 fail closed 到 handoff
@@ -45,7 +45,7 @@
 | `status_reason` | string | 结构化状态原因文本 |
 | `dispatch_state_ref` | string | `dispatch_state.json` 相对路径 |
 | `planner_result_ref` | string \| null | `planner_result.json` 相对路径；当前仅在 live planner sidecar materialize 时写入 |
-| `review_result_ref` | string \| null | `review_result.json` 相对路径；当前仅在 repo-side review gate materialize 时写入 |
+| `review_result_ref` | string \| null | `review_result.json` 相对路径；当前在 review-gated 路径写入，live heterogeneous receipt 与 repo-side fallback receipt 都通过该字段引用 |
 | `closeout_bundle_ref` | string \| null | `closeout_bundle.json` 相对路径 |
 | `artifacts` | string[] | 工件相对路径 |
 | `compatibility_projection_ref` | string \| null | markdown projection 相对路径 |
@@ -58,13 +58,13 @@
 
 - AgentBridge result / review 可以与 canonical result surface 做更完整的稳定 round-trip
 - verification 输出由真实 gate executor 驱动
-- 只有当 live heterogeneous review sidecar 与 non-host_local runner 真接线后，才结合 parity / runner 的真实稳定性重新评估 schema rename
+- 只有当 bounded live heterogeneous review receipt 与 non-host_local runner wiring 都稳定后，才结合 parity / runner 的真实稳定性重新评估 schema rename
 
 迁移窗口：
 
 - 当前已明确决定继续保留 `compatibility_projection_ref` 现名，不在当前 repo-side parity / topology closeout 中改名
 - 当前已明确决定继续保留 `lane` 现名，不提前改成 `execution_lane`
-- 只有在 live heterogeneous review sidecar 与 non-host_local runner 真接线后，才重新评估是否需要 rename
+- 只有在 bounded live heterogeneous review receipt 与 non-host_local runner wiring 都稳定后，才重新评估是否需要 rename
 - truth reset 只允许补充说明，不允许把这些改名写成当前事实
 
 ## Dispatch State Ledger

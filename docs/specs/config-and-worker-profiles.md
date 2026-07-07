@@ -19,6 +19,7 @@
 以下值属于当前仓的正式契约：
 
 - `default_worker_profile`
+- `review_worker_profile`
 - `run_id_prefix`
 - `projection_required`
 - `worker_profile` 名称
@@ -53,6 +54,7 @@
 ```yaml
 run:
   default_worker_profile: local_maint
+  review_worker_profile: claude_glm_review
   run_id_prefix: host-local
 
 acceptance:
@@ -62,6 +64,7 @@ acceptance:
 语义：
 
 - `default_worker_profile`：当 canonical task 未显式指定具名 profile 时使用
+- `review_worker_profile`：当 review-gated host_local 路径需要 live heterogeneous receipt 时使用；当前只消费 bounded runtime summary，不代表 primary task execution
 - `run_id_prefix`：默认 `run_id` 前缀
 - `projection_required`：是否要求写出 compatibility markdown projection
 
@@ -86,6 +89,7 @@ acceptance:
 | profile | 用途 | 边界 |
 | --- | --- | --- |
 | `local_maint` | 当前 Phase 1 host-local 默认 profile | repo-side 与 live SDK 共用入口 |
+| `claude_glm_review` | 当前 bounded live heterogeneous review receipt profile | 只 materialize host_local review receipt，不得伪装成 live task execution 或 non-host_local runner |
 | `wave1_smoke` | Wave 1 deterministic smoke profile | 只允许 repo-side mock，不得宣称 live accepted |
 | `remote_non_gui_probe` | repo-side `remote_non_gui` promotion evidence profile | 只证明 lane promotion / fail-closed handoff，不得宣称 remote runner 已执行 |
 | `vm_gui_probe` | repo-side `vm_gui` conditional promotion evidence profile | 只证明 GUI-only 条件晋升 / fail-closed handoff，不得宣称 vm runner 已执行 |
@@ -111,13 +115,14 @@ acceptance:
 
 1. canonical task 若显式指定 `worker_profile`，必须命中 `workers.yaml`
 2. 未显式指定时，使用 `orchestrator.yaml:run.default_worker_profile`
-3. `requires_gui = true` 时，只能选择 `lane = vm_gui` 的 profile
-4. `requires_network = true` 时，只能选择 `network_profile != off` 的 profile
-5. `risk_level in {high, critical}` 且 `write_access = true` 时，不允许隐式提升权限；必须通过 repo-owned profile 明确声明
-6. selected `worker_profile` 的 active lease 数超过 `max_active_leases` 时，runtime 必须在 worker 前 fail closed 到 handoff，而不是伪装成多 worker 已调度
-7. `wave1_smoke` 这类 mock profile 只能证明 `mock green`，不能满足 `live probe ready` 或 `live accepted`
-8. 默认模型策略应当是 role-aware / risk-aware / lane-aware，而不是把所有子代理固定为同一模型与同一 reasoning effort
-9. 当 `HostLocalRunner` 选中的 profile `lane != host_local` 时，当前必须 fail closed 到 handoff，并把 non-host-local promotion 只写成 repo-side evidence，不得伪装成 remote/vm runner 已执行
+3. `orchestrator.yaml:run.review_worker_profile` 若存在，必须命中 `workers.yaml`，且当前只在 review-gated `host_local` 路径上消费
+4. `requires_gui = true` 时，只能选择 `lane = vm_gui` 的 profile
+5. `requires_network = true` 时，只能选择 `network_profile != off` 的 profile
+6. `risk_level in {high, critical}` 且 `write_access = true` 时，不允许隐式提升权限；必须通过 repo-owned profile 明确声明
+7. selected `worker_profile` 的 active lease 数超过 `max_active_leases` 时，runtime 必须在 worker 前 fail closed 到 handoff，而不是伪装成多 worker 已调度
+8. `wave1_smoke` 这类 mock profile 只能证明 `mock green`，不能满足 `live probe ready` 或 `live accepted`
+9. 默认模型策略应当是 role-aware / risk-aware / lane-aware，而不是把所有子代理固定为同一模型与同一 reasoning effort
+10. 当 `HostLocalRunner` 选中的 profile `lane != host_local` 时，当前必须 fail closed 到 handoff，并把 non-host-local promotion 只写成 repo-side evidence，不得伪装成 remote/vm runner 已执行
 
 ## Mapping To Codex Runtime
 
@@ -135,7 +140,9 @@ repo contract 到当前执行实现的映射：
 - 当前 repo-owned live task entrypoint 会通过 worker factory 物化 `worker_kind`：
   - `codex_sdk` -> `CodexSdkWorker`
   - `codex_exec` -> `CodexExecFallbackWorker`
-  - `scripted / gpt54_direct / claude_glm` 当前仍对 live task execution fail closed，不得伪装成已接线
+  - `claude_glm` -> `ClaudeCodeStructuredWorker`（当前只用于 bounded live heterogeneous review receipt）
+  - `scripted / gpt54_direct` 当前仍对 live task execution fail closed，不得伪装成已接线
+  - `claude_glm` 当前仍对 primary live task execution fail closed，不得把 review receipt path 写成 worker execution 已接线
 
 ## impl_pack Absorption
 

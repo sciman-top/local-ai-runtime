@@ -45,6 +45,7 @@ class WorkerProfile:
 @dataclass(frozen=True)
 class OrchestratorSettings:
     default_worker_profile: str
+    review_worker_profile: str | None
     run_id_prefix: str
     projection_required: bool
 
@@ -109,11 +110,17 @@ def load_runtime_config(repo_root: Path) -> RuntimeConfigBundle:
         raise RuntimeConfigError(
             "orchestrator.yaml:run.default_worker_profile must reference a defined worker profile"
         )
+    review_worker_profile = _optional_string(run_payload, "review_worker_profile", "orchestrator.yaml")
+    if review_worker_profile is not None and review_worker_profile not in workers:
+        raise RuntimeConfigError(
+            "orchestrator.yaml:run.review_worker_profile must reference a defined worker profile"
+        )
 
     return RuntimeConfigBundle(
         repo_root=repo_root,
         orchestrator=OrchestratorSettings(
             default_worker_profile=default_worker_profile,
+            review_worker_profile=review_worker_profile,
             run_id_prefix=_require_string(run_payload, "run_id_prefix", "orchestrator.yaml"),
             projection_required=bool(acceptance_payload.get("projection_required", True)),
         ),
@@ -156,6 +163,15 @@ def _require_string(payload: dict[str, Any], key: str, source_name: str) -> str:
     value = payload.get(key)
     if not isinstance(value, str) or not value.strip():
         raise RuntimeConfigError(f"{source_name}:{key} must be a non-empty string")
+    return value.strip()
+
+
+def _optional_string(payload: dict[str, Any], key: str, source_name: str) -> str | None:
+    value = payload.get(key)
+    if value is None:
+        return None
+    if not isinstance(value, str) or not value.strip():
+        raise RuntimeConfigError(f"{source_name}:{key} must be a non-empty string when present")
     return value.strip()
 
 

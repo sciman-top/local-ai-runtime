@@ -7,10 +7,11 @@
 ## 当前事实边界
 
 - 当前 repo-side review gate 发生在 worker + verification 之后；命中时正式结果停在 `needs_review`
-- 当前 live `Claude Code + GLM-5.2` reviewer 仍未接线；本文件先固定 review receipt 形状
-- 当前 repo-side review gate 已会物化 `review_result.json` blocking receipt；它表达的是 repo-side gate 为什么阻断，而不是 live heterogeneous reviewer 已执行
+- 当前 live `Claude Code + GLM-5.2` reviewer 已可在配置 `review_worker_profile = claude_glm_review` 的 host_local review path 上 materialize bounded blocking receipt；它基于 runtime status + primary worker output summary 运行，并仍把正式结果停在 `needs_review`
+- `review_result.json` 当前可能是 live heterogeneous reviewer receipt，也可能是在 sidecar 缺 summary / 失败 / 返回无效 payload 时的 repo-side blocking fallback receipt；fallback receipt 只表达 repo-side gate 为什么阻断
 - 低风险写任务当前默认自动推进，不因 `write_access = true` 单独触发 blocking review
 - medium/high/critical 风险、`touches_policy_surface = true`、以及 `user_forced_review = true` 当前都会阻断下游 flow
+- 当前 live review sidecar 在 isolated temp cwd 中以 `--bare --no-session-persistence` 运行；它不等于 full diff-aware review、non-host_local runner、或 `live accepted`
 
 ## 必填字段
 

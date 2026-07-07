@@ -119,7 +119,7 @@
   - 后置控制面扩展
 - Boundary:
   - 当前已明确决定继续保留 `compatibility_projection_ref` 与 `lane` 现名，不在当前 repo-side parity / topology closeout 中做字段改名
-  - 只有当 live heterogeneous review sidecar 与 non-host_local runner 真接线后，才重新评估是否需要 schema rename
+  - 只有当 bounded live heterogeneous review receipt、non-host_local runner wiring、以及后续 review 稳定性都真实落地后，才重新评估是否需要 schema rename
 
 ### Phase F — Topology Expansion
 
@@ -161,6 +161,6 @@
 - `P6-T01` Hermes parity closeout：completed（repo-owned verifier 现已把 certified baseline doc、current known-good / boundary anchors、snapshot contract、known-good validator、以及 historical container lifecycle boundary 收进同一 summary）
 - `P6-T02` historical snapshot mapping：completed（current known-good / boundary anchor 已在 implementation-status、handoff summary、以及 checklist 三面一致）
 - `P6-T03` vm_gui conditional promotion evidence：completed（repo-owned `vm_gui_probe` profile、GUI-only handoff、以及显式 vm lane fail-closed summary 已收口）
-- next: `live heterogeneous review sidecar + non-host_local runner wiring`（branch deletion 仍不自动化；真实 GUI-only workload acceptance 仍未开始）
+- next: `non-host_local runner wiring + follow-on review hardening`（bounded live heterogeneous review receipt 已落地；branch deletion 仍不自动化；真实 GUI-only workload acceptance 仍未开始）
 
 其中 `planner/review` 继续保留在 repo `Phase 4`，不并回容器或资源 phase。

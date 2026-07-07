@@ -21,6 +21,17 @@ workers:
     projection_mode: compatibility_dual_write
     max_active_leases: 1
 
+  claude_glm_review:
+    worker_kind: claude_glm
+    lane: host_local
+    model: glm-5.2
+    provider: claude-code-bigmodel-glm
+    sandbox_profile: read_only
+    approval_policy: never
+    network_profile: "off"
+    projection_mode: compatibility_dual_write
+    max_active_leases: 1
+
   remote_non_gui_probe:
     worker_kind: codex_exec
     lane: remote_non_gui

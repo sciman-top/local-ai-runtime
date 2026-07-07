@@ -509,6 +509,90 @@ def test_host_local_runner_marks_review_required_tasks_as_needs_review_after_wor
     assert review_payload["next_action"] == REVIEW_NEXT_ACTION
 
 
+def test_host_local_runner_materializes_live_heterogeneous_review_receipt(
+    tmp_path: Path,
+) -> None:
+    from host_orchestrator.canonical_task import write_task
+
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir()
+    (repo_root / "AGENTS.md").write_text("stub", encoding="utf-8")
+    copy_runtime_config(repo_root)
+
+    task_id = "TASK-20260708-live-review"
+    task_path = repo_root / "tasks" / f"{task_id}.json"
+    payload = canonical_task_payload(task_id)
+    payload["risk_level"] = "medium"
+    payload["write_access"] = True
+    write_task(task_path, payload)
+
+    class FakePrimaryWorker:
+        def run(self, request: WorkerRequest) -> WorkerResult:
+            return WorkerResult(
+                final_response=(
+                    "Change summary: host_local.py wires a live review sidecar receipt after worker+verification; "
+                    "worker_factory.py adds a claude_glm review-sidecar builder only; "
+                    "test_planner_adapter.py expects a live review_result.json receipt while final status stays needs_review."
+                ),
+                raw_result={"kind": "primary"},
+            )
+
+    class FakeReviewWorker:
+        def run(self, request: WorkerRequest) -> WorkerResult:
+            assert "Return a blocking review receipt for this bounded runtime slice." in request.prompt
+            assert "Change summary: host_local.py wires a live review sidecar receipt" in request.prompt
+            return WorkerResult(
+                final_response=json.dumps(
+                    {
+                        "reviewer_kind": "claude_glm",
+                        "review_mode": "blocking",
+                        "findings": [
+                            {
+                                "severity": "medium",
+                                "category": "heterogeneous_review",
+                                "title": "Live review wants a second look",
+                                "detail": "The heterogeneous reviewer wants an operator to inspect the change before downstream use.",
+                                "suggested_fix": "Inspect the live review receipt before proceeding.",
+                            }
+                        ],
+                        "blocking_reasons": [
+                            "risk_level=medium",
+                            "write_access=true",
+                            "heterogeneous_second_opinion_required",
+                        ],
+                        "missing_tests": [],
+                        "recommended_action": "revise",
+                        "summary": "Live heterogeneous reviewer recorded a blocking second opinion.",
+                    }
+                ),
+                raw_result={"kind": "review"},
+            )
+
+    runner = HostLocalRunner(
+        HostLocalConfig(
+            workspace_root=repo_root,
+            layout=RuntimeLayout.from_repo_root(repo_root),
+            agentbridge_root=repo_root / "AgentBridge",
+            run_id="live-review-test",
+        ),
+        worker=FakePrimaryWorker(),
+        review_worker=FakeReviewWorker(),
+    )
+
+    result_path = runner.run_task(task_path)
+    result_payload = json.loads(result_path.read_text(encoding="utf-8"))
+    review_result_payload = json.loads((result_path.parent / "review_result.json").read_text(encoding="utf-8"))
+
+    assert result_payload["status"] == "needs_review"
+    assert result_payload["next_action"] == REVIEW_NEXT_ACTION
+    assert result_payload["review_result_ref"] == f".ai/runs/live-review-test/{task_id}/review_result.json"
+    assert review_result_payload["reviewer_kind"] == "claude_glm"
+    assert review_result_payload["review_mode"] == "blocking"
+    assert review_result_payload["model"] == "glm-5.2"
+    assert "heterogeneous_second_opinion_required" in review_result_payload["blocking_reasons"]
+    assert review_result_payload["findings"][0]["category"] == "heterogeneous_review"
+
+
 def test_policy_surface_tasks_also_stop_at_needs_review(tmp_path: Path) -> None:
     from host_orchestrator.canonical_task import write_task
 

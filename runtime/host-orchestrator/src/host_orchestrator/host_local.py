@@ -5,11 +5,13 @@ from datetime import datetime, timedelta, timezone
 from fnmatch import fnmatchcase
 import json
 from pathlib import Path
+import tempfile
 from typing import Any
 
 from openai_codex import Sandbox
 
 from host_orchestrator import agentbridge, db
+from host_orchestrator.agent_work_assets import validate_review_result_payload
 from host_orchestrator.canonical_result import (
     build_run_id,
     refresh_evidence_index,
@@ -85,10 +87,12 @@ class HostLocalRunner:
         config: HostLocalConfig,
         worker: WorkerLike | None = None,
         *,
+        review_worker: WorkerLike | None = None,
         worker_factory: WorkerBuilder | None = None,
     ) -> None:
         self._config = config
         self._worker = worker
+        self._review_worker = review_worker
         self._worker_factory = worker_factory
         self._runtime_config = load_runtime_config(config.layout.repo_root)
 
@@ -648,11 +652,13 @@ class HostLocalRunner:
             )
             review_result_ref: str | None = None
             if review_required:
-                review_result_payload = self._build_review_result_payload(
+                review_result_payload = self._materialize_review_result_payload(
                     task=task,
-                    worker_profile=worker_profile,
+                    primary_worker_profile=worker_profile,
                     artifacts=result_bundle.artifacts,
                     review_reasons=review_reasons,
+                    result_payload=result_bundle.result_payload,
+                    verification_payload=verification_payload,
                 )
                 write_review_result_artifact(result_bundle.artifacts, review_result_payload)
                 review_result_ref = self._relative_to_repo(result_bundle.artifacts.review_result)
@@ -1166,6 +1172,212 @@ class HostLocalRunner:
             ],
         }
 
+    def _materialize_review_result_payload(
+        self,
+        *,
+        task: CanonicalTask,
+        primary_worker_profile: WorkerProfile,
+        artifacts: Any,
+        review_reasons: list[str],
+        result_payload: dict[str, Any],
+        verification_payload: dict[str, Any],
+    ) -> dict[str, Any]:
+        review_worker_profile = self._resolve_review_worker_profile()
+        if review_worker_profile is None:
+            return self._build_review_result_payload(
+                task=task,
+                worker_profile=primary_worker_profile,
+                artifacts=artifacts,
+                review_reasons=review_reasons,
+            )
+
+        review_worker = self._resolve_review_worker(review_worker_profile)
+        if review_worker is None:
+            return self._build_review_result_payload(
+                task=task,
+                worker_profile=primary_worker_profile,
+                artifacts=artifacts,
+                review_reasons=review_reasons,
+            )
+
+        worker_output_excerpt = self._review_target_excerpt(artifacts)
+        if not worker_output_excerpt:
+            fallback_payload = self._build_review_result_payload(
+                task=task,
+                worker_profile=primary_worker_profile,
+                artifacts=artifacts,
+                review_reasons=review_reasons + ["live_review_sidecar_missing_worker_output"],
+            )
+            fallback_payload["findings"][0]["detail"] += (
+                " The live heterogeneous review sidecar requires a bounded primary worker output summary and the runtime fell back to the repo-side blocking receipt."
+            )
+            return fallback_payload
+
+        try:
+            with tempfile.TemporaryDirectory(prefix="local-ai-runtime-review-") as review_cwd:
+                review_worker_result = review_worker.run(
+                    WorkerRequest(
+                        prompt=self._review_prompt(
+                            task=task,
+                            primary_worker_profile=primary_worker_profile,
+                            review_worker_profile=review_worker_profile,
+                            review_reasons=review_reasons,
+                            result_payload=result_payload,
+                            verification_payload=verification_payload,
+                            worker_output_excerpt=worker_output_excerpt,
+                        ),
+                        cwd=Path(review_cwd),
+                        model=review_worker_profile.model,
+                        sandbox=review_worker_profile.sandbox(),
+                        approval_mode=review_worker_profile.approval_mode(),
+                    )
+                )
+
+            return self._build_live_review_result_payload(
+                task=task,
+                review_worker_profile=review_worker_profile,
+                artifacts=artifacts,
+                review_reasons=review_reasons,
+                review_worker_result=review_worker_result,
+            )
+        except Exception as exc:
+            fallback_payload = self._build_review_result_payload(
+                task=task,
+                worker_profile=primary_worker_profile,
+                artifacts=artifacts,
+                review_reasons=review_reasons + [f"live_review_sidecar_failed={type(exc).__name__}"],
+            )
+            fallback_payload["findings"][0]["detail"] += (
+                " The live heterogeneous review sidecar did not materialize and the runtime fell back to the repo-side blocking receipt."
+            )
+            return fallback_payload
+
+    def _build_live_review_result_payload(
+        self,
+        *,
+        task: CanonicalTask,
+        review_worker_profile: WorkerProfile,
+        artifacts: Any,
+        review_reasons: list[str],
+        review_worker_result: WorkerResult,
+    ) -> dict[str, Any]:
+        payload = self._parse_review_sidecar_response(review_worker_result)
+        reviewer_kind = str(payload.get("reviewer_kind") or "").strip() or "claude_glm"
+        review_mode = str(payload.get("review_mode") or "").strip() or "blocking"
+        recommended_action = str(payload.get("recommended_action") or "").strip() or "revise"
+        findings = payload.get("findings")
+        if not isinstance(findings, list):
+            findings = []
+        blocking_reasons = payload.get("blocking_reasons")
+        if not isinstance(blocking_reasons, list):
+            blocking_reasons = list(review_reasons)
+        missing_tests = payload.get("missing_tests")
+        if not isinstance(missing_tests, list):
+            missing_tests = []
+        summary = str(payload.get("summary") or "").strip()
+        if summary:
+            findings.append(
+                {
+                    "severity": task.risk_level,
+                    "category": "review_summary",
+                    "title": "Live heterogeneous review summary",
+                    "detail": summary,
+                    "suggested_fix": "Resolve the heterogeneous review findings before downstream use.",
+                }
+            )
+
+        review_payload = {
+            "task_id": task.task_id,
+            "reviewer_kind": reviewer_kind,
+            "review_mode": review_mode,
+            "model": review_worker_profile.model,
+            "risk": task.risk_level,
+            "findings": findings,
+            "blocking_reasons": [str(item) for item in blocking_reasons if isinstance(item, str)],
+            "missing_tests": [str(item) for item in missing_tests if isinstance(item, str)],
+            "recommended_action": recommended_action,
+            "source_evidence_refs": [
+                self._relative_to_repo(artifacts.result_json),
+                self._relative_to_repo(artifacts.dispatch_state),
+                self._relative_to_repo(artifacts.verification_summary),
+                self._relative_to_repo(artifacts.cost_summary),
+            ],
+        }
+        validate_review_result_payload(review_payload)
+        return review_payload
+
+    @staticmethod
+    def _parse_review_sidecar_response(
+        review_worker_result: WorkerResult,
+    ) -> dict[str, Any]:
+        text = (review_worker_result.final_response or "").strip()
+        if not text:
+            raise RuntimeError("review sidecar returned no structured output")
+        payload = json.loads(text)
+        if not isinstance(payload, dict):
+            raise RuntimeError("review sidecar returned a non-object payload")
+        return payload
+
+    def _review_prompt(
+        self,
+        *,
+        task: CanonicalTask,
+        primary_worker_profile: WorkerProfile,
+        review_worker_profile: WorkerProfile,
+        review_reasons: list[str],
+        result_payload: dict[str, Any],
+        verification_payload: dict[str, Any],
+        worker_output_excerpt: str,
+    ) -> str:
+        verification_gates = "; ".join(
+            f"{entry.get('gate')}={entry.get('status')}"
+            for entry in verification_payload.get("commands_run", [])
+            if isinstance(entry, dict)
+        )
+        review_reasons_text = ", ".join(review_reasons) if review_reasons else "none"
+        verification_gates_text = verification_gates or "none"
+        status_text = (
+            f"worker_status={result_payload.get('status')}; "
+            f"termination_reason={result_payload.get('termination_reason')}; "
+            f"next_action={result_payload.get('next_action')}; "
+            f"verification_status={verification_payload.get('status')}; "
+            f"verification_gates={verification_gates_text}"
+        )
+        return " ".join(
+            [
+                "Return a blocking review receipt for this bounded runtime slice.",
+                (
+                    f"Use reviewer_kind {review_worker_profile.worker_kind}, one {task.risk_level} "
+                    "heterogeneous_review finding, blocking_reasons "
+                    f"{review_reasons_text}, missing_tests empty, recommended_action revise, and a short summary."
+                ),
+                (
+                    f"Runtime status: {status_text}. Primary worker profile={primary_worker_profile.name}; "
+                    f"review worker profile={review_worker_profile.name}."
+                ),
+                f"Review target summary: {worker_output_excerpt}",
+                "Base the finding only on the provided runtime status and review target summary. Do not invent unrelated files, services, or requirements.",
+                "Do not ask questions.",
+            ]
+        )
+
+    @staticmethod
+    def _review_target_excerpt(
+        artifacts: Any,
+        *,
+        max_chars: int = 1200,
+    ) -> str:
+        worker_output_path = getattr(artifacts, "worker_output", None)
+        if not isinstance(worker_output_path, Path) or not worker_output_path.exists():
+            return ""
+        text = worker_output_path.read_text(encoding="utf-8").strip()
+        if not text:
+            return ""
+        normalized = " ".join(text.split())
+        if len(normalized) <= max_chars:
+            return normalized
+        return normalized[: max_chars - 3].rstrip() + "..."
+
     def _build_closeout_bundle_payload(
         self,
         *,
@@ -1654,6 +1866,23 @@ class HostLocalRunner:
             "HostLocalRunner reached worker execution without a configured worker or worker factory "
             f"(worker_profile={worker_profile.name})"
         )
+
+    def _resolve_review_worker_profile(self) -> WorkerProfile | None:
+        profile_name = self._runtime_config.orchestrator.review_worker_profile
+        if profile_name is None:
+            return None
+        return self._runtime_config.worker_profile(profile_name)
+
+    def _resolve_review_worker(
+        self,
+        worker_profile: WorkerProfile,
+    ) -> WorkerLike | None:
+        if self._review_worker is not None:
+            return self._review_worker
+        if self._worker_factory is not None and hasattr(self._worker_factory, "build_review_sidecar"):
+            builder = getattr(self._worker_factory, "build_review_sidecar")
+            return builder(worker_profile)
+        return None
 
     @staticmethod
     def _format_status_reason(prefix: str, reasons: list[str]) -> str:

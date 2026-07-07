@@ -264,6 +264,27 @@ def test_runtime_worker_factory_builds_exec_fallback_worker() -> None:
     assert worker.__class__.__name__ == "CodexExecFallbackWorker"
 
 
+def test_runtime_worker_factory_builds_claude_review_sidecar_worker() -> None:
+    from host_orchestrator.config_runtime import WorkerProfile
+
+    profile = WorkerProfile(
+        name="claude_glm_review",
+        worker_kind="claude_glm",
+        lane="host_local",
+        model="glm-5.2",
+        provider="claude-code-bigmodel-glm",
+        sandbox_profile="read_only",
+        approval_policy="never",
+        network_profile="off",
+        projection_mode="compatibility_dual_write",
+        max_active_leases=1,
+    )
+
+    worker = RuntimeWorkerFactory().build_review_sidecar(profile)
+
+    assert worker.__class__.__name__ == "ClaudeCodeStructuredWorker"
+
+
 def test_runtime_worker_factory_rejects_unwired_worker_kinds() -> None:
     from host_orchestrator.config_runtime import WorkerProfile
 
@@ -290,6 +311,18 @@ def test_runtime_worker_factory_rejects_unwired_worker_kinds() -> None:
             sandbox_profile="workspace_write",
             approval_policy="never",
             network_profile="restricted",
+            projection_mode="compatibility_dual_write",
+            max_active_leases=1,
+        ),
+        WorkerProfile(
+            name="claude_glm_review",
+            worker_kind="claude_glm",
+            lane="host_local",
+            model="glm-5.2",
+            provider="claude-code-bigmodel-glm",
+            sandbox_profile="read_only",
+            approval_policy="never",
+            network_profile="off",
             projection_mode="compatibility_dual_write",
             max_active_leases=1,
         ),
