@@ -1,0 +1,21 @@
+{
+  "task_id": "T02",
+  "planner_kind": "codex_sdk",
+  "planner_mode": "blocking",
+  "planner_profile": "local_maint",
+  "model": "gpt-5.4",
+  "risk": "high",
+  "disposition": "proceed",
+  "reason_summary": "Planner sidecar recorded a proceed disposition and kept the run at the worker boundary.",
+  "blocking_reasons": [],
+  "plan_outline": [
+    "Review the planned change set against the declared path boundary.",
+    "Continue the worker step only after the operator accepts the current planner receipt."
+  ],
+  "source_evidence_refs": [
+    ".ai/runs/<run_id>/T02/result.json",
+    ".ai/runs/<run_id>/T02/dispatch_state.json",
+    ".ai/runs/<run_id>/T02/verification_summary.json",
+    ".ai/runs/<run_id>/T02/cost_summary.json"
+  ]
+}

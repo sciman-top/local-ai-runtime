@@ -39,6 +39,7 @@
   "last_result_ref": ".ai/runs/20260707-example/T02/result.json",
   "verification_summary_ref": ".ai/runs/20260707-example/T02/verification_summary.json",
   "evidence_index_ref": ".ai/runs/20260707-example/T02/evidence_index.json",
+  "planner_result_ref": ".ai/runs/20260707-example/T02/planner_result.json",
   "notes": [
     "worker 只在 assigned worktree 中执行",
     "write_set 是 allowed_paths 的更窄操作子集"

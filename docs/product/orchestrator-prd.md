@@ -74,7 +74,7 @@
 - `Direct GPT-5.4 API` 仍是高风险 handoff lane，而不是低风险日常默认入口
 - `Claude Code + GLM-5.2` 仍是 heterogeneous review lane，而不是所有任务的日常必经路径
 - `subagents` 读多写少，写任务需独立 worktree + lease + allowlist
-- 当前 repo-side 只先把 planner-gated task 停在 `waiting_handoff`；这不是 live planner 已执行
+- 当前 planner-gated task 已可先运行 codex-backed live planner sidecar、写出 `planner_result.json`，然后仍停在 `waiting_handoff`；这不是 live `Direct GPT-5.4 API` planner 已执行
 - 模型策略改为 role-aware / risk-aware / lane-aware，而不是所有子代理固定 `gpt-5.4 + xhigh`
 
 ### 能力范围与晋升顺序
@@ -91,7 +91,7 @@
 - 不做云端共享控制面
 - 不把当前仓重塑成通用 governance hub
 - 不把 AgentBridge round-trip parity、execution-critical override live support、或字段改名写成已完成
-- 当前明确不在 repo-side parity / topology closeout 中做 `compatibility_projection_ref` 或 `lane` 字段改名；待 live planner/review sidecar 与 non-host_local runner 真接线后再复评
+- 当前明确不在 repo-side parity / topology closeout 中做 `compatibility_projection_ref` 或 `lane` 字段改名；待 live heterogeneous review sidecar 与 non-host_local runner 真接线后再复评
 - 不在无真实 GUI-only workload 证据时强行把 `vm_gui` 纳入同等级 live closeout
 
 ## 成功标准
@@ -106,7 +106,7 @@
 
 ### 中期
 
-- `host_local` 正确性、verification runner、安全边界下的 AgentBridge-first intake、repo-side projection parity、repo-side planner handoff、repo-side review gate、runtime ledger、repo-side lifecycle ops、repo-side structured review/closeout receipts、git-backed write-boundary enforcement、repo-side `leases / route / quota` closeout、deterministic multi-worker simulation suite、`remote_non_gui` promotion evidence、repo-owned Hermes parity / historical snapshot mapping verifier、以及 `vm_gui` conditional promotion evidence 已落地；后续进入 live planner wiring、live heterogeneous review、以及 non-host_local runner wiring
+- `host_local` 正确性、verification runner、安全边界下的 AgentBridge-first intake、repo-side projection parity、live planner sidecar receipt boundary、repo-side review gate、runtime ledger、repo-side lifecycle ops、repo-side structured planner/review/closeout receipts、git-backed write-boundary enforcement、repo-side `leases / route / quota` closeout、deterministic multi-worker simulation suite、`remote_non_gui` promotion evidence、repo-owned Hermes parity / historical snapshot mapping verifier、以及 `vm_gui` conditional promotion evidence 已落地；后续进入 live heterogeneous review 与 non-host_local runner wiring
 - repo-owned `host_local` task entrypoint 与 worker factory 已落地：当前 `host-orchestrator --run-task` / `run-host-task.ps1` 已直接消费 `local_maint` 的 `codex_sdk` 路径，并在结构上支持 `codex_exec`；built-in `codex_exec` profiles 仍保持 non-host-local handoff，而 `scripted / gpt54_direct / claude_glm` 继续 live task execution fail-closed
 - 当前字段名决策也已固定：`compatibility_projection_ref` 与 `lane` 继续保持现名，不在当前 repo-side parity / topology closeout 中改名
 - planner/review 触发条件全是机器可判定字段，且 `user_forced_planner / user_forced_review` 只允许 force on，不允许伪造 force off
@@ -144,7 +144,7 @@
 - `mock green` 只是 `repo-side green` 的子状态，不是新的 acceptance tier
 - `live probe ready` 只是进入 `live accepted` 前的 readiness gate，不是新的 acceptance tier
 - planner/review 失败、缺 gateway、缺 credentials 只能降级，不能伪装成 live success
-- repo-owned `host_local` task entrypoint 只是当前主线 runtime 接线，不等于 live planner/review sidecar、non-host_local runner、`platform compatibility green`、或 `live accepted`
+- repo-owned `host_local` task entrypoint 与 codex-backed live planner sidecar receipt 只是当前主线 runtime 接线，不等于 live heterogeneous review sidecar、non-host_local runner、`platform compatibility green`、或 `live accepted`
 - 当前 repo truth 仍是 canonical intake + `result.json` + compatibility projection；目标态只能写成迁移窗口，不得写成当前事实
 - `governed-ai-coding-runtime` 只作为 `governance-sidecar` companion 提供 gate / evidence / selector 机制参考，不替代当前主线实现真源
 - 全局规则真源在控制仓；本仓只维护 repo-specific truth，并通过 audit + integration + verification 吸收规则治理能力

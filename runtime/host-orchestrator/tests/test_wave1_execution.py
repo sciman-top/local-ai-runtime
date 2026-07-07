@@ -740,8 +740,9 @@ def test_host_local_runner_avoids_worker_factory_when_pre_worker_handoff_trigger
     task_id = "TASK-20260708-factory-not-needed"
     task_path = repo_root / "tasks" / f"{task_id}.json"
     payload = _canonical_task_payload(task_id)
-    payload["risk_level"] = "critical"
+    payload["risk_level"] = "low"
     payload["write_access"] = False
+    payload["requires_network"] = True
     write_task(task_path, payload)
 
     class FailIfBuiltFactory:
@@ -750,7 +751,7 @@ def test_host_local_runner_avoids_worker_factory_when_pre_worker_handoff_trigger
 
         def build(self, worker_profile: object) -> object:
             self.build_count += 1
-            raise AssertionError("planner handoff should happen before worker factory use")
+            raise AssertionError("capability handoff should happen before worker factory use")
 
     factory = FailIfBuiltFactory()
     runner = HostLocalRunner(
@@ -767,6 +768,67 @@ def test_host_local_runner_avoids_worker_factory_when_pre_worker_handoff_trigger
 
     assert factory.build_count == 0
     assert result_payload["status"] == "waiting_handoff"
+
+
+def test_host_local_runner_uses_worker_factory_for_live_planner_sidecar(
+    tmp_path: Path,
+) -> None:
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir()
+    (repo_root / "AGENTS.md").write_text("stub", encoding="utf-8")
+    _copy_runtime_config(repo_root)
+
+    task_id = "TASK-20260708-factory-planner"
+    task_path = repo_root / "tasks" / f"{task_id}.json"
+    payload = _canonical_task_payload(task_id)
+    payload["risk_level"] = "critical"
+    payload["write_access"] = False
+    write_task(task_path, payload)
+
+    class PlannerFactory:
+        def __init__(self) -> None:
+            self.build_count = 0
+
+        def build(self, worker_profile: object) -> object:
+            self.build_count += 1
+
+            class FakePlannerWorker:
+                def run(self, request: WorkerRequest) -> WorkerResult:
+                    return WorkerResult(
+                        final_response=json.dumps(
+                            {
+                                "disposition": "proceed",
+                                "reason_summary": "Planner sidecar recorded a proceed disposition and kept the run at the worker boundary.",
+                                "blocking_reasons": [],
+                                "plan_outline": [
+                                    "Review the planner receipt.",
+                                    "Continue the worker step only after operator approval.",
+                                ],
+                            }
+                        ),
+                        raw_result={"kind": "planner"},
+                    )
+
+            return FakePlannerWorker()
+
+    factory = PlannerFactory()
+    runner = HostLocalRunner(
+        HostLocalConfig(
+            workspace_root=repo_root,
+            layout=RuntimeLayout.from_repo_root(repo_root),
+            run_id="factory-planner",
+        ),
+        worker_factory=factory,
+    )
+
+    result_path = runner.run_task(task_path)
+    result_payload = json.loads(result_path.read_text(encoding="utf-8"))
+
+    assert factory.build_count == 1
+    assert result_payload["status"] == "waiting_handoff"
+    assert result_payload["termination_reason"] == "planner_sidecar_result_recorded"
+    assert result_payload["next_action"] == "planner receipt recorded; operator may continue to worker execution"
+    assert result_payload["planner_result_ref"] == f".ai/runs/factory-planner/{task_id}/planner_result.json"
 
 
 def test_wave1_smoke_manifest_covers_three_categories() -> None:

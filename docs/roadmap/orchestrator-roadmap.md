@@ -65,7 +65,7 @@
 - 当前状态：
   - repo-side 已完成
   - 当前明确决定继续保留 `compatibility_projection_ref` 与 `lane` 现名，不在当前 repo-side parity / topology closeout 中做字段改名
-  - 是否需要 schema rename，待 live planner/review sidecar 与 non-host_local runner 真接线后再复评
+  - 是否需要 schema rename，待 live heterogeneous review sidecar 与 non-host_local runner 真接线后再复评
 
 ### Phase F — Topology Expansion
 
@@ -118,17 +118,17 @@
   - `P6-T01` / `P6-T02` 的 repo-side Hermes parity / historical snapshot mapping verifier 已完成：当前可复放 baseline doc、current known-good / boundary anchor、snapshot contract、known-good validator、以及 env-sensitive bring-up drift summary
   - `P6-T03` 的 `vm_gui` conditional promotion evidence 已完成：当前可复放 baseline GUI-only handoff 与 explicit `vm_gui_probe` fail-closed handoff summary，并输出 JSON evidence
   - repo-owned `host_local` task entrypoint 与 worker factory 已完成：`host-orchestrator --run-task` / `run-host-task.ps1` 当前已直接消费 `local_maint` 的 `codex_sdk` 路径，并在结构上支持 `codex_exec`；built-in `codex_exec` profiles 仍保持 non-host-local handoff，而 `scripted / gpt54_direct / claude_glm` 继续 live task execution fail-closed
-  - next repo-side open set 转到 live planner/review sidecar 与 non-host_local runner wiring
+  - next repo-side open set 转到 live heterogeneous review sidecar 与 non-host_local runner wiring
 - 出口门禁：`build -> [lint -> typecheck] -> test -> contract -> hotspot` 统一跑通
 
 ### Phase 4 Planner / Review
 
 - 目标：`Direct GPT-5.4 API` planner + `Claude Code + GLM-5.2` review adapter
 - 当前状态：
-  - `P4-T01` 的 repo-side planner handoff 已落地
+  - `P4-T01` 的 live planner sidecar receipt 已落地；planner-gated task 当前会先运行 codex-backed planner sidecar、写出 `planner_result.json`，然后仍停在 `waiting_handoff`
   - `P4-T02` 的 repo-side review gate 已落地；低风险任务默认自动推进，medium/high/critical 风险、policy surface、以及 force-on review 命中时当前会在 worker / verification 之后停在 `needs_review`
   - `P4-T03` 的 repo-side 正反谓词测试已落地；`user_forced_planner / user_forced_review` 现已作为 force-on override 被 contract 与测试承接
-  - `P4-T04` 的 repo-side structured receipts 已落地；review-gated 路径现在会写 `review_result.json`，当前 planner/review/completed outcome 都会写 `closeout_bundle.json`
+  - `P4-T04` 的 repo-side structured receipts 已落地；live planner-sidecar 路径现在会写 `planner_result.json`，review-gated 路径会写 `review_result.json`，当前 planner/review/completed outcome 都会写 `closeout_bundle.json`
   - 尚未宣称 live `Direct GPT-5.4 API` planner 或 live `Claude Code + GLM-5.2` review adapter 已接线
 - 出口门禁：planner/review 谓词正反分支全绿
 
@@ -145,7 +145,7 @@
   - `P6-T02` 的 repo-side historical snapshot mapping 已完成：current anchor 固定到 `known-good-20260628-225738-431.json` 与 `verify-hermes-boundary-20260628-225841-414.json`
   - `P6-T03` 的 repo-side `vm_gui` conditional promotion evidence 已完成：`run-vm-gui-promotion.ps1` 当前会把 default GUI-only handoff 与 explicit `vm_gui_probe` fail-closed handoff 收进同一 summary
   - 当前 shell 中 Hermes bring-up gate 只剩 `independent_key / independent_base_url` 两个 env-sensitive blocker；这仍不自动升级为 `platform compatibility green` 或 `live accepted`
-  - next repo-side open set 转到 live planner/review sidecar 与 non-host_local runner wiring
+  - next repo-side open set 转到 live heterogeneous review sidecar 与 non-host_local runner wiring
 - 出口门禁：
   - parity green
   - historical snapshot mapping green

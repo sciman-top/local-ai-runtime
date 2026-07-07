@@ -257,7 +257,17 @@ def test_host_local_runner_accepts_agentbridge_markdown_task_without_sidecar(
 
     class FakeWorker:
         def run(self, request: WorkerRequest) -> WorkerResult:
-            raise AssertionError("manual_only markdown intake must stop at planner handoff before worker execution")
+            return WorkerResult(
+                final_response=json.dumps(
+                    {
+                        "disposition": "handoff",
+                        "reason_summary": "Planner sidecar requested operator handoff before worker execution.",
+                        "blocking_reasons": ["manual_only_high_risk"],
+                        "plan_outline": ["Require operator approval before any worker execution."],
+                    }
+                ),
+                raw_result={"kind": "planner"},
+            )
 
     agentbridge_root = repo_root / "AgentBridge"
     runner = HostLocalRunner(
@@ -289,8 +299,9 @@ def test_host_local_runner_accepts_agentbridge_markdown_task_without_sidecar(
     assert result_payload["lane"] == "host_local"
     assert result_payload["status"] == "waiting_handoff"
     assert result_payload["handoff_required"] is True
-    assert result_payload["next_action"] == "planner handoff required before worker execution"
+    assert result_payload["next_action"] == "planner requested operator handoff before worker execution"
     assert result_payload["compatibility_projection_ref"] == f"AgentBridge/results/{task_id}.md"
+    assert result_payload["planner_result_ref"] == f".ai/runs/markdown-intake-test/{task_id}/planner_result.json"
     assert verification_payload["status"] == "waiting_handoff"
     assert projection_path.exists()
     assert not artifact_path.exists()

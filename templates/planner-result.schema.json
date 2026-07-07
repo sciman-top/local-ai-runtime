@@ -1,0 +1,79 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "PlannerResult",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "task_id",
+    "planner_kind",
+    "planner_mode",
+    "planner_profile",
+    "model",
+    "risk",
+    "disposition",
+    "reason_summary",
+    "blocking_reasons",
+    "plan_outline",
+    "source_evidence_refs"
+  ],
+  "properties": {
+    "task_id": {
+      "type": "string"
+    },
+    "planner_kind": {
+      "enum": [
+        "codex_sdk",
+        "gpt54_direct",
+        "repo_policy_gate"
+      ]
+    },
+    "planner_mode": {
+      "enum": [
+        "advisory",
+        "blocking"
+      ]
+    },
+    "planner_profile": {
+      "type": "string"
+    },
+    "model": {
+      "type": "string"
+    },
+    "risk": {
+      "enum": [
+        "low",
+        "medium",
+        "high",
+        "critical"
+      ]
+    },
+    "disposition": {
+      "enum": [
+        "proceed",
+        "handoff"
+      ]
+    },
+    "reason_summary": {
+      "type": "string"
+    },
+    "blocking_reasons": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "plan_outline": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "source_evidence_refs": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

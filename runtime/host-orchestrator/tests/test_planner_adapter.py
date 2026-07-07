@@ -13,7 +13,8 @@ from host_orchestrator.worker import WorkerRequest, WorkerResult
 from support import canonical_task_payload, copy_runtime_config
 
 
-PLANNER_NEXT_ACTION = "planner handoff required before worker execution"
+PLANNER_NEXT_ACTION = "planner receipt recorded; operator may continue to worker execution"
+PLANNER_HANDOFF_ACTION = "planner requested operator handoff before worker execution"
 REVIEW_NEXT_ACTION = "heterogeneous review required before downstream use"
 
 
@@ -53,7 +54,7 @@ def test_planner_required_is_derived_from_high_risk_or_dependencies(tmp_path: Pa
     assert load_task(low_risk_path).planner_required is False
 
 
-def test_host_local_runner_hands_off_planner_tasks_without_calling_worker(
+def test_host_local_runner_materializes_live_planner_receipt_before_worker_execution(
     tmp_path: Path,
 ) -> None:
     from host_orchestrator.canonical_task import write_task
@@ -69,15 +70,29 @@ def test_host_local_runner_hands_off_planner_tasks_without_calling_worker(
     payload["risk_level"] = "critical"
     write_task(task_path, payload)
 
-    class FailIfCalledWorker:
+    class FakePlannerWorker:
         def __init__(self) -> None:
             self.call_count = 0
 
         def run(self, request: WorkerRequest) -> WorkerResult:
             self.call_count += 1
-            raise AssertionError("planner-gated tasks must not reach the primary worker")
+            assert "repo-owned planner sidecar" in request.prompt
+            return WorkerResult(
+                final_response=json.dumps(
+                    {
+                        "disposition": "proceed",
+                        "reason_summary": "Planner sidecar recorded a proceed disposition and kept the run at the worker boundary.",
+                        "blocking_reasons": [],
+                        "plan_outline": [
+                            "Review the planner receipt.",
+                            "Continue the worker step only after operator approval.",
+                        ],
+                    }
+                ),
+                raw_result={"kind": "planner"},
+            )
 
-    worker = FailIfCalledWorker()
+    worker = FakePlannerWorker()
     agentbridge_root = repo_root / "AgentBridge"
     runner = HostLocalRunner(
         HostLocalConfig(
@@ -96,20 +111,28 @@ def test_host_local_runner_hands_off_planner_tasks_without_calling_worker(
     cost_payload = json.loads((task_root / "cost_summary.json").read_text(encoding="utf-8"))
     evidence_payload = json.loads((task_root / "evidence_index.json").read_text(encoding="utf-8"))
     dispatch_payload = json.loads((task_root / "dispatch_state.json").read_text(encoding="utf-8"))
+    planner_result_payload = json.loads((task_root / "planner_result.json").read_text(encoding="utf-8"))
     projection_path = agentbridge_root / "results" / f"{task_id}.md"
 
-    assert worker.call_count == 0
+    assert worker.call_count == 1
     assert result_payload["status"] == "waiting_handoff"
-    assert result_payload["termination_reason"] == "planner_handoff_required"
+    assert result_payload["termination_reason"] == "planner_sidecar_result_recorded"
     assert result_payload["handoff_required"] is True
     assert result_payload["next_action"] == PLANNER_NEXT_ACTION
+    assert result_payload["planner_result_ref"] == f".ai/runs/planner-handoff-test/{task_id}/planner_result.json"
     assert "risk_level=critical" in result_payload["status_reason"]
     assert verification_payload["status"] == "waiting_handoff"
     assert verification_payload["commands_run"] == []
-    assert cost_payload["source"] == "planner_handoff_no_worker_usage"
+    assert verification_payload["planner_disposition"] == "proceed"
+    assert cost_payload["source"] == "worker_usage_unavailable"
     assert dispatch_payload["status"] == "waiting_handoff"
     assert dispatch_payload["next_action"] == PLANNER_NEXT_ACTION
+    assert dispatch_payload["planner_result_ref"] == result_payload["planner_result_ref"]
     assert "risk_level=critical" in dispatch_payload["status_reason"]
+    assert planner_result_payload["task_id"] == task_id
+    assert planner_result_payload["planner_kind"] == "codex_sdk"
+    assert planner_result_payload["planner_mode"] == "blocking"
+    assert planner_result_payload["disposition"] == "proceed"
     assert projection_path.exists()
     projection_text = projection_path.read_text(encoding="utf-8")
     assert "status: waiting_handoff" in projection_text
@@ -121,6 +144,8 @@ def test_host_local_runner_hands_off_planner_tasks_without_calling_worker(
     assert f".ai/runs/planner-handoff-test/{task_id}/dispatch_state.json" in indexed_paths
     assert f".ai/runs/planner-handoff-test/{task_id}/verification_summary.json" in indexed_paths
     assert f".ai/runs/planner-handoff-test/{task_id}/cost_summary.json" in indexed_paths
+    assert f".ai/runs/planner-handoff-test/{task_id}/planner_result.json" in indexed_paths
+    assert f".ai/runs/planner-handoff-test/{task_id}/closeout_bundle.json" in indexed_paths
     assert f".ai/runs/planner-handoff-test/{task_id}/evidence_index.json" not in indexed_paths
     assert f"AgentBridge/results/{task_id}.md" in indexed_paths
 
@@ -137,8 +162,15 @@ def test_host_local_runner_hands_off_planner_tasks_without_calling_worker(
         "waiting_handoff",
         f".ai/runs/planner-handoff-test/{task_id}/result.json",
     )
-    assert [event_type for (event_type, _) in events] == ["task_started", "task_waiting_handoff"]
-    waiting_payload = json.loads(events[1][1])
+    assert [event_type for (event_type, _) in events] == [
+        "task_started",
+        "planner_completed",
+        "task_waiting_handoff",
+    ]
+    planner_event_payload = json.loads(events[1][1])
+    assert planner_event_payload["disposition"] == "proceed"
+    assert planner_event_payload["next_action"] == PLANNER_NEXT_ACTION
+    waiting_payload = json.loads(events[2][1])
     assert waiting_payload["next_action"] == PLANNER_NEXT_ACTION
     assert waiting_payload["handoff_required"] is True
 
@@ -246,9 +278,19 @@ def test_markdown_manual_only_task_hits_planner_handoff_gate(tmp_path: Path) -> 
         "# Summary\n\nMarkdown planner gate regression.\n",
     )
 
-    class FailIfCalledWorker:
+    class FakePlannerWorker:
         def run(self, request: WorkerRequest) -> WorkerResult:
-            raise AssertionError("manual_only markdown task must hand off before worker execution")
+            return WorkerResult(
+                final_response=json.dumps(
+                    {
+                        "disposition": "handoff",
+                        "reason_summary": "Planner sidecar requested operator handoff before worker execution.",
+                        "blocking_reasons": ["manual_only_high_risk"],
+                        "plan_outline": ["Require operator approval before any worker execution."],
+                    }
+                ),
+                raw_result={"kind": "planner"},
+            )
 
     runner = HostLocalRunner(
         HostLocalConfig(
@@ -257,7 +299,7 @@ def test_markdown_manual_only_task_hits_planner_handoff_gate(tmp_path: Path) -> 
             agentbridge_root=repo_root / "AgentBridge",
             run_id="markdown-planner-gate",
         ),
-        FailIfCalledWorker(),
+        FakePlannerWorker(),
     )
 
     result_path = runner.run_task(task_path)
@@ -265,7 +307,8 @@ def test_markdown_manual_only_task_hits_planner_handoff_gate(tmp_path: Path) -> 
 
     assert result_payload["status"] == "waiting_handoff"
     assert result_payload["handoff_required"] is True
-    assert result_payload["next_action"] == PLANNER_NEXT_ACTION
+    assert result_payload["next_action"] == PLANNER_HANDOFF_ACTION
+    assert result_payload["planner_result_ref"] == f".ai/runs/markdown-planner-gate/{task_id}/planner_result.json"
 
 
 def test_low_risk_non_planner_task_keeps_success_path(tmp_path: Path) -> None:

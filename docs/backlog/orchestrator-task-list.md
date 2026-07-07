@@ -37,7 +37,7 @@
     - parity / historical mapping / container lifecycle 进入同一闭环
     - 是否做 `compatibility_projection_ref` 与 `lane` rename 有明确决策
   - Status note:
-    - 2026-07-07 已完成 repo-side closeout；当前明确决定继续保留 `compatibility_projection_ref` 与 `lane` 现名，不在当前 repo-side parity / topology closeout 中做字段改名，待 live planner/review sidecar 与 non-host_local runner 真接线后再复评
+    - 2026-07-07 已完成 repo-side closeout；当前明确决定继续保留 `compatibility_projection_ref` 与 `lane` 现名，不在当前 repo-side parity / topology closeout 中做字段改名，待 live heterogeneous review sidecar 与 non-host_local runner 真接线后再复评
 - [ ] `F-T01` topology expansion
   - Done when:
     - `remote_non_gui` 进入 simulation
@@ -129,10 +129,10 @@
 - [x] `P4-T01` planner adapter
   - Done when:
     - `planner_required` 基于当前 risk/dependency 字段在 intake 后完成机器派生
-    - planner-gated task 在主 worker 前停在 `waiting_handoff`
+    - planner-gated task 可先写 live `planner_result.json` receipt，并在主 worker 前停在 `waiting_handoff`
     - `result.json`、`verification_summary.json`、`cost_summary.json`、`evidence_index.json` 在 handoff 路径上保持齐全
   - Status note:
-    - 2026-07-07 已完成 repo-side 最小 planner handoff；当前仍不是 live `Direct GPT-5.4 API` planner
+    - 2026-07-07 已完成 live planner sidecar receipt 边界；当前 planner-gated task 会先运行 codex-backed planner sidecar、写出 `planner_result.json`，然后仍停在 `waiting_handoff`；当前仍不是 live `Direct GPT-5.4 API` planner
 - [x] `P4-T02` review adapter
   - Done when:
     - `review_required` 在当前 materialized 条件下完成 repo-side 派生
@@ -153,7 +153,7 @@
     - closeout bundle 可稳定引用 verification、cleanup、review receipt
     - `repo-side green` 能显式区分 structured review receipt、cleanup receipt、与 `live accepted`
   - Status note:
-    - 2026-07-07 已完成 repo-side structured receipts；review-gated 路径现在会落 `review_result.json`，当前 planner/review/completed runtime outcome 都会落 `closeout_bundle.json`，并由 `result.json / dispatch_state.json / evidence_index.json` 串起引用；当前仍不是 live heterogeneous review sidecar
+    - 2026-07-07 已完成 repo-side structured receipts；live planner-sidecar 路径现在会落 `planner_result.json`，review-gated 路径会落 `review_result.json`，当前 planner/review/completed runtime outcome 都会落 `closeout_bundle.json`，并由 `result.json / dispatch_state.json / evidence_index.json` 串起引用；当前仍不是 live heterogeneous review sidecar
 
 ## Phase 5
 

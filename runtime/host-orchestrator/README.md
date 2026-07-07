@@ -61,6 +61,7 @@
 - remote_non_gui promotion evidence 只证明 lane promotion / fail-closed handoff，不等于 remote runner 已验收
 - vm_gui conditional promotion evidence 只证明 GUI-only 条件晋升 / fail-closed handoff，不等于 vm runner 已验收
 - repo-owned `host_local` task entrypoint 当前已直接消费 `local_maint` 的 `codex_sdk` 路径，并在结构上支持 `codex_exec`；built-in `codex_exec` profiles 仍保持 non-host-local handoff，而 `scripted / gpt54_direct / claude_glm` 继续 live task execution fail-closed
+- planner-gated task 当前会在 codex-backed `host_local` profile 上先运行 live planner sidecar、写出 `planner_result.json`，然后仍停在 `waiting_handoff`；这还不等于 live `Direct GPT-5.4 API` planner 或自动继续 worker execution 已验收
 - `AgentBridge` 当前只保留为 compatibility adapter，不再作为主协议输入
 - 还不等于 `Phase 1 accepted`
 

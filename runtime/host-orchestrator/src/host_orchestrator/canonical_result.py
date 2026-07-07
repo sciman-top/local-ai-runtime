@@ -31,6 +31,7 @@ class RunArtifacts:
     result_json: Path
     dispatch_state: Path
     evidence_index: Path
+    planner_result: Path
     review_result: Path
     closeout_bundle: Path
     projection_markdown: Path | None
@@ -66,6 +67,7 @@ def build_run_artifacts(
         result_json=task_root / "result.json",
         dispatch_state=task_root / "dispatch_state.json",
         evidence_index=task_root / "evidence_index.json",
+        planner_result=task_root / "planner_result.json",
         review_result=task_root / "review_result.json",
         closeout_bundle=task_root / "closeout_bundle.json",
         projection_markdown=None,
@@ -162,6 +164,7 @@ def write_result_bundle(
         "status_reason": status_reason,
         "next_action": next_action,
         "dispatch_state_ref": relative_dispatch_state,
+        "planner_result_ref": None,
         "review_result_ref": None,
         "closeout_bundle_ref": None,
     }
@@ -228,6 +231,14 @@ def write_review_result_artifact(
     return payload
 
 
+def write_planner_result_artifact(
+    artifacts: RunArtifacts,
+    payload: dict[str, Any],
+) -> dict[str, Any]:
+    _write_json(artifacts.planner_result, payload)
+    return payload
+
+
 def write_closeout_bundle_artifact(
     artifacts: RunArtifacts,
     payload: dict[str, Any],
@@ -253,6 +264,8 @@ def refresh_evidence_index(
     ]
     if artifacts.dispatch_state.exists():
         indexed_paths.append(artifacts.dispatch_state)
+    if artifacts.planner_result.exists():
+        indexed_paths.append(artifacts.planner_result)
     if artifacts.review_result.exists():
         indexed_paths.append(artifacts.review_result)
     if artifacts.closeout_bundle.exists():

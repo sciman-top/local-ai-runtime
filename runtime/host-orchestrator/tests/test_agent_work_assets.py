@@ -8,6 +8,7 @@ from host_orchestrator.agent_work_assets import (
     validate_closeout_bundle_payload,
     validate_dispatch_state_payload,
     validate_manifest_payload,
+    validate_planner_result_payload,
     validate_review_result_payload,
 )
 
@@ -124,6 +125,7 @@ def test_dispatch_state_template_is_machine_readable() -> None:
         "handoff",
         "cleanup",
     ]
+    assert schema["properties"]["planner_result_ref"]["type"] == "string"
     assert schema["properties"]["review_result_ref"]["type"] == "string"
     assert schema["properties"]["closeout_bundle_ref"]["type"] == "string"
 
@@ -166,3 +168,18 @@ def test_review_result_template_aligns_with_review_contract() -> None:
     assert schema["properties"]["recommended_action"]["enum"] == ["approve", "revise", "reject"]
     finding_required = schema["properties"]["findings"]["items"]["required"]
     assert finding_required == ["severity", "category", "title", "detail", "suggested_fix"]
+
+
+def test_planner_result_template_aligns_with_planner_contract() -> None:
+    payload = load_mapping_file(REPO_ROOT / "templates" / "planner-result.example.json")
+
+    validate_planner_result_payload(payload)
+
+    schema = json.loads((REPO_ROOT / "templates" / "planner-result.schema.json").read_text(encoding="utf-8"))
+    assert schema["properties"]["planner_kind"]["enum"] == [
+        "codex_sdk",
+        "gpt54_direct",
+        "repo_policy_gate",
+    ]
+    assert schema["properties"]["planner_mode"]["enum"] == ["advisory", "blocking"]
+    assert schema["properties"]["disposition"]["enum"] == ["proceed", "handoff"]

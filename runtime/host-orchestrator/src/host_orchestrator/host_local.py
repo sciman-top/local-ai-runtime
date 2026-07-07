@@ -3,8 +3,11 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from fnmatch import fnmatchcase
+import json
 from pathlib import Path
 from typing import Any
+
+from openai_codex import Sandbox
 
 from host_orchestrator import agentbridge, db
 from host_orchestrator.canonical_result import (
@@ -12,6 +15,7 @@ from host_orchestrator.canonical_result import (
     refresh_evidence_index,
     update_result_metadata,
     write_closeout_bundle_artifact,
+    write_planner_result_artifact,
     write_result_bundle,
     write_review_result_artifact,
 )
@@ -38,8 +42,12 @@ from host_orchestrator.worker import WorkerLike, WorkerRequest, WorkerResult, Wo
 from host_orchestrator.worker_factory import WorkerBuilder
 
 
-PLANNER_HANDOFF_NEXT_ACTION = "planner handoff required before worker execution"
+PRE_WORKER_HANDOFF_NEXT_ACTION = "planner handoff required before worker execution"
+PLANNER_HANDOFF_NEXT_ACTION = PRE_WORKER_HANDOFF_NEXT_ACTION
+PLANNER_RECEIPT_NEXT_ACTION = "planner receipt recorded; operator may continue to worker execution"
+PLANNER_OPERATOR_HANDOFF_NEXT_ACTION = "planner requested operator handoff before worker execution"
 REVIEW_HANDOFF_NEXT_ACTION = "heterogeneous review required before downstream use"
+LIVE_PLANNER_WORKER_KINDS = {"codex_sdk"}
 
 
 @dataclass(frozen=True)
@@ -58,6 +66,15 @@ class HostLocalConfig:
 class RouteDecision:
     worker_profile: WorkerProfile
     route_reason: str
+
+
+@dataclass(frozen=True)
+class PlannerSidecarDecision:
+    disposition: str
+    reason_summary: str
+    blocking_reasons: tuple[str, ...]
+    plan_outline: tuple[str, ...]
+    usage: WorkerUsage | None = None
 
 
 class HostLocalRunner:
@@ -154,13 +171,20 @@ class HostLocalRunner:
                 created_at=started_at,
             )
             validate_task_paths(task=task, repo_root=self._config.layout.repo_root)
-            handoff_reasons = self._planner_gate_reasons(task, worker_profile)
-            handoff_reasons.extend(self._runtime_capability_gate_reasons(worker_profile))
-            handoff_reasons.extend(self._quota_gate_reasons(worker_profile))
-            if handoff_reasons:
+            planner_reasons = self._planner_gate_reasons(task)
+            pre_worker_handoff_reasons = self._worker_execution_gate_reasons(task, worker_profile)
+            pre_worker_handoff_reasons.extend(self._quota_gate_reasons(worker_profile))
+            if planner_reasons:
+                pre_worker_handoff_reasons.extend(
+                    self._planner_sidecar_gate_reasons(worker_profile)
+                )
+            if pre_worker_handoff_reasons:
                 finished_at = agentbridge.utc_now_iso()
                 current_status_reason = self._format_status_reason(
-                    "planner handoff required", handoff_reasons
+                    "planner handoff required", pre_worker_handoff_reasons
+                )
+                verification_payload = self._pre_worker_handoff_verification_payload(
+                    "planner and worker execution stayed fail-closed because live planner or worker prerequisites were not available."
                 )
                 write_dispatch_state(
                     dispatch_state_path,
@@ -172,7 +196,7 @@ class HostLocalRunner:
                         workspace_root=current_workspace_root,
                         status="waiting_handoff",
                         status_reason=current_status_reason,
-                        next_action=PLANNER_HANDOFF_NEXT_ACTION,
+                        next_action=PRE_WORKER_HANDOFF_NEXT_ACTION,
                         cleanup_status=current_cleanup_status,
                         cleanup_owner=current_cleanup_owner,
                         started_at=started_at,
@@ -196,7 +220,7 @@ class HostLocalRunner:
                     worker_result=worker_result,
                     started_at=started_at,
                     finished_at=finished_at,
-                    verification_payload=self._planner_handoff_verification_payload(),
+                    verification_payload=verification_payload,
                     projection_writer=(
                         lambda artifacts: self._write_compatibility_projection(
                             task=task,
@@ -205,11 +229,11 @@ class HostLocalRunner:
                             artifacts=artifacts,
                             status="waiting_handoff",
                             handoff_required=True,
-                            next_action=PLANNER_HANDOFF_NEXT_ACTION,
+                            next_action=PRE_WORKER_HANDOFF_NEXT_ACTION,
                             emit_worker_artifact=False,
                             extra_observations=[
-                                "- Pre-worker handoff was derived from repo-side planner, capability, or quota gates.",
-                                "- Repo-side runtime stopped before any live planner, route scheduler, or primary worker execution.",
+                                "- Pre-worker handoff was derived from repo-side capability, planner-adapter, or quota gates.",
+                                "- Repo-side runtime stopped before any live planner or primary worker execution.",
                             ],
                         )
                     ),
@@ -217,7 +241,7 @@ class HostLocalRunner:
                     result_status="waiting_handoff",
                     termination_reason="planner_handoff_required",
                     handoff_required=True,
-                    next_action=PLANNER_HANDOFF_NEXT_ACTION,
+                    next_action=PRE_WORKER_HANDOFF_NEXT_ACTION,
                     cost_payload_override=self._planner_handoff_cost_payload(),
                     cleanup_status=current_cleanup_status,
                     cleanup_owner=current_cleanup_owner,
@@ -227,9 +251,10 @@ class HostLocalRunner:
                     task=task,
                     artifacts=result_bundle.artifacts,
                     result_payload=result_bundle.result_payload,
-                    verification_payload=self._planner_handoff_verification_payload(),
+                    verification_payload=verification_payload,
+                    planner_result_ref=None,
                     review_result_ref=None,
-                    current_next_action=PLANNER_HANDOFF_NEXT_ACTION,
+                    current_next_action=PRE_WORKER_HANDOFF_NEXT_ACTION,
                     cleanup_status=current_cleanup_status,
                     cleanup_owner=current_cleanup_owner,
                 )
@@ -251,6 +276,7 @@ class HostLocalRunner:
                     last_result_ref=relative_result_path,
                     verification_summary_ref=self._relative_to_repo(result_bundle.artifacts.verification_summary),
                     evidence_index_ref=evidence_index_path,
+                    planner_result_ref=None,
                     review_result_ref=None,
                     closeout_bundle_ref=closeout_bundle_ref,
                 )
@@ -269,7 +295,7 @@ class HostLocalRunner:
                     state_reason=current_status_reason,
                     execution_lane=worker_profile.lane,
                     worker_profile=worker_profile.name,
-                    next_action=PLANNER_HANDOFF_NEXT_ACTION,
+                    next_action=PRE_WORKER_HANDOFF_NEXT_ACTION,
                     cleanup_status=current_cleanup_status,
                     cleanup_owner=current_cleanup_owner,
                     created_at=started_at,
@@ -286,7 +312,177 @@ class HostLocalRunner:
                         "compatibility_projection_ref": projection_path,
                         "evidence_index_ref": evidence_index_path,
                         "handoff_required": True,
-                        "next_action": PLANNER_HANDOFF_NEXT_ACTION,
+                        "next_action": PRE_WORKER_HANDOFF_NEXT_ACTION,
+                        "route_reason": route_reason,
+                        "status_reason": current_status_reason,
+                    },
+                    created_at=finished_at,
+                )
+                return result_bundle.artifacts.result_json
+
+            if planner_reasons:
+                finished_at = agentbridge.utc_now_iso()
+                planner_result = self._run_planner_sidecar(
+                    task=task,
+                    worker_profile=worker_profile,
+                    workspace_root=current_workspace_root,
+                    planner_reasons=planner_reasons,
+                )
+                current_next_action = self._planner_next_action(planner_result)
+                current_status_reason = self._planner_status_reason(
+                    planner_reasons=planner_reasons,
+                    planner_result=planner_result,
+                )
+                verification_payload = self._planner_sidecar_verification_payload(planner_result)
+                write_dispatch_state(
+                    dispatch_state_path,
+                    self._dispatch_state_payload(
+                        task=task,
+                        worker_profile=worker_profile,
+                        route_reason=route_reason,
+                        run_id=run_id,
+                        workspace_root=current_workspace_root,
+                        status="waiting_handoff",
+                        status_reason=current_status_reason,
+                        next_action=current_next_action,
+                        cleanup_status=current_cleanup_status,
+                        cleanup_owner=current_cleanup_owner,
+                        started_at=started_at,
+                        updated_at=finished_at,
+                        heartbeat_at=finished_at,
+                        stale_after=lease_expires_at,
+                    ),
+                )
+                handoff_worker_result = WorkerResult(
+                    final_response=None,
+                    raw_result={
+                        "kind": "planner_sidecar",
+                        "disposition": planner_result.disposition,
+                    },
+                    usage=planner_result.usage,
+                    stdout_text="",
+                    stderr_text="",
+                )
+                result_bundle = write_result_bundle(
+                    layout=self._config.layout,
+                    task=task,
+                    run_id=run_id,
+                    attempt=self._config.attempt,
+                    worker_profile=worker_profile,
+                    worker_result=handoff_worker_result,
+                    started_at=started_at,
+                    finished_at=finished_at,
+                    verification_payload=verification_payload,
+                    projection_writer=(
+                        lambda artifacts: self._write_compatibility_projection(
+                            task=task,
+                            worker_profile=worker_profile,
+                            worker_result=handoff_worker_result,
+                            artifacts=artifacts,
+                            status="waiting_handoff",
+                            handoff_required=True,
+                            next_action=current_next_action,
+                            emit_worker_artifact=False,
+                            extra_observations=self._planner_projection_observations(planner_result),
+                        )
+                    ),
+                    route_reason=route_reason,
+                    result_status="waiting_handoff",
+                    termination_reason="planner_sidecar_result_recorded",
+                    handoff_required=True,
+                    next_action=current_next_action,
+                    cleanup_status=current_cleanup_status,
+                    cleanup_owner=current_cleanup_owner,
+                    status_reason=current_status_reason,
+                )
+                planner_result_payload = self._build_planner_result_payload(
+                    task=task,
+                    worker_profile=worker_profile,
+                    artifacts=result_bundle.artifacts,
+                    planner_result=planner_result,
+                )
+                write_planner_result_artifact(result_bundle.artifacts, planner_result_payload)
+                planner_result_ref = self._relative_to_repo(result_bundle.artifacts.planner_result)
+                closeout_bundle_payload = self._build_closeout_bundle_payload(
+                    task=task,
+                    artifacts=result_bundle.artifacts,
+                    result_payload=result_bundle.result_payload,
+                    verification_payload=verification_payload,
+                    planner_result_ref=planner_result_ref,
+                    review_result_ref=None,
+                    current_next_action=current_next_action,
+                    cleanup_status=current_cleanup_status,
+                    cleanup_owner=current_cleanup_owner,
+                )
+                write_closeout_bundle_artifact(result_bundle.artifacts, closeout_bundle_payload)
+                closeout_bundle_ref = self._relative_to_repo(result_bundle.artifacts.closeout_bundle)
+                result_payload = update_result_metadata(
+                    result_bundle.artifacts.result_json,
+                    planner_result_ref=planner_result_ref,
+                    closeout_bundle_ref=closeout_bundle_ref,
+                )
+                relative_result_path = str(
+                    result_bundle.artifacts.result_json.relative_to(self._config.layout.repo_root)
+                ).replace("\\", "/")
+                projection_path = result_payload.get("compatibility_projection_ref")
+                evidence_index_path = str(
+                    result_bundle.artifacts.evidence_index.relative_to(self._config.layout.repo_root)
+                ).replace("\\", "/")
+                update_dispatch_state(
+                    dispatch_state_path,
+                    last_result_ref=relative_result_path,
+                    verification_summary_ref=self._relative_to_repo(result_bundle.artifacts.verification_summary),
+                    evidence_index_ref=evidence_index_path,
+                    planner_result_ref=planner_result_ref,
+                    review_result_ref=None,
+                    closeout_bundle_ref=closeout_bundle_ref,
+                )
+                refresh_evidence_index(
+                    layout=self._config.layout,
+                    artifacts=result_bundle.artifacts,
+                    task_id=task.task_id,
+                    run_id=run_id,
+                )
+                db.upsert_runtime_task(
+                    self._config.layout.control_plane_db,
+                    task_id=task.task_id,
+                    run_id=run_id,
+                    attempt=self._config.attempt,
+                    state="waiting_handoff",
+                    state_reason=current_status_reason,
+                    execution_lane=worker_profile.lane,
+                    worker_profile=worker_profile.name,
+                    next_action=current_next_action,
+                    cleanup_status=current_cleanup_status,
+                    cleanup_owner=current_cleanup_owner,
+                    created_at=started_at,
+                    updated_at=finished_at,
+                    result_path=relative_result_path,
+                    dispatch_state_path=relative_dispatch_state_path,
+                )
+                db.append_event(
+                    self._config.layout.control_plane_db,
+                    task_id=task.task_id,
+                    event_type="planner_completed",
+                    payload={
+                        "planner_result_ref": planner_result_ref,
+                        "disposition": planner_result.disposition,
+                        "next_action": current_next_action,
+                        "route_reason": route_reason,
+                    },
+                    created_at=finished_at,
+                )
+                db.append_event(
+                    self._config.layout.control_plane_db,
+                    task_id=task.task_id,
+                    event_type="task_waiting_handoff",
+                    payload={
+                        "result_path": relative_result_path,
+                        "compatibility_projection_ref": projection_path,
+                        "evidence_index_ref": evidence_index_path,
+                        "planner_result_ref": planner_result_ref,
+                        "handoff_required": True,
+                        "next_action": current_next_action,
                         "route_reason": route_reason,
                         "status_reason": current_status_reason,
                     },
@@ -466,6 +662,7 @@ class HostLocalRunner:
                 artifacts=result_bundle.artifacts,
                 result_payload=result_bundle.result_payload,
                 verification_payload=verification_payload,
+                planner_result_ref=None,
                 review_result_ref=review_result_ref,
                 current_next_action=current_next_action,
                 cleanup_status=current_cleanup_status,
@@ -688,11 +885,11 @@ class HostLocalRunner:
         )
 
     @staticmethod
-    def _planner_handoff_verification_payload() -> dict[str, Any]:
+    def _pre_worker_handoff_verification_payload(reason: str) -> dict[str, Any]:
         return {
             "status": "waiting_handoff",
             "commands_run": [],
-            "reason": "planner_required was derived from risk_level/depends_on, and no live planner is wired yet.",
+            "reason": reason,
         }
 
     @staticmethod
@@ -704,6 +901,233 @@ class HostLocalRunner:
             "estimated_cost": None,
             "usage": None,
         }
+
+    def _planner_sidecar_verification_payload(
+        self,
+        planner_result: PlannerSidecarDecision,
+    ) -> dict[str, Any]:
+        return {
+            "status": "waiting_handoff",
+            "commands_run": [],
+            "reason": planner_result.reason_summary,
+            "planner_disposition": planner_result.disposition,
+            "planner_blocking_reasons": list(planner_result.blocking_reasons),
+        }
+
+    def _build_planner_result_payload(
+        self,
+        *,
+        task: CanonicalTask,
+        worker_profile: WorkerProfile,
+        artifacts: Any,
+        planner_result: PlannerSidecarDecision,
+    ) -> dict[str, Any]:
+        return {
+            "task_id": task.task_id,
+            "planner_kind": worker_profile.worker_kind,
+            "planner_mode": "blocking",
+            "planner_profile": worker_profile.name,
+            "model": worker_profile.model,
+            "risk": task.risk_level,
+            "disposition": planner_result.disposition,
+            "reason_summary": planner_result.reason_summary,
+            "blocking_reasons": list(planner_result.blocking_reasons),
+            "plan_outline": list(planner_result.plan_outline),
+            "source_evidence_refs": [
+                self._relative_to_repo(artifacts.result_json),
+                self._relative_to_repo(artifacts.dispatch_state),
+                self._relative_to_repo(artifacts.verification_summary),
+                self._relative_to_repo(artifacts.cost_summary),
+            ],
+        }
+
+    def _planner_next_action(self, planner_result: PlannerSidecarDecision) -> str:
+        if planner_result.disposition == "proceed":
+            return PLANNER_RECEIPT_NEXT_ACTION
+        return PLANNER_OPERATOR_HANDOFF_NEXT_ACTION
+
+    def _planner_status_reason(
+        self,
+        *,
+        planner_reasons: list[str],
+        planner_result: PlannerSidecarDecision,
+    ) -> str:
+        reasons = list(planner_reasons)
+        if planner_result.disposition == "proceed":
+            reasons.append("planner_disposition=proceed")
+        else:
+            reasons.extend(planner_result.blocking_reasons)
+        return self._format_status_reason(planner_result.reason_summary, reasons)
+
+    def _planner_projection_observations(
+        self,
+        planner_result: PlannerSidecarDecision,
+    ) -> list[str]:
+        observations = [
+            "- Live planner sidecar ran inside the current repo-owned host_local boundary.",
+            "- Runtime still stopped before primary worker execution; this slice does not yet auto-continue from planner into worker.",
+        ]
+        if planner_result.disposition == "proceed":
+            observations.append("- Planner disposition was proceed; the next worker step still requires an explicit follow-up action.")
+        else:
+            observations.append("- Planner disposition was handoff; operator follow-up is required before any worker execution.")
+        return observations
+
+    def _run_planner_sidecar(
+        self,
+        *,
+        task: CanonicalTask,
+        worker_profile: WorkerProfile,
+        workspace_root: Path,
+        planner_reasons: list[str],
+    ) -> PlannerSidecarDecision:
+        request = WorkerRequest(
+            prompt=self._planner_prompt(task=task, planner_reasons=planner_reasons),
+            cwd=workspace_root,
+            model=worker_profile.model,
+            sandbox=Sandbox.read_only,
+            approval_mode=worker_profile.approval_mode(),
+        )
+        worker = self._resolve_worker(worker_profile)
+        worker_result = worker.run(request)
+        return self._parse_planner_response(
+            response_text=worker_result.final_response,
+            usage=worker_result.usage,
+        )
+
+    def _parse_planner_response(
+        self,
+        *,
+        response_text: str | None,
+        usage: WorkerUsage | None,
+    ) -> PlannerSidecarDecision:
+        normalized_text = (response_text or "").strip()
+        if not normalized_text:
+            return PlannerSidecarDecision(
+                disposition="handoff",
+                reason_summary="Planner sidecar returned no JSON output and the runtime stayed fail-closed.",
+                blocking_reasons=("planner_output_missing",),
+                plan_outline=("Inspect or rerun the planner sidecar before attempting worker execution.",),
+                usage=usage,
+            )
+
+        try:
+            payload = json.loads(self._strip_markdown_json_fence(normalized_text))
+        except json.JSONDecodeError:
+            return PlannerSidecarDecision(
+                disposition="handoff",
+                reason_summary="Planner sidecar returned non-parseable JSON and the runtime stayed fail-closed.",
+                blocking_reasons=("planner_output_unparseable",),
+                plan_outline=("Repair the planner response contract before attempting worker execution.",),
+                usage=usage,
+            )
+
+        if not isinstance(payload, dict):
+            return PlannerSidecarDecision(
+                disposition="handoff",
+                reason_summary="Planner sidecar returned a non-object payload and the runtime stayed fail-closed.",
+                blocking_reasons=("planner_output_not_object",),
+                plan_outline=("Return a top-level JSON object from the planner sidecar.",),
+                usage=usage,
+            )
+
+        disposition = str(payload.get("disposition") or "").strip()
+        if disposition not in {"proceed", "handoff"}:
+            return PlannerSidecarDecision(
+                disposition="handoff",
+                reason_summary="Planner sidecar omitted a supported disposition and the runtime stayed fail-closed.",
+                blocking_reasons=("planner_disposition_invalid",),
+                plan_outline=("Return disposition=proceed or disposition=handoff from the planner sidecar.",),
+                usage=usage,
+            )
+
+        reason_summary = str(payload.get("reason_summary") or "").strip()
+        if not reason_summary:
+            reason_summary = (
+                "Planner sidecar recorded a proceed disposition and kept the run at the worker boundary."
+                if disposition == "proceed"
+                else "Planner sidecar requested operator handoff before worker execution."
+            )
+
+        blocking_reasons = tuple(
+            item.strip()
+            for item in payload.get("blocking_reasons", [])
+            if isinstance(item, str) and item.strip()
+        )
+        if disposition == "handoff" and not blocking_reasons:
+            blocking_reasons = ("planner_requested_handoff",)
+
+        plan_outline = tuple(
+            item.strip()
+            for item in payload.get("plan_outline", [])
+            if isinstance(item, str) and item.strip()
+        )
+        if not plan_outline:
+            plan_outline = (reason_summary,)
+
+        return PlannerSidecarDecision(
+            disposition=disposition,
+            reason_summary=reason_summary,
+            blocking_reasons=blocking_reasons,
+            plan_outline=plan_outline,
+            usage=usage,
+        )
+
+    @staticmethod
+    def _strip_markdown_json_fence(text: str) -> str:
+        stripped = text.strip()
+        if stripped.startswith("```") and stripped.endswith("```"):
+            lines = stripped.splitlines()
+            if len(lines) >= 3:
+                return "\n".join(lines[1:-1]).strip()
+        return stripped
+
+    def _planner_prompt(
+        self,
+        *,
+        task: CanonicalTask,
+        planner_reasons: list[str],
+    ) -> str:
+        prompt_payload = {
+            "task_id": task.task_id,
+            "title": task.title,
+            "risk_level": task.risk_level,
+            "merge_policy": task.merge_policy,
+            "execution_lane": task.execution_lane,
+            "allowed_paths": list(task.allowed_paths),
+            "forbidden_paths": list(task.forbidden_paths),
+            "depends_on": list(task.depends_on),
+            "planner_reasons": list(planner_reasons),
+            "write_access": task.write_access,
+            "requires_network": task.requires_network,
+            "requires_gui": task.requires_gui,
+            "verification_commands": {
+                "build": task.verification_commands.build,
+                "test": task.verification_commands.test,
+                "lint": task.verification_commands.lint,
+                "typecheck": task.verification_commands.typecheck,
+                "contract": task.verification_commands.contract,
+                "hotspot": task.verification_commands.hotspot,
+            },
+            "description": task.description,
+        }
+        return "\n".join(
+            [
+                "You are the repo-owned planner sidecar for Local AI Runtime.",
+                "Stay inside the current repo-owned host_local boundary.",
+                "Do not claim that live review, non-host-local runners, or live accepted status already exist.",
+                "Return JSON only with this shape:",
+                '{',
+                '  "disposition": "proceed" | "handoff",',
+                '  "reason_summary": "short explanation",',
+                '  "blocking_reasons": ["reason when handoff is required"],',
+                '  "plan_outline": ["2-5 concise next steps"]',
+                '}',
+                "Choose handoff when the task should not continue automatically within the current repo-side boundary.",
+                "Current canonical task context:",
+                json.dumps(prompt_payload, ensure_ascii=False, indent=2),
+            ]
+        )
 
     def _build_review_result_payload(
         self,
@@ -749,6 +1173,7 @@ class HostLocalRunner:
         artifacts: Any,
         result_payload: dict[str, Any],
         verification_payload: dict[str, Any],
+        planner_result_ref: str | None,
         review_result_ref: str | None,
         current_next_action: str,
         cleanup_status: str,
@@ -764,6 +1189,8 @@ class HostLocalRunner:
         ]
         if artifacts.projection_markdown is not None:
             evidence_refs.append(self._relative_to_repo(artifacts.projection_markdown))
+        if planner_result_ref is not None:
+            evidence_refs.append(planner_result_ref)
         if review_result_ref is not None:
             evidence_refs.append(review_result_ref)
 
@@ -772,8 +1199,13 @@ class HostLocalRunner:
             "repo_root": str(self._config.layout.repo_root),
             "objective": task.title,
             "status": self._closeout_status(result_status),
-            "completed": self._closeout_completed(result_status, review_result_ref, artifacts.projection_markdown),
-            "not_completed": self._closeout_not_completed(result_status),
+            "completed": self._closeout_completed(
+                result_status,
+                planner_result_ref,
+                review_result_ref,
+                artifacts.projection_markdown,
+            ),
+            "not_completed": self._closeout_not_completed(result_status, planner_result_ref),
             "conflicts": self._closeout_conflicts(cleanup_status),
             "tests": self._closeout_tests(
                 verification_payload=verification_payload,
@@ -788,9 +1220,22 @@ class HostLocalRunner:
                 if cleanup_status == "cleaned" and task.worktree_path.strip() not in {".", "./"}
                 else []
             ),
-            "residual_risks": self._closeout_residual_risks(result_status, cleanup_status, review_result_ref),
-            "repo_side_done": self._closeout_repo_side_done(review_result_ref, artifacts.projection_markdown),
-            "still_open": self._closeout_still_open(result_status, current_next_action),
+            "residual_risks": self._closeout_residual_risks(
+                result_status,
+                cleanup_status,
+                planner_result_ref,
+                review_result_ref,
+            ),
+            "repo_side_done": self._closeout_repo_side_done(
+                planner_result_ref,
+                review_result_ref,
+                artifacts.projection_markdown,
+            ),
+            "still_open": self._closeout_still_open(
+                result_status,
+                current_next_action,
+                planner_result_ref,
+            ),
             "next_action": current_next_action,
         }
 
@@ -805,6 +1250,7 @@ class HostLocalRunner:
     @staticmethod
     def _closeout_completed(
         result_status: str,
+        planner_result_ref: str | None,
         review_result_ref: str | None,
         projection_markdown: Path | None,
     ) -> list[str]:
@@ -816,6 +1262,8 @@ class HostLocalRunner:
         ]
         if projection_markdown is not None:
             completed.append("compatibility projection refreshed")
+        if planner_result_ref is not None:
+            completed.append("structured planner receipt recorded")
         if review_result_ref is not None:
             completed.append("repo-side blocking review receipt recorded")
         if result_status == "succeeded":
@@ -823,8 +1271,13 @@ class HostLocalRunner:
         return completed
 
     @staticmethod
-    def _closeout_not_completed(result_status: str) -> list[str]:
+    def _closeout_not_completed(
+        result_status: str,
+        planner_result_ref: str | None,
+    ) -> list[str]:
         if result_status == "waiting_handoff":
+            if planner_result_ref is not None:
+                return ["planner disposition follow-up before worker execution"]
             return ["planner handoff resolution before worker execution"]
         if result_status == "needs_review":
             return ["blocking review disposition before downstream use"]
@@ -870,11 +1323,15 @@ class HostLocalRunner:
     def _closeout_residual_risks(
         result_status: str,
         cleanup_status: str,
+        planner_result_ref: str | None,
         review_result_ref: str | None,
     ) -> list[str]:
         risks = ["repo-side green does not imply live accepted"]
         if result_status == "waiting_handoff":
-            risks.append("live planner remains unwired; current handoff receipt is repo-side only")
+            if planner_result_ref is not None:
+                risks.append("planner receipt is repo-side only and still stops before worker execution")
+            else:
+                risks.append("live planner remains unwired; current handoff receipt is repo-side only")
         if result_status == "needs_review" and review_result_ref is not None:
             risks.append("review_result is a repo-side gate receipt; live heterogeneous review sidecar remains unwired")
         if cleanup_status == "deferred":
@@ -885,6 +1342,7 @@ class HostLocalRunner:
 
     @staticmethod
     def _closeout_repo_side_done(
+        planner_result_ref: str | None,
         review_result_ref: str | None,
         projection_markdown: Path | None,
     ) -> list[str]:
@@ -894,14 +1352,20 @@ class HostLocalRunner:
         ]
         if projection_markdown is not None:
             done.append("compatibility projection remains aligned with canonical runtime output")
+        if planner_result_ref is not None:
+            done.append("structured planner receipt now exists as a repo-side blocking artifact")
         if review_result_ref is not None:
             done.append("structured review receipt now exists as a repo-side blocking artifact")
         return done
 
     @staticmethod
-    def _closeout_still_open(result_status: str, current_next_action: str) -> list[str]:
+    def _closeout_still_open(
+        result_status: str,
+        current_next_action: str,
+        planner_result_ref: str | None,
+    ) -> list[str]:
         still_open = ["live accepted"]
-        if result_status == "waiting_handoff":
+        if result_status == "waiting_handoff" and planner_result_ref is None:
             still_open.append("live planner wiring")
         if result_status == "needs_review":
             still_open.append("live heterogeneous review wiring")
@@ -914,7 +1378,6 @@ class HostLocalRunner:
     def _planner_gate_reasons(
         self,
         task: CanonicalTask,
-        worker_profile: WorkerProfile,
     ) -> list[str]:
         reasons: list[str] = []
         if task.user_forced_planner:
@@ -923,13 +1386,36 @@ class HostLocalRunner:
             reasons.append(f"risk_level={task.risk_level}")
         if task.depends_on:
             reasons.append("depends_on=" + ", ".join(task.depends_on))
+        return reasons
+
+    def _worker_execution_gate_reasons(
+        self,
+        task: CanonicalTask,
+        worker_profile: WorkerProfile,
+    ) -> list[str]:
+        reasons: list[str] = []
         if task.execution_lane != worker_profile.lane:
             reasons.append(f"execution_lane={task.execution_lane}")
         if task.requires_network and worker_profile.network_profile == "off":
             reasons.append("requires_network=true")
         if task.requires_gui:
             reasons.append("requires_gui=true")
+        reasons.extend(self._runtime_capability_gate_reasons(worker_profile))
         return reasons
+
+    def _planner_sidecar_gate_reasons(
+        self,
+        worker_profile: WorkerProfile,
+    ) -> list[str]:
+        if worker_profile.worker_kind in LIVE_PLANNER_WORKER_KINDS:
+            return []
+        return [
+            (
+                "planner_sidecar_not_wired "
+                f"worker_kind={worker_profile.worker_kind} "
+                f"worker_profile={worker_profile.name}"
+            )
+        ]
 
     def _quota_gate_reasons(
         self,

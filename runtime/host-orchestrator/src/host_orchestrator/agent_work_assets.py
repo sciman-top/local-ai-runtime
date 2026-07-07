@@ -16,6 +16,9 @@ HANDOFF_POLICIES = {"none", "handoff_on_risk", "handoff_before_merge", "handoff_
 REQUIRED_VERIFICATION_COMMANDS = ("build", "test", "lint", "typecheck", "contract", "hotspot")
 REVIEWER_KINDS = {"claude_glm", "codex_review", "gpt54_direct_review"}
 REVIEW_MODES = {"advisory", "blocking"}
+PLANNER_KINDS = {"codex_sdk", "gpt54_direct", "repo_policy_gate"}
+PLANNER_MODES = {"advisory", "blocking"}
+PLANNER_DISPOSITIONS = {"proceed", "handoff"}
 RECOMMENDED_ACTIONS = {"approve", "revise", "reject"}
 DISPATCH_AGENT_ROLES = {
     "master",
@@ -131,6 +134,8 @@ def validate_dispatch_state_payload(payload: Mapping[str, Any]) -> None:
         _require_string(payload, "evidence_index_ref", "dispatch_state")
     if "review_result_ref" in payload and payload["review_result_ref"] is not None:
         _require_string(payload, "review_result_ref", "dispatch_state")
+    if "planner_result_ref" in payload and payload["planner_result_ref"] is not None:
+        _require_string(payload, "planner_result_ref", "dispatch_state")
     if "closeout_bundle_ref" in payload and payload["closeout_bundle_ref"] is not None:
         _require_string(payload, "closeout_bundle_ref", "dispatch_state")
     if "resume_point" in payload and payload["resume_point"] is not None:
@@ -223,6 +228,36 @@ def validate_review_result_payload(payload: Mapping[str, Any]) -> None:
         _require_string(finding_payload, "title", context)
         _require_string(finding_payload, "detail", context)
         _require_string(finding_payload, "suggested_fix", context)
+
+
+def validate_planner_result_payload(payload: Mapping[str, Any]) -> None:
+    required = (
+        "task_id",
+        "planner_kind",
+        "planner_mode",
+        "planner_profile",
+        "model",
+        "risk",
+        "disposition",
+        "reason_summary",
+        "blocking_reasons",
+        "plan_outline",
+        "source_evidence_refs",
+    )
+    for key in required:
+        _require_present(payload, key, "planner_result")
+
+    _require_string(payload, "task_id", "planner_result")
+    _require_enum(payload, "planner_kind", PLANNER_KINDS, "planner_result")
+    _require_enum(payload, "planner_mode", PLANNER_MODES, "planner_result")
+    _require_string(payload, "planner_profile", "planner_result")
+    _require_string(payload, "model", "planner_result")
+    _require_enum(payload, "risk", RISK_LEVELS, "planner_result")
+    _require_enum(payload, "disposition", PLANNER_DISPOSITIONS, "planner_result")
+    _require_string(payload, "reason_summary", "planner_result")
+    _require_string_list(payload, "blocking_reasons", "planner_result")
+    _require_string_list(payload, "plan_outline", "planner_result")
+    _require_string_list(payload, "source_evidence_refs", "planner_result", min_items=1)
 
 
 def _validate_manifest_task(task: Mapping[str, Any], context: str) -> None:
