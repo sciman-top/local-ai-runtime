@@ -74,6 +74,7 @@ PRD 的四档继续是唯一顶层口径：
 额外需要：
 
 - `leases / retry / route / quota` 仿真证据
+- repo-owned simulation entrypoint，例如 `runtime/host-orchestrator/scripts/run-multi-worker-simulation.ps1` 的 summary output
 - planner/review/handoff 基础契约已稳定
 
 ### platform compatibility green

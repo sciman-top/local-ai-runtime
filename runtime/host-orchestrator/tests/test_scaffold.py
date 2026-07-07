@@ -14,11 +14,13 @@ def test_host_orchestrator_scaffold_has_expected_layout() -> None:
         PROJECT_ROOT / "README.md",
         PROJECT_ROOT / "fixtures" / "wave1-smokes" / "manifest.json",
         PROJECT_ROOT / "scripts",
+        PROJECT_ROOT / "scripts" / "run-multi-worker-simulation.ps1",
         PROJECT_ROOT / "scripts" / "run-wave1-smokes.ps1",
         PROJECT_ROOT / "scripts" / "test-wave1-acceptance.ps1",
         PROJECT_ROOT / "src" / "host_orchestrator" / "__init__.py",
         PROJECT_ROOT / "src" / "host_orchestrator" / "__main__.py",
         PROJECT_ROOT / "src" / "host_orchestrator" / "cli.py",
+        PROJECT_ROOT / "src" / "host_orchestrator" / "multi_worker_simulation.py",
         PROJECT_ROOT / "src" / "host_orchestrator" / "paths.py",
         PROJECT_ROOT / "src" / "host_orchestrator" / "wave1_smoke.py",
     ]

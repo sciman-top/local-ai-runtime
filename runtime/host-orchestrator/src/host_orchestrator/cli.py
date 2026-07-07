@@ -6,6 +6,7 @@ from pathlib import Path
 
 from host_orchestrator import agentbridge
 from host_orchestrator.evidence_index import revalidate_evidence_index
+from host_orchestrator.multi_worker_simulation import run_multi_worker_simulation
 from host_orchestrator.paths import RuntimeLayout, discover_repo_root
 from host_orchestrator.task_lifecycle import (
     RESUME_POINTS,
@@ -43,6 +44,16 @@ def build_parser() -> argparse.ArgumentParser:
         "--wave1-smoke-run-id",
         default=None,
         help="Optional run id override for the Wave 1 smoke suite.",
+    )
+    parser.add_argument(
+        "--run-multi-worker-simulation",
+        action="store_true",
+        help="Run the deterministic multi-worker simulation suite and print its JSON summary.",
+    )
+    parser.add_argument(
+        "--multi-worker-simulation-run-id",
+        default=None,
+        help="Optional run id override for the multi-worker simulation suite.",
     )
     parser.add_argument(
         "--revalidate-evidence-index",
@@ -107,6 +118,14 @@ def main(argv: list[str] | None = None) -> int:
         summary = run_wave1_smokes(
             repo_root,
             run_id=args.wave1_smoke_run_id,
+        )
+        print(json.dumps(summary.to_dict(), indent=2, ensure_ascii=True))
+        return 0
+
+    if args.run_multi_worker_simulation:
+        summary = run_multi_worker_simulation(
+            repo_root,
+            run_id=args.multi_worker_simulation_run_id,
         )
         print(json.dumps(summary.to_dict(), indent=2, ensure_ascii=True))
         return 0

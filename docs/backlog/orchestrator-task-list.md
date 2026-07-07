@@ -160,7 +160,13 @@
     - selected profile 的 `max_active_leases` 超额时在 worker 前 handoff
   - Status note:
     - 2026-07-07 已完成 repo-side route/quota closeout；当前仍不是 multi-worker scheduler，也不等于 `multi-worker simulation green`
-- [ ] `P5-T02` multi-worker simulation
+- [x] `P5-T02` multi-worker simulation
+  - Done when:
+    - deterministic simulation 能覆盖 `retry / route / quota / review-handoff`
+    - summary 明确给出 `scenario_count / task_run_count / route_decision_count / retry_event_count / worker_statuses / state_counts`
+    - CLI/script entrypoint 可重跑并输出 JSON summary
+  - Status note:
+    - 2026-07-07 已完成 repo-side deterministic multi-worker simulation suite；当前仍不等于 live 多 worker scheduler 或 `live accepted`
 - [ ] `P5-T03` remote_non_gui promotion evidence
 
 ## Phase 6

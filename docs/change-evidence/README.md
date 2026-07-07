@@ -36,6 +36,7 @@
 - [20260707 Graded Autonomy Runtime Ledger](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260707-graded-autonomy-runtime-ledger.md)
 - [20260707 Runtime Lifecycle And Structured Receipts](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260707-runtime-lifecycle-and-structured-receipts.md)
 - [20260707 Route Selection And Quota Closeout](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260707-route-selection-and-quota-closeout.md)
+- [20260707 Deterministic Multi-Worker Simulation](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260707-deterministic-multi-worker-simulation.md)
 - [20260707 Subagent Worktree Operating Pack](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260707-subagent-worktree-operating-pack.md)
 - [20260707 Subagent Worktree Contract Assets](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260707-subagent-worktree-contract-assets.md)
 - [20260707 Subagent Worktree Best-Practice Review](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260707-subagent-worktree-best-practice-review.md)
@@ -73,4 +74,4 @@
 - Python repo-level line-ending policy 已显式覆盖 `*.py -> LF`
 - 本仓已接入 `AGENTS.md` 共同项目规则主体 + `CLAUDE.md` thin wrapper 试点；全局规则真源仍在 `D:\CODE\governed-ai-coding-runtime`
 - 当前 active queue 仍是 `PHASE-1-VERTICAL-SLICE`
-- 当前预期 next action 仍是粗粒度的 `promote_phase1_execution`；repo-side planner/review/path-guard/worktree-manager/cleanup-manager/runtime-ledger/lifecycle/receipt 与 `P5-T01` route/quota 最小切片已完成，下一最小切片转到 `multi-worker simulation`
+- 当前预期 next action 仍是粗粒度的 `promote_phase1_execution`；repo-side planner/review/path-guard/worktree-manager/cleanup-manager/runtime-ledger/lifecycle/receipt、`P5-T01` route/quota、以及 `P5-T02` deterministic multi-worker simulation 已完成，下一最小切片转到 `remote_non_gui` promotion evidence

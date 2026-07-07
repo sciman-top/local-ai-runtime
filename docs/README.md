@@ -52,8 +52,9 @@
 - `P3-T06` 的 repo-side lifecycle ops 已落地；`task_lifecycle.py` 与 CLI 现在可显式 materialize `stale / cancelled / resumed`，`retry` 通过 `attempt + retry_rewind` 收口
 - `P4-T04` 的 repo-side structured receipts 已落地；review-gated 路径现在会写 `review_result.json`，当前 runtime outcome 会写 `closeout_bundle.json`，并通过 `result.json / dispatch_state.json / evidence_index.json` 串起引用
 - `P5-T01` 的 repo-side `leases / route / quota` 收口已落地；explicit/default `worker_profile` 现在会 materialize `route_reason`，selected profile 的 `max_active_leases` 超额时会在 worker 前 handoff
+- `P5-T02` 的 deterministic multi-worker simulation 已落地；当前可复放 `retry / route / quota / review-handoff` summary，但这仍不等于 live 多 worker scheduler
 - `worktree` 当前只代表写入隔离，不代表 memory/provider/session 隔离
-- branch deletion 仍不自动化；当前 next repo-side gap 转到 `multi-worker simulation`，live planner/review sidecar 仍未接线
+- branch deletion 仍不自动化；当前 next repo-side gap 转到 `remote_non_gui` promotion evidence，live planner/review sidecar 仍未接线
 - `compatibility_projection_ref` 与 `lane` 字段名当前不改；是否迁移留到 Phase E parity 后再决定
 - 当前 active queue 仍是 `PHASE-1-VERTICAL-SLICE`；repo-side exit gates 已闭环，但 live posture 仍停在 `live probe ready`
 

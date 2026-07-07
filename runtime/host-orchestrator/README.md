@@ -23,13 +23,16 @@
 - `W1-T07` 所需的一键 repo-side 验收脚本：
   - `scripts/run-wave1-smokes.ps1`
   - `scripts/test-wave1-acceptance.ps1`
+- `P5-T02` 所需的 deterministic multi-worker simulation suite：
+  - `src/host_orchestrator/multi_worker_simulation.py`
+  - `scripts/run-multi-worker-simulation.ps1`
 
 当前明确不做：
 
 - live `Codex SDK` 真机执行验收
 - watcher / lease 抢占
 - 自动重试 / auto_continue
-- 多 worker / 多 repo
+- live 多 worker scheduler / 多 repo executor
 - live `AgentBridge` 自动接线
 
 当前验证口径：
@@ -40,7 +43,9 @@
   - `uv run pytest`
   - `snapshots/agentbridge-20260628/scripts/test-agentbridge-contract.ps1`
   - `private-local/wave-smokes/` 下的 deterministic smoke suite
+- `runtime/host-orchestrator/scripts/run-multi-worker-simulation.ps1` 会生成 deterministic `route / quota / retry / review-handoff` simulation summary
 - 以上只证明 repo-side 结构、契约、样本任务与 fake-first 验收资产成立
+- deterministic multi-worker simulation 只证明 repo-side orchestration behavior，不等于 live 多 worker scheduler 已验收
 - `AgentBridge` 当前只保留为 compatibility adapter，不再作为主协议输入
 - 还不等于 `Phase 1 accepted`
 
