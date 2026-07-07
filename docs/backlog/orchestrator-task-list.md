@@ -32,10 +32,12 @@
     - execution-critical override / markdown 侧 gate 命令输入 fail closed
   - Status note:
     - 2026-07-06 已落安全版 AgentBridge-first intake；随后推进到 `P2-T03`
-- [ ] `E-T01` Hermes parity and container lifecycle
+- [x] `E-T01` Hermes parity and container lifecycle
   - Done when:
     - parity / historical mapping / container lifecycle 进入同一闭环
     - 是否做 `compatibility_projection_ref` 与 `lane` rename 有明确决策
+  - Status note:
+    - 2026-07-07 已完成 repo-side closeout；当前明确决定继续保留 `compatibility_projection_ref` 与 `lane` 现名，不在当前 repo-side parity / topology closeout 中做字段改名，待 live planner/review sidecar 与 non-host_local runner 真接线后再复评
 - [ ] `F-T01` topology expansion
   - Done when:
     - `remote_non_gui` 进入 simulation

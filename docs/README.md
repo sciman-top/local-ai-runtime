@@ -58,7 +58,7 @@
 - `P6-T03` 的 repo-side `vm_gui` conditional promotion evidence 已落地；默认 GUI-only 请求现在会在 `host_local` 上因 `execution_lane=vm_gui; requires_gui=true` handoff，显式 `vm_gui_probe` 也只会 fail closed 到 `runner_not_wired`
 - `worktree` 当前只代表写入隔离，不代表 memory/provider/session 隔离
 - branch deletion 仍不自动化；当前 repo-side topology promotion proof已收口，live planner/review sidecar 与 non-host_local runner 仍未接线
-- `compatibility_projection_ref` 与 `lane` 字段名当前不改；是否迁移留到 Phase E parity 后再决定
+- `compatibility_projection_ref` 与 `lane` 字段名当前明确继续保留；待 live planner/review sidecar 与 non-host_local runner 真接线后再复评是否迁移
 - 当前 active queue 仍是 `PHASE-1-VERTICAL-SLICE`；repo-side exit gates 已闭环，但 live posture 仍停在 `live probe ready`
 
 ## Governance Overlay

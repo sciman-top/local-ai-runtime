@@ -90,7 +90,7 @@
 - 不做云端共享控制面
 - 不把当前仓重塑成通用 governance hub
 - 不把 AgentBridge round-trip parity、execution-critical override live support、或字段改名写成已完成
-- 不在 Phase E parity 前做 `compatibility_projection_ref` 或 `lane` 字段改名
+- 当前明确不在 repo-side parity / topology closeout 中做 `compatibility_projection_ref` 或 `lane` 字段改名；待 live planner/review sidecar 与 non-host_local runner 真接线后再复评
 - 不在无真实 GUI-only workload 证据时强行把 `vm_gui` 纳入同等级 live closeout
 
 ## 成功标准
@@ -106,6 +106,7 @@
 ### 中期
 
 - `host_local` 正确性、verification runner、安全边界下的 AgentBridge-first intake、repo-side projection parity、repo-side planner handoff、repo-side review gate、runtime ledger、repo-side lifecycle ops、repo-side structured review/closeout receipts、git-backed write-boundary enforcement、repo-side `leases / route / quota` closeout、deterministic multi-worker simulation suite、`remote_non_gui` promotion evidence、repo-owned Hermes parity / historical snapshot mapping verifier、以及 `vm_gui` conditional promotion evidence 已落地；后续进入 live planner wiring、live heterogeneous review、以及 non-host_local runner wiring
+- 当前字段名决策也已固定：`compatibility_projection_ref` 与 `lane` 继续保持现名，不在当前 repo-side parity / topology closeout 中改名
 - planner/review 触发条件全是机器可判定字段，且 `user_forced_planner / user_forced_review` 只允许 force on，不允许伪造 force off
 - AgentBridge round-trip 与 Hermes parity 继续在不反转 repo truth 的前提下推进；当前 verifier 只证明 repo-side baseline / snapshot mapping，不自动升级为 `platform compatibility green`
 

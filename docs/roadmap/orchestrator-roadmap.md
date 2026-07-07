@@ -62,7 +62,10 @@
 ### Phase E — Hermes Parity + Container Lifecycle
 
 - 目标：Hermes parity、container lifecycle、历史 baseline mapping、后置控制面扩展
-- 当前状态：待实现
+- 当前状态：
+  - repo-side 已完成
+  - 当前明确决定继续保留 `compatibility_projection_ref` 与 `lane` 现名，不在当前 repo-side parity / topology closeout 中做字段改名
+  - 是否需要 schema rename，待 live planner/review sidecar 与 non-host_local runner 真接线后再复评
 
 ### Phase F — Topology Expansion
 
