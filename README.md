@@ -30,6 +30,7 @@ Local AI Runtime is a Windows-first local orchestration runtime for audited AI c
 - `.ai/state/control-plane.db` 是调度真源
 - `.ai/runs/<run_id>/<task_id>/` 是正式 evidence 面
 - 执行 hot path 当前收敛为 `Codex-first`；Hermes 保留风险编排、runtime ledger、跨执行器适配与历史基线职责，Claude 仍是可插拔 review sidecar
+- repo-owned `host_local` task entrypoint 现已落地：`host-orchestrator --run-task` 与 `runtime/host-orchestrator/scripts/run-host-task.ps1` 当前会通过 worker factory 支持 `codex_sdk / codex_exec`；在现有 built-in profile 中，`local_maint` 直接走 `codex_sdk`，而 `remote_non_gui_probe / vm_gui_probe` 仍会因 non-host_local lane 在 worker 前 handoff
 - `host_local > remote_non_gui > vm_gui` 是终态能力范围与分级晋升顺序，不是同等级当前交付义务
 - `AgentBridge-first intake` 已以安全边界接入 `host_local`；execution-critical override 与 markdown 侧 gate 命令仍按 fail-closed 处理
 - `P2-T03` 的 repo-side projection parity 已落地，但这还不等于 `platform compatibility green` 或 `live accepted`
@@ -44,6 +45,7 @@ Local AI Runtime is a Windows-first local orchestration runtime for audited AI c
 - `P6-T01` / `P6-T02` 的 repo-side Hermes parity / historical snapshot mapping verifier 已落地；`run-hermes-parity.ps1` 现在会把 certified baseline doc、current known-good / boundary anchors、snapshot contract、known-good validator、以及 env-sensitive bring-up drift 收进同一 summary，但这仍不等于 `platform compatibility green` 或 `live accepted`
 - `P6-T03` 的 repo-side `vm_gui` conditional promotion evidence 已落地；默认 GUI-only 请求现在会在 `host_local` 上因 `execution_lane=vm_gui; requires_gui=true` handoff，显式 `vm_gui_probe` 也只会 fail closed 到 `runner_not_wired`，不会伪装成 vm runner 已执行
 - `compatibility_projection_ref` 与 `lane` 字段名当前明确继续保留；待 live planner/review sidecar 与 non-host_local runner 真接线后再复评是否迁移
+- 当前 `host_local` task entrypoint 虽已接线真实 worker factory，但这仍不等于 live planner/review sidecar、non-host_local runner、`platform compatibility green`、或 `live accepted`
 - `worktree` 当前只代表写入隔离，不代表 memory/provider/session 隔离
 
 ## Operator Assets

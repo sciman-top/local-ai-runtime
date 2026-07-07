@@ -10,6 +10,7 @@ from host_orchestrator.hermes_parity import run_hermes_parity
 from host_orchestrator.multi_worker_simulation import run_multi_worker_simulation
 from host_orchestrator.remote_non_gui_promotion import run_remote_non_gui_promotion
 from host_orchestrator.paths import RuntimeLayout, discover_repo_root
+from host_orchestrator.host_local import HostLocalConfig, HostLocalRunner
 from host_orchestrator.task_lifecycle import (
     RESUME_POINTS,
     cancel_task,
@@ -18,6 +19,7 @@ from host_orchestrator.task_lifecycle import (
     resume_task,
     retry_task,
 )
+from host_orchestrator.worker_factory import RuntimeWorkerFactory
 from host_orchestrator.vm_gui_promotion import run_vm_gui_promotion
 from host_orchestrator.wave1_smoke import run_wave1_smokes
 
@@ -37,6 +39,28 @@ def build_parser() -> argparse.ArgumentParser:
         "--print-layout",
         action="store_true",
         help="Print the default runtime layout as JSON.",
+    )
+    parser.add_argument(
+        "--run-task",
+        type=Path,
+        default=None,
+        help="Run a canonical JSON/YAML task or AgentBridge markdown task through the repo-owned host_local entrypoint.",
+    )
+    parser.add_argument(
+        "--agentbridge-root",
+        type=Path,
+        default=None,
+        help="Optional AgentBridge compatibility projection root override for --run-task.",
+    )
+    parser.add_argument(
+        "--worker-profile",
+        default=None,
+        help="Optional worker profile override for --run-task.",
+    )
+    parser.add_argument(
+        "--run-id",
+        default=None,
+        help="Optional run id override for --run-task.",
     )
     parser.add_argument(
         "--run-wave1-smokes",
@@ -146,6 +170,43 @@ def main(argv: list[str] | None = None) -> int:
 
     repo_root = args.repo_root.resolve() if args.repo_root else discover_repo_root()
     layout = RuntimeLayout.from_repo_root(repo_root)
+
+    if args.run_task is not None:
+        task_path = args.run_task if args.run_task.is_absolute() else (repo_root / args.run_task)
+        agentbridge_root = (
+            args.agentbridge_root.resolve()
+            if args.agentbridge_root is not None
+            else repo_root / "AgentBridge"
+        )
+        runner = HostLocalRunner(
+            HostLocalConfig(
+                workspace_root=repo_root,
+                layout=layout,
+                agentbridge_root=agentbridge_root,
+                worker_profile=args.worker_profile,
+                run_id=args.run_id,
+            ),
+            worker_factory=RuntimeWorkerFactory(),
+        )
+        result_path = runner.run_task(task_path.resolve(strict=False))
+        payload = json.loads(result_path.read_text(encoding="utf-8"))
+        print(
+            json.dumps(
+                {
+                    "result_path": str(result_path),
+                    "task_id": payload["task_id"],
+                    "run_id": payload["run_id"],
+                    "status": payload["status"],
+                    "worker_profile": payload["worker_profile"],
+                    "worker_kind": payload["worker_kind"],
+                    "handoff_required": payload["handoff_required"],
+                    "next_action": payload["next_action"],
+                },
+                indent=2,
+                ensure_ascii=False,
+            )
+        )
+        return 0
 
     if args.run_wave1_smokes:
         summary = run_wave1_smokes(

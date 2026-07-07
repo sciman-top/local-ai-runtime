@@ -15,6 +15,7 @@ def test_host_orchestrator_scaffold_has_expected_layout() -> None:
         PROJECT_ROOT / "fixtures" / "wave1-smokes" / "manifest.json",
         PROJECT_ROOT / "scripts",
         PROJECT_ROOT / "scripts" / "run-hermes-parity.ps1",
+        PROJECT_ROOT / "scripts" / "run-host-task.ps1",
         PROJECT_ROOT / "scripts" / "run-remote-non-gui-promotion.ps1",
         PROJECT_ROOT / "scripts" / "run-vm-gui-promotion.ps1",
         PROJECT_ROOT / "scripts" / "run-multi-worker-simulation.ps1",
@@ -29,6 +30,7 @@ def test_host_orchestrator_scaffold_has_expected_layout() -> None:
         PROJECT_ROOT / "src" / "host_orchestrator" / "vm_gui_promotion.py",
         PROJECT_ROOT / "src" / "host_orchestrator" / "paths.py",
         PROJECT_ROOT / "src" / "host_orchestrator" / "wave1_smoke.py",
+        PROJECT_ROOT / "src" / "host_orchestrator" / "worker_factory.py",
     ]
 
     missing = [

@@ -21,6 +21,7 @@
 
 - 当前 intake 主路径支持 canonical `task.json` / `task.yaml`，并在 `host_local` 边界接收合规 AgentBridge markdown task
 - markdown intake 已接线，但只把受支持字段归一化到 repo-owned canonical 默认值；execution-critical override 与 gate 命令输入保持 fail-closed
+- repo-owned `host_local` task entrypoint 现已通过 `host-orchestrator --run-task` 与 `runtime/host-orchestrator/scripts/run-host-task.ps1` 落地，并通过 worker factory 支持 `codex_sdk / codex_exec`
 - `.ai/runs/<run_id>/<task_id>/result.json` 仍是正式结果主面
 - `AgentBridge results/*.md` 当前仍是 compatibility projection
 - `remote_non_gui` 当前已具备 repo-owned probe profile 与 promotion evidence，但仍没有 runner 实现；`vm_gui` 目前仍只有 contract 枚举
@@ -160,6 +161,7 @@
 - `worker_kind` 描述 adapter 路径
 - `worker_profile` 描述 `.ai/config/workers.yaml` 中的具名配置档
 - `model_policy` 由 runtime 根据风险、policy surface、lane 与任务角色写入，不再把所有子代理固定到同一模型与同一 reasoning 档
+- 当前 repo-owned live task execution 会直接消费 `local_maint` 的 `codex_sdk` 路径；built-in `codex_exec` profiles 仍保持 non-host-local handoff 边界；`scripted / gpt54_direct / claude_glm` 继续 fail-closed，直到对应 live lane 真正接线
 
 ### Verification Runner
 

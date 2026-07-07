@@ -66,6 +66,8 @@
 - [x] `P1-T03A` repo-owned config / worker-profile contract
 - [x] `P1-T04` 一次真实 SDK 垂直切片
 - [x] `P1-T05` `evidence_index.json` sha256 可重算
+  - Status note:
+    - 2026-07-07 已补 repo-owned `host_local` task entrypoint 与 worker factory；`host-orchestrator --run-task` / `run-host-task.ps1` 当前已直接消费 `local_maint` 的 `codex_sdk` 路径，并在结构上支持 `codex_exec`；built-in `codex_exec` profiles 仍保持 non-host-local handoff，而 `scripted / gpt54_direct / claude_glm` 继续 live task execution fail-closed
 
 ## Phase 2
 

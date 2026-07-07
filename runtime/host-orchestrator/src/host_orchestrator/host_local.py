@@ -35,6 +35,7 @@ from host_orchestrator.worktree_manager import (
     prepare_task_workspace,
 )
 from host_orchestrator.worker import WorkerLike, WorkerRequest, WorkerResult, WorkerUsage
+from host_orchestrator.worker_factory import WorkerBuilder
 
 
 PLANNER_HANDOFF_NEXT_ACTION = "planner handoff required before worker execution"
@@ -62,9 +63,16 @@ class RouteDecision:
 class HostLocalRunner:
     _LEASE_TTL = timedelta(minutes=30)
 
-    def __init__(self, config: HostLocalConfig, worker: WorkerLike) -> None:
+    def __init__(
+        self,
+        config: HostLocalConfig,
+        worker: WorkerLike | None = None,
+        *,
+        worker_factory: WorkerBuilder | None = None,
+    ) -> None:
         self._config = config
         self._worker = worker
+        self._worker_factory = worker_factory
         self._runtime_config = load_runtime_config(config.layout.repo_root)
 
     def run_task(self, task_path: Path) -> Path:
@@ -320,7 +328,8 @@ class HostLocalRunner:
                 sandbox=worker_profile.sandbox(),
                 approval_mode=worker_profile.approval_mode(),
             )
-            worker_result = self._worker.run(request)
+            worker = self._resolve_worker(worker_profile)
+            worker_result = worker.run(request)
             enforce_workspace_change_policy(
                 task=task,
                 workspace_root=guarded_workspace_root,
@@ -1149,6 +1158,16 @@ class HostLocalRunner:
             or f"repo default worker_profile={worker_profile.name} selected from orchestrator.yaml"
         )
         return RouteDecision(worker_profile=worker_profile, route_reason=route_reason)
+
+    def _resolve_worker(self, worker_profile: WorkerProfile) -> WorkerLike:
+        if self._worker is not None:
+            return self._worker
+        if self._worker_factory is not None:
+            return self._worker_factory.build(worker_profile)
+        raise RuntimeError(
+            "HostLocalRunner reached worker execution without a configured worker or worker factory "
+            f"(worker_profile={worker_profile.name})"
+        )
 
     @staticmethod
     def _format_status_reason(prefix: str, reasons: list[str]) -> str:

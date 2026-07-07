@@ -39,6 +39,7 @@
 - `.ai/state/control-plane.db` 是调度真源
 - `.ai/runs/<run_id>/<task_id>/` 是正式 evidence 面
 - `.ai/config/*.yaml` 是 repo-owned 运行时配置真源
+- repo-owned `host_local` task entrypoint 现已落地：`host-orchestrator --run-task` 与 `runtime/host-orchestrator/scripts/run-host-task.ps1` 当前会通过 worker factory 支持 `codex_sdk / codex_exec`；在现有 built-in profile 中，`local_maint` 直接走 `codex_sdk`，而 `remote_non_gui_probe / vm_gui_probe` 仍会因 non-host_local lane 在 worker 前 handoff
 - `host_local > remote_non_gui > vm_gui` 是终态能力范围与分级晋升顺序
 - `AgentBridge-first intake` 已以安全边界接入 `host_local`；markdown task 先归一化到 repo-owned canonical 默认值，并对 execution-critical override fail closed
 - `P2-T03` 的 repo-side AgentBridge round-trip parity 已落地，但尚未自动升级为 `platform compatibility green`
@@ -58,6 +59,7 @@
 - `P6-T03` 的 repo-side `vm_gui` conditional promotion evidence 已落地；默认 GUI-only 请求现在会在 `host_local` 上因 `execution_lane=vm_gui; requires_gui=true` handoff，显式 `vm_gui_probe` 也只会 fail closed 到 `runner_not_wired`
 - `worktree` 当前只代表写入隔离，不代表 memory/provider/session 隔离
 - branch deletion 仍不自动化；当前 repo-side topology promotion proof已收口，live planner/review sidecar 与 non-host_local runner 仍未接线
+- 当前 `host_local` task entrypoint 虽已接线真实 worker factory，但这仍不等于 live planner/review sidecar、non-host_local runner、`platform compatibility green`、或 `live accepted`
 - `compatibility_projection_ref` 与 `lane` 字段名当前明确继续保留；待 live planner/review sidecar 与 non-host_local runner 真接线后再复评是否迁移
 - 当前 active queue 仍是 `PHASE-1-VERTICAL-SLICE`；repo-side exit gates 已闭环，但 live posture 仍停在 `live probe ready`
 

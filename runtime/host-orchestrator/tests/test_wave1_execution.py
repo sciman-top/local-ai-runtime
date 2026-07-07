@@ -28,6 +28,7 @@ from host_orchestrator.worker import (
     WorkerResult,
     WorkerUsage,
 )
+from host_orchestrator.worker_factory import RuntimeWorkerFactory, WorkerFactoryError
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -200,6 +201,103 @@ def test_exec_fallback_worker_reads_output_last_message(tmp_path: Path) -> None:
     result = worker.run(request)
 
     assert result.final_response == "FALLBACK_OK"
+
+
+def test_runtime_worker_factory_reuses_codex_client_for_sdk_workers(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from host_orchestrator.config_runtime import WorkerProfile
+
+    created_clients: list[object] = []
+
+    class FakeCodex:
+        pass
+
+    def fake_codex_constructor() -> FakeCodex:
+        client = FakeCodex()
+        created_clients.append(client)
+        return client
+
+    monkeypatch.setattr("host_orchestrator.worker_factory.Codex", fake_codex_constructor)
+
+    profile = WorkerProfile(
+        name="local_maint",
+        worker_kind="codex_sdk",
+        lane="host_local",
+        model="gpt-5.4",
+        provider="openai-codex-sdk",
+        sandbox_profile="workspace_write",
+        approval_policy="never",
+        network_profile="off",
+        projection_mode="compatibility_dual_write",
+        max_active_leases=1,
+    )
+
+    factory = RuntimeWorkerFactory()
+    worker_one = factory.build(profile)
+    worker_two = factory.build(profile)
+
+    assert worker_one.__class__.__name__ == "CodexSdkWorker"
+    assert worker_two.__class__.__name__ == "CodexSdkWorker"
+    assert created_clients == [worker_one._codex]
+    assert worker_one._codex is worker_two._codex
+
+
+def test_runtime_worker_factory_builds_exec_fallback_worker() -> None:
+    from host_orchestrator.config_runtime import WorkerProfile
+
+    profile = WorkerProfile(
+        name="remote_non_gui_probe",
+        worker_kind="codex_exec",
+        lane="remote_non_gui",
+        model="gpt-5.4",
+        provider="remote-runner-placeholder",
+        sandbox_profile="workspace_write",
+        approval_policy="never",
+        network_profile="restricted",
+        projection_mode="compatibility_dual_write",
+        max_active_leases=1,
+    )
+
+    worker = RuntimeWorkerFactory().build(profile)
+
+    assert worker.__class__.__name__ == "CodexExecFallbackWorker"
+
+
+def test_runtime_worker_factory_rejects_unwired_worker_kinds() -> None:
+    from host_orchestrator.config_runtime import WorkerProfile
+
+    factory = RuntimeWorkerFactory()
+    unsupported_profiles = [
+        WorkerProfile(
+            name="wave1_smoke",
+            worker_kind="scripted",
+            lane="host_local",
+            model="gpt-5.4",
+            provider="wave1-scripted-fake-worker",
+            sandbox_profile="workspace_write",
+            approval_policy="never",
+            network_profile="off",
+            projection_mode="compatibility_dual_write",
+            max_active_leases=1,
+        ),
+        WorkerProfile(
+            name="direct_planner",
+            worker_kind="gpt54_direct",
+            lane="host_local",
+            model="gpt-5.4",
+            provider="direct-gateway-placeholder",
+            sandbox_profile="workspace_write",
+            approval_policy="never",
+            network_profile="restricted",
+            projection_mode="compatibility_dual_write",
+            max_active_leases=1,
+        ),
+    ]
+
+    for profile in unsupported_profiles:
+        with pytest.raises(WorkerFactoryError):
+            factory.build(profile)
 
 
 def test_initialize_control_plane_creates_expected_tables(tmp_path: Path) -> None:
@@ -573,6 +671,102 @@ def test_cli_revalidates_evidence_index(tmp_path: Path, capsys: pytest.CaptureFi
     assert payload["ok"] is True
     assert payload["task_id"] == task_id
     assert payload["checked_entry_count"] == 9
+
+
+def test_cli_run_task_uses_repo_owned_worker_factory(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir()
+    (repo_root / "AGENTS.md").write_text("stub", encoding="utf-8")
+    _copy_runtime_config(repo_root)
+
+    task_id = "TASK-20260708-cli-run-task"
+    task_path = repo_root / "tasks" / f"{task_id}.json"
+    payload = _canonical_task_payload(task_id)
+    payload["risk_level"] = "low"
+    payload["write_access"] = False
+    write_task(task_path, payload)
+
+    class FakeRuntimeWorkerFactory:
+        def build(self, worker_profile: object) -> object:
+            class FakeWorker:
+                def run(self, request: WorkerRequest) -> WorkerResult:
+                    assert f"task_id: {task_id}" in request.prompt
+                    return WorkerResult(
+                        final_response="CLI_TASK_OK",
+                        raw_result={"kind": "fake"},
+                    )
+
+            return FakeWorker()
+
+    monkeypatch.setattr("host_orchestrator.cli.RuntimeWorkerFactory", FakeRuntimeWorkerFactory)
+
+    exit_code = cli_main(
+        [
+            "--repo-root",
+            str(repo_root),
+            "--run-task",
+            str(task_path),
+            "--run-id",
+            "cli-run-task",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+
+    assert exit_code == 0
+    assert payload == {
+        "result_path": str(repo_root / ".ai" / "runs" / "cli-run-task" / task_id / "result.json"),
+        "task_id": task_id,
+        "run_id": "cli-run-task",
+        "status": "succeeded",
+        "worker_profile": "local_maint",
+        "worker_kind": "codex_sdk",
+        "handoff_required": False,
+        "next_action": "none",
+    }
+
+
+def test_host_local_runner_avoids_worker_factory_when_pre_worker_handoff_triggers(
+    tmp_path: Path,
+) -> None:
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir()
+    (repo_root / "AGENTS.md").write_text("stub", encoding="utf-8")
+    _copy_runtime_config(repo_root)
+
+    task_id = "TASK-20260708-factory-not-needed"
+    task_path = repo_root / "tasks" / f"{task_id}.json"
+    payload = _canonical_task_payload(task_id)
+    payload["risk_level"] = "critical"
+    payload["write_access"] = False
+    write_task(task_path, payload)
+
+    class FailIfBuiltFactory:
+        def __init__(self) -> None:
+            self.build_count = 0
+
+        def build(self, worker_profile: object) -> object:
+            self.build_count += 1
+            raise AssertionError("planner handoff should happen before worker factory use")
+
+    factory = FailIfBuiltFactory()
+    runner = HostLocalRunner(
+        HostLocalConfig(
+            workspace_root=repo_root,
+            layout=RuntimeLayout.from_repo_root(repo_root),
+            run_id="factory-not-needed",
+        ),
+        worker_factory=factory,
+    )
+
+    result_path = runner.run_task(task_path)
+    result_payload = json.loads(result_path.read_text(encoding="utf-8"))
+
+    assert factory.build_count == 0
+    assert result_payload["status"] == "waiting_handoff"
 
 
 def test_wave1_smoke_manifest_covers_three_categories() -> None:

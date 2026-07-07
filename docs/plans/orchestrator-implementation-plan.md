@@ -138,6 +138,7 @@
 - `P1-T03A` repo-owned config / worker-profile contract 已吸收
 - `P1-T04` 一次非 mock 的 `Codex SDK` real vertical slice 已完成
 - `P1-T05` `evidence_index.json` sha256 可重算入口已落地
+- repo-owned `host_local` task entrypoint 与 worker factory 已落地：`host-orchestrator --run-task` / `run-host-task.ps1` 当前已直接消费 `local_maint` 的 `codex_sdk` 路径，并在结构上支持 `codex_exec`；built-in `codex_exec` profiles 仍保持 non-host-local handoff，而 `scripted / gpt54_direct / claude_glm` 继续 live task execution fail-closed
 
 ### Phase 2 contract foundations already landed repo-side
 

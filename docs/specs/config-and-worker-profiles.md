@@ -132,6 +132,10 @@ repo contract 到当前执行实现的映射：
 
 - `approval` / `sandbox` / `network` 必须先经过 repo-owned abstraction
 - host runtime 只消费 abstraction，不直接在代码里散落硬编码默认值
+- 当前 repo-owned live task entrypoint 会通过 worker factory 物化 `worker_kind`：
+  - `codex_sdk` -> `CodexSdkWorker`
+  - `codex_exec` -> `CodexExecFallbackWorker`
+  - `scripted / gpt54_direct / claude_glm` 当前仍对 live task execution fail closed，不得伪装成已接线
 
 ## impl_pack Absorption
 

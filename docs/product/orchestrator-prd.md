@@ -62,6 +62,7 @@
 
 - `Codex SDK` 主 worker
 - `codex exec` fail-closed fallback
+- repo-owned `host_local` task entrypoint：`host-orchestrator --run-task` / `run-host-task.ps1`
 - worktree-per-write-task
 - single-writer discipline
 - `allowed_paths / forbidden_paths / worktree_path / branch_name` 必须成为 runtime enforcement，而不只是静态声明
@@ -106,6 +107,7 @@
 ### 中期
 
 - `host_local` 正确性、verification runner、安全边界下的 AgentBridge-first intake、repo-side projection parity、repo-side planner handoff、repo-side review gate、runtime ledger、repo-side lifecycle ops、repo-side structured review/closeout receipts、git-backed write-boundary enforcement、repo-side `leases / route / quota` closeout、deterministic multi-worker simulation suite、`remote_non_gui` promotion evidence、repo-owned Hermes parity / historical snapshot mapping verifier、以及 `vm_gui` conditional promotion evidence 已落地；后续进入 live planner wiring、live heterogeneous review、以及 non-host_local runner wiring
+- repo-owned `host_local` task entrypoint 与 worker factory 已落地：当前 `host-orchestrator --run-task` / `run-host-task.ps1` 已直接消费 `local_maint` 的 `codex_sdk` 路径，并在结构上支持 `codex_exec`；built-in `codex_exec` profiles 仍保持 non-host-local handoff，而 `scripted / gpt54_direct / claude_glm` 继续 live task execution fail-closed
 - 当前字段名决策也已固定：`compatibility_projection_ref` 与 `lane` 继续保持现名，不在当前 repo-side parity / topology closeout 中改名
 - planner/review 触发条件全是机器可判定字段，且 `user_forced_planner / user_forced_review` 只允许 force on，不允许伪造 force off
 - AgentBridge round-trip 与 Hermes parity 继续在不反转 repo truth 的前提下推进；当前 verifier 只证明 repo-side baseline / snapshot mapping，不自动升级为 `platform compatibility green`
@@ -142,6 +144,7 @@
 - `mock green` 只是 `repo-side green` 的子状态，不是新的 acceptance tier
 - `live probe ready` 只是进入 `live accepted` 前的 readiness gate，不是新的 acceptance tier
 - planner/review 失败、缺 gateway、缺 credentials 只能降级，不能伪装成 live success
+- repo-owned `host_local` task entrypoint 只是当前主线 runtime 接线，不等于 live planner/review sidecar、non-host_local runner、`platform compatibility green`、或 `live accepted`
 - 当前 repo truth 仍是 canonical intake + `result.json` + compatibility projection；目标态只能写成迁移窗口，不得写成当前事实
 - `governed-ai-coding-runtime` 只作为 `governance-sidecar` companion 提供 gate / evidence / selector 机制参考，不替代当前主线实现真源
 - 全局规则真源在控制仓；本仓只维护 repo-specific truth，并通过 audit + integration + verification 吸收规则治理能力
