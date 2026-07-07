@@ -147,6 +147,7 @@ class HostLocalRunner:
             )
             validate_task_paths(task=task, repo_root=self._config.layout.repo_root)
             handoff_reasons = self._planner_gate_reasons(task, worker_profile)
+            handoff_reasons.extend(self._runtime_capability_gate_reasons(worker_profile))
             handoff_reasons.extend(self._quota_gate_reasons(worker_profile))
             if handoff_reasons:
                 finished_at = agentbridge.utc_now_iso()
@@ -937,6 +938,21 @@ class HostLocalRunner:
                 f"worker_profile={worker_profile.name} "
                 f"active_leases={active_leases} "
                 f"max_active_leases={worker_profile.max_active_leases}"
+            )
+        ]
+
+    def _runtime_capability_gate_reasons(
+        self,
+        worker_profile: WorkerProfile,
+    ) -> list[str]:
+        if worker_profile.lane == "host_local":
+            return []
+        return [
+            (
+                "host_runtime=host_local "
+                f"selected_lane={worker_profile.lane} "
+                "runner_not_wired "
+                f"worker_profile={worker_profile.name}"
             )
         ]
 

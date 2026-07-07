@@ -64,6 +64,7 @@
 - 当前 planner/review/completed runtime outcome 还会额外写出 `closeout_bundle.json`
 - explicit/default `worker_profile` 选择原因当前会落到 `result.json`、`dispatch_state.json`、以及 `route_decisions`
 - 若选中 profile 的 active lease 数超过 `max_active_leases`，当前会在 worker 前 handoff，并仍保留同等最小工件集合
+- 若选中 profile 的 `lane != host_local` 而当前 runtime 仍是 `host_local`，当前也会在 worker 前 fail closed 到 handoff，并仍保留同等最小工件集合
 - 这些 extra receipts 表达的是 repo-side receipt truth，不等于 live planner / live review sidecar 已接线
 
 ## Cleanup Ownership

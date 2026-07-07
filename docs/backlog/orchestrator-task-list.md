@@ -167,7 +167,13 @@
     - CLI/script entrypoint 可重跑并输出 JSON summary
   - Status note:
     - 2026-07-07 已完成 repo-side deterministic multi-worker simulation suite；当前仍不等于 live 多 worker scheduler 或 `live accepted`
-- [ ] `P5-T03` remote_non_gui promotion evidence
+- [x] `P5-T03` remote_non_gui promotion evidence
+  - Done when:
+    - repo-owned `remote_non_gui_probe` profile 已进入 `workers.yaml`
+    - 选中 `remote_non_gui` lane/profile 时，`host_local` 会在 worker 前 fail closed 到 handoff，而不是伪装成 remote runner 已执行
+    - CLI/script entrypoint 可重跑 promotion summary，并显式给出 `route_decision_count / worker_lanes / state_counts`
+  - Status note:
+    - 2026-07-07 已完成 repo-side `remote_non_gui` promotion evidence；当前仍未落 remote runner、`platform compatibility green`、或 `live accepted`
 
 ## Phase 6
 

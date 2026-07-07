@@ -110,7 +110,8 @@
   - `P3-T06` lifecycle ops 已完成：repo-side 现在可显式 materialize `stale / cancelled / resumed`，`retry` 通过 `attempt + retry_rewind` 收口
   - `P5-T01` 的 repo-side `leases / route / quota` 收口已完成：explicit/default `worker_profile` 现在会 materialize `route_reason`，worker-profile `max_active_leases` 超额时会在 worker 前 handoff
   - `P5-T02` 的 deterministic multi-worker simulation 已完成：当前可复放 `retry / route / quota / review-handoff` summary，并输出 JSON evidence
-  - next repo-side gap 转到 `remote_non_gui` promotion evidence
+  - `P5-T03` 的 `remote_non_gui` promotion evidence 已完成：当前可复放 baseline remote-lane handoff 与 explicit remote-profile fail-closed handoff summary，并输出 JSON evidence
+  - next repo-side gap 转到 `Hermes parity / historical snapshot mapping`
 - 出口门禁：`build -> [lint -> typecheck] -> test -> contract -> hotspot` 统一跑通
 
 ### Phase 4 Planner / Review

@@ -87,6 +87,7 @@ acceptance:
 | --- | --- | --- |
 | `local_maint` | 当前 Phase 1 host-local 默认 profile | repo-side 与 live SDK 共用入口 |
 | `wave1_smoke` | Wave 1 deterministic smoke profile | 只允许 repo-side mock，不得宣称 live accepted |
+| `remote_non_gui_probe` | repo-side `remote_non_gui` promotion evidence profile | 只证明 lane promotion / fail-closed handoff，不得宣称 remote runner 已执行 |
 
 ## policies.yaml
 
@@ -115,6 +116,7 @@ acceptance:
 6. selected `worker_profile` 的 active lease 数超过 `max_active_leases` 时，runtime 必须在 worker 前 fail closed 到 handoff，而不是伪装成多 worker 已调度
 7. `wave1_smoke` 这类 mock profile 只能证明 `mock green`，不能满足 `live probe ready` 或 `live accepted`
 8. 默认模型策略应当是 role-aware / risk-aware / lane-aware，而不是把所有子代理固定为同一模型与同一 reasoning effort
+9. 当 `HostLocalRunner` 选中的 profile `lane != host_local` 时，当前必须 fail closed 到 handoff，并把 non-host-local promotion 只写成 repo-side evidence，不得伪装成 remote/vm runner 已执行
 
 ## Mapping To Codex Runtime
 

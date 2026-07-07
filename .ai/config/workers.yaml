@@ -20,3 +20,14 @@ workers:
     network_profile: "off"
     projection_mode: compatibility_dual_write
     max_active_leases: 1
+
+  remote_non_gui_probe:
+    worker_kind: codex_exec
+    lane: remote_non_gui
+    model: gpt-5.4
+    provider: remote-runner-placeholder
+    sandbox_profile: workspace_write
+    approval_policy: never
+    network_profile: restricted
+    projection_mode: compatibility_dual_write
+    max_active_leases: 1

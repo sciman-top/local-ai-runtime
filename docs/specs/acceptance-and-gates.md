@@ -77,6 +77,13 @@ PRD 的四档继续是唯一顶层口径：
 - repo-owned simulation entrypoint，例如 `runtime/host-orchestrator/scripts/run-multi-worker-simulation.ps1` 的 summary output
 - planner/review/handoff 基础契约已稳定
 
+### topology promotion evidence（细分证明，不是新 tier）
+
+额外需要：
+
+- non-host-local `worker_profile` 在 `host_local` 上只能 fail closed 到 handoff，不能伪装成 remote/vm runner 已执行
+- repo-owned promotion entrypoint，例如 `runtime/host-orchestrator/scripts/run-remote-non-gui-promotion.ps1` 的 summary output
+
 ### platform compatibility green
 
 额外需要：

@@ -40,6 +40,7 @@ Local AI Runtime is a Windows-first local orchestration runtime for audited AI c
 - `P4-T04` 的 repo-side structured receipts 已落地；review-gated 路径现在会写 `review_result.json`，当前 runtime outcome 会写 `closeout_bundle.json`
 - `P5-T01` 的 repo-side `leases / route / quota` 收口已落地；explicit/default `worker_profile` 现在会 materialize `route_reason`，selected profile 的 `max_active_leases` 超额时会在 worker 前 handoff
 - `P5-T02` 的 deterministic multi-worker simulation 已落地；当前可复放 `retry / route / quota / review-handoff` summary，但这仍不等于 live 多 worker scheduler
+- `P5-T03` 的 `remote_non_gui` promotion evidence 已落地；repo-owned `remote_non_gui_probe` 现在可被显式选中，但 `host_local` 只会 fail closed 到 handoff 并留下 promotion evidence，不会伪装成 remote runner 已执行
 - `worktree` 当前只代表写入隔离，不代表 memory/provider/session 隔离
 
 ## Operator Assets

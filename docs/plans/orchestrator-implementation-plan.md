@@ -156,6 +156,6 @@
 - `P3-T05` graded autonomy runtime ledger：completed（runtime-backed `dispatch_state.json` + `result.json` metadata + `runtime_tasks` index alignment）
 - `P3-T06` lifecycle ops：completed（repo-side stale/cancel/resume/retry helpers + CLI entrypoints + tests）
 - `P4-T04` structured review/closeout receipts：completed（`review_result.json` + `closeout_bundle.json` + result/dispatch/evidence refs）
-- next: `remote_non_gui` promotion evidence（`P5-T01` repo-side `leases / route / quota` 与 `P5-T02` deterministic multi-worker simulation 已收口；branch deletion 仍不自动化；live planner/review sidecar 仍未接线）
+- next: `Hermes parity / historical snapshot mapping`（`P5-T01` repo-side `leases / route / quota`、`P5-T02` deterministic multi-worker simulation、以及 `P5-T03` remote_non_gui promotion evidence 已收口；branch deletion 仍不自动化；live planner/review sidecar 与 remote runner 仍未接线）
 
 其中 `planner/review` 继续保留在 repo `Phase 4`，不并回容器或资源 phase。

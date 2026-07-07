@@ -7,6 +7,7 @@ from pathlib import Path
 from host_orchestrator import agentbridge
 from host_orchestrator.evidence_index import revalidate_evidence_index
 from host_orchestrator.multi_worker_simulation import run_multi_worker_simulation
+from host_orchestrator.remote_non_gui_promotion import run_remote_non_gui_promotion
 from host_orchestrator.paths import RuntimeLayout, discover_repo_root
 from host_orchestrator.task_lifecycle import (
     RESUME_POINTS,
@@ -54,6 +55,16 @@ def build_parser() -> argparse.ArgumentParser:
         "--multi-worker-simulation-run-id",
         default=None,
         help="Optional run id override for the multi-worker simulation suite.",
+    )
+    parser.add_argument(
+        "--run-remote-non-gui-promotion",
+        action="store_true",
+        help="Run the deterministic remote_non_gui promotion suite and print its JSON summary.",
+    )
+    parser.add_argument(
+        "--remote-non-gui-promotion-run-id",
+        default=None,
+        help="Optional run id override for the remote_non_gui promotion suite.",
     )
     parser.add_argument(
         "--revalidate-evidence-index",
@@ -126,6 +137,14 @@ def main(argv: list[str] | None = None) -> int:
         summary = run_multi_worker_simulation(
             repo_root,
             run_id=args.multi_worker_simulation_run_id,
+        )
+        print(json.dumps(summary.to_dict(), indent=2, ensure_ascii=True))
+        return 0
+
+    if args.run_remote_non_gui_promotion:
+        summary = run_remote_non_gui_promotion(
+            repo_root,
+            run_id=args.remote_non_gui_promotion_run_id,
         )
         print(json.dumps(summary.to_dict(), indent=2, ensure_ascii=True))
         return 0

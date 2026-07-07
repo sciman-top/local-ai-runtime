@@ -26,6 +26,9 @@
 - `P5-T02` 所需的 deterministic multi-worker simulation suite：
   - `src/host_orchestrator/multi_worker_simulation.py`
   - `scripts/run-multi-worker-simulation.ps1`
+- `P5-T03` 所需的 remote_non_gui promotion evidence suite：
+  - `src/host_orchestrator/remote_non_gui_promotion.py`
+  - `scripts/run-remote-non-gui-promotion.ps1`
 
 当前明确不做：
 
@@ -44,8 +47,10 @@
   - `snapshots/agentbridge-20260628/scripts/test-agentbridge-contract.ps1`
   - `private-local/wave-smokes/` 下的 deterministic smoke suite
 - `runtime/host-orchestrator/scripts/run-multi-worker-simulation.ps1` 会生成 deterministic `route / quota / retry / review-handoff` simulation summary
+- `runtime/host-orchestrator/scripts/run-remote-non-gui-promotion.ps1` 会生成 deterministic baseline remote-lane handoff 与 explicit remote-profile fail-closed handoff summary
 - 以上只证明 repo-side 结构、契约、样本任务与 fake-first 验收资产成立
 - deterministic multi-worker simulation 只证明 repo-side orchestration behavior，不等于 live 多 worker scheduler 已验收
+- remote_non_gui promotion evidence 只证明 lane promotion / fail-closed handoff，不等于 remote runner 已验收
 - `AgentBridge` 当前只保留为 compatibility adapter，不再作为主协议输入
 - 还不等于 `Phase 1 accepted`
 
