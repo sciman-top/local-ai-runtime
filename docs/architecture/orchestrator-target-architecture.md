@@ -8,6 +8,7 @@
 - 历史仓库 slug / 当前本地目录仍为 `local-ai-dev-orchestrator`
 
 - 产品主线回调为 `Hermes -> AgentBridge -> Codex`
+- 执行 hot path 当前收敛为 `Codex-first`
 - `runtime/host-orchestrator` 是 `host_local` 可信运行时内核
 - 不新建平行顶层 `orchestrator/` 包
 - `.ai/state/control-plane.db` 是调度真源
@@ -31,14 +32,15 @@
 
 职责：
 
-- 编排 / 学习 / 历史安全边界
+- 风险编排 / runtime ledger / 跨执行器适配 / 历史安全边界
 - 为三层主线提供隔离与历史 baseline
 - 在 parity 阶段承接 container lifecycle 与历史映射验证
 
 边界：
 
 - 当前 repo truth 不把 Hermes 写成“只剩兼容残留”
-- 也不把 Hermes 当前就写成已接管 host runtime 的执行入口
+- 也不把 Hermes 当前就写成已接管 host runtime 的日常双核心执行入口
+- 不重复接管 Codex 已有的 native thread / worktree / review / approval 能力
 
 ### 2. AgentBridge
 
@@ -47,6 +49,7 @@
 - AgentBridge 是跨层主契约
 - Hermes 与 Codex 之间的唯一文件交换面
 - 终态承接 markdown task / result / review round-trip
+- 未来若要对齐 MCP Tasks / app-server structured surface，也通过 AgentBridge 与 canonical contract 对齐
 
 边界：
 
@@ -57,15 +60,17 @@
 
 职责：
 
-- 当前执行层主入口
+- 当前执行层主入口与 hot path
 - 通过 `runtime/host-orchestrator` 消费 canonical task
-- 产出 `result.json`、`verification_summary.json`、`cost_summary.json` 与 `evidence_index.json`
+- 产出 `result.json`、`dispatch_state.json`、`verification_summary.json`、`cost_summary.json` 与 `evidence_index.json`
+- 低风险路径默认自动推进；medium/high/critical 风险、policy surface、force-on review、或能力不匹配路径再转入 review/handoff
 
 边界：
 
 - 当前只落地 `host_local`
 - `remote_non_gui` 次级推进
 - `vm_gui` 仅条件晋升
+- `worktree` 只提供写入隔离，不等于 memory/provider/session 隔离
 
 ## Governance Overlay
 
@@ -99,6 +104,7 @@
 | `execution_lane` | topology | contract 层定义 `host_local / remote_non_gui / vm_gui` |
 | `worker_kind` | executor adapter | `codex_sdk / codex_exec / scripted / gpt54_direct / claude_glm` |
 | `worker_profile` | repo-owned 具名配置档 | `.ai/config/workers.yaml` |
+| `model_policy` | role-aware / risk-aware / lane-aware 调度建议 | 由 runtime 写入 `dispatch_state.json` |
 
 补充说明：
 
@@ -117,8 +123,9 @@
 - 校验 markdown front matter contract，并拒绝 execution-critical override / gate command injection
 - repo-side parity 当前已验证到 `result.json`、`evidence_index.json`、以及 `AgentBridge/results/*.md` projection 闭环
 - 派生 `planner_required` / `review_required` / `touches_policy_surface`
-- 当前 repo-side 已把 `planner_required` 的 risk/dependency/force-on 触发接到 `waiting_handoff` handoff 路径，并把 `review_required` 的 risk/write/policy/force-on 触发接到 `needs_review` handoff 路径；当前仍不是 live heterogeneous review adapter
-- 当前 repo-side 最小 path guard、最小 worktree manager、以及最小 cleanup manager 已落地：repo-escape path claim、declared worktree root drift、以及 declared branch drift 现在都会在 worker 前 fail closed；declared isolated worktree 任务在 repo-root 启动时也可由 runtime create/reuse linked worktree；runtime-managed clean linked worktree 会在成功且无需 handoff 的路径上自动 remove，其他路径则保留 worktree 并写出 `worktree_cleanup` 事件；下一块执行面缺口转到 durable dispatch ledger
+- 当前 repo-side 已把 `planner_required` 的 risk/dependency/force-on 触发接到 `waiting_handoff` handoff 路径，并把 worker-profile 不满足 `execution_lane / requires_network / requires_gui` 的任务同样送去 handoff
+- 当前 repo-side 已把 review gate 收敛为 graded autonomy：低风险任务默认自动推进；medium/high/critical 风险、policy surface、以及 force-on review 接到 `needs_review` handoff 路径；`write_access=true` 当前只作为附加 reason，而不是单独触发 review 的充分条件
+- 当前 repo-side path guard、worktree manager、cleanup manager、以及 runtime dispatch ledger 已落地：repo-escape path claim、declared worktree root drift、declared branch drift、以及 worker 结束后落在 `allowed_paths` 外或 `forbidden_paths` 内的新改动都会 fail closed；declared isolated worktree 任务在 repo-root 启动时也可由 runtime create/reuse linked worktree；runtime-managed clean linked worktree 会在成功且无需 handoff 的路径上自动 remove，其他路径则保留 worktree 并写出 `worktree_cleanup` 事件；`dispatch_state.json` 与 `runtime_tasks` 会同步 `attempt / status / status_reason / next_action / cleanup_*`
 - 盖章运行时字段
 
 依赖契约：
@@ -149,6 +156,7 @@
 
 - `worker_kind` 描述 adapter 路径
 - `worker_profile` 描述 `.ai/config/workers.yaml` 中的具名配置档
+- `model_policy` 由 runtime 根据风险、policy surface、lane 与任务角色写入，不再把所有子代理固定到同一模型与同一 reasoning 档
 
 ### Verification Runner
 
@@ -163,6 +171,7 @@
 职责：
 
 - 落盘 `result.json`
+- 落盘 `dispatch_state.json`
 - 落盘 `stdout.log` / `stderr.log`
 - 落盘 `verification_summary.json`
 - 落盘 `cost_summary.json`
@@ -186,6 +195,7 @@
 
 - `.ai/state/control-plane.db`
 - 保存 runtime task state、leases、workers、route decisions、events
+- 当前 `runtime_tasks` 已索引 `run_id / attempt / state_reason / next_action / cleanup_status / cleanup_owner / dispatch_state_path`
 
 ### 正式 evidence
 

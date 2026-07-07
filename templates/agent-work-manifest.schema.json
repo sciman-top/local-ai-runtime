@@ -30,10 +30,21 @@
       ],
       "properties": {
         "model": {
-          "const": "gpt-5.4"
+          "type": "string"
         },
         "reasoning_effort": {
-          "const": "xhigh"
+          "enum": [
+            "low",
+            "medium",
+            "high",
+            "xhigh"
+          ]
+        },
+        "fallback_model": {
+          "type": "string"
+        },
+        "rationale": {
+          "type": "string"
         }
       }
     },

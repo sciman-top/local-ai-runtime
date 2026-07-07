@@ -9,12 +9,21 @@ from typing import Any
 from host_orchestrator import agentbridge, db
 from host_orchestrator.canonical_result import (
     build_run_id,
-    update_result_cleanup_status,
+    refresh_evidence_index,
     write_result_bundle,
 )
 from host_orchestrator.canonical_task import CanonicalTask, load_task, task_from_payload
 from host_orchestrator.config_runtime import RuntimeConfigBundle, WorkerProfile, load_runtime_config
-from host_orchestrator.path_guard import validate_task_paths
+from host_orchestrator.dispatch_state import (
+    build_dispatch_state_path,
+    update_dispatch_state,
+    write_dispatch_state,
+)
+from host_orchestrator.path_guard import (
+    capture_workspace_change_set,
+    enforce_workspace_change_policy,
+    validate_task_paths,
+)
 from host_orchestrator.paths import RuntimeLayout
 from host_orchestrator.verification import run_verification
 from host_orchestrator.worktree_manager import (
@@ -57,6 +66,12 @@ class HostLocalRunner:
         )
         started_at = agentbridge.utc_now_iso()
         lease_expires_at = self._lease_expires_at(started_at)
+        dispatch_state_path = build_dispatch_state_path(
+            layout=self._config.layout,
+            run_id=run_id,
+            task_id=task.task_id,
+        )
+        relative_dispatch_state_path = self._relative_to_repo(dispatch_state_path)
         lease_token = db.acquire_lease(
             self._config.layout.control_plane_db,
             task_id=task.task_id,
@@ -64,6 +79,13 @@ class HostLocalRunner:
             acquired_at=started_at,
             expires_at=lease_expires_at,
         )
+        current_workspace_root = self._config.workspace_root.resolve(strict=False)
+        current_cleanup_status = declared_cleanup_status(task)
+        current_cleanup_owner = (
+            "inline_execution" if current_cleanup_status == "inline_only" else "operator"
+        )
+        current_next_action = "wait_for_worker_result"
+        current_status_reason = "worker executing within graded autonomy boundary"
         try:
             db.initialize_control_plane(self._config.layout.control_plane_db)
             db.upsert_worker(
@@ -83,11 +105,18 @@ class HostLocalRunner:
             db.upsert_runtime_task(
                 self._config.layout.control_plane_db,
                 task_id=task.task_id,
+                run_id=run_id,
+                attempt=self._config.attempt,
                 state="running",
+                state_reason=current_status_reason,
                 execution_lane=worker_profile.lane,
                 worker_profile=worker_profile.name,
+                next_action=current_next_action,
+                cleanup_status=current_cleanup_status,
+                cleanup_owner=current_cleanup_owner,
                 created_at=started_at,
                 updated_at=started_at,
+                dispatch_state_path=relative_dispatch_state_path,
             )
             db.append_event(
                 self._config.layout.control_plane_db,
@@ -100,14 +129,35 @@ class HostLocalRunner:
                     "run_id": run_id,
                     "attempt": self._config.attempt,
                     "lease_token": lease_token,
+                    "next_action": current_next_action,
                 },
                 created_at=started_at,
             )
             validate_task_paths(task=task, repo_root=self._config.layout.repo_root)
-            cleanup_status = declared_cleanup_status(task)
-
-            if task.planner_required:
+            planner_reasons = self._planner_gate_reasons(task, worker_profile)
+            if planner_reasons:
                 finished_at = agentbridge.utc_now_iso()
+                current_status_reason = self._format_status_reason(
+                    "planner handoff required", planner_reasons
+                )
+                write_dispatch_state(
+                    dispatch_state_path,
+                    self._dispatch_state_payload(
+                        task=task,
+                        worker_profile=worker_profile,
+                        run_id=run_id,
+                        workspace_root=current_workspace_root,
+                        status="waiting_handoff",
+                        status_reason=current_status_reason,
+                        next_action=PLANNER_HANDOFF_NEXT_ACTION,
+                        cleanup_status=current_cleanup_status,
+                        cleanup_owner=current_cleanup_owner,
+                        started_at=started_at,
+                        updated_at=finished_at,
+                        heartbeat_at=finished_at,
+                        stale_after=lease_expires_at,
+                    ),
+                )
                 worker_result = WorkerResult(
                     final_response=None,
                     raw_result={"kind": "planner_handoff"},
@@ -145,7 +195,9 @@ class HostLocalRunner:
                     handoff_required=True,
                     next_action=PLANNER_HANDOFF_NEXT_ACTION,
                     cost_payload_override=self._planner_handoff_cost_payload(),
-                    cleanup_status=cleanup_status,
+                    cleanup_status=current_cleanup_status,
+                    cleanup_owner=current_cleanup_owner,
+                    status_reason=current_status_reason,
                 )
                 relative_result_path = str(
                     result_bundle.artifacts.result_json.relative_to(self._config.layout.repo_root)
@@ -154,15 +206,34 @@ class HostLocalRunner:
                 evidence_index_path = str(
                     result_bundle.artifacts.evidence_index.relative_to(self._config.layout.repo_root)
                 ).replace("\\", "/")
+                update_dispatch_state(
+                    dispatch_state_path,
+                    last_result_ref=relative_result_path,
+                    verification_summary_ref=self._relative_to_repo(result_bundle.artifacts.verification_summary),
+                    evidence_index_ref=evidence_index_path,
+                )
+                refresh_evidence_index(
+                    layout=self._config.layout,
+                    artifacts=result_bundle.artifacts,
+                    task_id=task.task_id,
+                    run_id=run_id,
+                )
                 db.upsert_runtime_task(
                     self._config.layout.control_plane_db,
                     task_id=task.task_id,
+                    run_id=run_id,
+                    attempt=self._config.attempt,
                     state="waiting_handoff",
+                    state_reason=current_status_reason,
                     execution_lane=worker_profile.lane,
                     worker_profile=worker_profile.name,
+                    next_action=PLANNER_HANDOFF_NEXT_ACTION,
+                    cleanup_status=current_cleanup_status,
+                    cleanup_owner=current_cleanup_owner,
                     created_at=started_at,
                     updated_at=finished_at,
                     result_path=relative_result_path,
+                    dispatch_state_path=relative_dispatch_state_path,
                 )
                 db.append_event(
                     self._config.layout.control_plane_db,
@@ -174,6 +245,7 @@ class HostLocalRunner:
                         "evidence_index_ref": evidence_index_path,
                         "handoff_required": True,
                         "next_action": PLANNER_HANDOFF_NEXT_ACTION,
+                        "status_reason": current_status_reason,
                     },
                     created_at=finished_at,
                 )
@@ -185,7 +257,11 @@ class HostLocalRunner:
                 workspace_root=self._config.workspace_root,
             )
             guarded_workspace_root = prepared_workspace.workspace_root
-            cleanup_status = prepared_workspace.cleanup_status
+            current_workspace_root = guarded_workspace_root
+            current_cleanup_status = prepared_workspace.cleanup_status
+            current_cleanup_owner = (
+                "runtime" if prepared_workspace.managed_by_runtime else current_cleanup_owner
+            )
             if task.worktree_path.strip() not in {".", "./"}:
                 db.append_event(
                     self._config.layout.control_plane_db,
@@ -197,10 +273,11 @@ class HostLocalRunner:
                         "worktree_path": task.worktree_path,
                         "created_new_worktree": prepared_workspace.created_new_worktree,
                         "managed_by_runtime": prepared_workspace.managed_by_runtime,
-                        "cleanup_status": cleanup_status,
+                        "cleanup_status": current_cleanup_status,
                     },
                     created_at=agentbridge.utc_now_iso(),
                 )
+            baseline_changes = capture_workspace_change_set(guarded_workspace_root)
             request = WorkerRequest(
                 prompt=task.render_worker_prompt(),
                 cwd=guarded_workspace_root,
@@ -209,13 +286,85 @@ class HostLocalRunner:
                 approval_mode=worker_profile.approval_mode(),
             )
             worker_result = self._worker.run(request)
-            finished_at = agentbridge.utc_now_iso()
+            enforce_workspace_change_policy(
+                task=task,
+                workspace_root=guarded_workspace_root,
+                baseline_changes=baseline_changes,
+            )
             verification_payload = run_verification(
                 task=task,
                 workspace_root=guarded_workspace_root,
             )
-            review_required = (
-                verification_payload.get("status") != "failed" and self._review_required(task)
+            review_reasons = []
+            if verification_payload.get("status") != "failed":
+                review_reasons = self._review_gate_reasons(task)
+            review_required = bool(review_reasons)
+            result_status = "needs_review" if review_required else (
+                "failed" if verification_payload.get("status") == "failed" else "succeeded"
+            )
+            termination_reason = (
+                "review_required_before_downstream"
+                if review_required
+                else (
+                    "verification_failed"
+                    if verification_payload.get("status") == "failed"
+                    else "worker_completed"
+                )
+            )
+            current_next_action = (
+                REVIEW_HANDOFF_NEXT_ACTION
+                if review_required
+                else ("inspect_verification_failure" if verification_payload.get("status") == "failed" else "none")
+            )
+            current_status_reason = (
+                self._format_status_reason("review required", review_reasons)
+                if review_required
+                else (
+                    "verification failed during graded autonomy execution"
+                    if verification_payload.get("status") == "failed"
+                    else "task completed within graded autonomy boundary"
+                )
+            )
+            if task.worktree_path.strip() not in {".", "./"}:
+                cleanup_outcome = finalize_task_workspace_cleanup(
+                    task=task,
+                    repo_root=self._config.layout.repo_root,
+                    prepared_workspace=prepared_workspace,
+                    result_status=result_status,
+                    handoff_required=review_required,
+                    current_next_action=current_next_action,
+                )
+                current_cleanup_status = cleanup_outcome.cleanup_status
+                current_cleanup_owner = cleanup_outcome.cleanup_owner
+                if cleanup_outcome.next_action is not None:
+                    current_next_action = cleanup_outcome.next_action
+                db.append_event(
+                    self._config.layout.control_plane_db,
+                    task_id=task.task_id,
+                    event_type="worktree_cleanup",
+                    payload=cleanup_outcome.payload,
+                    created_at=agentbridge.utc_now_iso(),
+                )
+            finished_at = agentbridge.utc_now_iso()
+            write_dispatch_state(
+                dispatch_state_path,
+                self._dispatch_state_payload(
+                    task=task,
+                    worker_profile=worker_profile,
+                    run_id=run_id,
+                    workspace_root=current_workspace_root,
+                    status="needs_review" if review_required else (
+                        "failed" if verification_payload.get("status") == "failed" else "completed"
+                    ),
+                    status_reason=current_status_reason,
+                    next_action=current_next_action,
+                    cleanup_status=current_cleanup_status,
+                    cleanup_owner=current_cleanup_owner,
+                    started_at=started_at,
+                    updated_at=finished_at,
+                    heartbeat_at=finished_at,
+                    stale_after=lease_expires_at,
+                ),
             )
 
             result_bundle = write_result_bundle(
@@ -249,54 +398,57 @@ class HostLocalRunner:
                     )
                 ),
                 result_status="needs_review" if review_required else None,
-                termination_reason=(
-                    "review_required_before_downstream" if review_required else None
-                ),
+                termination_reason=termination_reason if review_required or verification_payload.get("status") == "failed" else None,
                 handoff_required=review_required,
-                next_action=REVIEW_HANDOFF_NEXT_ACTION if review_required else "none",
-                cleanup_status=cleanup_status,
+                next_action=current_next_action,
+                cleanup_status=current_cleanup_status,
+                cleanup_owner=current_cleanup_owner,
+                status_reason=current_status_reason,
             )
             result_payload = result_bundle.result_payload
-            if task.worktree_path.strip() not in {".", "./"}:
-                cleanup_outcome = finalize_task_workspace_cleanup(
-                    task=task,
-                    repo_root=self._config.layout.repo_root,
-                    prepared_workspace=prepared_workspace,
-                    result_status=result_payload["status"],
-                    handoff_required=review_required,
-                    current_next_action=result_payload["next_action"],
-                )
-                result_payload = update_result_cleanup_status(
-                    result_bundle.artifacts.result_json,
-                    cleanup_status=cleanup_outcome.cleanup_status,
-                    next_action=cleanup_outcome.next_action,
-                )
-                db.append_event(
-                    self._config.layout.control_plane_db,
-                    task_id=task.task_id,
-                    event_type="worktree_cleanup",
-                    payload=cleanup_outcome.payload,
-                    created_at=agentbridge.utc_now_iso(),
-                )
-
             relative_result_path = str(
                 result_bundle.artifacts.result_json.relative_to(self._config.layout.repo_root)
             ).replace("\\", "/")
+            update_dispatch_state(
+                dispatch_state_path,
+                last_result_ref=relative_result_path,
+                verification_summary_ref=self._relative_to_repo(result_bundle.artifacts.verification_summary),
+                evidence_index_ref=self._relative_to_repo(result_bundle.artifacts.evidence_index),
+            )
+            refresh_evidence_index(
+                layout=self._config.layout,
+                artifacts=result_bundle.artifacts,
+                task_id=task.task_id,
+                run_id=run_id,
+            )
             projection_path = result_payload.get("compatibility_projection_ref")
             evidence_index_path = str(
                 result_bundle.artifacts.evidence_index.relative_to(self._config.layout.repo_root)
             ).replace("\\", "/")
-            runtime_state = "needs_review" if review_required else "completed"
-            completion_event_type = "task_needs_review" if review_required else "task_completed"
+            runtime_state = "needs_review" if review_required else (
+                "failed" if verification_payload.get("status") == "failed" else "completed"
+            )
+            completion_event_type = (
+                "task_needs_review"
+                if review_required
+                else ("task_failed" if verification_payload.get("status") == "failed" else "task_completed")
+            )
             db.upsert_runtime_task(
                 self._config.layout.control_plane_db,
                 task_id=task.task_id,
+                run_id=run_id,
+                attempt=self._config.attempt,
                 state=runtime_state,
+                state_reason=current_status_reason,
                 execution_lane=worker_profile.lane,
                 worker_profile=worker_profile.name,
+                next_action=current_next_action,
+                cleanup_status=current_cleanup_status,
+                cleanup_owner=current_cleanup_owner,
                 created_at=started_at,
                 updated_at=finished_at,
                 result_path=relative_result_path,
+                dispatch_state_path=relative_dispatch_state_path,
             )
             db.append_event(
                 self._config.layout.control_plane_db,
@@ -308,21 +460,48 @@ class HostLocalRunner:
                     "evidence_index_ref": evidence_index_path,
                     "usage": self._usage_payload(worker_result.usage),
                     "handoff_required": review_required,
-                    "next_action": REVIEW_HANDOFF_NEXT_ACTION if review_required else "none",
+                    "next_action": current_next_action,
+                    "status_reason": current_status_reason,
                 },
                 created_at=finished_at,
             )
             return result_bundle.artifacts.result_json
         except Exception as exc:
             failed_at = agentbridge.utc_now_iso()
+            current_status_reason = str(exc)
+            write_dispatch_state(
+                dispatch_state_path,
+                self._dispatch_state_payload(
+                    task=task,
+                    worker_profile=worker_profile,
+                    run_id=run_id,
+                    workspace_root=current_workspace_root,
+                    status="failed",
+                    status_reason=current_status_reason,
+                    next_action="inspect_failure_and_retry",
+                    cleanup_status=current_cleanup_status,
+                    cleanup_owner=current_cleanup_owner,
+                    started_at=started_at,
+                    updated_at=failed_at,
+                    heartbeat_at=failed_at,
+                    stale_after=lease_expires_at,
+                ),
+            )
             db.upsert_runtime_task(
                 self._config.layout.control_plane_db,
                 task_id=task.task_id,
+                run_id=run_id,
+                attempt=self._config.attempt,
                 state="failed",
+                state_reason=current_status_reason,
                 execution_lane=worker_profile.lane,
                 worker_profile=worker_profile.name,
+                next_action="inspect_failure_and_retry",
+                cleanup_status=current_cleanup_status,
+                cleanup_owner=current_cleanup_owner,
                 created_at=started_at,
                 updated_at=failed_at,
+                dispatch_state_path=relative_dispatch_state_path,
             )
             db.append_event(
                 self._config.layout.control_plane_db,
@@ -337,6 +516,7 @@ class HostLocalRunner:
                     "lease_token": lease_token,
                     "error_type": type(exc).__name__,
                     "error_message": str(exc),
+                    "status_reason": current_status_reason,
                 },
                 created_at=failed_at,
             )
@@ -448,8 +628,40 @@ class HostLocalRunner:
             "usage": None,
         }
 
-    def _review_required(self, task: CanonicalTask) -> bool:
-        return task.review_required or self._touches_policy_surface(task)
+    def _planner_gate_reasons(
+        self,
+        task: CanonicalTask,
+        worker_profile: WorkerProfile,
+    ) -> list[str]:
+        reasons: list[str] = []
+        if task.user_forced_planner:
+            reasons.append("user_forced_planner=true")
+        if task.risk_level in {"high", "critical"}:
+            reasons.append(f"risk_level={task.risk_level}")
+        if task.depends_on:
+            reasons.append("depends_on=" + ", ".join(task.depends_on))
+        if task.execution_lane != worker_profile.lane:
+            reasons.append(f"execution_lane={task.execution_lane}")
+        if task.requires_network and worker_profile.network_profile == "off":
+            reasons.append("requires_network=true")
+        if task.requires_gui:
+            reasons.append("requires_gui=true")
+        return reasons
+
+    def _review_gate_reasons(self, task: CanonicalTask) -> list[str]:
+        reasons: list[str] = []
+        touches_policy_surface = self._touches_policy_surface(task)
+        if task.risk_level in {"medium", "high", "critical"}:
+            reasons.append(f"risk_level={task.risk_level}")
+        if task.write_access and (
+            task.risk_level in {"medium", "high", "critical"} or touches_policy_surface
+        ):
+            reasons.append("write_access=true")
+        if task.user_forced_review:
+            reasons.append("user_forced_review=true")
+        if touches_policy_surface:
+            reasons.append("touches_policy_surface=true")
+        return reasons
 
     def _touches_policy_surface(self, task: CanonicalTask) -> bool:
         return any(
@@ -541,3 +753,80 @@ class HostLocalRunner:
         acquired = datetime.fromisoformat(acquired_at.replace("Z", "+00:00"))
         expires = acquired + cls._LEASE_TTL
         return expires.astimezone(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+
+    def _dispatch_state_payload(
+        self,
+        *,
+        task: CanonicalTask,
+        worker_profile: WorkerProfile,
+        run_id: str,
+        workspace_root: Path,
+        status: str,
+        status_reason: str,
+        next_action: str,
+        cleanup_status: str,
+        cleanup_owner: str,
+        started_at: str,
+        updated_at: str,
+        heartbeat_at: str,
+        stale_after: str,
+    ) -> dict[str, Any]:
+        return {
+            "run_id": run_id,
+            "attempt": self._config.attempt,
+            "task_id": task.task_id,
+            "agent_role": "worker",
+            "model_policy": self._model_policy(task, worker_profile),
+            "repo_root": str(self._config.layout.repo_root),
+            "target_repo": task.target_repo,
+            "branch_name": task.branch_name,
+            "worktree_path": task.worktree_path,
+            "workspace_root": str(workspace_root),
+            "allowed_paths": list(task.allowed_paths),
+            "forbidden_paths": list(task.forbidden_paths),
+            "source_ref": self._source_ref(task.path),
+            "lease_owner": self._config.worker_id,
+            "started_at": started_at,
+            "updated_at": updated_at,
+            "heartbeat_at": heartbeat_at,
+            "stale_after": stale_after,
+            "execution_lane": worker_profile.lane,
+            "worker_profile": worker_profile.name,
+            "status": status,
+            "status_reason": status_reason,
+            "next_action": next_action,
+            "cleanup_status": cleanup_status,
+            "cleanup_owner": cleanup_owner,
+        }
+
+    def _model_policy(
+        self,
+        task: CanonicalTask,
+        worker_profile: WorkerProfile,
+    ) -> dict[str, str]:
+        if task.risk_level in {"high", "critical"}:
+            reasoning_effort = "xhigh"
+        elif task.write_access or self._touches_policy_surface(task):
+            reasoning_effort = "high"
+        else:
+            reasoning_effort = "medium"
+        return {
+            "model": worker_profile.model,
+            "reasoning_effort": reasoning_effort,
+            "rationale": "derived from worker role, task risk, and policy-surface sensitivity",
+        }
+
+    @staticmethod
+    def _format_status_reason(prefix: str, reasons: list[str]) -> str:
+        if not reasons:
+            return prefix
+        return f"{prefix}: {'; '.join(reasons)}"
+
+    def _relative_to_repo(self, path: Path) -> str:
+        return str(path.relative_to(self._config.layout.repo_root)).replace("\\", "/")
+
+    def _source_ref(self, path: Path) -> str:
+        try:
+            return self._relative_to_repo(path)
+        except ValueError:
+            return str(path)

@@ -29,6 +29,7 @@ class RunArtifacts:
     cost_summary: Path
     worker_output: Path
     result_json: Path
+    dispatch_state: Path
     evidence_index: Path
     projection_markdown: Path | None
 
@@ -61,6 +62,7 @@ def build_run_artifacts(
         cost_summary=task_root / "cost_summary.json",
         worker_output=task_root / "artifacts" / "worker-output.txt",
         result_json=task_root / "result.json",
+        dispatch_state=task_root / "dispatch_state.json",
         evidence_index=task_root / "evidence_index.json",
         projection_markdown=None,
     )
@@ -84,6 +86,8 @@ def write_result_bundle(
     next_action: str = "none",
     cost_payload_override: dict[str, Any] | None = None,
     cleanup_status: str = "deferred",
+    cleanup_owner: str = "operator",
+    status_reason: str = "",
 ) -> ResultBundle:
     artifacts = build_run_artifacts(layout=layout, run_id=run_id, task_id=task.task_id)
     artifacts.task_root.mkdir(parents=True, exist_ok=True)
@@ -116,6 +120,7 @@ def write_result_bundle(
     relative_verification = render_relative_path(layout.repo_root, artifacts.verification_summary)
     relative_cost = render_relative_path(layout.repo_root, artifacts.cost_summary)
     relative_worker_output = render_relative_path(layout.repo_root, artifacts.worker_output)
+    relative_dispatch_state = render_relative_path(layout.repo_root, artifacts.dispatch_state)
 
     result_status = result_status or (
         "failed" if verification_payload.get("status") == "failed" else "succeeded"
@@ -142,12 +147,15 @@ def write_result_bundle(
         "cost_summary": relative_cost,
         "termination_reason": termination_reason,
         "cleanup_status": cleanup_status,
+        "cleanup_owner": cleanup_owner,
         "artifacts": [relative_worker_output],
         "compatibility_projection_ref": (
             render_relative_path(layout.repo_root, projection_path) if projection_path is not None else None
         ),
         "handoff_required": handoff_required,
+        "status_reason": status_reason,
         "next_action": next_action,
+        "dispatch_state_ref": relative_dispatch_state,
     }
     _write_json(artifacts.result_json, result_payload)
 
@@ -159,6 +167,8 @@ def write_result_bundle(
         artifacts.worker_output,
         artifacts.result_json,
     ]
+    if artifacts.dispatch_state.exists():
+        indexed_paths.append(artifacts.dispatch_state)
     if projection_path is not None:
         indexed_paths.append(projection_path)
 
@@ -188,6 +198,36 @@ def update_result_cleanup_status(
     if next_action is not None:
         payload["next_action"] = next_action
     _write_json(result_path, payload)
+    return payload
+
+
+def refresh_evidence_index(
+    *,
+    layout: RuntimeLayout,
+    artifacts: RunArtifacts,
+    task_id: str,
+    run_id: str,
+) -> dict[str, Any]:
+    indexed_paths = [
+        artifacts.stdout_log,
+        artifacts.stderr_log,
+        artifacts.verification_summary,
+        artifacts.cost_summary,
+        artifacts.worker_output,
+        artifacts.result_json,
+    ]
+    if artifacts.dispatch_state.exists():
+        indexed_paths.append(artifacts.dispatch_state)
+    if artifacts.projection_markdown is not None:
+        indexed_paths.append(artifacts.projection_markdown)
+
+    payload = build_evidence_index_payload(
+        repo_root=layout.repo_root,
+        task_id=task_id,
+        run_id=run_id,
+        indexed_paths=indexed_paths,
+    )
+    _write_json(artifacts.evidence_index, payload)
     return payload
 
 

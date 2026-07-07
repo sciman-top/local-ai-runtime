@@ -61,13 +61,13 @@
    - 以 [prompts/subagent-worktree/master.prompt.md](D:/CODE/local-ai-dev-orchestrator/prompts/subagent-worktree/master.prompt.md) 为骨架，把 manifest 贴给主控 agent。
 4. 为每个子代理写一份 dispatch state。
    - 复制 [templates/dispatch-state.example.json](D:/CODE/local-ai-dev-orchestrator/templates/dispatch-state.example.json)。
-   - 每次派发 explorer / worker / reviewer 都更新对应 `status / heartbeat_at / last_result_ref / next_action`。
+   - 每次派发 explorer / worker / reviewer 都更新对应 `status / status_reason / heartbeat_at / last_result_ref / next_action`。
 5. 先派 explorer，只读分析。
    - explorer 只回答最小切片、建议 `allowed_paths / write_set`、建议 `verification_commands / artifacts_out`、冲突点。
 6. 再派 worker，独立 worktree 最小修改。
    - 每个写任务一个 worktree。
    - `allowed_paths` 或 `write_set` 重叠的任务禁止并行。
-   - 即使 `write_set` 不重叠，只要 `depends_on`、高风险或 policy surface 冲突命中，也默认不要并行。
+   - 即使 `write_set` 不重叠，只要 `depends_on`、高风险、policy surface、或同一批 authoritative truth surface 冲突命中，也默认不要并行。
 7. 做两层复核。
    - 先用 [spec-reviewer.prompt.md](D:/CODE/local-ai-dev-orchestrator/prompts/subagent-worktree/spec-reviewer.prompt.md)
    - 再用 [quality-reviewer.prompt.md](D:/CODE/local-ai-dev-orchestrator/prompts/subagent-worktree/quality-reviewer.prompt.md)
@@ -81,8 +81,8 @@
 
 ## 强约束
 
-- 所有子代理统一使用 `gpt-5.4 + xhigh`
-- 如无用户显式改口，不主动降级到更弱模型
+- 子代理模型策略默认按 role-aware / risk-aware / lane-aware 选择，不再固定 `gpt-5.4 + xhigh`
+- `worktree` 只代表写入隔离，不代表 memory/provider/session 隔离
 - explorer 一律只读
 - worker 只允许修改 manifest 分配给它的 `allowed_paths`，且应尽量限制在 `write_set`
 - `allowed_paths` 或 `write_set` 重叠任务默认串行

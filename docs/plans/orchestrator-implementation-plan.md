@@ -147,11 +147,12 @@
 ## Next Bounded Execution Queue
 
 - `P4-T01` planner adapter：completed（repo-side minimal handoff）
-- `P4-T02` review adapter：completed（repo-side minimal `needs_review` gate）
+- `P4-T02` review adapter：completed（repo-side graded autonomy `needs_review` gate；低风险任务默认自动推进）
 - `P4-T03` 正反触发谓词测试：completed（repo-side positive/negative predicate coverage + force-on overrides）
-- `P3-T02` path guard：completed（repo-side minimal fail-closed guard for repo-escape path claims and declared isolated worktree root/branch drift）
+- `P3-T02` path guard：completed（repo-side fail-closed guard for repo-escape path claims、declared isolated worktree root/branch drift、以及 git-backed write-boundary enforcement）
 - `P3-T03` worktree manager：completed（repo-side minimal create/reuse manager for declared linked worktrees plus `cleanup_status` baseline semantics）
 - `P3-T04` cleanup manager：completed（runtime-managed clean linked worktrees now auto-remove; review-pending, failed, dirty, or externally launched isolated worktrees remain deferred with `worktree_cleanup` evidence）
-- next: durable `dispatch_state` runtime ledger（branch deletion 仍不自动化；dispatch ledger 也仍未 runtime 化）
+- `P3-T05` graded autonomy runtime ledger：completed（runtime-backed `dispatch_state.json` + `result.json` metadata + `runtime_tasks` index alignment）
+- next: lifecycle ops (`stale / cancelled / resumed / retry`) + structured review/closeout receipts（branch deletion 仍不自动化；live review sidecar 仍未接线）
 
 其中 `planner/review` 继续保留在 repo `Phase 4`，不并回容器或资源 phase。

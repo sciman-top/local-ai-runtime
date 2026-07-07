@@ -316,7 +316,7 @@ def test_host_local_runner_keeps_dirty_runtime_managed_worktree(tmp_path: Path) 
     task_path = repo_root / "tasks" / f"{task_id}.json"
     payload = canonical_task_payload(task_id)
     payload["risk_level"] = "low"
-    payload["write_access"] = False
+    payload["write_access"] = True
     payload["branch_name"] = "codex/dirty-managed"
     payload["worktree_path"] = ".worktrees/dirty-managed"
     payload["allowed_paths"] = ["runtime/host-orchestrator/**"]
@@ -421,7 +421,11 @@ def test_host_local_runner_keeps_review_pending_managed_worktree(tmp_path: Path)
     assert event_types.count("worktree_prepared") == 1
     assert event_types.count("worktree_cleanup") == 1
     assert event_types.count("task_needs_review") == 1
-    cleanup_payload = json.loads(events[2][1])
+    cleanup_payload = next(
+        json.loads(payload_json)
+        for (event_type, payload_json) in events
+        if event_type == "worktree_cleanup"
+    )
     assert cleanup_payload["cleanup_status"] == "deferred"
     assert cleanup_payload["cleanup_owner"] == "operator"
     assert cleanup_payload["reason"] == (
@@ -495,3 +499,56 @@ def test_host_local_runner_marks_cleanup_failed_when_worktree_remove_errors(
     )
     assert cleanup_payload["cleanup_status"] == "cleanup_failed"
     assert cleanup_payload["reason"] == "simulated cleanup remove failure"
+
+
+def test_host_local_runner_rejects_worker_changes_outside_allowed_paths(tmp_path: Path) -> None:
+    from host_orchestrator.path_guard import PathGuardError
+
+    repo_root = _seed_repo(tmp_path)
+
+    task_id = "TASK-20260707-path-enforcement"
+    task_path = repo_root / "tasks" / f"{task_id}.json"
+    payload = canonical_task_payload(task_id)
+    payload["risk_level"] = "low"
+    payload["write_access"] = True
+    payload["allowed_paths"] = ["runtime/host-orchestrator/**"]
+    write_task(task_path, payload)
+
+    class RogueWorker:
+        def run(self, request: WorkerRequest) -> WorkerResult:
+            rogue_path = request.cwd / "docs" / "rogue.md"
+            rogue_path.parent.mkdir(parents=True, exist_ok=True)
+            rogue_path.write_text("ROGUE\n", encoding="utf-8")
+            return WorkerResult(
+                final_response="ROGUE_WRITE_OK",
+                raw_result={"kind": "fake"},
+            )
+
+    layout = RuntimeLayout.from_repo_root(repo_root)
+    runner = HostLocalRunner(
+        HostLocalConfig(
+            workspace_root=repo_root,
+            layout=layout,
+            run_id="path-enforcement-test",
+            worker_id="path-enforcement-worker",
+        ),
+        RogueWorker(),
+    )
+
+    with pytest.raises(PathGuardError, match="docs/rogue.md"):
+        runner.run_task(task_path)
+
+    with sqlite3.connect(layout.control_plane_db) as connection:
+        runtime_task = connection.execute(
+            "SELECT state, result_path FROM runtime_tasks WHERE task_id = ?",
+            (task_id,),
+        ).fetchone()
+        events = connection.execute(
+            "SELECT event_type, payload_json FROM events ORDER BY created_at"
+        ).fetchall()
+
+    assert runtime_task == ("failed", None)
+    assert [event_type for (event_type, _) in events] == ["task_started", "task_failed"]
+    failed_payload = json.loads(events[1][1])
+    assert failed_payload["error_type"] == "PathGuardError"
+    assert "docs/rogue.md" in failed_payload["error_message"]

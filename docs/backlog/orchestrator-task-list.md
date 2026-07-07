@@ -85,21 +85,33 @@
     - declared `worktree_path` 与实际 `workspace_root` / Git root 不匹配时 fail closed
     - declared isolated worktree branch 与 `branch_name` 不匹配时 fail closed
   - Status note:
-    - 2026-07-07 已完成 repo-side 最小 path guard；真实写入 allowlist、worktree lifecycle、cleanup automation 仍留在 `P3-T03 / P3-T04`
+    - 2026-07-07 已完成 repo-side path guard；当前在具备 `.git` admin path 的 workspace 中，还会对 worker 结束后的新改动执行 `allowed_paths / forbidden_paths / write_access` fail-closed 审计
 - [x] `P3-T03` worktree manager
   - Done when:
     - declared isolated worktree 任务可从 repo root 自动 create 或 reuse linked worktree
     - worker 与 verification 在 declared worktree `cwd` 中执行
     - `result.json.cleanup_status` 至少区分 `inline_only` 与 `deferred`
   - Status note:
-    - 2026-07-07 已完成 repo-side 最小 worktree manager；cleanup automation 与 runtime dispatch ledger 仍未落地
+    - 2026-07-07 已完成 repo-side worktree manager；cleanup automation 与 runtime ledger 现已同批落地，但 `worktree` 仍只代表写入隔离，不代表 memory/provider/session 隔离
 - [x] `P3-T04` cleanup manager
   - Done when:
     - runtime-managed clean linked worktree 在成功且无需 handoff 的路径上自动 remove
     - review-pending、failed、dirty、或外部直接启动的 isolated worktree 显式保留，并写出 `worktree_cleanup` 事件
     - `result.json.cleanup_status` 能区分 `cleaned / deferred / cleanup_failed`
   - Status note:
-    - 2026-07-07 已完成 repo-side 最小 cleanup manager；branch deletion 与 runtime dispatch ledger 仍未落地
+    - 2026-07-07 已完成 repo-side cleanup manager；branch deletion 仍未自动化，但 cleanup 现在会与 `dispatch_state.json`、`result.json`、以及 `runtime_tasks` 的 cleanup 字段共同收口
+- [x] `P3-T05` graded autonomy runtime ledger
+  - Done when:
+    - `host_local` 为每次运行写出 `.ai/runs/<run_id>/<task_id>/dispatch_state.json`
+    - `result.json` 盖章 `cleanup_owner / status_reason / dispatch_state_ref`
+    - `runtime_tasks` 索引 `run_id / attempt / state_reason / next_action / cleanup_status / cleanup_owner / dispatch_state_path`
+  - Status note:
+    - 2026-07-07 已完成 repo-side runtime ledger；当前主路径已稳定写出 `running / waiting_handoff / needs_review / completed / failed`，而 `queued / input_required / cancelled / stale / resumed` 仍留给后续 lifecycle ops
+- [ ] `P3-T06` ledger lifecycle ops and idempotent recovery
+  - Done when:
+    - heartbeat stale detection 可把 ledger 标成 `stale`
+    - explicit cancel / retry / resume 可同步更新 DB 与 ledger
+    - `cancelled / stale / resumed` 有 repo-side tests 覆盖
 
 ## Phase 4
 
@@ -116,14 +128,19 @@
     - review-gated task 在 worker / verification 之后停在 `needs_review`
     - `result.json`、`verification_summary.json`、`cost_summary.json`、`evidence_index.json` 在 review 路径上保持齐全
   - Status note:
-    - 2026-07-07 已完成 repo-side 最小 review gate；当前仍不是 live `Claude Code + GLM-5.2` review adapter
+    - 2026-07-07 已完成 repo-side graded autonomy review gate；低风险任务默认自动推进，medium/high/critical 风险、policy surface、以及 force-on review 会停在 `needs_review`；当前仍不是 live `Claude Code + GLM-5.2` review adapter
 - [x] `P4-T03` 正反触发谓词测试
   - Done when:
     - `planner_required` 与 `review_required` 的正反分支都有 repo-side 测试覆盖
     - `user_forced_planner / user_forced_review` force-on overrides 被 canonical task 与 manifest contract 实际承接
     - `false` force-off override 被明确拒绝，避免伪造“强制关闭 gate”
   - Status note:
-    - 2026-07-07 已完成 repo-side 谓词正反覆盖；随后已补完 repo-side 最小 `P3-T02` path guard`、`P3-T03` worktree manager、以及 `P3-T04` cleanup manager，下一最小切片转到 durable `dispatch_state` runtime ledger
+    - 2026-07-07 已完成 repo-side 谓词正反覆盖；随后已补完 `P3-T02` path guard、`P3-T03` worktree manager、`P3-T04` cleanup manager、以及 `P3-T05` runtime ledger，下一最小切片转到 lifecycle ops 与 structured review/closeout receipts
+- [ ] `P4-T04` structured review receipt and closeout receipt
+  - Done when:
+    - review sidecar 路径可落 `review_result`
+    - closeout bundle 可稳定引用 verification、cleanup、review receipt
+    - `repo-side green` 能显式区分 structured review receipt、cleanup receipt、与 `live accepted`
 
 ## Phase 5
 

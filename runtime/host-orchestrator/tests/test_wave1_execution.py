@@ -247,17 +247,22 @@ def test_host_local_runner_writes_result_and_runtime_state(tmp_path: Path) -> No
     assert result_payload["network_profile"] == "off"
     assert result_payload["status"] == "succeeded"
     assert result_payload["cleanup_status"] == "inline_only"
+    assert result_payload["cleanup_owner"] == "inline_execution"
+    assert result_payload["dispatch_state_ref"] == f".ai/runs/host-local-test/{task_id}/dispatch_state.json"
+    assert "graded autonomy boundary" in result_payload["status_reason"]
     assert result_payload["compatibility_projection_ref"] == f"AgentBridge/results/{task_id}.md"
 
     verification_path = result_path.parent / "verification_summary.json"
     cost_path = result_path.parent / "cost_summary.json"
     evidence_index_path = result_path.parent / "evidence_index.json"
+    dispatch_state_path = result_path.parent / "dispatch_state.json"
     stdout_log_path = result_path.parent / "stdout.log"
     stderr_log_path = result_path.parent / "stderr.log"
 
     assert verification_path.exists()
     assert cost_path.exists()
     assert evidence_index_path.exists()
+    assert dispatch_state_path.exists()
     assert stdout_log_path.read_text(encoding="utf-8") == "HOST_LOCAL_OK"
     assert stderr_log_path.read_text(encoding="utf-8") == ""
 
@@ -282,9 +287,19 @@ def test_host_local_runner_writes_result_and_runtime_state(tmp_path: Path) -> No
     assert cost_payload["source"] == "sdk_structured"
     assert cost_payload["usage"]["total"]["total_tokens"] == 146
 
+    dispatch_payload = json.loads(dispatch_state_path.read_text(encoding="utf-8"))
+    assert dispatch_payload["status"] == "completed"
+    assert dispatch_payload["cleanup_status"] == "inline_only"
+    assert dispatch_payload["cleanup_owner"] == "inline_execution"
+    assert dispatch_payload["last_result_ref"] == f".ai/runs/host-local-test/{task_id}/result.json"
+    assert dispatch_payload["source_ref"] == f"tasks/{task_id}.json"
+    assert dispatch_payload["execution_lane"] == "host_local"
+    assert dispatch_payload["worker_profile"] == "local_maint"
+
     evidence_payload = json.loads(evidence_index_path.read_text(encoding="utf-8"))
     indexed_paths = {entry["relative_path"] for entry in evidence_payload["entries"]}
     assert f".ai/runs/host-local-test/{task_id}/result.json" in indexed_paths
+    assert f".ai/runs/host-local-test/{task_id}/dispatch_state.json" in indexed_paths
     assert f"AgentBridge/results/{task_id}.md" in indexed_paths
 
     projection_path = agentbridge_root / "results" / f"{task_id}.md"
@@ -299,7 +314,19 @@ def test_host_local_runner_writes_result_and_runtime_state(tmp_path: Path) -> No
 
     with sqlite3.connect(layout.control_plane_db) as connection:
         runtime_task = connection.execute(
-            "SELECT state, execution_lane, worker_profile, result_path FROM runtime_tasks WHERE task_id = ?",
+            """
+            SELECT
+                state,
+                execution_lane,
+                worker_profile,
+                result_path,
+                next_action,
+                cleanup_status,
+                cleanup_owner,
+                dispatch_state_path
+            FROM runtime_tasks
+            WHERE task_id = ?
+            """,
             (task_id,),
         ).fetchone()
         events = connection.execute(
@@ -315,6 +342,10 @@ def test_host_local_runner_writes_result_and_runtime_state(tmp_path: Path) -> No
         "host_local",
         "local_maint",
         f".ai/runs/host-local-test/{task_id}/result.json",
+        "none",
+        "inline_only",
+        "inline_execution",
+        f".ai/runs/host-local-test/{task_id}/dispatch_state.json",
     )
     assert [event_type for (event_type, _) in events] == ["task_started", "task_completed"]
     completion_payload = json.loads(events[1][1])
@@ -354,7 +385,7 @@ def test_evidence_index_revalidation_passes_for_host_local_result(tmp_path: Path
     assert validation.task_id == task_id
     assert validation.run_id == "host-local-test"
     assert validation.issue_count == 0
-    assert validation.checked_entry_count == 7
+    assert validation.checked_entry_count == 8
     assert {entry.status for entry in validation.entries} == {"ok"}
 
 
@@ -400,7 +431,7 @@ def test_cli_revalidates_evidence_index(tmp_path: Path, capsys: pytest.CaptureFi
     assert exit_code == 0
     assert payload["ok"] is True
     assert payload["task_id"] == task_id
-    assert payload["checked_entry_count"] == 7
+    assert payload["checked_entry_count"] == 8
 
 
 def test_wave1_smoke_manifest_covers_three_categories() -> None:

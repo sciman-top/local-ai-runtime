@@ -17,6 +17,8 @@
 | `handoff_required` | 是否需要人工或异质 review 接管 |
 | `next_action` | 当前运行结束后建议的下一步 |
 | `cleanup_owner` | 由谁负责 worktree / artifact cleanup |
+| `status_reason` | 当前状态的结构化原因 |
+| `dispatch_state_ref` | 关联的 `dispatch_state.json` 路径 |
 
 ## Resume Point
 
@@ -45,12 +47,13 @@
 `handoff_required = true` 时，至少要留下：
 
 - `result.json`
+- `dispatch_state.json`
 - `verification_summary.json`
 - `cost_summary.json`
 - `evidence_index.json`
 - 明确的 `next_action`
 
-如果进入 review / operator handoff，最小工件集合不能低于以上四件。
+如果进入 review / operator handoff，最小工件集合不能低于以上五件。
 
 ## Cleanup Ownership
 
@@ -58,7 +61,8 @@
 
 - task-level evidence 默认不内联删除
 - `cleanup_status` 必须留在正式 result 中
-- isolated worktree 的 `cleanup_owner` 当前落在 `worktree_cleanup` 事件载荷中：自动 remove 成功时归 `runtime`，显式保留或 remove 失败时归 `operator`
+- `cleanup_owner` 当前会在 `result.json` 与 `dispatch_state.json` 双写；更细的 cleanup 经过仍记录在 `worktree_cleanup` 事件载荷中
+- isolated worktree 自动 remove 成功时归 `runtime`，显式保留或 remove 失败时归 `operator`
 - branch deletion 当前仍不属于 runtime 自动 cleanup 范围
 
 ## Trajectory And Replay
@@ -67,6 +71,7 @@
 
 - DB 中至少保留 `task_started` / `task_completed` 事件
 - `runtime_tasks.result_path` 指向正式 `result.json`
+- `runtime_tasks.dispatch_state_path` 指向正式 `dispatch_state.json`
 - `evidence_index.json` 可枚举本次运行的重要工件
 
-这保证 Phase 1-4 即便没有完整 replay engine，也能回放最小运行轨迹
+这保证 Phase 1-4 即便没有完整 replay engine，也能回放最小运行轨迹。

@@ -3,8 +3,6 @@ from __future__ import annotations
 import json
 
 from host_orchestrator.agent_work_assets import (
-    MODEL_NAME,
-    REASONING_EFFORT,
     REQUIRED_VERIFICATION_COMMANDS,
     load_mapping_file,
     validate_closeout_bundle_payload,
@@ -31,8 +29,15 @@ def test_manifest_template_aligns_with_repo_owned_contract() -> None:
     assert task_properties["user_forced_review"]["const"] is True
     verification_schema = task_properties["verification_commands"]
     assert verification_schema["required"] == list(REQUIRED_VERIFICATION_COMMANDS)
-    assert schema["properties"]["model_policy"]["properties"]["model"]["const"] == MODEL_NAME
-    assert schema["properties"]["model_policy"]["properties"]["reasoning_effort"]["const"] == REASONING_EFFORT
+    model_policy_schema = schema["properties"]["model_policy"]
+    assert model_policy_schema["required"] == ["model", "reasoning_effort"]
+    assert model_policy_schema["properties"]["model"]["type"] == "string"
+    assert model_policy_schema["properties"]["reasoning_effort"]["enum"] == [
+        "low",
+        "medium",
+        "high",
+        "xhigh",
+    ]
 
 
 def test_manifest_force_on_overrides_allow_true_but_reject_false() -> None:
@@ -79,21 +84,31 @@ def test_dispatch_state_template_is_machine_readable() -> None:
         "worktree_path",
         "allowed_paths",
         "forbidden_paths",
-        "source_manifest_ref",
+        "source_ref",
         "lease_owner",
         "started_at",
+        "updated_at",
         "heartbeat_at",
+        "stale_after",
+        "execution_lane",
+        "worker_profile",
         "status",
+        "status_reason",
         "next_action",
+        "cleanup_status",
+        "cleanup_owner",
     ]
     assert schema["properties"]["status"]["enum"] == [
-        "pending",
+        "queued",
         "running",
+        "input_required",
+        "waiting_handoff",
+        "needs_review",
         "completed",
         "failed",
-        "blocked",
+        "cancelled",
         "stale",
-        "closed",
+        "resumed",
     ]
 
 

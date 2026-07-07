@@ -8,7 +8,7 @@
 
 - canonical `JSON/YAML` intake / canonical JSON/YAML task contract 仍是当前内部归一化真源；`host_local` 主路径现已可直接接收合规 AgentBridge markdown task
 - `.ai/runs/<run_id>/<task_id>/result.json` 仍是正式 task-level evidence 主体
-- `AgentBridge results/*.md` 当前仍是 compatibility projection；repo-side parity 已验证，但它们仍不取代 `result.json`
+- `.ai/runs/<run_id>/<task_id>/dispatch_state.json` 现已成为 runtime ledger companion；`AgentBridge results/*.md` 当前仍是 compatibility projection，它们都不取代 `result.json`
 
 ## Authoritative Truth
 
@@ -33,6 +33,7 @@
 ## 当前主线口径
 
 - 三层主线是：`Hermes -> AgentBridge -> Codex`
+- 当前执行 hot path 收敛为 `Codex-first`；Hermes 保留风险编排、runtime ledger、跨执行器适配与历史基线职责，Claude 仍是可插拔 review sidecar
 - 当前代码仍在 `runtime/host-orchestrator` 上演进，不新建平行顶层包
 - `runtime/host-orchestrator` 是 `host_local` 可信运行时内核
 - `.ai/state/control-plane.db` 是调度真源
@@ -42,12 +43,14 @@
 - `AgentBridge-first intake` 已以安全边界接入 `host_local`；markdown task 先归一化到 repo-owned canonical 默认值，并对 execution-critical override fail closed
 - `P2-T03` 的 repo-side AgentBridge round-trip parity 已落地，但尚未自动升级为 `platform compatibility green`
 - `P4-T01` 的 repo-side planner handoff 已落地；当前只把 planner-gated task 停在 `waiting_handoff`，尚未宣称 live `Direct GPT-5.4 API` planner 已接线
-- `P4-T02` 的 repo-side review gate 已落地；当前会把 review-gated task 在 worker / verification 之后停在 `needs_review`，但尚未宣称 live heterogeneous review adapter 已接线
+- `P4-T02` 的 repo-side review gate 已落地；低风险任务默认自动推进，medium/high/critical 风险、policy surface、以及 force-on review 会在 worker / verification 之后停在 `needs_review`，但尚未宣称 live heterogeneous review adapter 已接线
 - `P4-T03` 的 repo-side 谓词正反覆盖已落地；`user_forced_planner / user_forced_review` 现在是 contract 承认的 force-on override，而不是文档漂浮字段
-- `P3-T02` 的 repo-side 最小 path guard 已落地；repo-escape path claim、declared worktree root drift、以及 declared branch drift 现在会在 worker 前 fail closed
+- `P3-T02` 的 repo-side path guard 已落地；repo-escape path claim、declared worktree root drift、declared branch drift、以及 worker 结束后落在 `allowed_paths` 外或 `forbidden_paths` 内的新改动都会 fail closed；当前 git-backed 变更审计要求 workspace 具备 `.git` admin path
 - `P3-T03` 的 repo-side 最小 worktree manager 已落地；declared isolated worktree 任务现在可从 repo root 自动 create/reuse linked worktree，并在其中执行 worker 与 verification
 - `P3-T04` 的 repo-side 最小 cleanup manager 已落地；runtime 现在只会自动 remove 自己管理、且 clean 的 linked worktree，review-pending、failed、dirty、或外部直接启动的 isolated worktree 会保留并写出 `worktree_cleanup` 事件
-- branch deletion 仍不自动化；当前 next repo-side gap 转到 durable `dispatch_state` runtime ledger
+- `P3-T05` 的 graded-autonomy runtime ledger 已落地；`dispatch_state.json`、`result.json`、以及 `runtime_tasks` 现在共享 `attempt / next_action / cleanup_owner / cleanup_status / status_reason / dispatch_state_ref` 一组收口字段
+- `worktree` 当前只代表写入隔离，不代表 memory/provider/session 隔离
+- branch deletion 仍不自动化；当前 next repo-side gap 转到 `stale / cancelled / resumed / retry` lifecycle ops 与 structured review/closeout receipts
 - `compatibility_projection_ref` 与 `lane` 字段名当前不改；是否迁移留到 Phase E parity 后再决定
 - 当前 active queue 仍是 `PHASE-1-VERTICAL-SLICE`；repo-side exit gates 已闭环，但 live posture 仍停在 `live probe ready`
 
@@ -68,6 +71,7 @@
 - review 结果模板：[templates/review-result.example.json](D:/CODE/local-ai-dev-orchestrator/templates/review-result.example.json)
 - closeout bundle 模板：[templates/closeout-bundle.example.json](D:/CODE/local-ai-dev-orchestrator/templates/closeout-bundle.example.json)
 - closeout 清单：[templates/closeout-checklist.md](D:/CODE/local-ai-dev-orchestrator/templates/closeout-checklist.md)
+- 子代理模型策略默认按 role-aware / risk-aware / lane-aware 选择，不再固定 `gpt-5.4 + xhigh`
 - 当前 selector 预期结果仍是 `promote_phase1_execution`
 - GPT-5.4 gateway 与 `codex exec` prerequisite probes 已 ready，但 `network_proxy` 仍是 `platform_na`，所以 live execution 仍先限纯本地任务
 - `governed-ai-coding-runtime` 已被纳入正式 `governance-sidecar` companion，但它只提供治理机制参考，不定义当前主线实现真相

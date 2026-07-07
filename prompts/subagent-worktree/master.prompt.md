@@ -6,8 +6,8 @@
 你是主控 agent。目标：基于最新真源，在 <REPO_ROOT> 自动编排 subagents + worktrees，完成 <OBJECTIVE>。
 
 固定要求：
-- 所有子代理必须使用 `gpt-5.4`
-- 所有子代理必须使用 `xhigh`
+- 子代理模型策略默认按 role-aware / risk-aware / lane-aware 选择
+- 每个子代理都必须显式写出自己的 `model_policy`
 - 默认中文沟通
 - truth boundary: `repo-side done != platform/live accepted`
 
@@ -21,9 +21,9 @@
    - 当前最小切片
 3. 生成或读取 machine-readable task manifest。
 4. 为每个子代理创建或更新对应 `dispatch_state.json`。
-5. 不手写 `planner_required / review_required`；只根据 `depends_on / risk_level / write_access / policy surface / user_forced_planner / user_forced_review` 派生判断。
+5. 不手写 `planner_required / review_required`；只根据 `depends_on / risk_level / policy surface / capability mismatch / user_forced_planner / user_forced_review` 派生判断。
 6. 以 `allowed_paths / forbidden_paths` 作为正式写入边界；`write_set` 只是更窄的操作子集。
-7. 并发判断先看 `allowed_paths / write_set`，再看 `depends_on / risk_level / policy surface`；任一冲突命中即禁止并发。
+7. 并发判断先看 `allowed_paths / write_set`，再看 `depends_on / risk_level / policy surface / authoritative truth surface`；任一冲突命中即禁止并发。
 8. 先派 explorer，只读分析：
    - 最小切片
    - 建议 `allowed_paths / write_set`

@@ -4,7 +4,7 @@
 
 项目展示名是 `Local AI Runtime`，中文名是 `本地 AI 运行时`。当前本地工作目录与历史仓库 slug 仍为 `local-ai-dev-orchestrator`；本次命名统一不等于目录迁移。
 
-本仓当前主产品线回调为 **Hermes -> AgentBridge -> Codex** 三层闭环，而不是继续沿用“generic orchestrator 主线 + Hermes compatibility lane”的叙事。
+本仓当前主产品线回调为 **Hermes -> AgentBridge -> Codex** 三层闭环，而不是继续沿用“generic orchestrator 主线 + Hermes compatibility lane”的叙事。执行 hot path 当前收敛为 **Codex-first**；Hermes 保留风险编排、runtime ledger、跨执行器适配与历史基线职责，Claude 只作为可插拔 review sidecar。
 
 其中当前 repo truth 仍保持不变：
 
@@ -25,21 +25,24 @@
 
 ### Hermes
 
-- 编排 / 学习 / 历史安全边界
+- 风险编排 / runtime ledger / 跨执行器适配 / 历史安全边界
 - 承载隔离工作流与历史 baseline
 - 不在当前 repo truth 中被误写成“只剩兼容残留”
+- 不重复接管 Codex 已有的 native thread / worktree / review / approval 能力
 
 ### AgentBridge
 
 - 唯一跨层文件契约
 - 终态承接 Hermes 任务正文与结果投影
 - 当前 repo truth 下，markdown task intake 已在 `host_local` 主路径接线，但只按 repo-owned canonical 默认值安全归一化；markdown result 仍是 compatibility projection，且 repo-side projection parity 已验证
+- 后续若要对齐 MCP Tasks / app-server structured surface，也仍通过 AgentBridge 与 canonical contract 对齐，不反转当前 repo truth
 
 ### Codex
 
-- 当前执行层主入口
+- 当前执行层主入口与 hot path
 - `runtime/host-orchestrator` 是 `host_local` 可信运行时内核
 - 当前主 worker 仍围绕 `Codex SDK` / `codex exec` / repo-owned worker profiles
+- 低风险路径默认由 Codex 自动推进；中风险路径允许先执行再阻断式 review；高风险/跨 lane/network/GUI 路径先 handoff
 
 ## 必须能力
 
@@ -49,6 +52,8 @@
 - repo-owned `config / worker_profile / policies` contract
 - `.ai/state/control-plane.db` 调度真源
 - `.ai/runs/<run_id>/<task_id>/` 正式 evidence 面
+- 统一 `task / result / review / dispatch / closeout` 状态枚举与 `next_action / cleanup_owner / cleanup_status / status_reason`
+- runtime-backed `dispatch_state.json` ledger，与 `result.json` 和 `runtime_tasks` 同步 `attempt / next_action / cleanup_* / status_reason / dispatch_state_ref`
 - Governance Overlay：`selector + change-evidence + preflight + reference governance`
 - `AGENTS.md` 共同项目规则主体 + `CLAUDE.md` thin wrapper + 控制仓 global rule source / target-project audit 协同边界
 - `runtime/host-orchestrator` 就地演进
@@ -59,13 +64,17 @@
 - `codex exec` fail-closed fallback
 - worktree-per-write-task
 - single-writer discipline
+- `allowed_paths / forbidden_paths / worktree_path / branch_name` 必须成为 runtime enforcement，而不只是静态声明
+- 当前 git-backed write-boundary enforcement 会在 worker 后审计新改动；若 workspace 缺少 `.git` admin path，则这一步保持显式边界，不伪装成已验证
+- `worktree` 只代表写入隔离，不代表 memory/provider/session 隔离
 
 ### 智能层
 
-- `Direct GPT-5.4 API` 条件必经 planner
-- `Claude Code + GLM-5.2` 条件必经 heterogeneous review
+- `Direct GPT-5.4 API` 仍是高风险 handoff lane，而不是低风险日常默认入口
+- `Claude Code + GLM-5.2` 仍是 heterogeneous review lane，而不是所有任务的日常必经路径
 - `subagents` 读多写少，写任务需独立 worktree + lease + allowlist
 - 当前 repo-side 只先把 planner-gated task 停在 `waiting_handoff`；这不是 live planner 已执行
+- 模型策略改为 role-aware / risk-aware / lane-aware，而不是所有子代理固定 `gpt-5.4 + xhigh`
 
 ### 能力范围与晋升顺序
 
@@ -92,10 +101,11 @@
 - `planning-status.json` + verifier + selector + preflight 继续成为默认治理 gate
 - `selector + change-evidence + preflight + reference governance` 继续作为 Governance Overlay 生效
 - 当前 truth boundary 在 authoritative docs 中保持一致，不再把目标态写成当前事实
+- graded autonomy matrix 当前已明确为：低风险自动推进；medium/high/critical 风险、policy surface、或 force-on review 停在 `needs_review`；高风险/跨 lane/network/GUI 先停在 `waiting_handoff`
 
 ### 中期
 
-- `host_local` 正确性、verification runner、安全边界下的 AgentBridge-first intake、repo-side projection parity、repo-side planner handoff、以及 repo-side review gate 已落地；后续才进入 live planner wiring、live heterogeneous review 与 Hermes parity
+- `host_local` 正确性、verification runner、安全边界下的 AgentBridge-first intake、repo-side projection parity、repo-side planner handoff、repo-side review gate、runtime ledger、以及 git-backed write-boundary enforcement 已落地；后续才进入 lifecycle ops、review/closeout receipts、live planner wiring、live heterogeneous review 与 Hermes parity
 - planner/review 触发条件全是机器可判定字段，且 `user_forced_planner / user_forced_review` 只允许 force on，不允许伪造 force off
 - AgentBridge round-trip 与 Hermes parity 能在不反转 repo truth 的前提下推进
 
@@ -111,6 +121,8 @@
 - 初期目标：1 个真实 writer 跑通主线
 - 中期目标：单仓 1-2 writers，read-heavy workers 4+
 - 后续目标：多仓并行、route-based worker orchestration
+- 并发判定当前按 `risk + depends_on + policy_surface + write_set + repo truth surface` 共同裁决，不再只看 `write_set`
+- 模型成本当前按 `role-aware / risk-aware / lane-aware` 选择，避免把全部任务锁死为同一模型与同一 reasoning 档
 
 ## Acceptance Mapping
 

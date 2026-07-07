@@ -7,11 +7,13 @@
 ## 当前事实边界
 
 - `.ai/runs/<run_id>/<task_id>/result.json` 是当前正式 result 主体
+- `.ai/runs/<run_id>/<task_id>/dispatch_state.json` 是当前 runtime ledger companion
 - `AgentBridge results/*.md` 当前仍是 compatibility projection
 - repo-side 当前已验证 `AgentBridge/tasks/*.md -> host_local -> result.json -> AgentBridge/results/*.md` 的 projection parity 闭环
-- repo-side 当前已允许 `planner_required` 任务在未接 live planner 时写出 `waiting_handoff` 正式结果
-- repo-side 当前已允许 `review_required` 任务在 worker / verification 完成后写出 `needs_review` 正式结果
+- repo-side 当前已允许 planner handoff 任务在未接 live planner 时写出 `waiting_handoff` 正式结果
+- repo-side 当前已允许 review-gated 任务在 worker / verification 完成后写出 `needs_review` 正式结果
 - repo-side 当前已让 `cleanup_status` 反映最小 cleanup truth：repo-root inline task 为 `inline_only`；runtime-managed clean isolated worktree 为 `cleaned`；需要人工保留的 isolated worktree 继续保持 `deferred`；`git worktree remove` 失败时写 `cleanup_failed`
+- 低风险写任务当前可在无额外阻断 review 的情况下直接完成；medium/high/critical 风险、policy surface、或 force-on review 仍会停在 `needs_review`
 - 当前代码层字段名仍是 `lane`
 - 当前字段名仍是 `compatibility_projection_ref`
 
@@ -36,6 +38,9 @@
 | `cost_summary` | string | `cost_summary.json` 相对路径 |
 | `termination_reason` | string | 退出原因 |
 | `cleanup_status` | enum | `deferred / inline_only / cleaned / cleanup_failed` |
+| `cleanup_owner` | string | 由谁负责 cleanup |
+| `status_reason` | string | 结构化状态原因文本 |
+| `dispatch_state_ref` | string | `dispatch_state.json` 相对路径 |
 | `artifacts` | string[] | 工件相对路径 |
 | `compatibility_projection_ref` | string \| null | markdown projection 相对路径 |
 | `handoff_required` | boolean | 是否需要人工接管 |
@@ -55,9 +60,35 @@
 - 在同一时间窗之前，`lane` 不提前改成 `execution_lane`
 - truth reset 只允许补充说明，不允许把这些改名写成当前事实
 
+## Dispatch State Ledger
+
+`dispatch_state.json` 当前记录比 `result.json` 更细的运行时状态：
+
+- `queued`
+- `running`
+- `input_required`
+- `waiting_handoff`
+- `needs_review`
+- `completed`
+- `failed`
+- `cancelled`
+- `stale`
+- `resumed`
+
+当前 repo-side runtime 已稳定写出的主路径是：
+
+- `running`
+- `waiting_handoff`
+- `needs_review`
+- `completed`
+- `failed`
+
+`queued / input_required / cancelled / stale / resumed` 当前先保留为 schema 与 future lifecycle ops 预留状态；不能把它们写成“已经 live 证明”。
+
 ## Cleanup Truth
 
 - `cleanup_status` 只反映 cleanup 结果，不代表 branch 已被删除
+- `cleanup_owner` 当前会在 `result.json` 与 `dispatch_state.json` 双写；更细的 cleanup 经过仍保留在 `worktree_cleanup` 事件
 - `deferred` 当前表示 worktree 被显式保留给后续 review / 调试 / 人工 cleanup；具体原因落在 `worktree_cleanup` 事件
 - `cleanup_failed` 当前只用于 cleanup manager 已尝试 remove 但 git remove 命令本身失败的路径
 

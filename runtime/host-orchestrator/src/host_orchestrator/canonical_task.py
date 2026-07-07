@@ -97,7 +97,6 @@ class CanonicalTask:
     def review_required(self) -> bool:
         return (
             self.risk_level in REVIEW_REQUIRED_RISK_LEVELS
-            or self.write_access
             or self.user_forced_review
         )
 

@@ -47,17 +47,17 @@
   ],
   "residual_risks": [
     "review adapter 仍未进入 live wiring",
-    "dispatch_state 还只是 operator asset，不是 runtime 强制状态机"
+    "cancelled / stale / resumed 仍只是 schema 预留状态，尚未完成 runtime lifecycle ops"
   ],
   "repo_side_done": [
     "manifest 已对齐 canonical task contract 的核心字段",
-    "dispatch_state 与 closeout_bundle 已有 repo-owned 模板和 schema",
+    "dispatch_state 已升级为 runtime ledger，closeout_bundle 仍可引用它做收口",
     "pytest 已覆盖这些模板的基本 contract 自检"
   ],
   "still_open": [
     "platform/live acceptance",
-    "runtime-level worktree manager",
+    "runtime-level cancel/retry/resume lifecycle ops",
     "runtime-level review adapter wiring"
   ],
-  "next_action": "finish_review_then_merge_and_cleanup"
+  "next_action": "materialize_review_receipt_and_lifecycle_ops"
 }

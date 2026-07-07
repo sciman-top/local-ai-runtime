@@ -14,12 +14,19 @@
     "worktree_path",
     "allowed_paths",
     "forbidden_paths",
-    "source_manifest_ref",
+    "source_ref",
     "lease_owner",
     "started_at",
+    "updated_at",
     "heartbeat_at",
+    "stale_after",
+    "execution_lane",
+    "worker_profile",
     "status",
-    "next_action"
+    "status_reason",
+    "next_action",
+    "cleanup_status",
+    "cleanup_owner"
   ],
   "properties": {
     "run_id": {
@@ -47,10 +54,21 @@
       ],
       "properties": {
         "model": {
-          "const": "gpt-5.4"
+          "type": "string"
         },
         "reasoning_effort": {
-          "const": "xhigh"
+          "enum": [
+            "low",
+            "medium",
+            "high",
+            "xhigh"
+          ]
+        },
+        "fallback_model": {
+          "type": "string"
+        },
+        "rationale": {
+          "type": "string"
         }
       }
     },
@@ -66,6 +84,9 @@
     "worktree_path": {
       "type": "string"
     },
+    "workspace_root": {
+      "type": "string"
+    },
     "allowed_paths": {
       "type": "array",
       "items": {
@@ -78,7 +99,7 @@
         "type": "string"
       }
     },
-    "source_manifest_ref": {
+    "source_ref": {
       "type": "string"
     },
     "lease_owner": {
@@ -87,24 +108,66 @@
     "started_at": {
       "type": "string"
     },
+    "attempt": {
+      "type": "integer"
+    },
+    "updated_at": {
+      "type": "string"
+    },
     "heartbeat_at": {
+      "type": "string"
+    },
+    "stale_after": {
+      "type": "string"
+    },
+    "execution_lane": {
+      "enum": [
+        "host_local",
+        "remote_non_gui",
+        "vm_gui"
+      ]
+    },
+    "worker_profile": {
       "type": "string"
     },
     "status": {
       "enum": [
-        "pending",
+        "queued",
         "running",
+        "input_required",
+        "waiting_handoff",
+        "needs_review",
         "completed",
         "failed",
-        "blocked",
+        "cancelled",
         "stale",
-        "closed"
+        "resumed"
       ]
+    },
+    "status_reason": {
+      "type": "string"
     },
     "next_action": {
       "type": "string"
     },
+    "cleanup_status": {
+      "enum": [
+        "deferred",
+        "inline_only",
+        "cleaned",
+        "cleanup_failed"
+      ]
+    },
+    "cleanup_owner": {
+      "type": "string"
+    },
     "last_result_ref": {
+      "type": "string"
+    },
+    "verification_summary_ref": {
+      "type": "string"
+    },
+    "evidence_index_ref": {
       "type": "string"
     },
     "notes": {

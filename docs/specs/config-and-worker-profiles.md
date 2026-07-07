@@ -97,6 +97,7 @@ acceptance:
 
 - `policy_surface_globs` 用于派生 `touches_policy_surface`
 - `sensitive_paths` 用于 compatibility import 与未来 path guard 的最低保护边界
+- `workers.yaml` 的 `model` 是 profile 默认值；单次运行仍可在 `dispatch_state.json.model_policy` 中按角色、风险和 lane 上调或下调 reasoning 档
 
 ## Selection Rules
 
@@ -110,6 +111,7 @@ acceptance:
 4. `requires_network = true` 时，只能选择 `network_profile != off` 的 profile
 5. `risk_level in {high, critical}` 且 `write_access = true` 时，不允许隐式提升权限；必须通过 repo-owned profile 明确声明
 6. `wave1_smoke` 这类 mock profile 只能证明 `mock green`，不能满足 `live probe ready` 或 `live accepted`
+7. 默认模型策略应当是 role-aware / risk-aware / lane-aware，而不是把所有子代理固定为同一模型与同一 reasoning effort
 
 ## Mapping To Codex Runtime
 

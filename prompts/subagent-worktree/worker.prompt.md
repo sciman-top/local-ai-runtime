@@ -7,8 +7,7 @@
 你不是独自在代码库里工作；不要回退别人已存在的改动。
 
 固定要求：
-- model = gpt-5.4
-- reasoning_effort = xhigh
+- model / reasoning_effort 以当前 `dispatch_state.json.model_policy` 为准
 
 工作目录：
 - <WORKTREE_PATH>
@@ -43,7 +42,7 @@
 4. 开始前先确认 `cwd / git root / branch / worktree` 与任务定义一致；不一致就 fail closed。
 5. 完成后自行运行相关 gate。
 6. 完成后自行 commit。
-7. 更新对应 `dispatch_state` 的 `status / heartbeat_at / last_result_ref / next_action`。
+7. 更新对应 `dispatch_state` 的 `status / status_reason / heartbeat_at / last_result_ref / next_action`。
 
 输出格式：
 - Status: DONE | DONE_WITH_CONCERNS | BLOCKED | NEEDS_CONTEXT

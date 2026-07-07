@@ -16,6 +16,7 @@
 - markdown intake 会先归一化为 repo-owned canonical 默认值，并对 execution-critical override / gate command injection fail closed
 - `execution_lane` 是 contract 层 topology 字段
 - 当前代码层 result surface 仍保留 `lane` 字段名；命名统一不是本轮 truth reset 的目标
+- `worktree_path` 当前只定义写入隔离边界，不代表 memory/provider/session 隔离
 
 ## 目标态与迁移窗口
 
@@ -75,7 +76,7 @@
 
 ## Path Guard
 
-当前 repo-side 已 materialize 的最小 path guard：
+当前 repo-side 已 materialize 的 path guard：
 
 - `worktree_path` 必须保持 repo-relative，并且解析后仍位于 repo root 之下
 - `allowed_paths`、`forbidden_paths`、`artifacts_out` 必须保持 repo-relative；不允许绝对路径，也不允许通过 `..` 逃逸
@@ -83,14 +84,18 @@
   - 当前 `workspace_root` 是否等于声明的 worktree 路径
   - 当前 Git root 是否等于该 worktree root
   - 当前 branch 是否等于 `branch_name`
+- worker 结束后，runtime 会对新的 Git 变更集做 fail-closed 审计：
+  - `write_access = false` 时，不允许出现新的写入
+  - 新改动不得落在 `allowed_paths` 之外
+  - 新改动不得命中 `forbidden_paths`
 
 当前边界：
 
-- 这层 guard 只验证 path claim 与 execution context，不等于真实文件写入 allowlist 已被 runtime 强制拦截
+- 当前 git-backed 变更审计要求 workspace 具备 `.git` admin path；对非 Git 轻量夹具只保留声明校验，不伪装成已完成的写入审计
 
 ## Worktree Manager
 
-当前 repo-side 已 materialize 的最小 worktree manager：
+当前 repo-side 已 materialize 的 worktree manager：
 
 - 当 `worktree_path != "."` 且 `host_local` 入口仍从 repo root 启动时，runtime 会按 `branch_name` 与 `base_branch` create 或 reuse declared linked worktree
 - create/reuse 成功后，worker 与 verification 会改在该 worktree `cwd` 中执行
@@ -99,11 +104,11 @@
 当前边界：
 
 - runtime 当前会把 clean、无 handoff 的 runtime-managed linked worktree 交给 cleanup manager 自动 remove；branch deletion 仍不自动化
-- `dispatch_state` 仍未升级为 runtime 强制 ledger
+- `worktree` 当前只代表写入隔离，不代表 memory/provider/session 隔离
 
 ## Cleanup Manager
 
-当前 repo-side 已 materialize 的最小 cleanup manager：
+当前 repo-side 已 materialize 的 cleanup manager：
 
 - 只有 declared isolated worktree 且被 runtime create/reuse 管理的路径才会进入自动 cleanup 尝试
 - 当 run `status = succeeded`、`handoff_required = false`、且 linked worktree 保持 clean 时，runtime 会自动 remove 该 worktree，并把 `cleanup_status` 写成 `cleaned`
@@ -113,7 +118,7 @@
 当前边界：
 
 - cleanup manager 不会自动删除 branch
-- cleanup manager 只更新 `result.json.cleanup_status` 与 `worktree_cleanup` 事件，不等于 `dispatch_state` 已成为 runtime ledger
+- cleanup manager 会让 `result.json`、`dispatch_state.json`、以及 `worktree_cleanup` 事件在 `cleanup_status / cleanup_owner` 上保持一致；branch deletion 仍不自动化
 
 ## 派生字段
 
@@ -125,11 +130,17 @@
 
 ### planner_required
 
-当前 repo-side 已 materialize 的触发条件：
+当前 canonical base signal 已 materialize 的触发条件：
 
 - `depends_on` 非空
 - `risk_level in {high, critical}`
 - `user_forced_planner = true`
+
+当前 `host_local` runtime 还会在以下能力不匹配路径直接 handoff，即使任务作者没有显式写出 planner 相关字段：
+
+- `execution_lane != worker_profile.lane`
+- `requires_network = true` 且所选 `worker_profile.network_profile = off`
+- `requires_gui = true`
 
 保留为 future planner routing 的候选条件，但当前代码尚未 materialize：
 
@@ -138,12 +149,15 @@
 
 ### review_required
 
-当前 repo-side 已 materialize 的触发条件：
+当前 canonical base signal 已 materialize 的触发条件：
 
 - `risk_level in {medium, high, critical}`
-- `write_access = true`
-- `touches_policy_surface = true`
 - `user_forced_review = true`
+
+当前 `host_local` runtime 还会追加以下 review gate 语义：
+
+- `touches_policy_surface = true` 时，最终运行会停在 `needs_review`
+- 当风险或 policy surface 已经要求 review 时，`write_access = true` 会被记入 `status_reason`，但它当前不是单独触发 review 的充分条件
 
 保留为 future review routing 的候选条件，但当前代码尚未 materialize：
 

@@ -95,6 +95,7 @@ def test_host_local_runner_hands_off_planner_tasks_without_calling_worker(
     verification_payload = json.loads((task_root / "verification_summary.json").read_text(encoding="utf-8"))
     cost_payload = json.loads((task_root / "cost_summary.json").read_text(encoding="utf-8"))
     evidence_payload = json.loads((task_root / "evidence_index.json").read_text(encoding="utf-8"))
+    dispatch_payload = json.loads((task_root / "dispatch_state.json").read_text(encoding="utf-8"))
     projection_path = agentbridge_root / "results" / f"{task_id}.md"
 
     assert worker.call_count == 0
@@ -102,9 +103,13 @@ def test_host_local_runner_hands_off_planner_tasks_without_calling_worker(
     assert result_payload["termination_reason"] == "planner_handoff_required"
     assert result_payload["handoff_required"] is True
     assert result_payload["next_action"] == PLANNER_NEXT_ACTION
+    assert "risk_level=critical" in result_payload["status_reason"]
     assert verification_payload["status"] == "waiting_handoff"
     assert verification_payload["commands_run"] == []
     assert cost_payload["source"] == "planner_handoff_no_worker_usage"
+    assert dispatch_payload["status"] == "waiting_handoff"
+    assert dispatch_payload["next_action"] == PLANNER_NEXT_ACTION
+    assert "risk_level=critical" in dispatch_payload["status_reason"]
     assert projection_path.exists()
     projection_text = projection_path.read_text(encoding="utf-8")
     assert "status: waiting_handoff" in projection_text
@@ -113,6 +118,7 @@ def test_host_local_runner_hands_off_planner_tasks_without_calling_worker(
 
     indexed_paths = {entry["relative_path"] for entry in evidence_payload["entries"]}
     assert f".ai/runs/planner-handoff-test/{task_id}/result.json" in indexed_paths
+    assert f".ai/runs/planner-handoff-test/{task_id}/dispatch_state.json" in indexed_paths
     assert f".ai/runs/planner-handoff-test/{task_id}/verification_summary.json" in indexed_paths
     assert f".ai/runs/planner-handoff-test/{task_id}/cost_summary.json" in indexed_paths
     assert f".ai/runs/planner-handoff-test/{task_id}/evidence_index.json" not in indexed_paths
@@ -135,6 +141,78 @@ def test_host_local_runner_hands_off_planner_tasks_without_calling_worker(
     waiting_payload = json.loads(events[1][1])
     assert waiting_payload["next_action"] == PLANNER_NEXT_ACTION
     assert waiting_payload["handoff_required"] is True
+
+
+def test_requires_network_task_hands_off_before_worker_execution(tmp_path: Path) -> None:
+    from host_orchestrator.canonical_task import write_task
+
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir()
+    (repo_root / "AGENTS.md").write_text("stub", encoding="utf-8")
+    copy_runtime_config(repo_root)
+
+    task_id = "TASK-20260707-network-handoff"
+    task_path = repo_root / "tasks" / f"{task_id}.json"
+    payload = canonical_task_payload(task_id)
+    payload["risk_level"] = "low"
+    payload["write_access"] = False
+    payload["requires_network"] = True
+    write_task(task_path, payload)
+
+    class FailIfCalledWorker:
+        def run(self, request: WorkerRequest) -> WorkerResult:
+            raise AssertionError("network-gated task must hand off before worker execution")
+
+    runner = HostLocalRunner(
+        HostLocalConfig(
+            workspace_root=repo_root,
+            layout=RuntimeLayout.from_repo_root(repo_root),
+            run_id="network-handoff-test",
+        ),
+        FailIfCalledWorker(),
+    )
+
+    result_path = runner.run_task(task_path)
+    result_payload = json.loads(result_path.read_text(encoding="utf-8"))
+
+    assert result_payload["status"] == "waiting_handoff"
+    assert "requires_network=true" in result_payload["status_reason"]
+
+
+def test_non_host_local_lane_hands_off_before_worker_execution(tmp_path: Path) -> None:
+    from host_orchestrator.canonical_task import write_task
+
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir()
+    (repo_root / "AGENTS.md").write_text("stub", encoding="utf-8")
+    copy_runtime_config(repo_root)
+
+    task_id = "TASK-20260707-remote-lane-handoff"
+    task_path = repo_root / "tasks" / f"{task_id}.json"
+    payload = canonical_task_payload(task_id)
+    payload["risk_level"] = "low"
+    payload["write_access"] = False
+    payload["execution_lane"] = "remote_non_gui"
+    write_task(task_path, payload)
+
+    class FailIfCalledWorker:
+        def run(self, request: WorkerRequest) -> WorkerResult:
+            raise AssertionError("remote lane task must hand off before worker execution")
+
+    runner = HostLocalRunner(
+        HostLocalConfig(
+            workspace_root=repo_root,
+            layout=RuntimeLayout.from_repo_root(repo_root),
+            run_id="remote-lane-handoff-test",
+        ),
+        FailIfCalledWorker(),
+    )
+
+    result_path = runner.run_task(task_path)
+    result_payload = json.loads(result_path.read_text(encoding="utf-8"))
+
+    assert result_payload["status"] == "waiting_handoff"
+    assert "execution_lane=remote_non_gui" in result_payload["status_reason"]
 
 
 def test_markdown_manual_only_task_hits_planner_handoff_gate(tmp_path: Path) -> None:
@@ -267,7 +345,7 @@ def test_review_required_is_derived_from_materialized_fields(tmp_path: Path) -> 
     write_task(no_review_path, no_review_payload)
 
     assert load_task(medium_risk_path).review_required is True
-    assert load_task(write_access_path).review_required is True
+    assert load_task(write_access_path).review_required is False
     assert load_task(forced_review_path).review_required is True
     assert load_task(no_review_path).review_required is False
 
@@ -406,3 +484,4 @@ def test_policy_surface_tasks_also_stop_at_needs_review(tmp_path: Path) -> None:
     assert result_payload["status"] == "needs_review"
     assert result_payload["handoff_required"] is True
     assert result_payload["next_action"] == REVIEW_NEXT_ACTION
+    assert "touches_policy_surface=true" in result_payload["status_reason"]

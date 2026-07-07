@@ -6,9 +6,8 @@ from typing import Any, Mapping
 
 import yaml
 
+from host_orchestrator.dispatch_state import DISPATCH_STATUSES, REASONING_EFFORTS
 
-MODEL_NAME = "gpt-5.4"
-REASONING_EFFORT = "xhigh"
 TASK_KINDS = {"explore", "implement", "review", "docs_sync", "closeout"}
 RISK_LEVELS = {"low", "medium", "high", "critical"}
 MERGE_POLICIES = {"draft_pr_only", "manual_merge_only", "never_merge"}
@@ -26,7 +25,6 @@ DISPATCH_AGENT_ROLES = {
     "quality_reviewer",
     "closeout",
 }
-DISPATCH_STATUSES = {"pending", "running", "completed", "failed", "blocked", "stale", "closed"}
 CLOSEOUT_STATUSES = {"succeeded", "partial", "blocked"}
 CLEANUP_STATUSES = {"deferred", "inline_only", "cleaned", "cleanup_failed"}
 TEST_STATUSES = {"pass", "fail", "skipped", "gate_na"}
@@ -76,12 +74,19 @@ def validate_dispatch_state_payload(payload: Mapping[str, Any]) -> None:
         "worktree_path",
         "allowed_paths",
         "forbidden_paths",
-        "source_manifest_ref",
+        "source_ref",
         "lease_owner",
         "started_at",
+        "updated_at",
         "heartbeat_at",
+        "stale_after",
+        "execution_lane",
+        "worker_profile",
         "status",
+        "status_reason",
         "next_action",
+        "cleanup_status",
+        "cleanup_owner",
     )
     for key in required:
         _require_present(payload, key, "dispatch_state")
@@ -96,16 +101,31 @@ def validate_dispatch_state_payload(payload: Mapping[str, Any]) -> None:
     _require_string(payload, "worktree_path", "dispatch_state")
     _require_string_list(payload, "allowed_paths", "dispatch_state")
     _require_string_list(payload, "forbidden_paths", "dispatch_state")
-    _require_string(payload, "source_manifest_ref", "dispatch_state")
+    _require_string(payload, "source_ref", "dispatch_state")
     _require_string(payload, "lease_owner", "dispatch_state")
     _require_string(payload, "started_at", "dispatch_state")
+    _require_string(payload, "updated_at", "dispatch_state")
     _require_string(payload, "heartbeat_at", "dispatch_state")
+    _require_string(payload, "stale_after", "dispatch_state")
+    _require_enum(payload, "execution_lane", EXECUTION_LANES, "dispatch_state")
+    _require_string(payload, "worker_profile", "dispatch_state")
     _require_enum(payload, "status", DISPATCH_STATUSES, "dispatch_state")
+    _require_string(payload, "status_reason", "dispatch_state")
     _require_string(payload, "next_action", "dispatch_state")
+    _require_enum(payload, "cleanup_status", CLEANUP_STATUSES, "dispatch_state")
+    _require_string(payload, "cleanup_owner", "dispatch_state")
+    if "attempt" in payload:
+        _require_int(payload, "attempt", "dispatch_state")
+    if "workspace_root" in payload and payload["workspace_root"] is not None:
+        _require_string(payload, "workspace_root", "dispatch_state")
     if "notes" in payload:
         _require_string_list(payload, "notes", "dispatch_state")
     if "last_result_ref" in payload and payload["last_result_ref"] is not None:
         _require_string(payload, "last_result_ref", "dispatch_state")
+    if "verification_summary_ref" in payload and payload["verification_summary_ref"] is not None:
+        _require_string(payload, "verification_summary_ref", "dispatch_state")
+    if "evidence_index_ref" in payload and payload["evidence_index_ref"] is not None:
+        _require_string(payload, "evidence_index_ref", "dispatch_state")
 
 
 def validate_closeout_bundle_payload(payload: Mapping[str, Any]) -> None:
@@ -263,14 +283,12 @@ def _validate_manifest_task(task: Mapping[str, Any], context: str) -> None:
 
 
 def _validate_model_policy(payload: Mapping[str, Any]) -> None:
-    model = _require_string(payload, "model", "model_policy")
-    reasoning_effort = _require_string(payload, "reasoning_effort", "model_policy")
-    if model != MODEL_NAME:
-        raise ValueError(f"model_policy.model must stay '{MODEL_NAME}', got '{model}'")
-    if reasoning_effort != REASONING_EFFORT:
-        raise ValueError(
-            f"model_policy.reasoning_effort must stay '{REASONING_EFFORT}', got '{reasoning_effort}'"
-        )
+    _require_string(payload, "model", "model_policy")
+    _require_enum(payload, "reasoning_effort", set(REASONING_EFFORTS), "model_policy")
+    if "fallback_model" in payload and payload["fallback_model"] is not None:
+        _require_string(payload, "fallback_model", "model_policy")
+    if "rationale" in payload and payload["rationale"] is not None:
+        _require_string(payload, "rationale", "model_policy")
 
 
 def _require_present(payload: Mapping[str, Any], key: str, context: str) -> None:
@@ -311,6 +329,13 @@ def _require_bool(payload: Mapping[str, Any], key: str, context: str) -> bool:
     value = payload.get(key)
     if not isinstance(value, bool):
         raise ValueError(f"{context}.{key} must be a boolean")
+    return value
+
+
+def _require_int(payload: Mapping[str, Any], key: str, context: str) -> int:
+    value = payload.get(key)
+    if not isinstance(value, int) or isinstance(value, bool):
+        raise ValueError(f"{context}.{key} must be an integer")
     return value
 
 

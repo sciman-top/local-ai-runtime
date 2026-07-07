@@ -30,9 +30,8 @@
 
 固定要求：
 
-- 所有子代理统一用 `gpt-5.4`
-- 所有子代理统一用 `xhigh`
-- 如无用户显式改口，不主动降级到更弱模型
+- 子代理模型策略默认按 role-aware / risk-aware / lane-aware 选择，不再统一锁死 `gpt-5.4 + xhigh`
+- 实际模型与 reasoning effort 以 `dispatch_state.json.model_policy` 为准
 - prompt 资产只提供操作骨架，不替代当前仓库的 authoritative truth
-- `planner_required / review_required` 只能由风险、依赖、写权限、policy surface 和 force-on overrides 派生，不能手写回 canonical task
+- `planner_required / review_required` 只能由风险、依赖、policy surface、能力边界和 force-on overrides 派生，不能手写回 canonical task
 - 可先运行 `uv run --project .\runtime\host-orchestrator python .\scripts\validate-agent-work-assets.py` 检查模板资产没有漂移

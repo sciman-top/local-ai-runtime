@@ -13,7 +13,8 @@ objective: "推进当前最小切片"
 
 model_policy:
   model: "gpt-5.4"
-  reasoning_effort: "xhigh"
+  reasoning_effort: "high"
+  rationale: "默认主 worker 维持高能力；更高代价路径只在高风险或 review/planner gate 命中时启用。"
 
 truth_sources:
   - "README.md"

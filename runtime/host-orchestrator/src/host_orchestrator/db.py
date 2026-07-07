@@ -10,12 +10,19 @@ from uuid import uuid4
 SCHEMA_SQL = """
 CREATE TABLE IF NOT EXISTS runtime_tasks (
     task_id TEXT PRIMARY KEY,
+    run_id TEXT,
+    attempt INTEGER NOT NULL DEFAULT 1,
     state TEXT NOT NULL,
+    state_reason TEXT,
     execution_lane TEXT NOT NULL,
     worker_profile TEXT NOT NULL,
+    next_action TEXT,
+    cleanup_status TEXT,
+    cleanup_owner TEXT,
     created_at TEXT NOT NULL,
     updated_at TEXT NOT NULL,
-    result_path TEXT
+    result_path TEXT,
+    dispatch_state_path TEXT
 );
 
 CREATE TABLE IF NOT EXISTS leases (
@@ -54,6 +61,7 @@ def initialize_control_plane(db_path: Path) -> Path:
     db_path.parent.mkdir(parents=True, exist_ok=True)
     with sqlite3.connect(db_path) as connection:
         connection.executescript(SCHEMA_SQL)
+        _ensure_runtime_task_columns(connection)
         connection.commit()
     return db_path
 
@@ -74,29 +82,71 @@ def upsert_runtime_task(
     db_path: Path,
     *,
     task_id: str,
+    run_id: str | None = None,
+    attempt: int = 1,
     state: str,
+    state_reason: str | None = None,
     execution_lane: str,
     worker_profile: str,
+    next_action: str | None = None,
+    cleanup_status: str | None = None,
+    cleanup_owner: str | None = None,
     created_at: str,
     updated_at: str,
     result_path: str | None = None,
+    dispatch_state_path: str | None = None,
 ) -> None:
     initialize_control_plane(db_path)
     with sqlite3.connect(db_path) as connection:
         connection.execute(
             """
             INSERT INTO runtime_tasks (
-                task_id, state, execution_lane, worker_profile, created_at, updated_at, result_path
+                task_id,
+                run_id,
+                attempt,
+                state,
+                state_reason,
+                execution_lane,
+                worker_profile,
+                next_action,
+                cleanup_status,
+                cleanup_owner,
+                created_at,
+                updated_at,
+                result_path,
+                dispatch_state_path
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT(task_id) DO UPDATE SET
+                run_id = COALESCE(excluded.run_id, runtime_tasks.run_id),
+                attempt = excluded.attempt,
                 state = excluded.state,
+                state_reason = COALESCE(excluded.state_reason, runtime_tasks.state_reason),
                 execution_lane = excluded.execution_lane,
                 worker_profile = excluded.worker_profile,
+                next_action = COALESCE(excluded.next_action, runtime_tasks.next_action),
+                cleanup_status = COALESCE(excluded.cleanup_status, runtime_tasks.cleanup_status),
+                cleanup_owner = COALESCE(excluded.cleanup_owner, runtime_tasks.cleanup_owner),
                 updated_at = excluded.updated_at,
-                result_path = COALESCE(excluded.result_path, runtime_tasks.result_path)
+                result_path = COALESCE(excluded.result_path, runtime_tasks.result_path),
+                dispatch_state_path = COALESCE(excluded.dispatch_state_path, runtime_tasks.dispatch_state_path)
             """,
-            (task_id, state, execution_lane, worker_profile, created_at, updated_at, result_path),
+            (
+                task_id,
+                run_id,
+                attempt,
+                state,
+                state_reason,
+                execution_lane,
+                worker_profile,
+                next_action,
+                cleanup_status,
+                cleanup_owner,
+                created_at,
+                updated_at,
+                result_path,
+                dispatch_state_path,
+            ),
         )
         connection.commit()
 
@@ -262,3 +312,22 @@ def reap_stale_leases(
             )
             connection.commit()
     return lease_tokens
+
+
+def _ensure_runtime_task_columns(connection: sqlite3.Connection) -> None:
+    existing_columns = {
+        row[1]
+        for row in connection.execute("PRAGMA table_info(runtime_tasks)").fetchall()
+    }
+    required_columns = {
+        "run_id": "ALTER TABLE runtime_tasks ADD COLUMN run_id TEXT",
+        "attempt": "ALTER TABLE runtime_tasks ADD COLUMN attempt INTEGER NOT NULL DEFAULT 1",
+        "state_reason": "ALTER TABLE runtime_tasks ADD COLUMN state_reason TEXT",
+        "next_action": "ALTER TABLE runtime_tasks ADD COLUMN next_action TEXT",
+        "cleanup_status": "ALTER TABLE runtime_tasks ADD COLUMN cleanup_status TEXT",
+        "cleanup_owner": "ALTER TABLE runtime_tasks ADD COLUMN cleanup_owner TEXT",
+        "dispatch_state_path": "ALTER TABLE runtime_tasks ADD COLUMN dispatch_state_path TEXT",
+    }
+    for column_name, statement in required_columns.items():
+        if column_name not in existing_columns:
+            connection.execute(statement)

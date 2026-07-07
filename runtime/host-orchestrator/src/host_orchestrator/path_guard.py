@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from fnmatch import fnmatchcase
 from pathlib import Path
 import subprocess
 
@@ -63,6 +64,41 @@ def validate_worker_workspace(
     return actual_workspace_root
 
 
+def capture_workspace_change_set(workspace_root: Path) -> frozenset[str]:
+    if not (workspace_root / ".git").exists():
+        return frozenset()
+    changed_paths = set(_run_git_lines(workspace_root, "diff", "--name-only", "--relative", "HEAD"))
+    changed_paths.update(_run_git_lines(workspace_root, "diff", "--cached", "--name-only", "--relative"))
+    changed_paths.update(_run_git_lines(workspace_root, "ls-files", "--others", "--exclude-standard"))
+    return frozenset(_normalize_repo_relative_path(path) for path in changed_paths if path.strip())
+
+
+def enforce_workspace_change_policy(
+    *,
+    task: CanonicalTask,
+    workspace_root: Path,
+    baseline_changes: frozenset[str],
+) -> list[str]:
+    current_changes = capture_workspace_change_set(workspace_root)
+    new_changes = sorted(current_changes - baseline_changes)
+    if not task.write_access and new_changes:
+        raise PathGuardError(
+            "write_access=false but worker modified paths: " + ", ".join(new_changes)
+        )
+
+    unauthorized = [
+        path
+        for path in new_changes
+        if _matches_any(path, task.forbidden_paths) or not _matches_any(path, task.allowed_paths)
+    ]
+    if unauthorized:
+        raise PathGuardError(
+            "worker modified paths outside allowed_paths or inside forbidden_paths: "
+            + ", ".join(unauthorized)
+        )
+    return new_changes
+
+
 def _validate_relative_value(value: str, *, field: str) -> None:
     normalized = value.replace("\\", "/").strip()
     candidate = Path(normalized)
@@ -93,3 +129,25 @@ def _run_git(cwd: Path, *args: str) -> str:
             f"{' '.join(args)} ({stderr or f'exit_code={completed.returncode}'})"
         )
     return (completed.stdout or "").strip()
+
+
+def _run_git_lines(cwd: Path, *args: str) -> list[str]:
+    output = _run_git(cwd, *args)
+    if not output:
+        return []
+    return [line for line in output.splitlines() if line.strip()]
+
+
+def _matches_any(path: str, patterns: tuple[str, ...]) -> bool:
+    normalized_path = _normalize_repo_relative_path(path)
+    return any(
+        fnmatchcase(normalized_path, _normalize_repo_relative_path(pattern))
+        for pattern in patterns
+    )
+
+
+def _normalize_repo_relative_path(value: str) -> str:
+    normalized = value.replace("\\", "/").strip()
+    if normalized.startswith("./"):
+        return normalized[2:]
+    return normalized
