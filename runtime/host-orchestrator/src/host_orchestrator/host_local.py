@@ -50,7 +50,13 @@ class HostLocalConfig:
     worker_profile: str | None = None
     run_id: str | None = None
     attempt: int = 1
-    route_reason: str = "Phase 1 single worker default host_local lane"
+    route_reason: str | None = None
+
+
+@dataclass(frozen=True)
+class RouteDecision:
+    worker_profile: WorkerProfile
+    route_reason: str
 
 
 class HostLocalRunner:
@@ -63,7 +69,9 @@ class HostLocalRunner:
 
     def run_task(self, task_path: Path) -> Path:
         task = self._load_intake_task(task_path)
-        worker_profile = self._runtime_config.worker_profile(self._config.worker_profile)
+        route_decision = self._resolve_route_decision(task)
+        worker_profile = route_decision.worker_profile
+        route_reason = route_decision.route_reason
         run_id = self._config.run_id or build_run_id(
             prefix=self._runtime_config.orchestrator.run_id_prefix
         )
@@ -102,7 +110,7 @@ class HostLocalRunner:
                 self._config.layout.control_plane_db,
                 task_id=task.task_id,
                 selected_lane=worker_profile.lane,
-                reason=self._config.route_reason,
+                reason=route_reason,
                 created_at=started_at,
             )
             db.upsert_runtime_task(
@@ -132,22 +140,25 @@ class HostLocalRunner:
                     "run_id": run_id,
                     "attempt": self._config.attempt,
                     "lease_token": lease_token,
+                    "route_reason": route_reason,
                     "next_action": current_next_action,
                 },
                 created_at=started_at,
             )
             validate_task_paths(task=task, repo_root=self._config.layout.repo_root)
-            planner_reasons = self._planner_gate_reasons(task, worker_profile)
-            if planner_reasons:
+            handoff_reasons = self._planner_gate_reasons(task, worker_profile)
+            handoff_reasons.extend(self._quota_gate_reasons(worker_profile))
+            if handoff_reasons:
                 finished_at = agentbridge.utc_now_iso()
                 current_status_reason = self._format_status_reason(
-                    "planner handoff required", planner_reasons
+                    "planner handoff required", handoff_reasons
                 )
                 write_dispatch_state(
                     dispatch_state_path,
                     self._dispatch_state_payload(
                         task=task,
                         worker_profile=worker_profile,
+                        route_reason=route_reason,
                         run_id=run_id,
                         workspace_root=current_workspace_root,
                         status="waiting_handoff",
@@ -188,11 +199,12 @@ class HostLocalRunner:
                             next_action=PLANNER_HANDOFF_NEXT_ACTION,
                             emit_worker_artifact=False,
                             extra_observations=[
-                                "- Planner handoff was derived from canonical risk/dependency gates.",
-                                "- Repo-side runtime stopped before any live planner or worker execution.",
+                                "- Pre-worker handoff was derived from repo-side planner, capability, or quota gates.",
+                                "- Repo-side runtime stopped before any live planner, route scheduler, or primary worker execution.",
                             ],
                         )
                     ),
+                    route_reason=route_reason,
                     result_status="waiting_handoff",
                     termination_reason="planner_handoff_required",
                     handoff_required=True,
@@ -266,6 +278,7 @@ class HostLocalRunner:
                         "evidence_index_ref": evidence_index_path,
                         "handoff_required": True,
                         "next_action": PLANNER_HANDOFF_NEXT_ACTION,
+                        "route_reason": route_reason,
                         "status_reason": current_status_reason,
                     },
                     created_at=finished_at,
@@ -372,6 +385,7 @@ class HostLocalRunner:
                 self._dispatch_state_payload(
                     task=task,
                     worker_profile=worker_profile,
+                    route_reason=route_reason,
                     run_id=run_id,
                     workspace_root=current_workspace_root,
                     status="needs_review" if review_required else (
@@ -417,6 +431,7 @@ class HostLocalRunner:
                         ),
                     )
                 ),
+                route_reason=route_reason,
                 result_status="needs_review" if review_required else None,
                 termination_reason=termination_reason if review_required or verification_payload.get("status") == "failed" else None,
                 handoff_required=review_required,
@@ -510,6 +525,7 @@ class HostLocalRunner:
                     "usage": self._usage_payload(worker_result.usage),
                     "handoff_required": review_required,
                     "next_action": current_next_action,
+                    "route_reason": route_reason,
                     "status_reason": current_status_reason,
                 },
                 created_at=finished_at,
@@ -523,6 +539,7 @@ class HostLocalRunner:
                 self._dispatch_state_payload(
                     task=task,
                     worker_profile=worker_profile,
+                    route_reason=route_reason,
                     run_id=run_id,
                     workspace_root=current_workspace_root,
                     status="failed",
@@ -563,6 +580,7 @@ class HostLocalRunner:
                     "run_id": run_id,
                     "attempt": self._config.attempt,
                     "lease_token": lease_token,
+                    "route_reason": route_reason,
                     "error_type": type(exc).__name__,
                     "error_message": str(exc),
                     "status_reason": current_status_reason,
@@ -903,6 +921,25 @@ class HostLocalRunner:
             reasons.append("requires_gui=true")
         return reasons
 
+    def _quota_gate_reasons(
+        self,
+        worker_profile: WorkerProfile,
+    ) -> list[str]:
+        active_leases = db.count_active_leases_for_worker_profile(
+            self._config.layout.control_plane_db,
+            worker_profile=worker_profile.name,
+        )
+        if active_leases <= worker_profile.max_active_leases:
+            return []
+        return [
+            (
+                "lease_quota_exhausted "
+                f"worker_profile={worker_profile.name} "
+                f"active_leases={active_leases} "
+                f"max_active_leases={worker_profile.max_active_leases}"
+            )
+        ]
+
     def _review_gate_reasons(self, task: CanonicalTask) -> list[str]:
         reasons: list[str] = []
         touches_policy_surface = self._touches_policy_surface(task)
@@ -1014,6 +1051,7 @@ class HostLocalRunner:
         *,
         task: CanonicalTask,
         worker_profile: WorkerProfile,
+        route_reason: str,
         run_id: str,
         workspace_root: Path,
         status: str,
@@ -1037,6 +1075,7 @@ class HostLocalRunner:
             "branch_name": task.branch_name,
             "worktree_path": task.worktree_path,
             "workspace_root": str(workspace_root),
+            "route_reason": route_reason,
             "allowed_paths": list(task.allowed_paths),
             "forbidden_paths": list(task.forbidden_paths),
             "source_ref": self._source_ref(task.path),
@@ -1070,6 +1109,30 @@ class HostLocalRunner:
             "reasoning_effort": reasoning_effort,
             "rationale": "derived from worker role, task risk, and policy-surface sensitivity",
         }
+
+    def _resolve_route_decision(self, task: CanonicalTask) -> RouteDecision:
+        if self._config.worker_profile is not None:
+            worker_profile = self._runtime_config.worker_profile(self._config.worker_profile)
+            route_reason = (
+                self._config.route_reason
+                or f"runner override worker_profile={worker_profile.name} selected for host_local execution"
+            )
+            return RouteDecision(worker_profile=worker_profile, route_reason=route_reason)
+
+        if task.worker_profile is not None:
+            worker_profile = self._runtime_config.worker_profile(task.worker_profile)
+            route_reason = (
+                self._config.route_reason
+                or f"repo-owned worker_profile={worker_profile.name} selected from canonical task"
+            )
+            return RouteDecision(worker_profile=worker_profile, route_reason=route_reason)
+
+        worker_profile = self._runtime_config.worker_profile()
+        route_reason = (
+            self._config.route_reason
+            or f"repo default worker_profile={worker_profile.name} selected from orchestrator.yaml"
+        )
+        return RouteDecision(worker_profile=worker_profile, route_reason=route_reason)
 
     @staticmethod
     def _format_status_reason(prefix: str, reasons: list[str]) -> str:

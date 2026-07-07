@@ -7,6 +7,7 @@ import sqlite3
 
 from openai_codex import ApprovalMode, Sandbox
 import pytest
+import yaml
 
 from host_orchestrator.canonical_task import CanonicalTaskError, load_task as load_canonical_task, write_task
 from host_orchestrator import db
@@ -40,6 +41,20 @@ def _copy_runtime_config(repo_root: Path) -> None:
     destination_root.mkdir(parents=True, exist_ok=True)
     for filename in ["orchestrator.yaml", "workers.yaml", "policies.yaml"]:
         shutil.copy2(source_root / filename, destination_root / filename)
+
+
+def _update_worker_profile_config(
+    repo_root: Path,
+    profile_name: str,
+    updates: dict[str, object],
+) -> None:
+    workers_path = repo_root / ".ai" / "config" / "workers.yaml"
+    payload = yaml.safe_load(workers_path.read_text(encoding="utf-8"))
+    payload["workers"][profile_name].update(updates)
+    workers_path.write_text(
+        yaml.safe_dump(payload, allow_unicode=False, sort_keys=False),
+        encoding="utf-8",
+    )
 
 
 def _canonical_task_payload(task_id: str) -> dict[str, object]:
@@ -79,6 +94,7 @@ def _run_fake_host_local_task(
     tmp_path: Path,
     *,
     task_id: str,
+    task_updates: dict[str, object] | None = None,
 ) -> tuple[Path, RuntimeLayout, Path, Path]:
     repo_root = tmp_path / "repo"
     repo_root.mkdir()
@@ -90,7 +106,10 @@ def _run_fake_host_local_task(
         (agentbridge_root / name).mkdir(parents=True, exist_ok=True)
 
     task_path = repo_root / "tasks" / f"{task_id}.json"
-    write_task(task_path, _canonical_task_payload(task_id))
+    payload = _canonical_task_payload(task_id)
+    if task_updates is not None:
+        payload.update(task_updates)
+    write_task(task_path, payload)
 
     class FakeWorker:
         def run(self, request: WorkerRequest) -> WorkerResult:
@@ -383,6 +402,115 @@ def test_host_local_runner_writes_result_and_runtime_state(tmp_path: Path) -> No
         "model_context_window": 272000,
     }
     assert routes == [("host_local",)]
+
+
+def test_host_local_runner_materializes_explicit_worker_profile_route_reason(tmp_path: Path) -> None:
+    task_id = "TASK-20260707-explicit-worker-profile"
+    repo_root, layout, _, result_path = _run_fake_host_local_task(
+        tmp_path,
+        task_id=task_id,
+        task_updates={"worker_profile": "wave1_smoke"},
+    )
+
+    result_payload = json.loads(result_path.read_text(encoding="utf-8"))
+    dispatch_payload = json.loads((result_path.parent / "dispatch_state.json").read_text(encoding="utf-8"))
+
+    with sqlite3.connect(layout.control_plane_db) as connection:
+        route = connection.execute(
+            "SELECT selected_lane, reason FROM route_decisions WHERE task_id = ?",
+            (task_id,),
+        ).fetchone()
+
+    assert result_payload["worker_profile"] == "wave1_smoke"
+    assert result_payload["worker_kind"] == "scripted"
+    assert result_payload["route_reason"] == "repo-owned worker_profile=wave1_smoke selected from canonical task"
+    assert dispatch_payload["worker_profile"] == "wave1_smoke"
+    assert dispatch_payload["route_reason"] == result_payload["route_reason"]
+    assert route == ("host_local", result_payload["route_reason"])
+
+
+def test_host_local_runner_hands_off_when_worker_profile_quota_is_exhausted(tmp_path: Path) -> None:
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir()
+    (repo_root / "AGENTS.md").write_text("stub", encoding="utf-8")
+    _copy_runtime_config(repo_root)
+    _update_worker_profile_config(
+        repo_root,
+        "local_maint",
+        {"max_active_leases": 1},
+    )
+
+    task_id = "TASK-20260707-quota-handoff"
+    task_path = repo_root / "tasks" / f"{task_id}.json"
+    write_task(task_path, _canonical_task_payload(task_id))
+
+    layout = RuntimeLayout.from_repo_root(repo_root)
+    occupied_task_id = "TASK-20260707-occupied"
+    occupied_dispatch_state = ".ai/runs/occupied-run/TASK-20260707-occupied/dispatch_state.json"
+    db.upsert_runtime_task(
+        layout.control_plane_db,
+        task_id=occupied_task_id,
+        run_id="occupied-run",
+        attempt=1,
+        state="running",
+        state_reason="existing active lease",
+        execution_lane="host_local",
+        worker_profile="local_maint",
+        next_action="wait_for_worker_result",
+        cleanup_status="inline_only",
+        cleanup_owner="inline_execution",
+        created_at="2026-07-07T10:00:00Z",
+        updated_at="2026-07-07T10:00:00Z",
+        dispatch_state_path=occupied_dispatch_state,
+    )
+    db.acquire_lease(
+        layout.control_plane_db,
+        task_id=occupied_task_id,
+        worker_id="occupied-worker",
+        acquired_at="2026-07-07T10:00:00Z",
+        expires_at="2026-07-07T10:30:00Z",
+    )
+
+    class FailIfCalledWorker:
+        def __init__(self) -> None:
+            self.call_count = 0
+
+        def run(self, request: WorkerRequest) -> WorkerResult:
+            self.call_count += 1
+            raise AssertionError("quota-exhausted task must hand off before worker execution")
+
+    worker = FailIfCalledWorker()
+    runner = HostLocalRunner(
+        HostLocalConfig(
+            workspace_root=repo_root,
+            layout=layout,
+            run_id="quota-handoff-test",
+        ),
+        worker,
+    )
+
+    result_path = runner.run_task(task_path)
+    result_payload = json.loads(result_path.read_text(encoding="utf-8"))
+    dispatch_payload = json.loads((result_path.parent / "dispatch_state.json").read_text(encoding="utf-8"))
+
+    with sqlite3.connect(layout.control_plane_db) as connection:
+        route = connection.execute(
+            "SELECT selected_lane, reason FROM route_decisions WHERE task_id = ?",
+            (task_id,),
+        ).fetchone()
+        remaining_leases = connection.execute(
+            "SELECT task_id FROM leases ORDER BY task_id",
+        ).fetchall()
+
+    assert worker.call_count == 0
+    assert result_payload["status"] == "waiting_handoff"
+    assert "lease_quota_exhausted" in result_payload["status_reason"]
+    assert "worker_profile=local_maint" in result_payload["status_reason"]
+    assert result_payload["route_reason"] == "repo default worker_profile=local_maint selected from orchestrator.yaml"
+    assert dispatch_payload["status"] == "waiting_handoff"
+    assert dispatch_payload["route_reason"] == result_payload["route_reason"]
+    assert route == ("host_local", result_payload["route_reason"])
+    assert remaining_leases == [(occupied_task_id,)]
 
 
 def test_evidence_index_revalidation_passes_for_host_local_result(tmp_path: Path) -> None:

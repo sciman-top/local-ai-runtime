@@ -30,6 +30,7 @@
 - `approval_policy`
 - `network_profile`
 - `projection_mode`
+- `max_active_leases`
 - `policy_surface_globs`
 - `sensitive_paths`
 
@@ -78,6 +79,7 @@ acceptance:
 | `approval_policy` | `never / on_request` |
 | `network_profile` | `off / restricted / on` |
 | `projection_mode` | `compatibility_dual_write / canonical_only` |
+| `max_active_leases` | 该 profile 允许同时持有的 active lease 上限；超额时在 worker 前 handoff |
 
 ### 当前已定义 profile
 
@@ -110,8 +112,9 @@ acceptance:
 3. `requires_gui = true` 时，只能选择 `lane = vm_gui` 的 profile
 4. `requires_network = true` 时，只能选择 `network_profile != off` 的 profile
 5. `risk_level in {high, critical}` 且 `write_access = true` 时，不允许隐式提升权限；必须通过 repo-owned profile 明确声明
-6. `wave1_smoke` 这类 mock profile 只能证明 `mock green`，不能满足 `live probe ready` 或 `live accepted`
-7. 默认模型策略应当是 role-aware / risk-aware / lane-aware，而不是把所有子代理固定为同一模型与同一 reasoning effort
+6. selected `worker_profile` 的 active lease 数超过 `max_active_leases` 时，runtime 必须在 worker 前 fail closed 到 handoff，而不是伪装成多 worker 已调度
+7. `wave1_smoke` 这类 mock profile 只能证明 `mock green`，不能满足 `live probe ready` 或 `live accepted`
+8. 默认模型策略应当是 role-aware / risk-aware / lane-aware，而不是把所有子代理固定为同一模型与同一 reasoning effort
 
 ## Mapping To Codex Runtime
 

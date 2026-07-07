@@ -18,6 +18,7 @@
 | `next_action` | 当前运行结束后建议的下一步 |
 | `cleanup_owner` | 由谁负责 worktree / artifact cleanup |
 | `status_reason` | 当前状态的结构化原因 |
+| `route_reason` | 当前 route/worker_profile 选择原因 |
 | `dispatch_state_ref` | 关联的 `dispatch_state.json` 路径 |
 
 ## Resume Point
@@ -61,6 +62,8 @@
 
 - review-gated 路径当前还会额外写出 `review_result.json`
 - 当前 planner/review/completed runtime outcome 还会额外写出 `closeout_bundle.json`
+- explicit/default `worker_profile` 选择原因当前会落到 `result.json`、`dispatch_state.json`、以及 `route_decisions`
+- 若选中 profile 的 active lease 数超过 `max_active_leases`，当前会在 worker 前 handoff，并仍保留同等最小工件集合
 - 这些 extra receipts 表达的是 repo-side receipt truth，不等于 live planner / live review sidecar 已接线
 
 ## Cleanup Ownership

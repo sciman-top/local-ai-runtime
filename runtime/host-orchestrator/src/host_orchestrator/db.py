@@ -195,6 +195,25 @@ def record_route_decision(
         connection.commit()
 
 
+def count_active_leases_for_worker_profile(
+    db_path: Path,
+    *,
+    worker_profile: str,
+) -> int:
+    initialize_control_plane(db_path)
+    with sqlite3.connect(db_path) as connection:
+        row = connection.execute(
+            """
+            SELECT COUNT(*)
+            FROM leases
+            INNER JOIN runtime_tasks ON runtime_tasks.task_id = leases.task_id
+            WHERE runtime_tasks.worker_profile = ?
+            """,
+            (worker_profile,),
+        ).fetchone()
+    return int(row[0] if row is not None else 0)
+
+
 def append_event(
     db_path: Path,
     *,

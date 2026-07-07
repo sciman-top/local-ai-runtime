@@ -141,6 +141,7 @@
 - `execution_lane != worker_profile.lane`
 - `requires_network = true` 且所选 `worker_profile.network_profile = off`
 - `requires_gui = true`
+- 所选 `worker_profile` 的 active lease 数超过 `max_active_leases`
 
 保留为 future planner routing 的候选条件，但当前代码尚未 materialize：
 
@@ -174,6 +175,7 @@
 - `worker_profile` 是 repo-owned abstraction，不允许继续作为 ad hoc string 漂浮在 task 外层
 - canonical task 当前可以省略 `worker_profile`，由 orchestrator 使用 `.ai/config/orchestrator.yaml` 的默认档补齐
 - 若显式指定，必须命中 `.ai/config/workers.yaml`
+- 显式/默认 `worker_profile` 的最终选择当前已 materialize 到 `result.json`、`dispatch_state.json`、以及 `route_decisions` 中的 `route_reason`
 
 ## Override 规则
 

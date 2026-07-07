@@ -119,6 +119,8 @@ def validate_dispatch_state_payload(payload: Mapping[str, Any]) -> None:
         _require_int(payload, "attempt", "dispatch_state")
     if "workspace_root" in payload and payload["workspace_root"] is not None:
         _require_string(payload, "workspace_root", "dispatch_state")
+    if "route_reason" in payload and payload["route_reason"] is not None:
+        _require_string(payload, "route_reason", "dispatch_state")
     if "notes" in payload:
         _require_string_list(payload, "notes", "dispatch_state")
     if "last_result_ref" in payload and payload["last_result_ref"] is not None:

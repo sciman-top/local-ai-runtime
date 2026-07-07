@@ -82,6 +82,7 @@ class CanonicalTask:
     artifacts_out: tuple[str, ...]
     handoff_policy: str
     verification_commands: VerificationCommands
+    worker_profile: str | None = None
     user_forced_planner: bool = False
     user_forced_review: bool = False
 
@@ -108,14 +109,20 @@ class CanonicalTask:
             f"risk_level: {self.risk_level}",
             f"merge_policy: {self.merge_policy}",
             f"execution_lane: {self.execution_lane}",
-            "allowed_paths:",
-            *[f"  - {item}" for item in self.allowed_paths],
-            "forbidden_paths:",
-            *[f"  - {item}" for item in self.forbidden_paths],
-            "",
-            "description:",
-            self.description or "(no description provided)",
         ]
+        if self.worker_profile is not None:
+            lines.append(f"worker_profile: {self.worker_profile}")
+        lines.extend(
+            [
+                "allowed_paths:",
+                *[f"  - {item}" for item in self.allowed_paths],
+                "forbidden_paths:",
+                *[f"  - {item}" for item in self.forbidden_paths],
+                "",
+                "description:",
+                self.description or "(no description provided)",
+            ]
+        )
         return "\n".join(lines).strip()
 
 
@@ -172,6 +179,7 @@ def task_from_payload(path: Path, payload: dict[str, Any]) -> CanonicalTask:
             contract=_optional_command(commands_payload, "contract"),
             hotspot=_optional_command(commands_payload, "hotspot"),
         ),
+        worker_profile=_optional_string_or_none(payload, "worker_profile"),
     )
 
 
@@ -218,6 +226,18 @@ def _optional_string(payload: dict[str, Any], key: str) -> str:
     if not isinstance(value, str):
         raise CanonicalTaskError(f"{key} must be a string when present")
     return value.strip()
+
+
+def _optional_string_or_none(payload: dict[str, Any], key: str) -> str | None:
+    value = payload.get(key)
+    if value is None:
+        return None
+    if not isinstance(value, str):
+        raise CanonicalTaskError(f"{key} must be a string when present")
+    stripped = value.strip()
+    if not stripped:
+        raise CanonicalTaskError(f"{key} must be a non-empty string when present")
+    return stripped
 
 
 def _require_string_list(payload: dict[str, Any], key: str) -> list[str]:

@@ -23,6 +23,7 @@ class WorkerProfile:
     approval_policy: str
     network_profile: str
     projection_mode: str
+    max_active_leases: int
 
     def sandbox(self) -> Sandbox:
         if self.sandbox_profile == "workspace_write":
@@ -100,6 +101,7 @@ def load_runtime_config(repo_root: Path) -> RuntimeConfigBundle:
             approval_policy=_require_string(values, "approval_policy", "workers.yaml"),
             network_profile=_require_string(values, "network_profile", "workers.yaml"),
             projection_mode=_require_string(values, "projection_mode", "workers.yaml"),
+            max_active_leases=_require_positive_int(values, "max_active_leases", "workers.yaml"),
         )
 
     default_worker_profile = _require_string(run_payload, "default_worker_profile", "orchestrator.yaml")
@@ -162,3 +164,10 @@ def _require_string_list(payload: dict[str, Any], key: str, source_name: str) ->
     if not isinstance(value, list) or not all(isinstance(item, str) for item in value):
         raise RuntimeConfigError(f"{source_name}:{key} must be a list of strings")
     return [item.strip() for item in value if item.strip()]
+
+
+def _require_positive_int(payload: dict[str, Any], key: str, source_name: str) -> int:
+    value = payload.get(key)
+    if not isinstance(value, int) or isinstance(value, bool) or value < 1:
+        raise RuntimeConfigError(f"{source_name}:{key} must be a positive integer")
+    return value

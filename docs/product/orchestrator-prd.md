@@ -105,7 +105,7 @@
 
 ### 中期
 
-- `host_local` 正确性、verification runner、安全边界下的 AgentBridge-first intake、repo-side projection parity、repo-side planner handoff、repo-side review gate、runtime ledger、repo-side lifecycle ops、repo-side structured review/closeout receipts、以及 git-backed write-boundary enforcement 已落地；后续进入 live planner wiring、live heterogeneous review、broader lease/route/quota 控制面、以及 Hermes parity
+- `host_local` 正确性、verification runner、安全边界下的 AgentBridge-first intake、repo-side projection parity、repo-side planner handoff、repo-side review gate、runtime ledger、repo-side lifecycle ops、repo-side structured review/closeout receipts、git-backed write-boundary enforcement、以及 repo-side `leases / route / quota` closeout 已落地；后续进入 `multi-worker simulation`、live planner wiring、live heterogeneous review、以及 Hermes parity
 - planner/review 触发条件全是机器可判定字段，且 `user_forced_planner / user_forced_review` 只允许 force on，不允许伪造 force off
 - AgentBridge round-trip 与 Hermes parity 能在不反转 repo truth 的前提下推进
 

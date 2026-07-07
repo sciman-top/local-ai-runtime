@@ -87,6 +87,9 @@
     "workspace_root": {
       "type": "string"
     },
+    "route_reason": {
+      "type": "string"
+    },
     "allowed_paths": {
       "type": "array",
       "items": {

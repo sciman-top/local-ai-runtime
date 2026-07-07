@@ -15,6 +15,7 @@
 - repo-side 当前会在 review-gated 路径写出 `review_result.json` blocking receipt，并在当前 planner/review/completed outcome 写出 `closeout_bundle.json`
 - repo-side 当前已让 `cleanup_status` 反映最小 cleanup truth：repo-root inline task 为 `inline_only`；runtime-managed clean isolated worktree 为 `cleaned`；需要人工保留的 isolated worktree 继续保持 `deferred`；`git worktree remove` 失败时写 `cleanup_failed`
 - 低风险写任务当前可在无额外阻断 review 的情况下直接完成；medium/high/critical 风险、policy surface、或 force-on review 仍会停在 `needs_review`
+- repo-side 当前会把 explicit/default `worker_profile` 选择原因写入 `route_reason`，并在 `max_active_leases` 超额时于 worker 前 fail closed 到 handoff
 - 当前代码层字段名仍是 `lane`
 - 当前字段名仍是 `compatibility_projection_ref`
 
@@ -33,6 +34,7 @@
 | `status` | enum | `succeeded / failed / blocked / waiting_handoff / needs_review` |
 | `started_at` | string | ISO8601 |
 | `finished_at` | string | ISO8601 |
+| `route_reason` | string | 本次 route/worker_profile 选择原因 |
 | `stdout_log` | string | `stdout.log` 相对路径 |
 | `stderr_log` | string | `stderr.log` 相对路径 |
 | `verification_summary_ref` | string | `verification_summary.json` 相对路径 |

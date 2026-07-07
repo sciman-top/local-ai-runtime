@@ -108,7 +108,8 @@
   - `P3-T03` worktree manager 与 `P3-T04` cleanup manager 已完成
   - `P3-T05` graded-autonomy runtime ledger 已完成：`dispatch_state.json`、`result.json`、以及 `runtime_tasks` 已共享 `attempt / next_action / cleanup_* / status_reason / dispatch_state_ref`
   - `P3-T06` lifecycle ops 已完成：repo-side 现在可显式 materialize `stale / cancelled / resumed`，`retry` 通过 `attempt + retry_rewind` 收口
-  - next repo-side gap 转到更宽的 `leases / route / quota` 收口与 `multi-worker simulation`
+  - `P5-T01` 的 repo-side `leases / route / quota` 收口已完成：explicit/default `worker_profile` 现在会 materialize `route_reason`，worker-profile `max_active_leases` 超额时会在 worker 前 handoff
+  - next repo-side gap 转到 `multi-worker simulation`
 - 出口门禁：`build -> [lint -> typecheck] -> test -> contract -> hotspot` 统一跑通
 
 ### Phase 4 Planner / Review
@@ -124,7 +125,7 @@
 
 ### Phase 5 多仓多 worker
 
-- 目标：leases / route / quota 收口、multi-worker simulation，以及后续 `remote_non_gui` 推进前的控制面整固
+- 目标：multi-worker simulation，以及后续 `remote_non_gui` 推进前的控制面整固
 - 出口门禁：`multi-worker simulation green`
 
 ### Phase 6 Hermes parity / topology closeout

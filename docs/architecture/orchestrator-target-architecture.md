@@ -123,7 +123,8 @@
 - 校验 markdown front matter contract，并拒绝 execution-critical override / gate command injection
 - repo-side parity 当前已验证到 `result.json`、`evidence_index.json`、以及 `AgentBridge/results/*.md` projection 闭环
 - 派生 `planner_required` / `review_required` / `touches_policy_surface`
-- 当前 repo-side 已把 `planner_required` 的 risk/dependency/force-on 触发接到 `waiting_handoff` handoff 路径，并把 worker-profile 不满足 `execution_lane / requires_network / requires_gui` 的任务同样送去 handoff
+- 当前 repo-side 已把 canonical task 的 explicit/default `worker_profile` 选择接到真正的 route 决策，并把 `route_reason` materialize 到 `result.json`、`dispatch_state.json`、以及 `route_decisions`
+- 当前 repo-side 已把 `planner_required` 的 risk/dependency/force-on 触发接到 `waiting_handoff` handoff 路径，并把 worker-profile 不满足 `execution_lane / requires_network / requires_gui` 或超出 `max_active_leases` 的任务同样送去 handoff
 - 当前 repo-side 已把 review gate 收敛为 graded autonomy：低风险任务默认自动推进；medium/high/critical 风险、policy surface、以及 force-on review 接到 `needs_review` handoff 路径；`write_access=true` 当前只作为附加 reason，而不是单独触发 review 的充分条件
 - 当前 repo-side path guard、worktree manager、cleanup manager、以及 runtime dispatch ledger 已落地：repo-escape path claim、declared worktree root drift、declared branch drift、以及 worker 结束后落在 `allowed_paths` 外或 `forbidden_paths` 内的新改动都会 fail closed；declared isolated worktree 任务在 repo-root 启动时也可由 runtime create/reuse linked worktree；runtime-managed clean linked worktree 会在成功且无需 handoff 的路径上自动 remove，其他路径则保留 worktree 并写出 `worktree_cleanup` 事件；`dispatch_state.json` 与 `runtime_tasks` 会同步 `attempt / status / status_reason / next_action / cleanup_*`
 - 盖章运行时字段

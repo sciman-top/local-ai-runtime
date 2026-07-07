@@ -38,6 +38,7 @@ Local AI Runtime is a Windows-first local orchestration runtime for audited AI c
 - `P3-T05` 的 graded-autonomy runtime ledger 已落地；`result.json` 现在会盖章 `cleanup_owner / status_reason / dispatch_state_ref`
 - `P3-T06` 的 repo-side lifecycle ops 已落地；`task_lifecycle.py` 与 CLI 现在可显式 materialize `stale / cancelled / resumed`，`retry` 通过 `attempt + retry_rewind` 收口
 - `P4-T04` 的 repo-side structured receipts 已落地；review-gated 路径现在会写 `review_result.json`，当前 runtime outcome 会写 `closeout_bundle.json`
+- `P5-T01` 的 repo-side `leases / route / quota` 收口已落地；explicit/default `worker_profile` 现在会 materialize `route_reason`，selected profile 的 `max_active_leases` 超额时会在 worker 前 handoff
 - `worktree` 当前只代表写入隔离，不代表 memory/provider/session 隔离
 
 ## Operator Assets

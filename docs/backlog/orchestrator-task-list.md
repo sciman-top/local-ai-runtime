@@ -142,7 +142,7 @@
     - `user_forced_planner / user_forced_review` force-on overrides 被 canonical task 与 manifest contract 实际承接
     - `false` force-off override 被明确拒绝，避免伪造“强制关闭 gate”
   - Status note:
-    - 2026-07-07 已完成 repo-side 谓词正反覆盖；随后已补完 `P3-T02` path guard、`P3-T03` worktree manager、`P3-T04` cleanup manager、`P3-T05` runtime ledger、`P3-T06` lifecycle ops、以及 `P4-T04` structured receipts，下一最小切片转到更宽的 `leases / route / quota` 收口与 `multi-worker simulation`
+    - 2026-07-07 已完成 repo-side 谓词正反覆盖；随后已补完 `P3-T02` path guard、`P3-T03` worktree manager、`P3-T04` cleanup manager、`P3-T05` runtime ledger、`P3-T06` lifecycle ops、`P4-T04` structured receipts、以及 `P5-T01` repo-side `leases / route / quota` 收口；下一最小切片转到 `multi-worker simulation`
 - [x] `P4-T04` structured review receipt and closeout receipt
   - Done when:
     - review sidecar 路径可落 `review_result`
@@ -153,7 +153,13 @@
 
 ## Phase 5
 
-- [ ] `P5-T01` leases / retry / route / quota 收口
+- [x] `P5-T01` leases / retry / route / quota 收口
+  - Done when:
+    - canonical task 显式 `worker_profile` 真正被 runtime 消费
+    - explicit/default route reason 写入 `result.json / dispatch_state.json / route_decisions`
+    - selected profile 的 `max_active_leases` 超额时在 worker 前 handoff
+  - Status note:
+    - 2026-07-07 已完成 repo-side route/quota closeout；当前仍不是 multi-worker scheduler，也不等于 `multi-worker simulation green`
 - [ ] `P5-T02` multi-worker simulation
 - [ ] `P5-T03` remote_non_gui promotion evidence
 

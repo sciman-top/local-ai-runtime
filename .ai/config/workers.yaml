@@ -8,6 +8,7 @@ workers:
     approval_policy: never
     network_profile: "off"
     projection_mode: compatibility_dual_write
+    max_active_leases: 1
 
   wave1_smoke:
     worker_kind: scripted
@@ -18,3 +19,4 @@ workers:
     approval_policy: never
     network_profile: "off"
     projection_mode: compatibility_dual_write
+    max_active_leases: 1
