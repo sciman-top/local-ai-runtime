@@ -76,6 +76,12 @@
       "tier": "conditional",
       "status": "not-cloned",
       "upstream_url": "https://github.com/anthropics/claude-code.git"
+    },
+    {
+      "name": "registry",
+      "tier": "conditional",
+      "status": "not-cloned",
+      "upstream_url": "https://github.com/modelcontextprotocol/registry.git"
     }
   ]
 }

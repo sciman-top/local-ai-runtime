@@ -17,7 +17,13 @@
 - `governance-sidecar`：`governed-ai-coding-runtime`
 - `compatibility`：`hermes-agent`
 - `archive-on-demand`：`skills`、`hermes-agent-self-evolution`、`openclaw`
-- `conditional-not-cloned`：`claude-code`
+- `conditional-not-cloned`：`claude-code`、`registry`
+
+当前维护建议：
+
+- `default_refresh_set` 继续只保留 `codex`、`plugins`、`modelcontextprotocol`、`servers`
+- `registry` 先只记为 conditional 候选；只有当本次任务真的进入 MCP server discovery、registry publish、catalog sync 或 trust policy 设计时再拉取
+- 如果以后要做本机参考架瘦身，第一批优先考虑本地删除 `skills`、`hermes-agent-self-evolution`、`openclaw` 这三类 archive clone；删除本地 clone 不改变它们在 manifest 里的分层定位
 
 QQ / OneBot / IM 渠道层项目如 `AstrBot`、`NapCat-Docker`、`NapCatQQ`、`aiocqhttp` 不应并入这里，继续复用它们自己的外部参考架。
 
