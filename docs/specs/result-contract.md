@@ -12,6 +12,7 @@
 - repo-side 当前已验证 `AgentBridge/tasks/*.md -> host_local -> result.json -> AgentBridge/results/*.md` 的 projection parity 闭环
 - repo-side 当前已允许 planner handoff 任务在未接 live planner 时写出 `waiting_handoff` 正式结果
 - repo-side 当前已允许 review-gated 任务在 worker / verification 完成后写出 `needs_review` 正式结果
+- repo-side 当前会在 review-gated 路径写出 `review_result.json` blocking receipt，并在当前 planner/review/completed outcome 写出 `closeout_bundle.json`
 - repo-side 当前已让 `cleanup_status` 反映最小 cleanup truth：repo-root inline task 为 `inline_only`；runtime-managed clean isolated worktree 为 `cleaned`；需要人工保留的 isolated worktree 继续保持 `deferred`；`git worktree remove` 失败时写 `cleanup_failed`
 - 低风险写任务当前可在无额外阻断 review 的情况下直接完成；medium/high/critical 风险、policy surface、或 force-on review 仍会停在 `needs_review`
 - 当前代码层字段名仍是 `lane`
@@ -41,6 +42,8 @@
 | `cleanup_owner` | string | 由谁负责 cleanup |
 | `status_reason` | string | 结构化状态原因文本 |
 | `dispatch_state_ref` | string | `dispatch_state.json` 相对路径 |
+| `review_result_ref` | string \| null | `review_result.json` 相对路径；当前仅在 repo-side review gate materialize 时写入 |
+| `closeout_bundle_ref` | string \| null | `closeout_bundle.json` 相对路径 |
 | `artifacts` | string[] | 工件相对路径 |
 | `compatibility_projection_ref` | string \| null | markdown projection 相对路径 |
 | `handoff_required` | boolean | 是否需要人工接管 |
@@ -83,14 +86,27 @@
 - `completed`
 - `failed`
 
-`queued / input_required / cancelled / stale / resumed` 当前先保留为 schema 与 future lifecycle ops 预留状态；不能把它们写成“已经 live 证明”。
+当前 repo-side lifecycle ops 已 materialize：
+
+- `cancelled`
+- `stale`
+- `resumed`
+
+`queued / input_required` 当前仍先保留为 schema 预留状态；`retry` 当前通过 `attempt + retry_rewind` 复用 `resumed` 路径留痕；这些都不能写成“已经 live accepted / multi-worker green”。
 
 ## Cleanup Truth
 
 - `cleanup_status` 只反映 cleanup 结果，不代表 branch 已被删除
 - `cleanup_owner` 当前会在 `result.json` 与 `dispatch_state.json` 双写；更细的 cleanup 经过仍保留在 `worktree_cleanup` 事件
+- `closeout_bundle.json` 当前会把 cleanup truth、review receipt truth 与 repo-side / live boundary 一并收口
 - `deferred` 当前表示 worktree 被显式保留给后续 review / 调试 / 人工 cleanup；具体原因落在 `worktree_cleanup` 事件
 - `cleanup_failed` 当前只用于 cleanup manager 已尝试 remove 但 git remove 命令本身失败的路径
+
+## Lifecycle Follow-Up
+
+- explicit `cancel / resume / retry / stale reconcile` 当前会同步刷新 `dispatch_state.json` 与 `runtime_tasks`
+- 若当前 run 已经存在 `result.json` 与 `closeout_bundle.json`，这些 lifecycle ops 还会更新 follow-up `next_action / status_reason / closeout` 口径
+- 这些 follow-up 只表达 repo-side 调度真相，不会把原始 `result.status` 改写成“live accepted”
 
 ## worker_kind
 

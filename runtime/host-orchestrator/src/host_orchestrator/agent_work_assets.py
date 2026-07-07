@@ -28,6 +28,7 @@ DISPATCH_AGENT_ROLES = {
 CLOSEOUT_STATUSES = {"succeeded", "partial", "blocked"}
 CLEANUP_STATUSES = {"deferred", "inline_only", "cleaned", "cleanup_failed"}
 TEST_STATUSES = {"pass", "fail", "skipped", "gate_na"}
+RESUME_POINTS = {"task_intake", "worker_execution", "verification", "handoff", "cleanup"}
 
 
 def load_mapping_file(path: Path) -> dict[str, Any]:
@@ -126,6 +127,14 @@ def validate_dispatch_state_payload(payload: Mapping[str, Any]) -> None:
         _require_string(payload, "verification_summary_ref", "dispatch_state")
     if "evidence_index_ref" in payload and payload["evidence_index_ref"] is not None:
         _require_string(payload, "evidence_index_ref", "dispatch_state")
+    if "review_result_ref" in payload and payload["review_result_ref"] is not None:
+        _require_string(payload, "review_result_ref", "dispatch_state")
+    if "closeout_bundle_ref" in payload and payload["closeout_bundle_ref"] is not None:
+        _require_string(payload, "closeout_bundle_ref", "dispatch_state")
+    if "resume_point" in payload and payload["resume_point"] is not None:
+        _require_enum(payload, "resume_point", RESUME_POINTS, "dispatch_state")
+    if "retry_rewind" in payload and payload["retry_rewind"] is not None:
+        _require_enum(payload, "retry_rewind", RESUME_POINTS, "dispatch_state")
 
 
 def validate_closeout_bundle_payload(payload: Mapping[str, Any]) -> None:

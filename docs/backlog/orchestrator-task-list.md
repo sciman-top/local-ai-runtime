@@ -78,7 +78,12 @@
 
 ## Phase 3
 
-- [ ] `P3-T01` verification runner 固定 gate 顺序
+- [x] `P3-T01` verification runner 固定 gate 顺序
+  - Done when:
+    - verification runner 固定按 `build -> lint -> typecheck -> test -> contract -> hotspot` 顺序留痕
+    - `gate_na / not_configured / pass / fail` 都在 `verification_summary.json` 中保持顺序稳定
+  - Status note:
+    - 2026-07-07 已完成 repo-side fixed gate order；当前真实执行仍只覆盖 `test / contract`，其余 gate 继续按 `gate_na / not_configured` 留痕
 - [x] `P3-T02` path guard
   - Done when:
     - repo-escape path claim 在 worker 前 fail closed
@@ -107,11 +112,13 @@
     - `runtime_tasks` 索引 `run_id / attempt / state_reason / next_action / cleanup_status / cleanup_owner / dispatch_state_path`
   - Status note:
     - 2026-07-07 已完成 repo-side runtime ledger；当前主路径已稳定写出 `running / waiting_handoff / needs_review / completed / failed`，而 `queued / input_required / cancelled / stale / resumed` 仍留给后续 lifecycle ops
-- [ ] `P3-T06` ledger lifecycle ops and idempotent recovery
+- [x] `P3-T06` ledger lifecycle ops and idempotent recovery
   - Done when:
     - heartbeat stale detection 可把 ledger 标成 `stale`
     - explicit cancel / retry / resume 可同步更新 DB 与 ledger
     - `cancelled / stale / resumed` 有 repo-side tests 覆盖
+  - Status note:
+    - 2026-07-07 已完成 repo-side lifecycle ops；`task_lifecycle.py` 与 CLI 现在可 materialize `stale / cancelled / resumed`，`retry` 通过 `attempt + retry_rewind` 收口，explicit cancel/resume/retry 会同步清理 active lease，resume/retry 也会刷新 `heartbeat_at / stale_after`
 
 ## Phase 4
 
@@ -135,12 +142,14 @@
     - `user_forced_planner / user_forced_review` force-on overrides 被 canonical task 与 manifest contract 实际承接
     - `false` force-off override 被明确拒绝，避免伪造“强制关闭 gate”
   - Status note:
-    - 2026-07-07 已完成 repo-side 谓词正反覆盖；随后已补完 `P3-T02` path guard、`P3-T03` worktree manager、`P3-T04` cleanup manager、以及 `P3-T05` runtime ledger，下一最小切片转到 lifecycle ops 与 structured review/closeout receipts
-- [ ] `P4-T04` structured review receipt and closeout receipt
+    - 2026-07-07 已完成 repo-side 谓词正反覆盖；随后已补完 `P3-T02` path guard、`P3-T03` worktree manager、`P3-T04` cleanup manager、`P3-T05` runtime ledger、`P3-T06` lifecycle ops、以及 `P4-T04` structured receipts，下一最小切片转到更宽的 `leases / route / quota` 收口与 `multi-worker simulation`
+- [x] `P4-T04` structured review receipt and closeout receipt
   - Done when:
     - review sidecar 路径可落 `review_result`
     - closeout bundle 可稳定引用 verification、cleanup、review receipt
     - `repo-side green` 能显式区分 structured review receipt、cleanup receipt、与 `live accepted`
+  - Status note:
+    - 2026-07-07 已完成 repo-side structured receipts；review-gated 路径现在会落 `review_result.json`，当前 planner/review/completed runtime outcome 都会落 `closeout_bundle.json`，并由 `result.json / dispatch_state.json / evidence_index.json` 串起引用；当前仍不是 live heterogeneous review sidecar
 
 ## Phase 5
 

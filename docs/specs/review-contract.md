@@ -8,6 +8,7 @@
 
 - 当前 repo-side review gate 发生在 worker + verification 之后；命中时正式结果停在 `needs_review`
 - 当前 live `Claude Code + GLM-5.2` reviewer 仍未接线；本文件先固定 review receipt 形状
+- 当前 repo-side review gate 已会物化 `review_result.json` blocking receipt；它表达的是 repo-side gate 为什么阻断，而不是 live heterogeneous reviewer 已执行
 - 低风险写任务当前默认自动推进，不因 `write_access = true` 单独触发 blocking review
 - medium/high/critical 风险、`touches_policy_surface = true`、以及 `user_forced_review = true` 当前都会阻断下游 flow
 
@@ -18,7 +19,7 @@
 | `task_id` | string | 关联任务 |
 | `reviewer_kind` | enum | `claude_glm / codex_review / gpt54_direct_review` |
 | `review_mode` | enum | `advisory / blocking` |
-| `model` | string | 实际模型名 |
+| `model` | string | 实际模型名，或 repo-owned policy receipt identifier |
 | `risk` | enum | `low / medium / high / critical` |
 | `findings` | array | 结构化问题列表 |
 | `blocking_reasons` | string[] | 阻断原因 |
@@ -46,30 +47,29 @@
 ```json
 {
   "task_id": "TASK-20260706-vertical-slice",
-  "reviewer_kind": "claude_glm",
+  "reviewer_kind": "codex_review",
   "review_mode": "blocking",
-  "model": "glm-5.2",
+  "model": "repo_policy_gate",
   "risk": "medium",
   "findings": [
     {
       "severity": "medium",
-      "category": "tests",
-      "title": "Missing dual-write regression",
-      "detail": "The phase 1 runner writes JSON but does not prove the markdown projection still exists.",
-      "suggested_fix": "Add a parity assertion for the markdown projection."
+      "category": "review_gate",
+      "title": "Repo-side blocking review required before downstream use",
+      "detail": "The repo-side review gate derived blocking reasons before downstream use and wrote a machine-readable receipt. This does not imply that a live heterogeneous reviewer already ran.",
+      "suggested_fix": "Produce a downstream review decision or explicit operator disposition before downstream use."
     }
   ],
   "blocking_reasons": [
     "risk_level=medium",
     "write_access=true"
   ],
-  "missing_tests": [
-    "projection parity regression"
-  ],
+  "missing_tests": [],
   "recommended_action": "revise",
   "source_evidence_refs": [
     ".ai/runs/<run_id>/<task_id>/result.json",
-    ".ai/runs/<run_id>/<task_id>/dispatch_state.json"
+    ".ai/runs/<run_id>/<task_id>/dispatch_state.json",
+    ".ai/runs/<run_id>/<task_id>/verification_summary.json"
   ]
 }
 ```

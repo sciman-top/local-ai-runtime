@@ -413,6 +413,9 @@ def test_host_local_runner_marks_review_required_tasks_as_needs_review_after_wor
     result_path = runner.run_task(task_path)
     result_payload = json.loads(result_path.read_text(encoding="utf-8"))
     verification_payload = json.loads((result_path.parent / "verification_summary.json").read_text(encoding="utf-8"))
+    review_result_path = result_path.parent / "review_result.json"
+    closeout_bundle_path = result_path.parent / "closeout_bundle.json"
+    evidence_payload = json.loads((result_path.parent / "evidence_index.json").read_text(encoding="utf-8"))
     projection_text = (agentbridge_root / "results" / f"{task_id}.md").read_text(encoding="utf-8")
 
     assert worker.call_count == 1
@@ -420,11 +423,29 @@ def test_host_local_runner_marks_review_required_tasks_as_needs_review_after_wor
     assert result_payload["termination_reason"] == "review_required_before_downstream"
     assert result_payload["handoff_required"] is True
     assert result_payload["next_action"] == REVIEW_NEXT_ACTION
+    assert result_payload["review_result_ref"] == f".ai/runs/review-handoff-test/{task_id}/review_result.json"
+    assert result_payload["closeout_bundle_ref"] == f".ai/runs/review-handoff-test/{task_id}/closeout_bundle.json"
     assert verification_payload["status"] == "pass"
+    assert review_result_path.exists()
+    assert closeout_bundle_path.exists()
     assert "status: needs_review" in projection_text
     assert "human_review_required: true" in projection_text
     assert "handoff_required: true" in projection_text
     assert f"next_action: {REVIEW_NEXT_ACTION}" in projection_text
+
+    review_result_payload = json.loads(review_result_path.read_text(encoding="utf-8"))
+    assert review_result_payload["task_id"] == task_id
+    assert review_result_payload["review_mode"] == "blocking"
+    assert review_result_payload["recommended_action"] == "revise"
+    assert "risk_level=medium" in review_result_payload["blocking_reasons"]
+    assert "write_access=true" in review_result_payload["blocking_reasons"]
+
+    closeout_payload = json.loads(closeout_bundle_path.read_text(encoding="utf-8"))
+    assert closeout_payload["status"] == "partial"
+    assert f".ai/runs/review-handoff-test/{task_id}/review_result.json" in closeout_payload["evidence_refs"]
+    indexed_paths = {entry["relative_path"] for entry in evidence_payload["entries"]}
+    assert f".ai/runs/review-handoff-test/{task_id}/review_result.json" in indexed_paths
+    assert f".ai/runs/review-handoff-test/{task_id}/closeout_bundle.json" in indexed_paths
 
     with sqlite3.connect(repo_root / ".ai" / "state" / "control-plane.db") as connection:
         runtime_task = connection.execute(

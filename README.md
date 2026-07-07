@@ -4,7 +4,7 @@
 - 当前主产品线：`Hermes -> AgentBridge -> Codex`
 - 历史仓库 slug 与当前本地工作目录仍为 `local-ai-dev-orchestrator`（`D:\CODE\local-ai-dev-orchestrator`）；本次只统一项目展示名，不执行目录迁移。
 
-Local AI Runtime is a Windows-first local orchestration runtime for audited AI coding work. The current mainline keeps a strict three-layer product narrative, retains canonical normalization plus `result.json` as formal evidence, writes `.ai/runs/<run_id>/<task_id>/dispatch_state.json` as the runtime ledger companion, and treats AgentBridge markdown output as the current compatibility projection while allowing compliant AgentBridge markdown tasks to enter `host_local` through a fail-closed intake adapter, complete a repo-side projection parity loop, and stop planner-gated tasks at a repo-side `waiting_handoff` boundary.
+Local AI Runtime is a Windows-first local orchestration runtime for audited AI coding work. The current mainline keeps a strict three-layer product narrative, retains canonical normalization plus `result.json` as formal evidence, writes `.ai/runs/<run_id>/<task_id>/dispatch_state.json` as the runtime ledger companion, now materializes repo-side lifecycle ops for `stale / cancelled / resumed / retry`, writes `review_result.json` on blocking review paths and `closeout_bundle.json` on current runtime outcomes, and treats AgentBridge markdown output as the current compatibility projection while allowing compliant AgentBridge markdown tasks to enter `host_local` through a fail-closed intake adapter.
 
 如果你是第一次进入这个仓库，先看这三处：
 
@@ -36,6 +36,8 @@ Local AI Runtime is a Windows-first local orchestration runtime for audited AI c
 - `P4-T01` 的 repo-side planner handoff 已落地；`planner_required` 任务当前会先停在 `waiting_handoff`，这仍不等于 live `Direct GPT-5.4` planner 已接线
 - `P4-T02` 的 repo-side review gate 已落地；低风险任务默认自动推进，medium/high/critical 风险、policy surface、以及 force-on review 仍会停在 `needs_review`
 - `P3-T05` 的 graded-autonomy runtime ledger 已落地；`result.json` 现在会盖章 `cleanup_owner / status_reason / dispatch_state_ref`
+- `P3-T06` 的 repo-side lifecycle ops 已落地；`task_lifecycle.py` 与 CLI 现在可显式 materialize `stale / cancelled / resumed`，`retry` 通过 `attempt + retry_rewind` 收口
+- `P4-T04` 的 repo-side structured receipts 已落地；review-gated 路径现在会写 `review_result.json`，当前 runtime outcome 会写 `closeout_bundle.json`
 - `worktree` 当前只代表写入隔离，不代表 memory/provider/session 隔离
 
 ## Operator Assets

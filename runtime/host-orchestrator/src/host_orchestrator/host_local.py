@@ -10,7 +10,10 @@ from host_orchestrator import agentbridge, db
 from host_orchestrator.canonical_result import (
     build_run_id,
     refresh_evidence_index,
+    update_result_metadata,
+    write_closeout_bundle_artifact,
     write_result_bundle,
+    write_review_result_artifact,
 )
 from host_orchestrator.canonical_task import CanonicalTask, load_task, task_from_payload
 from host_orchestrator.config_runtime import RuntimeConfigBundle, WorkerProfile, load_runtime_config
@@ -199,10 +202,26 @@ class HostLocalRunner:
                     cleanup_owner=current_cleanup_owner,
                     status_reason=current_status_reason,
                 )
+                closeout_bundle_payload = self._build_closeout_bundle_payload(
+                    task=task,
+                    artifacts=result_bundle.artifacts,
+                    result_payload=result_bundle.result_payload,
+                    verification_payload=self._planner_handoff_verification_payload(),
+                    review_result_ref=None,
+                    current_next_action=PLANNER_HANDOFF_NEXT_ACTION,
+                    cleanup_status=current_cleanup_status,
+                    cleanup_owner=current_cleanup_owner,
+                )
+                write_closeout_bundle_artifact(result_bundle.artifacts, closeout_bundle_payload)
+                closeout_bundle_ref = self._relative_to_repo(result_bundle.artifacts.closeout_bundle)
+                result_payload = update_result_metadata(
+                    result_bundle.artifacts.result_json,
+                    closeout_bundle_ref=closeout_bundle_ref,
+                )
                 relative_result_path = str(
                     result_bundle.artifacts.result_json.relative_to(self._config.layout.repo_root)
                 ).replace("\\", "/")
-                projection_path = result_bundle.result_payload.get("compatibility_projection_ref")
+                projection_path = result_payload.get("compatibility_projection_ref")
                 evidence_index_path = str(
                     result_bundle.artifacts.evidence_index.relative_to(self._config.layout.repo_root)
                 ).replace("\\", "/")
@@ -211,6 +230,8 @@ class HostLocalRunner:
                     last_result_ref=relative_result_path,
                     verification_summary_ref=self._relative_to_repo(result_bundle.artifacts.verification_summary),
                     evidence_index_ref=evidence_index_path,
+                    review_result_ref=None,
+                    closeout_bundle_ref=closeout_bundle_ref,
                 )
                 refresh_evidence_index(
                     layout=self._config.layout,
@@ -366,7 +387,6 @@ class HostLocalRunner:
                     stale_after=lease_expires_at,
                 ),
             )
-
             result_bundle = write_result_bundle(
                 layout=self._config.layout,
                 task=task,
@@ -405,7 +425,34 @@ class HostLocalRunner:
                 cleanup_owner=current_cleanup_owner,
                 status_reason=current_status_reason,
             )
-            result_payload = result_bundle.result_payload
+            review_result_ref: str | None = None
+            if review_required:
+                review_result_payload = self._build_review_result_payload(
+                    task=task,
+                    worker_profile=worker_profile,
+                    artifacts=result_bundle.artifacts,
+                    review_reasons=review_reasons,
+                )
+                write_review_result_artifact(result_bundle.artifacts, review_result_payload)
+                review_result_ref = self._relative_to_repo(result_bundle.artifacts.review_result)
+
+            closeout_bundle_payload = self._build_closeout_bundle_payload(
+                task=task,
+                artifacts=result_bundle.artifacts,
+                result_payload=result_bundle.result_payload,
+                verification_payload=verification_payload,
+                review_result_ref=review_result_ref,
+                current_next_action=current_next_action,
+                cleanup_status=current_cleanup_status,
+                cleanup_owner=current_cleanup_owner,
+            )
+            write_closeout_bundle_artifact(result_bundle.artifacts, closeout_bundle_payload)
+            closeout_bundle_ref = self._relative_to_repo(result_bundle.artifacts.closeout_bundle)
+            result_payload = update_result_metadata(
+                result_bundle.artifacts.result_json,
+                review_result_ref=review_result_ref,
+                closeout_bundle_ref=closeout_bundle_ref,
+            )
             relative_result_path = str(
                 result_bundle.artifacts.result_json.relative_to(self._config.layout.repo_root)
             ).replace("\\", "/")
@@ -414,6 +461,8 @@ class HostLocalRunner:
                 last_result_ref=relative_result_path,
                 verification_summary_ref=self._relative_to_repo(result_bundle.artifacts.verification_summary),
                 evidence_index_ref=self._relative_to_repo(result_bundle.artifacts.evidence_index),
+                review_result_ref=review_result_ref,
+                closeout_bundle_ref=closeout_bundle_ref,
             )
             refresh_evidence_index(
                 layout=self._config.layout,
@@ -627,6 +676,212 @@ class HostLocalRunner:
             "estimated_cost": None,
             "usage": None,
         }
+
+    def _build_review_result_payload(
+        self,
+        *,
+        task: CanonicalTask,
+        worker_profile: WorkerProfile,
+        artifacts: Any,
+        review_reasons: list[str],
+    ) -> dict[str, Any]:
+        return {
+            "task_id": task.task_id,
+            "reviewer_kind": "codex_review",
+            "review_mode": "blocking",
+            "model": "repo_policy_gate",
+            "risk": task.risk_level,
+            "findings": [
+                {
+                    "severity": task.risk_level,
+                    "category": "review_gate",
+                    "title": "Repo-side blocking review required before downstream use",
+                    "detail": (
+                        "The repo-side review gate derived blocking reasons before downstream use: "
+                        + "; ".join(review_reasons)
+                        + ". This receipt is repo-owned and does not imply that a live heterogeneous reviewer ran."
+                    ),
+                    "suggested_fix": "Produce a downstream review decision or operator disposition before downstream use.",
+                }
+            ],
+            "blocking_reasons": list(review_reasons),
+            "missing_tests": [],
+            "recommended_action": "revise",
+            "source_evidence_refs": [
+                self._relative_to_repo(artifacts.result_json),
+                self._relative_to_repo(artifacts.dispatch_state),
+                self._relative_to_repo(artifacts.verification_summary),
+            ],
+        }
+
+    def _build_closeout_bundle_payload(
+        self,
+        *,
+        task: CanonicalTask,
+        artifacts: Any,
+        result_payload: dict[str, Any],
+        verification_payload: dict[str, Any],
+        review_result_ref: str | None,
+        current_next_action: str,
+        cleanup_status: str,
+        cleanup_owner: str,
+    ) -> dict[str, Any]:
+        result_status = str(result_payload.get("status") or "")
+        evidence_refs = [
+            self._relative_to_repo(artifacts.result_json),
+            self._relative_to_repo(artifacts.dispatch_state),
+            self._relative_to_repo(artifacts.verification_summary),
+            self._relative_to_repo(artifacts.cost_summary),
+            self._relative_to_repo(artifacts.evidence_index),
+        ]
+        if artifacts.projection_markdown is not None:
+            evidence_refs.append(self._relative_to_repo(artifacts.projection_markdown))
+        if review_result_ref is not None:
+            evidence_refs.append(review_result_ref)
+
+        return {
+            "run_id": str(result_payload.get("run_id") or ""),
+            "repo_root": str(self._config.layout.repo_root),
+            "objective": task.title,
+            "status": self._closeout_status(result_status),
+            "completed": self._closeout_completed(result_status, review_result_ref, artifacts.projection_markdown),
+            "not_completed": self._closeout_not_completed(result_status),
+            "conflicts": self._closeout_conflicts(cleanup_status),
+            "tests": self._closeout_tests(
+                verification_payload=verification_payload,
+                verification_ref=self._relative_to_repo(artifacts.verification_summary),
+            ),
+            "evidence_refs": evidence_refs,
+            "cleanup_status": cleanup_status,
+            "cleanup_owner": cleanup_owner,
+            "branches_removed": [],
+            "worktrees_removed": (
+                [task.worktree_path]
+                if cleanup_status == "cleaned" and task.worktree_path.strip() not in {".", "./"}
+                else []
+            ),
+            "residual_risks": self._closeout_residual_risks(result_status, cleanup_status, review_result_ref),
+            "repo_side_done": self._closeout_repo_side_done(review_result_ref, artifacts.projection_markdown),
+            "still_open": self._closeout_still_open(result_status, current_next_action),
+            "next_action": current_next_action,
+        }
+
+    @staticmethod
+    def _closeout_status(result_status: str) -> str:
+        if result_status == "succeeded":
+            return "succeeded"
+        if result_status in {"waiting_handoff", "needs_review"}:
+            return "partial"
+        return "blocked"
+
+    @staticmethod
+    def _closeout_completed(
+        result_status: str,
+        review_result_ref: str | None,
+        projection_markdown: Path | None,
+    ) -> list[str]:
+        completed = [
+            "result.json formal evidence written",
+            "dispatch_state.json runtime ledger written",
+            "verification summary recorded",
+            "closeout bundle recorded",
+        ]
+        if projection_markdown is not None:
+            completed.append("compatibility projection refreshed")
+        if review_result_ref is not None:
+            completed.append("repo-side blocking review receipt recorded")
+        if result_status == "succeeded":
+            completed.append("worker execution completed within current repo-side boundary")
+        return completed
+
+    @staticmethod
+    def _closeout_not_completed(result_status: str) -> list[str]:
+        if result_status == "waiting_handoff":
+            return ["planner handoff resolution before worker execution"]
+        if result_status == "needs_review":
+            return ["blocking review disposition before downstream use"]
+        if result_status == "failed":
+            return ["verification or worker failure remediation"]
+        return []
+
+    @staticmethod
+    def _closeout_conflicts(cleanup_status: str) -> list[str]:
+        if cleanup_status == "deferred":
+            return ["cleanup remains deferred to the operator"]
+        if cleanup_status == "cleanup_failed":
+            return ["runtime cleanup failed and requires operator follow-up"]
+        return []
+
+    @staticmethod
+    def _closeout_tests(
+        *,
+        verification_payload: dict[str, Any],
+        verification_ref: str,
+    ) -> list[dict[str, str]]:
+        commands_run = verification_payload.get("commands_run")
+        if not isinstance(commands_run, list):
+            return []
+        tests: list[dict[str, str]] = []
+        for entry in commands_run:
+            if not isinstance(entry, dict):
+                continue
+            gate = str(entry.get("gate") or "").strip()
+            status = str(entry.get("status") or "").strip()
+            if not gate or not status:
+                continue
+            tests.append(
+                {
+                    "name": gate,
+                    "status": status,
+                    "evidence_ref": verification_ref,
+                }
+            )
+        return tests
+
+    @staticmethod
+    def _closeout_residual_risks(
+        result_status: str,
+        cleanup_status: str,
+        review_result_ref: str | None,
+    ) -> list[str]:
+        risks = ["repo-side green does not imply live accepted"]
+        if result_status == "waiting_handoff":
+            risks.append("live planner remains unwired; current handoff receipt is repo-side only")
+        if result_status == "needs_review" and review_result_ref is not None:
+            risks.append("review_result is a repo-side gate receipt; live heterogeneous review sidecar remains unwired")
+        if cleanup_status == "deferred":
+            risks.append("worktree cleanup may still require manual follow-up")
+        if cleanup_status == "cleanup_failed":
+            risks.append("cleanup failed and may leave residual isolated workspace state")
+        return risks
+
+    @staticmethod
+    def _closeout_repo_side_done(
+        review_result_ref: str | None,
+        projection_markdown: Path | None,
+    ) -> list[str]:
+        done = [
+            "formal result, verification, cost, and ledger artifacts were written",
+            "closeout bundle captures the current repo-side truth boundary",
+        ]
+        if projection_markdown is not None:
+            done.append("compatibility projection remains aligned with canonical runtime output")
+        if review_result_ref is not None:
+            done.append("structured review receipt now exists as a repo-side blocking artifact")
+        return done
+
+    @staticmethod
+    def _closeout_still_open(result_status: str, current_next_action: str) -> list[str]:
+        still_open = ["live accepted"]
+        if result_status == "waiting_handoff":
+            still_open.append("live planner wiring")
+        if result_status == "needs_review":
+            still_open.append("live heterogeneous review wiring")
+        if result_status == "failed":
+            still_open.append("retry or manual remediation")
+        if current_next_action and current_next_action != "none":
+            still_open.append(current_next_action)
+        return still_open
 
     def _planner_gate_reasons(
         self,

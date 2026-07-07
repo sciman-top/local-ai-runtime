@@ -146,6 +146,7 @@
 
 ## Next Bounded Execution Queue
 
+- `P3-T01` verification runner fixed gate order：completed（repo-side fixed order with `gate_na / not_configured / pass / fail` preservation）
 - `P4-T01` planner adapter：completed（repo-side minimal handoff）
 - `P4-T02` review adapter：completed（repo-side graded autonomy `needs_review` gate；低风险任务默认自动推进）
 - `P4-T03` 正反触发谓词测试：completed（repo-side positive/negative predicate coverage + force-on overrides）
@@ -153,6 +154,8 @@
 - `P3-T03` worktree manager：completed（repo-side minimal create/reuse manager for declared linked worktrees plus `cleanup_status` baseline semantics）
 - `P3-T04` cleanup manager：completed（runtime-managed clean linked worktrees now auto-remove; review-pending, failed, dirty, or externally launched isolated worktrees remain deferred with `worktree_cleanup` evidence）
 - `P3-T05` graded autonomy runtime ledger：completed（runtime-backed `dispatch_state.json` + `result.json` metadata + `runtime_tasks` index alignment）
-- next: lifecycle ops (`stale / cancelled / resumed / retry`) + structured review/closeout receipts（branch deletion 仍不自动化；live review sidecar 仍未接线）
+- `P3-T06` lifecycle ops：completed（repo-side stale/cancel/resume/retry helpers + CLI entrypoints + tests）
+- `P4-T04` structured review/closeout receipts：completed（`review_result.json` + `closeout_bundle.json` + result/dispatch/evidence refs）
+- next: broader `leases / route / quota` closeout, then `multi-worker simulation`（branch deletion 仍不自动化；live planner/review sidecar 仍未接线）
 
 其中 `planner/review` 继续保留在 repo `Phase 4`，不并回容器或资源 phase。

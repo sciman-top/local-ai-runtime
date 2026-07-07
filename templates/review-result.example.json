@@ -2,26 +2,26 @@
   "task_id": "T03",
   "reviewer_kind": "codex_review",
   "review_mode": "blocking",
-  "model": "gpt-5.4",
+  "model": "repo_policy_gate",
   "risk": "medium",
   "findings": [
     {
       "severity": "medium",
-      "category": "tests",
-      "title": "Missing closeout bundle update after merge",
-      "detail": "The worker verified the code slice but did not prove the final closeout bundle was refreshed after merge and cleanup.",
-      "suggested_fix": "Require the master agent to update closeout_bundle.json after merge and before branch/worktree cleanup."
+      "category": "review_gate",
+      "title": "Repo-side blocking review required before downstream use",
+      "detail": "The repo-side review gate derived blocking reasons before downstream use and wrote a machine-readable receipt. This does not imply that a live heterogeneous reviewer already ran.",
+      "suggested_fix": "Produce a downstream review decision or explicit operator disposition before downstream use."
     }
   ],
   "blocking_reasons": [
-    "review_required"
+    "risk_level=medium",
+    "write_access=true"
   ],
-  "missing_tests": [
-    "post-merge closeout bundle freshness check"
-  ],
+  "missing_tests": [],
   "recommended_action": "revise",
   "source_evidence_refs": [
-    "docs/change-evidence/20260707-subagent-worktree-contract-assets.md",
+    ".ai/runs/<run_id>/T02/result.json",
+    ".ai/runs/<run_id>/T02/dispatch_state.json",
     ".ai/runs/<run_id>/T02/verification_summary.json"
   ]
 }

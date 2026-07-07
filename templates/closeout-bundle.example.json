@@ -4,15 +4,14 @@
   "objective": "推进当前最小切片",
   "status": "partial",
   "completed": [
-    "T01 explorer 已给出最小切片和 allowed_paths 建议",
-    "T02 worker 已完成最小代码切片并通过 repo-side gates"
+    "T02 worker 已完成最小代码切片并通过 repo-side gates",
+    "repo-side blocking review receipt 已写出",
+    "closeout bundle 已收口当前 repo-side truth boundary"
   ],
   "not_completed": [
-    "T03 review 还未完成最终 blocking verdict"
+    "blocking review disposition before downstream use"
   ],
-  "conflicts": [
-    "docs/change-evidence/README.md 仍需由主控串行并回，避免与其他切片冲突"
-  ],
+  "conflicts": [],
   "tests": [
     {
       "name": "uv run --project .\\runtime\\host-orchestrator python -m pytest",
@@ -33,8 +32,10 @@
   "evidence_refs": [
     "docs/change-evidence/20260707-subagent-worktree-contract-assets.md",
     ".ai/runs/<run_id>/T02/result.json",
+    ".ai/runs/<run_id>/T02/dispatch_state.json",
     ".ai/runs/<run_id>/T02/verification_summary.json",
     ".ai/runs/<run_id>/T02/cost_summary.json",
+    ".ai/runs/<run_id>/T02/review_result.json",
     ".ai/runs/<run_id>/T02/evidence_index.json"
   ],
   "cleanup_status": "cleaned",
@@ -46,18 +47,18 @@
     ".worktrees/t02-runtime-slice"
   ],
   "residual_risks": [
-    "review adapter 仍未进入 live wiring",
-    "cancelled / stale / resumed 仍只是 schema 预留状态，尚未完成 runtime lifecycle ops"
+    "review_result 当前是 repo-side gate receipt，不等于 live heterogeneous reviewer 已执行",
+    "repo-side green does not imply live accepted"
   ],
   "repo_side_done": [
-    "manifest 已对齐 canonical task contract 的核心字段",
-    "dispatch_state 已升级为 runtime ledger，closeout_bundle 仍可引用它做收口",
-    "pytest 已覆盖这些模板的基本 contract 自检"
+    "dispatch_state 已升级为 runtime ledger，并已支持 repo-side lifecycle follow-up",
+    "review_result 与 closeout_bundle 已进入正式运行工件链",
+    "pytest 已覆盖这些模板与 receipt refs 的基本 contract 自检"
   ],
   "still_open": [
-    "platform/live acceptance",
-    "runtime-level cancel/retry/resume lifecycle ops",
-    "runtime-level review adapter wiring"
+    "live accepted",
+    "live heterogeneous review wiring",
+    "heterogeneous review required before downstream use"
   ],
-  "next_action": "materialize_review_receipt_and_lifecycle_ops"
+  "next_action": "heterogeneous review required before downstream use"
 }

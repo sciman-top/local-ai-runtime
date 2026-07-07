@@ -31,6 +31,8 @@ class RunArtifacts:
     result_json: Path
     dispatch_state: Path
     evidence_index: Path
+    review_result: Path
+    closeout_bundle: Path
     projection_markdown: Path | None
 
 
@@ -64,6 +66,8 @@ def build_run_artifacts(
         result_json=task_root / "result.json",
         dispatch_state=task_root / "dispatch_state.json",
         evidence_index=task_root / "evidence_index.json",
+        review_result=task_root / "review_result.json",
+        closeout_bundle=task_root / "closeout_bundle.json",
         projection_markdown=None,
     )
 
@@ -156,6 +160,8 @@ def write_result_bundle(
         "status_reason": status_reason,
         "next_action": next_action,
         "dispatch_state_ref": relative_dispatch_state,
+        "review_result_ref": None,
+        "closeout_bundle_ref": None,
     }
     _write_json(artifacts.result_json, result_payload)
 
@@ -201,6 +207,33 @@ def update_result_cleanup_status(
     return payload
 
 
+def update_result_metadata(
+    result_path: Path,
+    **updates: Any,
+) -> dict[str, Any]:
+    payload = json.loads(result_path.read_text(encoding="utf-8"))
+    for key, value in updates.items():
+        payload[key] = value
+    _write_json(result_path, payload)
+    return payload
+
+
+def write_review_result_artifact(
+    artifacts: RunArtifacts,
+    payload: dict[str, Any],
+) -> dict[str, Any]:
+    _write_json(artifacts.review_result, payload)
+    return payload
+
+
+def write_closeout_bundle_artifact(
+    artifacts: RunArtifacts,
+    payload: dict[str, Any],
+) -> dict[str, Any]:
+    _write_json(artifacts.closeout_bundle, payload)
+    return payload
+
+
 def refresh_evidence_index(
     *,
     layout: RuntimeLayout,
@@ -218,6 +251,10 @@ def refresh_evidence_index(
     ]
     if artifacts.dispatch_state.exists():
         indexed_paths.append(artifacts.dispatch_state)
+    if artifacts.review_result.exists():
+        indexed_paths.append(artifacts.review_result)
+    if artifacts.closeout_bundle.exists():
+        indexed_paths.append(artifacts.closeout_bundle)
     if artifacts.projection_markdown is not None:
         indexed_paths.append(artifacts.projection_markdown)
 

@@ -110,6 +110,22 @@ def test_dispatch_state_template_is_machine_readable() -> None:
         "stale",
         "resumed",
     ]
+    assert schema["properties"]["resume_point"]["enum"] == [
+        "task_intake",
+        "worker_execution",
+        "verification",
+        "handoff",
+        "cleanup",
+    ]
+    assert schema["properties"]["retry_rewind"]["enum"] == [
+        "task_intake",
+        "worker_execution",
+        "verification",
+        "handoff",
+        "cleanup",
+    ]
+    assert schema["properties"]["review_result_ref"]["type"] == "string"
+    assert schema["properties"]["closeout_bundle_ref"]["type"] == "string"
 
 
 def test_closeout_bundle_template_captures_cleanup_and_truth_boundary() -> None:

@@ -293,6 +293,27 @@ def release_lease(
     return deleted > 0
 
 
+def release_task_leases(
+    db_path: Path,
+    *,
+    task_id: str,
+) -> list[str]:
+    initialize_control_plane(db_path)
+    with sqlite3.connect(db_path) as connection:
+        rows = connection.execute(
+            "SELECT lease_token FROM leases WHERE task_id = ? ORDER BY acquired_at",
+            (task_id,),
+        ).fetchall()
+        lease_tokens = [lease_token for (lease_token,) in rows]
+        if lease_tokens:
+            connection.execute(
+                "DELETE FROM leases WHERE task_id = ?",
+                (task_id,),
+            )
+            connection.commit()
+    return lease_tokens
+
+
 def reap_stale_leases(
     db_path: Path,
     *,

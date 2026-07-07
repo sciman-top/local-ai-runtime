@@ -256,6 +256,7 @@ def test_host_local_runner_writes_result_and_runtime_state(tmp_path: Path) -> No
     cost_path = result_path.parent / "cost_summary.json"
     evidence_index_path = result_path.parent / "evidence_index.json"
     dispatch_state_path = result_path.parent / "dispatch_state.json"
+    closeout_bundle_path = result_path.parent / "closeout_bundle.json"
     stdout_log_path = result_path.parent / "stdout.log"
     stderr_log_path = result_path.parent / "stderr.log"
 
@@ -263,6 +264,7 @@ def test_host_local_runner_writes_result_and_runtime_state(tmp_path: Path) -> No
     assert cost_path.exists()
     assert evidence_index_path.exists()
     assert dispatch_state_path.exists()
+    assert closeout_bundle_path.exists()
     assert stdout_log_path.read_text(encoding="utf-8") == "HOST_LOCAL_OK"
     assert stderr_log_path.read_text(encoding="utf-8") == ""
 
@@ -287,6 +289,13 @@ def test_host_local_runner_writes_result_and_runtime_state(tmp_path: Path) -> No
     assert cost_payload["source"] == "sdk_structured"
     assert cost_payload["usage"]["total"]["total_tokens"] == 146
 
+    closeout_payload = json.loads(closeout_bundle_path.read_text(encoding="utf-8"))
+    assert closeout_payload["status"] == "succeeded"
+    assert closeout_payload["cleanup_status"] == "inline_only"
+    assert closeout_payload["cleanup_owner"] == "inline_execution"
+    assert f".ai/runs/host-local-test/{task_id}/result.json" in closeout_payload["evidence_refs"]
+    assert f".ai/runs/host-local-test/{task_id}/verification_summary.json" in closeout_payload["evidence_refs"]
+
     dispatch_payload = json.loads(dispatch_state_path.read_text(encoding="utf-8"))
     assert dispatch_payload["status"] == "completed"
     assert dispatch_payload["cleanup_status"] == "inline_only"
@@ -300,7 +309,11 @@ def test_host_local_runner_writes_result_and_runtime_state(tmp_path: Path) -> No
     indexed_paths = {entry["relative_path"] for entry in evidence_payload["entries"]}
     assert f".ai/runs/host-local-test/{task_id}/result.json" in indexed_paths
     assert f".ai/runs/host-local-test/{task_id}/dispatch_state.json" in indexed_paths
+    assert f".ai/runs/host-local-test/{task_id}/closeout_bundle.json" in indexed_paths
     assert f"AgentBridge/results/{task_id}.md" in indexed_paths
+
+    assert result_payload["review_result_ref"] is None
+    assert result_payload["closeout_bundle_ref"] == f".ai/runs/host-local-test/{task_id}/closeout_bundle.json"
 
     projection_path = agentbridge_root / "results" / f"{task_id}.md"
     artifact_path = agentbridge_root / "artifacts" / f"{task_id}-worker-output.txt"
@@ -385,7 +398,7 @@ def test_evidence_index_revalidation_passes_for_host_local_result(tmp_path: Path
     assert validation.task_id == task_id
     assert validation.run_id == "host-local-test"
     assert validation.issue_count == 0
-    assert validation.checked_entry_count == 8
+    assert validation.checked_entry_count == 9
     assert {entry.status for entry in validation.entries} == {"ok"}
 
 
@@ -431,7 +444,7 @@ def test_cli_revalidates_evidence_index(tmp_path: Path, capsys: pytest.CaptureFi
     assert exit_code == 0
     assert payload["ok"] is True
     assert payload["task_id"] == task_id
-    assert payload["checked_entry_count"] == 8
+    assert payload["checked_entry_count"] == 9
 
 
 def test_wave1_smoke_manifest_covers_three_categories() -> None:

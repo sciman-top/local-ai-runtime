@@ -30,7 +30,7 @@
 - `handoff`
 - `cleanup`
 
-`Phase 1` 可以暂不实现恢复动作，但字段语义必须先固定。
+当前 repo-side 已提供最小 `resume_task` helper 与 CLI 入口：它会同步更新 `dispatch_state.json`、`runtime_tasks`、清理 active lease、刷新 `heartbeat_at / stale_after`、以及既有 closeout follow-up 口径，但仍不会把 live replay engine 写成已完成。
 
 ## Retry Rewind
 
@@ -41,6 +41,8 @@
 - canonical task intake 失败 -> rewind 到 `task_intake`
 - worker 失败但 task contract 仍有效 -> rewind 到 `worker_execution`
 - verification 输出失真 -> rewind 到 `verification`
+
+当前 repo-side 已提供最小 `retry_task` helper 与 CLI 入口：它会递增 `attempt`，记录 `retry_rewind`，清理 active lease，并通过刷新 `heartbeat_at / stale_after` 的 `resumed` 路径留痕；这仍不等于 multi-worker retry scheduler 已落地。
 
 ## Handoff
 
@@ -55,6 +57,12 @@
 
 如果进入 review / operator handoff，最小工件集合不能低于以上五件。
 
+补充说明：
+
+- review-gated 路径当前还会额外写出 `review_result.json`
+- 当前 planner/review/completed runtime outcome 还会额外写出 `closeout_bundle.json`
+- 这些 extra receipts 表达的是 repo-side receipt truth，不等于 live planner / live review sidecar 已接线
+
 ## Cleanup Ownership
 
 当前约束：
@@ -62,6 +70,7 @@
 - task-level evidence 默认不内联删除
 - `cleanup_status` 必须留在正式 result 中
 - `cleanup_owner` 当前会在 `result.json` 与 `dispatch_state.json` 双写；更细的 cleanup 经过仍记录在 `worktree_cleanup` 事件载荷中
+- `closeout_bundle.json` 当前会把 cleanup truth、review receipt truth、以及 repo-side / live boundary 一并收口
 - isolated worktree 自动 remove 成功时归 `runtime`，显式保留或 remove 失败时归 `operator`
 - branch deletion 当前仍不属于 runtime 自动 cleanup 范围
 

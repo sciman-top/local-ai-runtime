@@ -103,10 +103,12 @@
 
 - 目标：verification runner、path guard、worktree manager、cleanup manager
 - 当前状态：
+  - `P3-T01` verification runner fixed gate order 已完成；当前真实执行仍只覆盖 `test / contract`，其余 gate 继续按 `gate_na / not_configured` 留痕
   - `P3-T02` path guard 已升级到 git-backed fail-closed write-boundary enforcement
   - `P3-T03` worktree manager 与 `P3-T04` cleanup manager 已完成
   - `P3-T05` graded-autonomy runtime ledger 已完成：`dispatch_state.json`、`result.json`、以及 `runtime_tasks` 已共享 `attempt / next_action / cleanup_* / status_reason / dispatch_state_ref`
-  - next repo-side gap 转到 `stale / cancelled / resumed / retry` lifecycle ops 与 structured review/closeout receipts
+  - `P3-T06` lifecycle ops 已完成：repo-side 现在可显式 materialize `stale / cancelled / resumed`，`retry` 通过 `attempt + retry_rewind` 收口
+  - next repo-side gap 转到更宽的 `leases / route / quota` 收口与 `multi-worker simulation`
 - 出口门禁：`build -> [lint -> typecheck] -> test -> contract -> hotspot` 统一跑通
 
 ### Phase 4 Planner / Review
@@ -116,13 +118,13 @@
   - `P4-T01` 的 repo-side planner handoff 已落地
   - `P4-T02` 的 repo-side review gate 已落地；低风险任务默认自动推进，medium/high/critical 风险、policy surface、以及 force-on review 命中时当前会在 worker / verification 之后停在 `needs_review`
   - `P4-T03` 的 repo-side 正反谓词测试已落地；`user_forced_planner / user_forced_review` 现已作为 force-on override 被 contract 与测试承接
-  - 当前只证明 repo-side `needs_review` / `waiting_handoff` 状态与正式四件套齐全
+  - `P4-T04` 的 repo-side structured receipts 已落地；review-gated 路径现在会写 `review_result.json`，当前 planner/review/completed outcome 都会写 `closeout_bundle.json`
   - 尚未宣称 live `Direct GPT-5.4 API` planner 或 live `Claude Code + GLM-5.2` review adapter 已接线
 - 出口门禁：planner/review 谓词正反分支全绿
 
 ### Phase 5 多仓多 worker
 
-- 目标：leases/heartbeat/retry/route/quota，以及 `cancelled / stale / resumed` lifecycle ops
+- 目标：leases / route / quota 收口、multi-worker simulation，以及后续 `remote_non_gui` 推进前的控制面整固
 - 出口门禁：`multi-worker simulation green`
 
 ### Phase 6 Hermes parity / topology closeout

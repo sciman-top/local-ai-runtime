@@ -34,6 +34,7 @@
 - [20260707 Path Guard Minimal Slice](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260707-path-guard-minimal-slice.md)
 - [20260707 Worktree Manager Minimal Slice](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260707-worktree-manager-minimal-slice.md)
 - [20260707 Graded Autonomy Runtime Ledger](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260707-graded-autonomy-runtime-ledger.md)
+- [20260707 Runtime Lifecycle And Structured Receipts](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260707-runtime-lifecycle-and-structured-receipts.md)
 - [20260707 Subagent Worktree Operating Pack](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260707-subagent-worktree-operating-pack.md)
 - [20260707 Subagent Worktree Contract Assets](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260707-subagent-worktree-contract-assets.md)
 - [20260707 Subagent Worktree Best-Practice Review](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260707-subagent-worktree-best-practice-review.md)
@@ -59,6 +60,8 @@
 - `P3-T03` 的 repo-side worktree manager 已落地：declared isolated worktree 任务现在可从 repo root 自动 create/reuse linked worktree，并在其中执行 worker 与 verification；`worktree` 当前只代表写入隔离，不代表 memory/provider/session 隔离
 - `P3-T04` 的 repo-side cleanup manager 已落地：runtime 现在只会自动 remove 自己管理、且 clean 的 linked worktree；review-pending、failed、dirty、或外部直接启动的 isolated worktree 会保留并写出 `worktree_cleanup` 事件；branch deletion 仍不自动化
 - `P3-T05` 的 graded-autonomy runtime ledger 已落地：`dispatch_state.json`、`result.json`、以及 `runtime_tasks` 现在共享 `attempt / next_action / cleanup_owner / cleanup_status / status_reason / dispatch_state_ref`
+- `P3-T06` 的 repo-side lifecycle ops 已落地：`task_lifecycle.py` 与 CLI 现在可显式 materialize `stale / cancelled / resumed`，`retry` 通过 `attempt + retry_rewind` 收口
+- `P4-T04` 的 repo-side structured receipts 已落地：review-gated 路径现在会写 `review_result.json`，当前 runtime outcome 会写 `closeout_bundle.json`，并由 `result.json / dispatch_state.json / evidence_index.json` 串起引用
 - 一套 repo-owned 的 `主控 + 子代理 + worktree` 操作资产已落盘，可直接复用 master / explorer / worker / reviewer prompt 与 manifest / dispatch_state / closeout bundle 模板
 - operator 侧协作资产现已具备 repo-owned 自检：pytest 会校验 manifest、dispatch_state、review_result、closeout bundle 示例与 schema 关键字段不漂移
 - 官方研究与社区研究都已落成 repo-owned 证据：结论一致指向“保留本仓 canonical contract，并优先补 path guard / durable ledger / closeout receipt，而不是继续加长 prompt”
@@ -69,4 +72,4 @@
 - Python repo-level line-ending policy 已显式覆盖 `*.py -> LF`
 - 本仓已接入 `AGENTS.md` 共同项目规则主体 + `CLAUDE.md` thin wrapper 试点；全局规则真源仍在 `D:\CODE\governed-ai-coding-runtime`
 - 当前 active queue 仍是 `PHASE-1-VERTICAL-SLICE`
-- 当前预期 next action 仍是粗粒度的 `promote_phase1_execution`；repo-side planner/review/path-guard/worktree-manager/cleanup-manager/runtime-ledger 最小切片已完成，下一最小切片转到 lifecycle ops 与 structured review/closeout receipts
+- 当前预期 next action 仍是粗粒度的 `promote_phase1_execution`；repo-side planner/review/path-guard/worktree-manager/cleanup-manager/runtime-ledger/lifecycle/receipt 最小切片已完成，下一最小切片转到更宽的 `leases / route / quota` 收口与 `multi-worker simulation`

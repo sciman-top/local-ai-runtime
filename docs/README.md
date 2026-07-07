@@ -49,8 +49,10 @@
 - `P3-T03` 的 repo-side 最小 worktree manager 已落地；declared isolated worktree 任务现在可从 repo root 自动 create/reuse linked worktree，并在其中执行 worker 与 verification
 - `P3-T04` 的 repo-side 最小 cleanup manager 已落地；runtime 现在只会自动 remove 自己管理、且 clean 的 linked worktree，review-pending、failed、dirty、或外部直接启动的 isolated worktree 会保留并写出 `worktree_cleanup` 事件
 - `P3-T05` 的 graded-autonomy runtime ledger 已落地；`dispatch_state.json`、`result.json`、以及 `runtime_tasks` 现在共享 `attempt / next_action / cleanup_owner / cleanup_status / status_reason / dispatch_state_ref` 一组收口字段
+- `P3-T06` 的 repo-side lifecycle ops 已落地；`task_lifecycle.py` 与 CLI 现在可显式 materialize `stale / cancelled / resumed`，`retry` 通过 `attempt + retry_rewind` 收口
+- `P4-T04` 的 repo-side structured receipts 已落地；review-gated 路径现在会写 `review_result.json`，当前 runtime outcome 会写 `closeout_bundle.json`，并通过 `result.json / dispatch_state.json / evidence_index.json` 串起引用
 - `worktree` 当前只代表写入隔离，不代表 memory/provider/session 隔离
-- branch deletion 仍不自动化；当前 next repo-side gap 转到 `stale / cancelled / resumed / retry` lifecycle ops 与 structured review/closeout receipts
+- branch deletion 仍不自动化；当前 next repo-side gap 转到更宽的 `leases / route / quota` 收口与 `multi-worker simulation`，live planner/review sidecar 仍未接线
 - `compatibility_projection_ref` 与 `lane` 字段名当前不改；是否迁移留到 Phase E parity 后再决定
 - 当前 active queue 仍是 `PHASE-1-VERTICAL-SLICE`；repo-side exit gates 已闭环，但 live posture 仍停在 `live probe ready`
 
