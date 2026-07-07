@@ -18,6 +18,7 @@ from host_orchestrator.task_lifecycle import (
     resume_task,
     retry_task,
 )
+from host_orchestrator.vm_gui_promotion import run_vm_gui_promotion
 from host_orchestrator.wave1_smoke import run_wave1_smokes
 
 
@@ -66,6 +67,16 @@ def build_parser() -> argparse.ArgumentParser:
         "--remote-non-gui-promotion-run-id",
         default=None,
         help="Optional run id override for the remote_non_gui promotion suite.",
+    )
+    parser.add_argument(
+        "--run-vm-gui-promotion",
+        action="store_true",
+        help="Run the deterministic vm_gui conditional promotion suite and print its JSON summary.",
+    )
+    parser.add_argument(
+        "--vm-gui-promotion-run-id",
+        default=None,
+        help="Optional run id override for the vm_gui promotion suite.",
     )
     parser.add_argument(
         "--run-hermes-parity",
@@ -156,6 +167,14 @@ def main(argv: list[str] | None = None) -> int:
         summary = run_remote_non_gui_promotion(
             repo_root,
             run_id=args.remote_non_gui_promotion_run_id,
+        )
+        print(json.dumps(summary.to_dict(), indent=2, ensure_ascii=True))
+        return 0
+
+    if args.run_vm_gui_promotion:
+        summary = run_vm_gui_promotion(
+            repo_root,
+            run_id=args.vm_gui_promotion_run_id,
         )
         print(json.dumps(summary.to_dict(), indent=2, ensure_ascii=True))
         return 0

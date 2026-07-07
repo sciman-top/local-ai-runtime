@@ -88,6 +88,7 @@ acceptance:
 | `local_maint` | 当前 Phase 1 host-local 默认 profile | repo-side 与 live SDK 共用入口 |
 | `wave1_smoke` | Wave 1 deterministic smoke profile | 只允许 repo-side mock，不得宣称 live accepted |
 | `remote_non_gui_probe` | repo-side `remote_non_gui` promotion evidence profile | 只证明 lane promotion / fail-closed handoff，不得宣称 remote runner 已执行 |
+| `vm_gui_probe` | repo-side `vm_gui` conditional promotion evidence profile | 只证明 GUI-only 条件晋升 / fail-closed handoff，不得宣称 vm runner 已执行 |
 
 ## policies.yaml
 

@@ -189,4 +189,11 @@
     - current known-good snapshot 与 AgentBridge contract validator 继续为绿，并与 accepted runtime profile / boundary evidence 一致
   - Status note:
     - 2026-07-07 已完成 repo-side historical snapshot mapping；当前 anchor 固定到 `known-good-20260628-225738-431.json` 与 `verify-hermes-boundary-20260628-225841-414.json`
-- [ ] `P6-T03` vm_gui conditional promotion evidence
+- [x] `P6-T03` vm_gui conditional promotion evidence
+  - Done when:
+    - repo-owned `vm_gui_probe` profile 已进入 `workers.yaml`
+    - `requires_gui=true` 的默认请求会在 `host_local` 上因 GUI-only 条件 handoff，而不是静默降级成 host-local 已执行
+    - 显式 `vm_gui_probe` 也只会 fail closed 到 handoff，并把 `selected_lane=vm_gui + runner_not_wired` materialize 到 summary
+    - CLI/script entrypoint 可重跑 promotion summary，并显式给出 `route_decision_count / worker_lanes / state_counts`
+  - Status note:
+    - 2026-07-07 已完成 repo-side `vm_gui` conditional promotion evidence；当前仍未落 vm runner、真实 GUI-only workload acceptance、`platform compatibility green`、或 `live accepted`

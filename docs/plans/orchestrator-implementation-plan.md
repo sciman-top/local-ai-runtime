@@ -158,6 +158,7 @@
 - `P4-T04` structured review/closeout receipts：completed（`review_result.json` + `closeout_bundle.json` + result/dispatch/evidence refs）
 - `P6-T01` Hermes parity closeout：completed（repo-owned verifier 现已把 certified baseline doc、current known-good / boundary anchors、snapshot contract、known-good validator、以及 historical container lifecycle boundary 收进同一 summary）
 - `P6-T02` historical snapshot mapping：completed（current known-good / boundary anchor 已在 implementation-status、handoff summary、以及 checklist 三面一致）
-- next: `P6-T03 vm_gui conditional promotion evidence`（branch deletion 仍不自动化；live planner/review sidecar 与 remote runner 仍未接线）
+- `P6-T03` vm_gui conditional promotion evidence：completed（repo-owned `vm_gui_probe` profile、GUI-only handoff、以及显式 vm lane fail-closed summary 已收口）
+- next: `live planner/review sidecar + non-host_local runner wiring`（branch deletion 仍不自动化；真实 GUI-only workload acceptance 仍未开始）
 
 其中 `planner/review` 继续保留在 repo `Phase 4`，不并回容器或资源 phase。

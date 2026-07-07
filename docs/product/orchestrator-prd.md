@@ -105,14 +105,14 @@
 
 ### 中期
 
-- `host_local` 正确性、verification runner、安全边界下的 AgentBridge-first intake、repo-side projection parity、repo-side planner handoff、repo-side review gate、runtime ledger、repo-side lifecycle ops、repo-side structured review/closeout receipts、git-backed write-boundary enforcement、repo-side `leases / route / quota` closeout、deterministic multi-worker simulation suite、`remote_non_gui` promotion evidence、以及 repo-owned Hermes parity / historical snapshot mapping verifier 已落地；后续进入 `vm_gui` conditional promotion evidence、live planner wiring、以及 live heterogeneous review
+- `host_local` 正确性、verification runner、安全边界下的 AgentBridge-first intake、repo-side projection parity、repo-side planner handoff、repo-side review gate、runtime ledger、repo-side lifecycle ops、repo-side structured review/closeout receipts、git-backed write-boundary enforcement、repo-side `leases / route / quota` closeout、deterministic multi-worker simulation suite、`remote_non_gui` promotion evidence、repo-owned Hermes parity / historical snapshot mapping verifier、以及 `vm_gui` conditional promotion evidence 已落地；后续进入 live planner wiring、live heterogeneous review、以及 non-host_local runner wiring
 - planner/review 触发条件全是机器可判定字段，且 `user_forced_planner / user_forced_review` 只允许 force on，不允许伪造 force off
 - AgentBridge round-trip 与 Hermes parity 继续在不反转 repo truth 的前提下推进；当前 verifier 只证明 repo-side baseline / snapshot mapping，不自动升级为 `platform compatibility green`
 
 ### 长期
 
 - 形成可持续的 `Hermes -> AgentBridge -> Codex` 单机三层闭环
-- `remote_non_gui` 与条件晋升后的 `vm_gui` 进入受控拓扑扩展
+- `remote_non_gui` 与条件晋升后的 `vm_gui` 继续停留在受控拓扑扩展边界；当前只证明 repo-side promotion / fail-closed handoff，不证明 live runner 已执行
 - 旧 Hermes 文档退为历史/兼容基线，不再与主真源冲突
 
 ## 性能与并发目标

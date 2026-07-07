@@ -36,6 +36,7 @@
 - 为三层主线提供隔离与历史 baseline
 - 在 parity 阶段承接 container lifecycle 与历史映射验证
 - 当前 repo-owned `runtime/host-orchestrator/scripts/run-hermes-parity.ps1` 已把 certified baseline doc、current known-good / boundary anchor、snapshot contract、known-good validator、以及 env-sensitive bring-up drift 收进同一 summary
+- 当前 repo-owned `runtime/host-orchestrator/scripts/run-vm-gui-promotion.ps1` 已把 default GUI-only handoff 与 explicit `vm_gui_probe` fail-closed handoff 收进同一 summary
 
 边界：
 
@@ -234,4 +235,4 @@ Hermes/AgentBridge 历史与兼容资料位于：
 
 当前主线只引用它们作为 `certified_baseline` 与边界证据，不再把它们当作当前 active queue 的直接运行时 truth。
 
-当前 repo-owned `run-hermes-parity.ps1` 只证明这些历史面与当前 truth boundary 保持一致，不自动升级为 remote runner、`platform compatibility green`、或 `live accepted`。
+当前 repo-owned `run-hermes-parity.ps1` 只证明这些历史面与当前 truth boundary 保持一致，而 `run-vm-gui-promotion.ps1` 只证明 GUI-only 条件晋升 / fail-closed handoff；它们都不自动升级为 remote/vm runner、`platform compatibility green`、或 `live accepted`。

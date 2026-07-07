@@ -112,7 +112,8 @@
   - `P5-T02` 的 deterministic multi-worker simulation 已完成：当前可复放 `retry / route / quota / review-handoff` summary，并输出 JSON evidence
   - `P5-T03` 的 `remote_non_gui` promotion evidence 已完成：当前可复放 baseline remote-lane handoff 与 explicit remote-profile fail-closed handoff summary，并输出 JSON evidence
   - `P6-T01` / `P6-T02` 的 repo-side Hermes parity / historical snapshot mapping verifier 已完成：当前可复放 baseline doc、current known-good / boundary anchor、snapshot contract、known-good validator、以及 env-sensitive bring-up drift summary
-  - next repo-side gap 转到 `P6-T03 vm_gui conditional promotion evidence`
+  - `P6-T03` 的 `vm_gui` conditional promotion evidence 已完成：当前可复放 baseline GUI-only handoff 与 explicit `vm_gui_probe` fail-closed handoff summary，并输出 JSON evidence
+  - next repo-side open set 转到 live planner/review sidecar 与 non-host_local runner wiring
 - 出口门禁：`build -> [lint -> typecheck] -> test -> contract -> hotspot` 统一跑通
 
 ### Phase 4 Planner / Review
@@ -137,8 +138,9 @@
 - 当前状态：
   - `P6-T01` 的 repo-side Hermes parity closeout 已完成：`run-hermes-parity.ps1` 当前会把 certified baseline doc、current known-good / boundary anchors、snapshot contract、known-good validator、以及 historical container lifecycle boundary 收进同一 summary
   - `P6-T02` 的 repo-side historical snapshot mapping 已完成：current anchor 固定到 `known-good-20260628-225738-431.json` 与 `verify-hermes-boundary-20260628-225841-414.json`
+  - `P6-T03` 的 repo-side `vm_gui` conditional promotion evidence 已完成：`run-vm-gui-promotion.ps1` 当前会把 default GUI-only handoff 与 explicit `vm_gui_probe` fail-closed handoff 收进同一 summary
   - 当前 shell 中 Hermes bring-up gate 只剩 `independent_key / independent_base_url` 两个 env-sensitive blocker；这仍不自动升级为 `platform compatibility green` 或 `live accepted`
-  - next repo-side gap 转到 `P6-T03 vm_gui conditional promotion evidence`
+  - next repo-side open set 转到 live planner/review sidecar 与 non-host_local runner wiring
 - 出口门禁：
   - parity green
   - historical snapshot mapping green

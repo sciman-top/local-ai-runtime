@@ -16,6 +16,7 @@ def test_host_orchestrator_scaffold_has_expected_layout() -> None:
         PROJECT_ROOT / "scripts",
         PROJECT_ROOT / "scripts" / "run-hermes-parity.ps1",
         PROJECT_ROOT / "scripts" / "run-remote-non-gui-promotion.ps1",
+        PROJECT_ROOT / "scripts" / "run-vm-gui-promotion.ps1",
         PROJECT_ROOT / "scripts" / "run-multi-worker-simulation.ps1",
         PROJECT_ROOT / "scripts" / "run-wave1-smokes.ps1",
         PROJECT_ROOT / "scripts" / "test-wave1-acceptance.ps1",
@@ -25,6 +26,7 @@ def test_host_orchestrator_scaffold_has_expected_layout() -> None:
         PROJECT_ROOT / "src" / "host_orchestrator" / "hermes_parity.py",
         PROJECT_ROOT / "src" / "host_orchestrator" / "multi_worker_simulation.py",
         PROJECT_ROOT / "src" / "host_orchestrator" / "remote_non_gui_promotion.py",
+        PROJECT_ROOT / "src" / "host_orchestrator" / "vm_gui_promotion.py",
         PROJECT_ROOT / "src" / "host_orchestrator" / "paths.py",
         PROJECT_ROOT / "src" / "host_orchestrator" / "wave1_smoke.py",
     ]

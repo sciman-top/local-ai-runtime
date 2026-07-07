@@ -39,6 +39,7 @@
 - [20260707 Deterministic Multi-Worker Simulation](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260707-deterministic-multi-worker-simulation.md)
 - [20260707 Remote Non-GUI Promotion Evidence](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260707-remote-non-gui-promotion-evidence.md)
 - [20260707 Hermes Parity And Historical Snapshot Mapping](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260707-hermes-parity-and-historical-snapshot-mapping.md)
+- [20260707 VM-GUI Conditional Promotion Evidence](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260707-vm-gui-conditional-promotion-evidence.md)
 - [20260707 Subagent Worktree Operating Pack](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260707-subagent-worktree-operating-pack.md)
 - [20260707 Subagent Worktree Contract Assets](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260707-subagent-worktree-contract-assets.md)
 - [20260707 Subagent Worktree Best-Practice Review](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260707-subagent-worktree-best-practice-review.md)
@@ -77,4 +78,5 @@
 - 本仓已接入 `AGENTS.md` 共同项目规则主体 + `CLAUDE.md` thin wrapper 试点；全局规则真源仍在 `D:\CODE\governed-ai-coding-runtime`
 - 当前 active queue 仍是 `PHASE-1-VERTICAL-SLICE`
 - `P6-T01` / `P6-T02` 的 repo-side Hermes parity / historical snapshot mapping verifier 已完成：current known-good / boundary anchor 固定到 `known-good-20260628-225738-431.json` 与 `verify-hermes-boundary-20260628-225841-414.json`，当前 shell 中只剩 `independent_key / independent_base_url` 两个 env-sensitive bring-up gate 为红
-- 当前预期 next action 仍是粗粒度的 `promote_phase1_execution`；repo-side planner/review/path-guard/worktree-manager/cleanup-manager/runtime-ledger/lifecycle/receipt、`P5-T01` route/quota、`P5-T02` deterministic multi-worker simulation、`P5-T03` remote_non_gui promotion evidence、以及 `P6-T01` / `P6-T02` Hermes parity / historical snapshot mapping 已完成，下一最小切片转到 `P6-T03 vm_gui conditional promotion evidence`
+- `P6-T03` 的 repo-side `vm_gui` conditional promotion evidence 已完成：current summary 明确固定了 default GUI-only handoff 与 explicit `vm_gui_probe` fail-closed handoff，当前仍未落 vm runner 或真实 GUI-only workload acceptance
+- 当前预期 next action 仍是粗粒度的 `promote_phase1_execution`；repo-side planner/review/path-guard/worktree-manager/cleanup-manager/runtime-ledger/lifecycle/receipt、`P5-T01` route/quota、`P5-T02` deterministic multi-worker simulation、`P5-T03` remote_non_gui promotion evidence、`P6-T01` / `P6-T02` Hermes parity / historical snapshot mapping、以及 `P6-T03` vm_gui conditional promotion evidence 已完成，下一 open set 转到 live planner/review sidecar 与 non-host_local runner wiring

@@ -82,7 +82,10 @@ PRD 的四档继续是唯一顶层口径：
 额外需要：
 
 - non-host-local `worker_profile` 在 `host_local` 上只能 fail closed 到 handoff，不能伪装成 remote/vm runner 已执行
-- repo-owned promotion entrypoint，例如 `runtime/host-orchestrator/scripts/run-remote-non-gui-promotion.ps1` 的 summary output
+- repo-owned promotion entrypoint，例如：
+  - `runtime/host-orchestrator/scripts/run-remote-non-gui-promotion.ps1`
+  - `runtime/host-orchestrator/scripts/run-vm-gui-promotion.ps1`
+  的 summary output
 
 ### platform compatibility green
 
