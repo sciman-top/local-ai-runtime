@@ -79,9 +79,27 @@
 ## Phase 3
 
 - [ ] `P3-T01` verification runner 固定 gate 顺序
-- [ ] `P3-T02` path guard
-- [ ] `P3-T03` worktree manager
-- [ ] `P3-T04` cleanup manager
+- [x] `P3-T02` path guard
+  - Done when:
+    - repo-escape path claim 在 worker 前 fail closed
+    - declared `worktree_path` 与实际 `workspace_root` / Git root 不匹配时 fail closed
+    - declared isolated worktree branch 与 `branch_name` 不匹配时 fail closed
+  - Status note:
+    - 2026-07-07 已完成 repo-side 最小 path guard；真实写入 allowlist、worktree lifecycle、cleanup automation 仍留在 `P3-T03 / P3-T04`
+- [x] `P3-T03` worktree manager
+  - Done when:
+    - declared isolated worktree 任务可从 repo root 自动 create 或 reuse linked worktree
+    - worker 与 verification 在 declared worktree `cwd` 中执行
+    - `result.json.cleanup_status` 至少区分 `inline_only` 与 `deferred`
+  - Status note:
+    - 2026-07-07 已完成 repo-side 最小 worktree manager；cleanup automation 与 runtime dispatch ledger 仍未落地
+- [x] `P3-T04` cleanup manager
+  - Done when:
+    - runtime-managed clean linked worktree 在成功且无需 handoff 的路径上自动 remove
+    - review-pending、failed、dirty、或外部直接启动的 isolated worktree 显式保留，并写出 `worktree_cleanup` 事件
+    - `result.json.cleanup_status` 能区分 `cleaned / deferred / cleanup_failed`
+  - Status note:
+    - 2026-07-07 已完成 repo-side 最小 cleanup manager；branch deletion 与 runtime dispatch ledger 仍未落地
 
 ## Phase 4
 
@@ -105,7 +123,7 @@
     - `user_forced_planner / user_forced_review` force-on overrides 被 canonical task 与 manifest contract 实际承接
     - `false` force-off override 被明确拒绝，避免伪造“强制关闭 gate”
   - Status note:
-    - 2026-07-07 已完成 repo-side 谓词正反覆盖；下一最小切片切回 `P3-T02` path guard
+    - 2026-07-07 已完成 repo-side 谓词正反覆盖；随后已补完 repo-side 最小 `P3-T02` path guard`、`P3-T03` worktree manager、以及 `P3-T04` cleanup manager，下一最小切片转到 durable `dispatch_state` runtime ledger
 
 ## Phase 5
 

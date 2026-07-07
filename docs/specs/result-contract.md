@@ -11,6 +11,7 @@
 - repo-side 当前已验证 `AgentBridge/tasks/*.md -> host_local -> result.json -> AgentBridge/results/*.md` 的 projection parity 闭环
 - repo-side 当前已允许 `planner_required` 任务在未接 live planner 时写出 `waiting_handoff` 正式结果
 - repo-side 当前已允许 `review_required` 任务在 worker / verification 完成后写出 `needs_review` 正式结果
+- repo-side 当前已让 `cleanup_status` 反映最小 cleanup truth：repo-root inline task 为 `inline_only`；runtime-managed clean isolated worktree 为 `cleaned`；需要人工保留的 isolated worktree 继续保持 `deferred`；`git worktree remove` 失败时写 `cleanup_failed`
 - 当前代码层字段名仍是 `lane`
 - 当前字段名仍是 `compatibility_projection_ref`
 
@@ -53,6 +54,12 @@
 - 在 Phase E parity 绿之前，`compatibility_projection_ref` 不改名
 - 在同一时间窗之前，`lane` 不提前改成 `execution_lane`
 - truth reset 只允许补充说明，不允许把这些改名写成当前事实
+
+## Cleanup Truth
+
+- `cleanup_status` 只反映 cleanup 结果，不代表 branch 已被删除
+- `deferred` 当前表示 worktree 被显式保留给后续 review / 调试 / 人工 cleanup；具体原因落在 `worktree_cleanup` 事件
+- `cleanup_failed` 当前只用于 cleanup manager 已尝试 remove 但 git remove 命令本身失败的路径
 
 ## worker_kind
 

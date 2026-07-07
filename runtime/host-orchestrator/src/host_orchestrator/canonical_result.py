@@ -83,6 +83,7 @@ def write_result_bundle(
     handoff_required: bool = False,
     next_action: str = "none",
     cost_payload_override: dict[str, Any] | None = None,
+    cleanup_status: str = "deferred",
 ) -> ResultBundle:
     artifacts = build_run_artifacts(layout=layout, run_id=run_id, task_id=task.task_id)
     artifacts.task_root.mkdir(parents=True, exist_ok=True)
@@ -140,7 +141,7 @@ def write_result_bundle(
         "verification_summary_ref": relative_verification,
         "cost_summary": relative_cost,
         "termination_reason": termination_reason,
-        "cleanup_status": "deferred",
+        "cleanup_status": cleanup_status,
         "artifacts": [relative_worker_output],
         "compatibility_projection_ref": (
             render_relative_path(layout.repo_root, projection_path) if projection_path is not None else None
@@ -174,6 +175,20 @@ def write_result_bundle(
         result_payload=result_payload,
         evidence_index_payload=evidence_index_payload,
     )
+
+
+def update_result_cleanup_status(
+    result_path: Path,
+    *,
+    cleanup_status: str,
+    next_action: str | None = None,
+) -> dict[str, Any]:
+    payload = json.loads(result_path.read_text(encoding="utf-8"))
+    payload["cleanup_status"] = cleanup_status
+    if next_action is not None:
+        payload["next_action"] = next_action
+    _write_json(result_path, payload)
+    return payload
 
 
 def _extract_stdout_text(worker_result: WorkerResult) -> str:

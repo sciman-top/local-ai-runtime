@@ -102,7 +102,7 @@
 ### Phase 3 执行与验证
 
 - 目标：verification runner、path guard、worktree manager、cleanup manager
-- 当前 next slice：`P3-T02` path guard
+- 当前状态：`P3-T04` cleanup manager 已完成；next repo-side gap 转到 durable `dispatch_state` runtime ledger
 - 出口门禁：`build -> [lint -> typecheck] -> test -> contract -> hotspot` 统一跑通
 
 ### Phase 4 Planner / Review

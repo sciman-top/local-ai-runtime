@@ -7,11 +7,21 @@ from pathlib import Path
 from typing import Any
 
 from host_orchestrator import agentbridge, db
-from host_orchestrator.canonical_result import build_run_id, write_result_bundle
+from host_orchestrator.canonical_result import (
+    build_run_id,
+    update_result_cleanup_status,
+    write_result_bundle,
+)
 from host_orchestrator.canonical_task import CanonicalTask, load_task, task_from_payload
 from host_orchestrator.config_runtime import RuntimeConfigBundle, WorkerProfile, load_runtime_config
+from host_orchestrator.path_guard import validate_task_paths
 from host_orchestrator.paths import RuntimeLayout
 from host_orchestrator.verification import run_verification
+from host_orchestrator.worktree_manager import (
+    declared_cleanup_status,
+    finalize_task_workspace_cleanup,
+    prepare_task_workspace,
+)
 from host_orchestrator.worker import WorkerLike, WorkerRequest, WorkerResult, WorkerUsage
 
 
@@ -93,6 +103,8 @@ class HostLocalRunner:
                 },
                 created_at=started_at,
             )
+            validate_task_paths(task=task, repo_root=self._config.layout.repo_root)
+            cleanup_status = declared_cleanup_status(task)
 
             if task.planner_required:
                 finished_at = agentbridge.utc_now_iso()
@@ -133,6 +145,7 @@ class HostLocalRunner:
                     handoff_required=True,
                     next_action=PLANNER_HANDOFF_NEXT_ACTION,
                     cost_payload_override=self._planner_handoff_cost_payload(),
+                    cleanup_status=cleanup_status,
                 )
                 relative_result_path = str(
                     result_bundle.artifacts.result_json.relative_to(self._config.layout.repo_root)
@@ -166,9 +179,31 @@ class HostLocalRunner:
                 )
                 return result_bundle.artifacts.result_json
 
+            prepared_workspace = prepare_task_workspace(
+                task=task,
+                layout=self._config.layout,
+                workspace_root=self._config.workspace_root,
+            )
+            guarded_workspace_root = prepared_workspace.workspace_root
+            cleanup_status = prepared_workspace.cleanup_status
+            if task.worktree_path.strip() not in {".", "./"}:
+                db.append_event(
+                    self._config.layout.control_plane_db,
+                    task_id=task.task_id,
+                    event_type="worktree_prepared",
+                    payload={
+                        "workspace_root": str(guarded_workspace_root),
+                        "branch_name": task.branch_name,
+                        "worktree_path": task.worktree_path,
+                        "created_new_worktree": prepared_workspace.created_new_worktree,
+                        "managed_by_runtime": prepared_workspace.managed_by_runtime,
+                        "cleanup_status": cleanup_status,
+                    },
+                    created_at=agentbridge.utc_now_iso(),
+                )
             request = WorkerRequest(
                 prompt=task.render_worker_prompt(),
-                cwd=self._config.workspace_root,
+                cwd=guarded_workspace_root,
                 model=worker_profile.model,
                 sandbox=worker_profile.sandbox(),
                 approval_mode=worker_profile.approval_mode(),
@@ -177,7 +212,7 @@ class HostLocalRunner:
             finished_at = agentbridge.utc_now_iso()
             verification_payload = run_verification(
                 task=task,
-                workspace_root=self._config.workspace_root,
+                workspace_root=guarded_workspace_root,
             )
             review_required = (
                 verification_payload.get("status") != "failed" and self._review_required(task)
@@ -219,12 +254,35 @@ class HostLocalRunner:
                 ),
                 handoff_required=review_required,
                 next_action=REVIEW_HANDOFF_NEXT_ACTION if review_required else "none",
+                cleanup_status=cleanup_status,
             )
+            result_payload = result_bundle.result_payload
+            if task.worktree_path.strip() not in {".", "./"}:
+                cleanup_outcome = finalize_task_workspace_cleanup(
+                    task=task,
+                    repo_root=self._config.layout.repo_root,
+                    prepared_workspace=prepared_workspace,
+                    result_status=result_payload["status"],
+                    handoff_required=review_required,
+                    current_next_action=result_payload["next_action"],
+                )
+                result_payload = update_result_cleanup_status(
+                    result_bundle.artifacts.result_json,
+                    cleanup_status=cleanup_outcome.cleanup_status,
+                    next_action=cleanup_outcome.next_action,
+                )
+                db.append_event(
+                    self._config.layout.control_plane_db,
+                    task_id=task.task_id,
+                    event_type="worktree_cleanup",
+                    payload=cleanup_outcome.payload,
+                    created_at=agentbridge.utc_now_iso(),
+                )
 
             relative_result_path = str(
                 result_bundle.artifacts.result_json.relative_to(self._config.layout.repo_root)
             ).replace("\\", "/")
-            projection_path = result_bundle.result_payload.get("compatibility_projection_ref")
+            projection_path = result_payload.get("compatibility_projection_ref")
             evidence_index_path = str(
                 result_bundle.artifacts.evidence_index.relative_to(self._config.layout.repo_root)
             ).replace("\\", "/")

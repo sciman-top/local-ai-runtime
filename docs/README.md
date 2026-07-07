@@ -44,7 +44,10 @@
 - `P4-T01` 的 repo-side planner handoff 已落地；当前只把 planner-gated task 停在 `waiting_handoff`，尚未宣称 live `Direct GPT-5.4 API` planner 已接线
 - `P4-T02` 的 repo-side review gate 已落地；当前会把 review-gated task 在 worker / verification 之后停在 `needs_review`，但尚未宣称 live heterogeneous review adapter 已接线
 - `P4-T03` 的 repo-side 谓词正反覆盖已落地；`user_forced_planner / user_forced_review` 现在是 contract 承认的 force-on override，而不是文档漂浮字段
-- 基于 2026-07-07 的官方与社区研究，下一最值钱的 repo-side 执行切片转向 `P3-T02` path guard，因为 worktree 只是 Git 级隔离，不是完整状态隔离
+- `P3-T02` 的 repo-side 最小 path guard 已落地；repo-escape path claim、declared worktree root drift、以及 declared branch drift 现在会在 worker 前 fail closed
+- `P3-T03` 的 repo-side 最小 worktree manager 已落地；declared isolated worktree 任务现在可从 repo root 自动 create/reuse linked worktree，并在其中执行 worker 与 verification
+- `P3-T04` 的 repo-side 最小 cleanup manager 已落地；runtime 现在只会自动 remove 自己管理、且 clean 的 linked worktree，review-pending、failed、dirty、或外部直接启动的 isolated worktree 会保留并写出 `worktree_cleanup` 事件
+- branch deletion 仍不自动化；当前 next repo-side gap 转到 durable `dispatch_state` runtime ledger
 - `compatibility_projection_ref` 与 `lane` 字段名当前不改；是否迁移留到 Phase E parity 后再决定
 - 当前 active queue 仍是 `PHASE-1-VERTICAL-SLICE`；repo-side exit gates 已闭环，但 live posture 仍停在 `live probe ready`
 

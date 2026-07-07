@@ -149,6 +149,9 @@
 - `P4-T01` planner adapter：completed（repo-side minimal handoff）
 - `P4-T02` review adapter：completed（repo-side minimal `needs_review` gate）
 - `P4-T03` 正反触发谓词测试：completed（repo-side positive/negative predicate coverage + force-on overrides）
-- next: `P3-T02` path guard（官方与社区研究都表明 worktree 不是完整状态隔离，当前最值钱的下一刀是把 cwd / branch / allowed-path guard 从 prompt 约定推进到 runtime guard）
+- `P3-T02` path guard：completed（repo-side minimal fail-closed guard for repo-escape path claims and declared isolated worktree root/branch drift）
+- `P3-T03` worktree manager：completed（repo-side minimal create/reuse manager for declared linked worktrees plus `cleanup_status` baseline semantics）
+- `P3-T04` cleanup manager：completed（runtime-managed clean linked worktrees now auto-remove; review-pending, failed, dirty, or externally launched isolated worktrees remain deferred with `worktree_cleanup` evidence）
+- next: durable `dispatch_state` runtime ledger（branch deletion 仍不自动化；dispatch ledger 也仍未 runtime 化）
 
 其中 `planner/review` 继续保留在 repo `Phase 4`，不并回容器或资源 phase。

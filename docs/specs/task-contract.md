@@ -73,6 +73,48 @@
 
 - `docs/specs/acceptance-and-gates.md`
 
+## Path Guard
+
+当前 repo-side 已 materialize 的最小 path guard：
+
+- `worktree_path` 必须保持 repo-relative，并且解析后仍位于 repo root 之下
+- `allowed_paths`、`forbidden_paths`、`artifacts_out` 必须保持 repo-relative；不允许绝对路径，也不允许通过 `..` 逃逸
+- 当 `worktree_path != "."` 时，`host_local` 在进入 worker 前还会校验：
+  - 当前 `workspace_root` 是否等于声明的 worktree 路径
+  - 当前 Git root 是否等于该 worktree root
+  - 当前 branch 是否等于 `branch_name`
+
+当前边界：
+
+- 这层 guard 只验证 path claim 与 execution context，不等于真实文件写入 allowlist 已被 runtime 强制拦截
+
+## Worktree Manager
+
+当前 repo-side 已 materialize 的最小 worktree manager：
+
+- 当 `worktree_path != "."` 且 `host_local` 入口仍从 repo root 启动时，runtime 会按 `branch_name` 与 `base_branch` create 或 reuse declared linked worktree
+- create/reuse 成功后，worker 与 verification 会改在该 worktree `cwd` 中执行
+- 若 declared worktree 已存在但 branch 不符、Git root 不符、或目标路径不是有效 linked worktree，则继续 fail closed
+
+当前边界：
+
+- runtime 当前会把 clean、无 handoff 的 runtime-managed linked worktree 交给 cleanup manager 自动 remove；branch deletion 仍不自动化
+- `dispatch_state` 仍未升级为 runtime 强制 ledger
+
+## Cleanup Manager
+
+当前 repo-side 已 materialize 的最小 cleanup manager：
+
+- 只有 declared isolated worktree 且被 runtime create/reuse 管理的路径才会进入自动 cleanup 尝试
+- 当 run `status = succeeded`、`handoff_required = false`、且 linked worktree 保持 clean 时，runtime 会自动 remove 该 worktree，并把 `cleanup_status` 写成 `cleaned`
+- 当 review/handoff 仍待处理、run 失败、worktree 仍 dirty、或 isolated worktree 不是由 repo-root runtime 这次 create/reuse 管理时，runtime 会保留 worktree 并写出 `worktree_cleanup` 事件说明原因
+- 当 `git worktree remove` 本身失败时，runtime 会把 `cleanup_status` 写成 `cleanup_failed`
+
+当前边界：
+
+- cleanup manager 不会自动删除 branch
+- cleanup manager 只更新 `result.json.cleanup_status` 与 `worktree_cleanup` 事件，不等于 `dispatch_state` 已成为 runtime ledger
+
 ## 派生字段
 
 以下字段由 orchestrator 在 intake 时派生并盖章，任务作者不能手写：

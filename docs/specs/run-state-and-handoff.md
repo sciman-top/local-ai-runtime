@@ -58,7 +58,8 @@
 
 - task-level evidence 默认不内联删除
 - `cleanup_status` 必须留在正式 result 中
-- 真正的 branch/worktree cleanup owner 在 Phase 3 以后单独落盘
+- isolated worktree 的 `cleanup_owner` 当前落在 `worktree_cleanup` 事件载荷中：自动 remove 成功时归 `runtime`，显式保留或 remove 失败时归 `operator`
+- branch deletion 当前仍不属于 runtime 自动 cleanup 范围
 
 ## Trajectory And Replay
 

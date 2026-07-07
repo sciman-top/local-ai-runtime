@@ -246,6 +246,7 @@ def test_host_local_runner_writes_result_and_runtime_state(tmp_path: Path) -> No
     assert result_payload["sandbox_profile"] == "workspace_write"
     assert result_payload["network_profile"] == "off"
     assert result_payload["status"] == "succeeded"
+    assert result_payload["cleanup_status"] == "inline_only"
     assert result_payload["compatibility_projection_ref"] == f"AgentBridge/results/{task_id}.md"
 
     verification_path = result_path.parent / "verification_summary.json"
