@@ -90,6 +90,12 @@ PRD 的四档继续是唯一顶层口径：
 
 - `AgentBridge` round-trip parity
 - Hermes historical snapshot mapping 仍为绿
+- repo-owned `runtime/host-orchestrator/scripts/run-hermes-parity.ps1` 结果保持 baseline doc、current known-good / boundary anchor、snapshot contract、known-good validator、以及 non-env-sensitive bring-up gates 一致
+
+说明：
+
+- `run-hermes-parity.ps1` 绿，只能证明 repo-side baseline / snapshot mapping 没漂移
+- 如果当前 shell 仍只缺 `independent_key / independent_base_url` 这类 env-sensitive bring-up gate，不影响 repo-side slice 收口，但也不能单凭这一步宣称 `platform compatibility green`
 
 ### live accepted
 

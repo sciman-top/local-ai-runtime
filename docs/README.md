@@ -54,8 +54,9 @@
 - `P5-T01` 的 repo-side `leases / route / quota` 收口已落地；explicit/default `worker_profile` 现在会 materialize `route_reason`，selected profile 的 `max_active_leases` 超额时会在 worker 前 handoff
 - `P5-T02` 的 deterministic multi-worker simulation 已落地；当前可复放 `retry / route / quota / review-handoff` summary，但这仍不等于 live 多 worker scheduler
 - `P5-T03` 的 `remote_non_gui` promotion evidence 已落地；repo-owned `remote_non_gui_probe` 现在可被显式选中，但 `host_local` 只会 fail closed 到 handoff 并留下 promotion evidence，不会伪装成 remote runner 已执行
+- `P6-T01` / `P6-T02` 的 repo-side Hermes parity / historical snapshot mapping verifier 已落地；`run-hermes-parity.ps1` 现在会把 certified baseline doc、current known-good / boundary anchors、snapshot contract、known-good validator、以及 env-sensitive bring-up drift 收进同一 summary，但这仍不等于 `platform compatibility green`
 - `worktree` 当前只代表写入隔离，不代表 memory/provider/session 隔离
-- branch deletion 仍不自动化；当前 next repo-side gap 转到 `Hermes parity / historical snapshot mapping`，live planner/review sidecar 与 remote runner 仍未接线
+- branch deletion 仍不自动化；当前 next repo-side gap 转到 `P6-T03 vm_gui conditional promotion evidence`，live planner/review sidecar 与 remote runner 仍未接线
 - `compatibility_projection_ref` 与 `lane` 字段名当前不改；是否迁移留到 Phase E parity 后再决定
 - 当前 active queue 仍是 `PHASE-1-VERTICAL-SLICE`；repo-side exit gates 已闭环，但 live posture 仍停在 `live probe ready`
 

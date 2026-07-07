@@ -6,6 +6,7 @@ from pathlib import Path
 
 from host_orchestrator import agentbridge
 from host_orchestrator.evidence_index import revalidate_evidence_index
+from host_orchestrator.hermes_parity import run_hermes_parity
 from host_orchestrator.multi_worker_simulation import run_multi_worker_simulation
 from host_orchestrator.remote_non_gui_promotion import run_remote_non_gui_promotion
 from host_orchestrator.paths import RuntimeLayout, discover_repo_root
@@ -65,6 +66,16 @@ def build_parser() -> argparse.ArgumentParser:
         "--remote-non-gui-promotion-run-id",
         default=None,
         help="Optional run id override for the remote_non_gui promotion suite.",
+    )
+    parser.add_argument(
+        "--run-hermes-parity",
+        action="store_true",
+        help="Run the repo-owned Hermes parity and historical snapshot mapping suite and print its JSON summary.",
+    )
+    parser.add_argument(
+        "--hermes-parity-run-id",
+        default=None,
+        help="Optional run id override for the Hermes parity suite.",
     )
     parser.add_argument(
         "--revalidate-evidence-index",
@@ -145,6 +156,14 @@ def main(argv: list[str] | None = None) -> int:
         summary = run_remote_non_gui_promotion(
             repo_root,
             run_id=args.remote_non_gui_promotion_run_id,
+        )
+        print(json.dumps(summary.to_dict(), indent=2, ensure_ascii=True))
+        return 0
+
+    if args.run_hermes_parity:
+        summary = run_hermes_parity(
+            repo_root,
+            run_id=args.hermes_parity_run_id,
         )
         print(json.dumps(summary.to_dict(), indent=2, ensure_ascii=True))
         return 0

@@ -177,6 +177,16 @@
 
 ## Phase 6
 
-- [ ] `P6-T01` Hermes parity closeout
-- [ ] `P6-T02` historical snapshot mapping
+- [x] `P6-T01` Hermes parity closeout
+  - Done when:
+    - repo-owned verifier 会把 certified baseline doc、current known-good / boundary anchors、snapshot contract、known-good validator、以及 historical container lifecycle boundary 收进同一可重跑 summary
+    - verifier 结果明确区分 env-sensitive bring-up drift 与 repo-side regression，不把 repo-side proof 写成 remote runner、`platform compatibility green`、或 `live accepted`
+  - Status note:
+    - 2026-07-07 已完成 repo-side Hermes parity closeout；`runtime/host-orchestrator/scripts/run-hermes-parity.ps1` 当前会把 baseline boundary、snapshot anchors、以及 container lifecycle guard 放进同一闭环，当前 shell 中只剩 `independent_key / independent_base_url` 两个 env-sensitive bring-up gate 为红
+- [x] `P6-T02` historical snapshot mapping
+  - Done when:
+    - `implementation-status.md`、`当前交接摘要.md`、以及 `接手检查单.md` 对当前 known-good / boundary anchor 一致
+    - current known-good snapshot 与 AgentBridge contract validator 继续为绿，并与 accepted runtime profile / boundary evidence 一致
+  - Status note:
+    - 2026-07-07 已完成 repo-side historical snapshot mapping；当前 anchor 固定到 `known-good-20260628-225738-431.json` 与 `verify-hermes-boundary-20260628-225841-414.json`
 - [ ] `P6-T03` vm_gui conditional promotion evidence
