@@ -7,6 +7,11 @@ from typing import Any
 import yaml
 from openai_codex import ApprovalMode, Sandbox
 
+from host_orchestrator.runner_acceptance import (
+    RunnerAcceptanceError,
+    validate_runner_acceptance_file,
+)
+
 
 class RuntimeConfigError(ValueError):
     """Raised when repo-owned runtime config is missing or invalid."""
@@ -416,3 +421,13 @@ def _validate_runner_wiring(worker_profile: WorkerProfile, repo_root: Path) -> N
             "workers.yaml:"
             f"{worker_profile.name}.runner_acceptance_ref does not exist: {acceptance_ref}"
         )
+    try:
+        validate_runner_acceptance_file(
+            acceptance_path=acceptance_path,
+            acceptance_ref=acceptance_ref,
+            worker_profile=worker_profile.name,
+            lane=worker_profile.lane,
+            runner_kind=worker_profile.worker_kind,
+        )
+    except RunnerAcceptanceError as exc:
+        raise RuntimeConfigError(str(exc)) from exc

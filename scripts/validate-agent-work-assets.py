@@ -19,6 +19,7 @@ from host_orchestrator.agent_work_assets import (  # noqa: E402
     validate_manifest_payload,
     validate_review_result_payload,
 )
+from host_orchestrator.runner_acceptance import validate_runner_acceptance_payload  # noqa: E402
 
 
 def main() -> int:
@@ -27,6 +28,11 @@ def main() -> int:
         ("dispatch_state", REPO_ROOT / "templates" / "dispatch-state.example.json", validate_dispatch_state_payload),
         ("closeout_bundle", REPO_ROOT / "templates" / "closeout-bundle.example.json", validate_closeout_bundle_payload),
         ("review_result", REPO_ROOT / "templates" / "review-result.example.json", validate_review_result_payload),
+        (
+            "runner_acceptance",
+            REPO_ROOT / "templates" / "non-host-local-runner-acceptance.example.json",
+            validate_runner_acceptance_payload,
+        ),
     ]
 
     checked: list[dict[str, str]] = []

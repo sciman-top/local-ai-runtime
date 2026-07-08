@@ -1,0 +1,13 @@
+{
+  "schema_version": "non_host_local_runner_acceptance.v1",
+  "acceptance_status": "accepted",
+  "worker_profile": "remote_non_gui_probe",
+  "lane": "remote_non_gui",
+  "runner_kind": "codex_exec",
+  "accepted_by": "example-only",
+  "accepted_at": "2026-07-08T00:00:00Z",
+  "acceptance_scope": "Example schema validation only. Do not reference this template from committed worker profiles as real runner acceptance.",
+  "evidence_refs": [
+    "docs/change-evidence/20260708-non-host-local-runner-acceptance-schema.md"
+  ]
+}

@@ -25,7 +25,7 @@
 - `.ai/runs/<run_id>/<task_id>/result.json` 仍是正式结果主面
 - `AgentBridge results/*.md` 当前仍是 compatibility projection
 - `runtime/host-orchestrator/src/host_orchestrator/runtime_v2/` 已作为同仓新内核落地；当前只服务 dual-track migration，不切默认入口，也不要求改仓库/目录名
-- `remote_non_gui` 当前已具备 repo-owned probe profile、promotion evidence 与 runner wiring readiness contract，但 committed `remote_non_gui_probe` 仍保持 `runner_wired=false`，尚未完成真实 remote host runner acceptance；`vm_gui` 当前只有 conditional promotion / handoff proof，尚未完成真实 vm runner 或 GUI-only workload acceptance
+- `remote_non_gui` 当前已具备 repo-owned probe profile、promotion evidence、runner wiring readiness contract 与 acceptance schema guard，但 committed `remote_non_gui_probe` 仍保持 `runner_wired=false`，尚未完成真实 remote host runner acceptance；`vm_gui` 当前只有 conditional promotion / handoff proof，尚未完成真实 vm runner 或 GUI-only workload acceptance
 - `compatibility_projection_ref` 与 `lane` 字段名当前仍保持代码层 truth；当前已明确决定不在 repo-side parity / topology closeout 中改名，待真实 remote/vm runner acceptance 与后续 review 稳定性都真实落地后再复评
 
 ## Kernel V2 Dual-Track

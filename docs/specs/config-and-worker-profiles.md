@@ -99,7 +99,7 @@ acceptance:
 | `projection_mode` | `compatibility_dual_write / canonical_only` |
 | `max_active_leases` | 该 profile 允许同时持有的 active lease 上限；超额时在 worker 前 handoff |
 | `runner_wired` | non-host-local profile 的显式接线开关；省略时默认为 `false` |
-| `runner_acceptance_ref` | 当 non-host-local profile 设置 `runner_wired=true` 时必填；必须是 repo-relative 且已存在的 acceptance evidence 引用 |
+| `runner_acceptance_ref` | 当 non-host-local profile 设置 `runner_wired=true` 时必填；必须是 repo-relative、已存在、且符合 `non_host_local_runner_acceptance.v1` 的 acceptance evidence 引用 |
 
 ### 当前已定义 profile
 
@@ -146,8 +146,19 @@ acceptance:
 8. `wave1_smoke` 这类 mock profile 只能证明 `mock green`，不能满足 `live probe ready` 或 `live accepted`
 9. 默认模型策略应当是 role-aware / risk-aware / lane-aware，而不是把所有子代理固定为同一模型与同一 reasoning effort
 10. 当 `HostLocalRunner` 选中的 profile `lane != host_local` 且 `runner_wired != true` 时，当前必须 fail closed 到 handoff，并把 non-host-local promotion 只写成 repo-side evidence，不得伪装成 remote/vm runner 已执行
-11. 当 non-host-local profile 显式设置 `runner_wired=true` 时，必须同时提供 repo-relative 且已存在的 `runner_acceptance_ref`；否则 runtime config loading 必须 fail closed，不得仅凭布尔开关越过 handoff
-12. 当临时测试配置显式设置 `runner_wired=true` 且绑定 `runner_acceptance_ref` 时，runtime 可以越过 pre-worker handoff 并调用注入的 runner；这只证明 repo-side wiring branch，不等于 committed config 已接线、真实远端执行、platform compatibility green 或 live accepted
+11. 当 non-host-local profile 显式设置 `runner_wired=true` 时，必须同时提供 repo-relative、已存在、schema-valid 的 `runner_acceptance_ref`；否则 runtime config loading 必须 fail closed，不得仅凭布尔开关越过 handoff
+12. `runner_acceptance_ref` 必须是 JSON object，且最小字段为 `schema_version / acceptance_status / worker_profile / lane / runner_kind / accepted_by / accepted_at / acceptance_scope / evidence_refs`
+13. `schema_version` 必须等于 `non_host_local_runner_acceptance.v1`，`acceptance_status` 必须等于 `accepted`，且 `worker_profile / lane / runner_kind` 必须匹配当前选中的 worker profile
+14. 当临时测试配置显式设置 `runner_wired=true` 且绑定 `runner_acceptance_ref` 时，runtime 可以越过 pre-worker handoff 并调用注入的 runner；这只证明 repo-side wiring branch，不等于 committed config 已接线、真实远端执行、platform compatibility green 或 live accepted
+
+## Non-Host-Local Runner Acceptance Payload
+
+最小模板与 schema：
+
+- `templates/non-host-local-runner-acceptance.example.json`
+- `templates/non-host-local-runner-acceptance.schema.json`
+
+`runner_acceptance_ref` 只是一层机器可校验的最低证据守卫：它证明某个 non-host-local profile 的接线前置证据文件存在、结构正确、且绑定当前 `worker_profile / lane / runner_kind`。它不等同于真实 remote/vm runner 已执行，也不替代后续 runner receipt、host/VM evidence、task-level artifacts、人工/业务验收边界。
 
 ## Mapping To Codex Runtime
 
@@ -168,7 +179,7 @@ repo contract 到当前执行实现的映射：
   - `claude_glm` -> `ClaudeCodeStructuredWorker`（当前只用于 bounded live heterogeneous review receipt）
   - `scripted / gpt54_direct` 当前仍对 live task execution fail closed，不得伪装成已接线
   - `claude_glm` 当前仍对 primary live task execution fail closed，不得把 review receipt path 写成 worker execution 已接线
-- `runner_wired` 是运行时 gate 开关，不是远端资源证明；`runner_acceptance_ref` 是最低证据引用守卫，不代表验收本身，真实 remote/vm acceptance 仍必须另有 runner receipt、host/VM evidence、task-level artifacts 与人工/业务边界裁决
+- `runner_wired` 是运行时 gate 开关，不是远端资源证明；`runner_acceptance_ref` 是 schema-valid 的最低证据引用守卫，不代表验收本身，真实 remote/vm acceptance 仍必须另有 runner receipt、host/VM evidence、task-level artifacts 与人工/业务边界裁决
 
 ## impl_pack Absorption
 

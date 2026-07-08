@@ -23,20 +23,40 @@ def _seed_repo(tmp_path: Path) -> Path:
     return repo_root
 
 
-def _mark_remote_non_gui_runner_wired(repo_root: Path) -> None:
+def _runner_acceptance_payload(**overrides: object) -> dict[str, object]:
+    payload: dict[str, object] = {
+        "schema_version": "non_host_local_runner_acceptance.v1",
+        "acceptance_status": "accepted",
+        "worker_profile": "remote_non_gui_probe",
+        "lane": "remote_non_gui",
+        "runner_kind": "codex_exec",
+        "accepted_by": "pytest",
+        "accepted_at": "2026-07-08T00:00:00Z",
+        "acceptance_scope": "fake injected runner coverage only",
+        "evidence_refs": [
+            "docs/change-evidence/20260708-non-host-local-runner-acceptance-schema.md"
+        ],
+    }
+    payload.update(overrides)
+    return payload
+
+
+def _write_remote_non_gui_acceptance_ref(
+    repo_root: Path,
+    payload: dict[str, object] | None = None,
+) -> str:
     acceptance_ref = "docs/change-evidence/test-remote-non-gui-runner-acceptance.json"
     acceptance_path = repo_root / acceptance_ref
     acceptance_path.parent.mkdir(parents=True, exist_ok=True)
     acceptance_path.write_text(
-        json.dumps(
-            {
-                "status": "accepted_for_test",
-                "scope": "fake injected runner coverage only",
-            },
-            indent=2,
-        ),
+        json.dumps(payload or _runner_acceptance_payload(), indent=2),
         encoding="utf-8",
     )
+    return acceptance_ref
+
+
+def _mark_remote_non_gui_runner_wired(repo_root: Path) -> None:
+    acceptance_ref = _write_remote_non_gui_acceptance_ref(repo_root)
     workers_path = repo_root / ".ai" / "config" / "workers.yaml"
     payload = yaml.safe_load(workers_path.read_text(encoding="utf-8"))
     payload["workers"]["remote_non_gui_probe"]["runner_wired"] = True
@@ -58,6 +78,39 @@ def test_non_host_local_runner_wired_requires_acceptance_ref(tmp_path: Path) -> 
     )
 
     with pytest.raises(RuntimeConfigError, match="runner_acceptance_ref"):
+        load_runtime_config(repo_root)
+
+
+@pytest.mark.parametrize(
+    ("overrides", "message"),
+    [
+        ({"acceptance_status": "pending"}, "acceptance_status"),
+        ({"worker_profile": "other_profile"}, "worker_profile"),
+        ({"lane": "vm_gui"}, "lane"),
+        ({"runner_kind": "scripted"}, "runner_kind"),
+        ({"evidence_refs": []}, "evidence_refs"),
+    ],
+)
+def test_non_host_local_runner_wired_requires_valid_acceptance_payload(
+    tmp_path: Path,
+    overrides: dict[str, object],
+    message: str,
+) -> None:
+    repo_root = _seed_repo(tmp_path)
+    acceptance_ref = _write_remote_non_gui_acceptance_ref(
+        repo_root,
+        _runner_acceptance_payload(**overrides),
+    )
+    workers_path = repo_root / ".ai" / "config" / "workers.yaml"
+    payload = yaml.safe_load(workers_path.read_text(encoding="utf-8"))
+    payload["workers"]["remote_non_gui_probe"]["runner_wired"] = True
+    payload["workers"]["remote_non_gui_probe"]["runner_acceptance_ref"] = acceptance_ref
+    workers_path.write_text(
+        yaml.safe_dump(payload, sort_keys=False, allow_unicode=True),
+        encoding="utf-8",
+    )
+
+    with pytest.raises(RuntimeConfigError, match=message):
         load_runtime_config(repo_root)
 
 

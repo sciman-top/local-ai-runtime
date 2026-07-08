@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "NonHostLocalRunnerAcceptance",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "acceptance_status",
+    "worker_profile",
+    "lane",
+    "runner_kind",
+    "accepted_by",
+    "accepted_at",
+    "acceptance_scope",
+    "evidence_refs"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "non_host_local_runner_acceptance.v1"
+    },
+    "acceptance_status": {
+      "const": "accepted"
+    },
+    "worker_profile": {
+      "type": "string"
+    },
+    "lane": {
+      "enum": [
+        "remote_non_gui",
+        "vm_gui"
+      ]
+    },
+    "runner_kind": {
+      "type": "string"
+    },
+    "accepted_by": {
+      "type": "string"
+    },
+    "accepted_at": {
+      "type": "string"
+    },
+    "acceptance_scope": {
+      "type": "string"
+    },
+    "evidence_refs": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

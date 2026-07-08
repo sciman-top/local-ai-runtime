@@ -14,7 +14,7 @@
     "selector": "promote_phase1_execution",
     "selector_source": "scripts/select-next-work.py",
     "as_of": "2026-07-08",
-    "proof_ref": "docs/change-evidence/20260708-non-host-local-runner-acceptance-ref-guard.md",
+    "proof_ref": "docs/change-evidence/20260708-non-host-local-runner-acceptance-schema.md",
     "blocking_reasons": []
   },
   "current_live_posture": {

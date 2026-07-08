@@ -12,6 +12,10 @@ from host_orchestrator.agent_work_assets import (
     validate_planner_result_payload,
     validate_review_result_payload,
 )
+from host_orchestrator.runner_acceptance import (
+    RUNNER_ACCEPTANCE_SCHEMA_VERSION,
+    validate_runner_acceptance_payload,
+)
 
 from support import REPO_ROOT
 
@@ -218,3 +222,30 @@ def test_planner_result_template_aligns_with_planner_contract() -> None:
     ]
     assert schema["properties"]["planner_mode"]["enum"] == ["advisory", "blocking"]
     assert schema["properties"]["disposition"]["enum"] == ["proceed", "handoff"]
+
+
+def test_runner_acceptance_template_aligns_with_non_host_local_guard() -> None:
+    payload = load_mapping_file(REPO_ROOT / "templates" / "non-host-local-runner-acceptance.example.json")
+
+    validate_runner_acceptance_payload(payload)
+
+    schema = json.loads(
+        (REPO_ROOT / "templates" / "non-host-local-runner-acceptance.schema.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    assert schema["required"] == [
+        "schema_version",
+        "acceptance_status",
+        "worker_profile",
+        "lane",
+        "runner_kind",
+        "accepted_by",
+        "accepted_at",
+        "acceptance_scope",
+        "evidence_refs",
+    ]
+    assert schema["properties"]["schema_version"]["const"] == RUNNER_ACCEPTANCE_SCHEMA_VERSION
+    assert schema["properties"]["acceptance_status"]["const"] == "accepted"
+    assert schema["properties"]["lane"]["enum"] == ["remote_non_gui", "vm_gui"]
+    assert schema["properties"]["evidence_refs"]["minItems"] == 1
