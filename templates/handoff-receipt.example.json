@@ -1,0 +1,29 @@
+{
+  "task_id": "T02",
+  "run_id": "20260708-example",
+  "receipt_kind": "pre_worker_handoff",
+  "status": "waiting_handoff",
+  "handoff_required": true,
+  "reason_codes": [
+    "selected_lane_runner_not_wired"
+  ],
+  "reason_details": [
+    "host_runtime=host_local selected_lane=remote_non_gui runner_not_wired worker_profile=remote_non_gui_probe"
+  ],
+  "source_runtime": "host_local",
+  "requested_execution_lane": "remote_non_gui",
+  "selected_lane": "remote_non_gui",
+  "worker_profile": "remote_non_gui_probe",
+  "worker_kind": "codex_exec",
+  "route_reason": "repo-owned worker_profile=remote_non_gui_probe selected from canonical task",
+  "status_reason": "planner handoff required: host_runtime=host_local selected_lane=remote_non_gui runner_not_wired worker_profile=remote_non_gui_probe",
+  "worker_execution_attempted": false,
+  "requested_lane_runner_wired": false,
+  "selected_profile_runner_wired": false,
+  "next_action": "planner handoff required before worker execution",
+  "source_evidence_refs": [
+    ".ai/runs/<run_id>/T02/result.json",
+    ".ai/runs/<run_id>/T02/dispatch_state.json",
+    ".ai/runs/<run_id>/T02/verification_summary.json"
+  ]
+}

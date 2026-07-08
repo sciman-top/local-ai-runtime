@@ -1,0 +1,127 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "HandoffReceipt",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "task_id",
+    "run_id",
+    "receipt_kind",
+    "status",
+    "handoff_required",
+    "reason_codes",
+    "reason_details",
+    "source_runtime",
+    "requested_execution_lane",
+    "selected_lane",
+    "worker_profile",
+    "worker_kind",
+    "route_reason",
+    "status_reason",
+    "worker_execution_attempted",
+    "requested_lane_runner_wired",
+    "selected_profile_runner_wired",
+    "next_action",
+    "source_evidence_refs"
+  ],
+  "properties": {
+    "task_id": {
+      "type": "string"
+    },
+    "run_id": {
+      "type": "string"
+    },
+    "receipt_kind": {
+      "enum": [
+        "pre_worker_handoff"
+      ]
+    },
+    "status": {
+      "enum": [
+        "queued",
+        "running",
+        "input_required",
+        "waiting_handoff",
+        "needs_review",
+        "completed",
+        "failed",
+        "cancelled",
+        "stale",
+        "resumed"
+      ]
+    },
+    "handoff_required": {
+      "type": "boolean"
+    },
+    "reason_codes": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "enum": [
+          "execution_lane_profile_mismatch",
+          "requires_network_with_offline_profile",
+          "requires_gui_boundary",
+          "selected_lane_runner_not_wired",
+          "lease_quota_exhausted",
+          "planner_sidecar_not_wired",
+          "pre_worker_handoff"
+        ]
+      }
+    },
+    "reason_details": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string"
+      }
+    },
+    "source_runtime": {
+      "type": "string"
+    },
+    "requested_execution_lane": {
+      "enum": [
+        "host_local",
+        "remote_non_gui",
+        "vm_gui"
+      ]
+    },
+    "selected_lane": {
+      "enum": [
+        "host_local",
+        "remote_non_gui",
+        "vm_gui"
+      ]
+    },
+    "worker_profile": {
+      "type": "string"
+    },
+    "worker_kind": {
+      "type": "string"
+    },
+    "route_reason": {
+      "type": "string"
+    },
+    "status_reason": {
+      "type": "string"
+    },
+    "worker_execution_attempted": {
+      "type": "boolean"
+    },
+    "requested_lane_runner_wired": {
+      "type": "boolean"
+    },
+    "selected_profile_runner_wired": {
+      "type": "boolean"
+    },
+    "next_action": {
+      "type": "string"
+    },
+    "source_evidence_refs": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

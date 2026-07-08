@@ -7,6 +7,7 @@ from host_orchestrator.agent_work_assets import (
     load_mapping_file,
     validate_closeout_bundle_payload,
     validate_dispatch_state_payload,
+    validate_handoff_receipt_payload,
     validate_manifest_payload,
     validate_planner_result_payload,
     validate_review_result_payload,
@@ -126,6 +127,7 @@ def test_dispatch_state_template_is_machine_readable() -> None:
         "cleanup",
     ]
     assert schema["properties"]["planner_result_ref"]["type"] == "string"
+    assert schema["properties"]["handoff_receipt_ref"]["type"] == "string"
     assert schema["properties"]["review_result_ref"]["type"] == "string"
     assert schema["properties"]["closeout_bundle_ref"]["type"] == "string"
 
@@ -151,6 +153,39 @@ def test_closeout_bundle_template_captures_cleanup_and_truth_boundary() -> None:
         "skipped",
         "gate_na",
     ]
+    assert schema["properties"]["handoff_receipt_ref"]["type"] == "string"
+
+
+def test_handoff_receipt_template_aligns_with_pre_worker_handoff_contract() -> None:
+    payload = load_mapping_file(REPO_ROOT / "templates" / "handoff-receipt.example.json")
+
+    validate_handoff_receipt_payload(payload)
+
+    schema = json.loads((REPO_ROOT / "templates" / "handoff-receipt.schema.json").read_text(encoding="utf-8"))
+    assert schema["required"] == [
+        "task_id",
+        "run_id",
+        "receipt_kind",
+        "status",
+        "handoff_required",
+        "reason_codes",
+        "reason_details",
+        "source_runtime",
+        "requested_execution_lane",
+        "selected_lane",
+        "worker_profile",
+        "worker_kind",
+        "route_reason",
+        "status_reason",
+        "worker_execution_attempted",
+        "requested_lane_runner_wired",
+        "selected_profile_runner_wired",
+        "next_action",
+        "source_evidence_refs",
+    ]
+    assert schema["properties"]["receipt_kind"]["enum"] == ["pre_worker_handoff"]
+    assert "selected_lane_runner_not_wired" in schema["properties"]["reason_codes"]["items"]["enum"]
+    assert schema["properties"]["worker_execution_attempted"]["type"] == "boolean"
 
 
 def test_review_result_template_aligns_with_review_contract() -> None:

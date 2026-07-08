@@ -133,7 +133,7 @@
   - `P3-T06` lifecycle ops 已完成：repo-side 现在可显式 materialize `stale / cancelled / resumed`，`retry` 通过 `attempt + retry_rewind` 收口
   - `P5-T01` 的 repo-side `leases / route / quota` 收口已完成：explicit/default `worker_profile` 现在会 materialize `route_reason`，worker-profile `max_active_leases` 超额时会在 worker 前 handoff
   - `P5-T02` 的 deterministic multi-worker simulation 已完成：当前可复放 `retry / route / quota / review-handoff` summary，并输出 JSON evidence
-  - `P5-T03` 的 `remote_non_gui` promotion evidence 已完成：当前可复放 baseline remote-lane handoff 与 explicit remote-profile fail-closed handoff summary，并输出 JSON evidence
+  - `P5-T03` 的 `remote_non_gui` promotion evidence 已完成：当前可复放 baseline remote-lane handoff 与 explicit remote-profile fail-closed handoff summary，输出 JSON evidence，并在 pre-worker handoff 路径写出机器可读 `handoff_receipt.json`
   - `P6-T01` / `P6-T02` 的 repo-side Hermes parity / historical snapshot mapping verifier 已完成：当前可复放 baseline doc、current known-good / boundary anchor、snapshot contract、known-good validator、以及 env-sensitive bring-up drift summary
   - `P6-T03` 的 `vm_gui` conditional promotion evidence 已完成：当前可复放 baseline GUI-only handoff 与 explicit `vm_gui_probe` fail-closed handoff summary，并输出 JSON evidence
   - repo-owned `host_local` task entrypoint 与 worker factory 已完成：`host-orchestrator --run-task` / `run-host-task.ps1` 当前已直接消费 `local_maint` 的 `codex_sdk` 路径，并在结构上支持 `codex_exec`；built-in `codex_exec` profiles 仍保持 non-host-local handoff，而 `scripted / gpt54_direct / claude_glm` 继续 live task execution fail-closed

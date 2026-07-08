@@ -11,12 +11,16 @@ from typing import Any
 from openai_codex import Sandbox
 
 from host_orchestrator import agentbridge, db
-from host_orchestrator.agent_work_assets import validate_review_result_payload
+from host_orchestrator.agent_work_assets import (
+    validate_handoff_receipt_payload,
+    validate_review_result_payload,
+)
 from host_orchestrator.canonical_result import (
     build_run_id,
     refresh_evidence_index,
     update_result_metadata,
     write_closeout_bundle_artifact,
+    write_handoff_receipt_artifact,
     write_planner_result_artifact,
     write_result_bundle,
     write_review_result_artifact,
@@ -251,11 +255,35 @@ class HostLocalRunner:
                     cleanup_owner=current_cleanup_owner,
                     status_reason=current_status_reason,
                 )
+                relative_result_path = self._relative_to_repo(result_bundle.artifacts.result_json)
+                handoff_receipt_payload = self._build_handoff_receipt_payload(
+                    task=task,
+                    worker_profile=worker_profile,
+                    route_reason=route_reason,
+                    run_id=run_id,
+                    status_reason=current_status_reason,
+                    pre_worker_handoff_reasons=pre_worker_handoff_reasons,
+                    result_ref=relative_result_path,
+                    dispatch_state_ref=relative_dispatch_state_path,
+                    verification_summary_ref=self._relative_to_repo(
+                        result_bundle.artifacts.verification_summary
+                    ),
+                    next_action=PRE_WORKER_HANDOFF_NEXT_ACTION,
+                )
+                validate_handoff_receipt_payload(handoff_receipt_payload)
+                write_handoff_receipt_artifact(
+                    result_bundle.artifacts,
+                    handoff_receipt_payload,
+                )
+                handoff_receipt_ref = self._relative_to_repo(
+                    result_bundle.artifacts.handoff_receipt
+                )
                 closeout_bundle_payload = self._build_closeout_bundle_payload(
                     task=task,
                     artifacts=result_bundle.artifacts,
                     result_payload=result_bundle.result_payload,
                     verification_payload=verification_payload,
+                    handoff_receipt_ref=handoff_receipt_ref,
                     planner_result_ref=None,
                     review_result_ref=None,
                     current_next_action=PRE_WORKER_HANDOFF_NEXT_ACTION,
@@ -266,11 +294,9 @@ class HostLocalRunner:
                 closeout_bundle_ref = self._relative_to_repo(result_bundle.artifacts.closeout_bundle)
                 result_payload = update_result_metadata(
                     result_bundle.artifacts.result_json,
+                    handoff_receipt_ref=handoff_receipt_ref,
                     closeout_bundle_ref=closeout_bundle_ref,
                 )
-                relative_result_path = str(
-                    result_bundle.artifacts.result_json.relative_to(self._config.layout.repo_root)
-                ).replace("\\", "/")
                 projection_path = result_payload.get("compatibility_projection_ref")
                 evidence_index_path = str(
                     result_bundle.artifacts.evidence_index.relative_to(self._config.layout.repo_root)
@@ -280,6 +306,7 @@ class HostLocalRunner:
                     last_result_ref=relative_result_path,
                     verification_summary_ref=self._relative_to_repo(result_bundle.artifacts.verification_summary),
                     evidence_index_ref=evidence_index_path,
+                    handoff_receipt_ref=handoff_receipt_ref,
                     planner_result_ref=None,
                     review_result_ref=None,
                     closeout_bundle_ref=closeout_bundle_ref,
@@ -315,6 +342,7 @@ class HostLocalRunner:
                         "result_path": relative_result_path,
                         "compatibility_projection_ref": projection_path,
                         "evidence_index_ref": evidence_index_path,
+                        "handoff_receipt_ref": handoff_receipt_ref,
                         "handoff_required": True,
                         "next_action": PRE_WORKER_HANDOFF_NEXT_ACTION,
                         "route_reason": route_reason,
@@ -412,6 +440,7 @@ class HostLocalRunner:
                     artifacts=result_bundle.artifacts,
                     result_payload=result_bundle.result_payload,
                     verification_payload=verification_payload,
+                    handoff_receipt_ref=None,
                     planner_result_ref=planner_result_ref,
                     review_result_ref=None,
                     current_next_action=current_next_action,
@@ -668,6 +697,7 @@ class HostLocalRunner:
                 artifacts=result_bundle.artifacts,
                 result_payload=result_bundle.result_payload,
                 verification_payload=verification_payload,
+                handoff_receipt_ref=None,
                 planner_result_ref=None,
                 review_result_ref=review_result_ref,
                 current_next_action=current_next_action,
@@ -1378,6 +1408,66 @@ class HostLocalRunner:
             return normalized
         return normalized[: max_chars - 3].rstrip() + "..."
 
+    def _build_handoff_receipt_payload(
+        self,
+        *,
+        task: CanonicalTask,
+        worker_profile: WorkerProfile,
+        route_reason: str,
+        run_id: str,
+        status_reason: str,
+        pre_worker_handoff_reasons: list[str],
+        result_ref: str,
+        dispatch_state_ref: str,
+        verification_summary_ref: str,
+        next_action: str,
+    ) -> dict[str, Any]:
+        return {
+            "task_id": task.task_id,
+            "run_id": run_id,
+            "receipt_kind": "pre_worker_handoff",
+            "status": "waiting_handoff",
+            "handoff_required": True,
+            "reason_codes": self._handoff_reason_codes(pre_worker_handoff_reasons),
+            "reason_details": list(pre_worker_handoff_reasons),
+            "source_runtime": "host_local",
+            "requested_execution_lane": task.execution_lane,
+            "selected_lane": worker_profile.lane,
+            "worker_profile": worker_profile.name,
+            "worker_kind": worker_profile.worker_kind,
+            "route_reason": route_reason,
+            "status_reason": status_reason,
+            "worker_execution_attempted": False,
+            "requested_lane_runner_wired": task.execution_lane == "host_local",
+            "selected_profile_runner_wired": worker_profile.lane == "host_local",
+            "next_action": next_action,
+            "source_evidence_refs": [
+                result_ref,
+                dispatch_state_ref,
+                verification_summary_ref,
+            ],
+        }
+
+    @staticmethod
+    def _handoff_reason_codes(reasons: list[str]) -> list[str]:
+        codes: list[str] = []
+        for reason in reasons:
+            if "runner_not_wired" in reason and "selected_lane=" in reason:
+                codes.append("selected_lane_runner_not_wired")
+            elif reason.startswith("execution_lane="):
+                codes.append("execution_lane_profile_mismatch")
+            elif reason == "requires_network=true":
+                codes.append("requires_network_with_offline_profile")
+            elif reason == "requires_gui=true":
+                codes.append("requires_gui_boundary")
+            elif reason.startswith("lease_quota_exhausted"):
+                codes.append("lease_quota_exhausted")
+            elif reason.startswith("planner_sidecar_not_wired"):
+                codes.append("planner_sidecar_not_wired")
+            else:
+                codes.append("pre_worker_handoff")
+        return codes
+
     def _build_closeout_bundle_payload(
         self,
         *,
@@ -1385,6 +1475,7 @@ class HostLocalRunner:
         artifacts: Any,
         result_payload: dict[str, Any],
         verification_payload: dict[str, Any],
+        handoff_receipt_ref: str | None,
         planner_result_ref: str | None,
         review_result_ref: str | None,
         current_next_action: str,
@@ -1401,12 +1492,14 @@ class HostLocalRunner:
         ]
         if artifacts.projection_markdown is not None:
             evidence_refs.append(self._relative_to_repo(artifacts.projection_markdown))
+        if handoff_receipt_ref is not None:
+            evidence_refs.append(handoff_receipt_ref)
         if planner_result_ref is not None:
             evidence_refs.append(planner_result_ref)
         if review_result_ref is not None:
             evidence_refs.append(review_result_ref)
 
-        return {
+        payload = {
             "run_id": str(result_payload.get("run_id") or ""),
             "repo_root": str(self._config.layout.repo_root),
             "objective": task.title,
@@ -1450,6 +1543,9 @@ class HostLocalRunner:
             ),
             "next_action": current_next_action,
         }
+        if handoff_receipt_ref is not None:
+            payload["handoff_receipt_ref"] = handoff_receipt_ref
+        return payload
 
     @staticmethod
     def _closeout_status(result_status: str) -> str:

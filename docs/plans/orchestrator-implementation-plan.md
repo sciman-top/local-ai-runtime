@@ -162,6 +162,7 @@
 - `P6-T01` Hermes parity closeout：completed（repo-owned verifier 现已把 certified baseline doc、current known-good / boundary anchors、snapshot contract、known-good validator、以及 historical container lifecycle boundary 收进同一 summary）
 - `P6-T02` historical snapshot mapping：completed（current known-good / boundary anchor 已在 implementation-status、handoff summary、以及 checklist 三面一致）
 - `P6-T03` vm_gui conditional promotion evidence：completed（repo-owned `vm_gui_probe` profile、GUI-only handoff、以及显式 vm lane fail-closed summary 已收口）
+- `P5-T03` follow-on handoff receipt hardening：completed（pre-worker handoff 现在写 `handoff_receipt.json`，remote_non_gui promotion summary 会读取 `handoff_reason_codes / worker_execution_attempted`）
 - next: `non-host_local runner wiring + follow-on review hardening`（bounded live heterogeneous review receipt 已落地；branch deletion 仍不自动化；真实 GUI-only workload acceptance 仍未开始）
 
 其中 `planner/review` 继续保留在 repo `Phase 4`，不并回容器或资源 phase。

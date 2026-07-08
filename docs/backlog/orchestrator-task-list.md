@@ -213,9 +213,9 @@
   - Done when:
     - repo-owned `remote_non_gui_probe` profile 已进入 `workers.yaml`
     - 选中 `remote_non_gui` lane/profile 时，`host_local` 会在 worker 前 fail closed 到 handoff，而不是伪装成 remote runner 已执行
-    - CLI/script entrypoint 可重跑 promotion summary，并显式给出 `route_decision_count / worker_lanes / state_counts`
+    - CLI/script entrypoint 可重跑 promotion summary，并显式给出 `route_decision_count / worker_lanes / state_counts / handoff_reason_codes / worker_execution_attempted`
   - Status note:
-    - 2026-07-07 已完成 repo-side `remote_non_gui` promotion evidence；当前仍未落 remote runner、`platform compatibility green`、或 `live accepted`
+    - 2026-07-08 follow-on 已补 pre-worker `handoff_receipt.json` 与 promotion summary 结构化原因码；当前仍未落 remote runner、`platform compatibility green`、或 `live accepted`
 
 ## Phase 6
 

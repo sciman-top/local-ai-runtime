@@ -20,6 +20,16 @@ PLANNER_KINDS = {"codex_sdk", "gpt54_direct", "repo_policy_gate"}
 PLANNER_MODES = {"advisory", "blocking"}
 PLANNER_DISPOSITIONS = {"proceed", "handoff"}
 RECOMMENDED_ACTIONS = {"approve", "revise", "reject"}
+HANDOFF_RECEIPT_KINDS = {"pre_worker_handoff"}
+HANDOFF_REASON_CODES = {
+    "execution_lane_profile_mismatch",
+    "requires_network_with_offline_profile",
+    "requires_gui_boundary",
+    "selected_lane_runner_not_wired",
+    "lease_quota_exhausted",
+    "planner_sidecar_not_wired",
+    "pre_worker_handoff",
+}
 DISPATCH_AGENT_ROLES = {
     "master",
     "explorer",
@@ -136,6 +146,8 @@ def validate_dispatch_state_payload(payload: Mapping[str, Any]) -> None:
         _require_string(payload, "review_result_ref", "dispatch_state")
     if "planner_result_ref" in payload and payload["planner_result_ref"] is not None:
         _require_string(payload, "planner_result_ref", "dispatch_state")
+    if "handoff_receipt_ref" in payload and payload["handoff_receipt_ref"] is not None:
+        _require_string(payload, "handoff_receipt_ref", "dispatch_state")
     if "closeout_bundle_ref" in payload and payload["closeout_bundle_ref"] is not None:
         _require_string(payload, "closeout_bundle_ref", "dispatch_state")
     if "resume_point" in payload and payload["resume_point"] is not None:
@@ -191,6 +203,60 @@ def validate_closeout_bundle_payload(payload: Mapping[str, Any]) -> None:
         _require_string(test_payload, "name", context)
         _require_enum(test_payload, "status", TEST_STATUSES, context)
         _require_string(test_payload, "evidence_ref", context)
+    if "handoff_receipt_ref" in payload and payload["handoff_receipt_ref"] is not None:
+        _require_string(payload, "handoff_receipt_ref", "closeout_bundle")
+
+
+def validate_handoff_receipt_payload(payload: Mapping[str, Any]) -> None:
+    required = (
+        "task_id",
+        "run_id",
+        "receipt_kind",
+        "status",
+        "handoff_required",
+        "reason_codes",
+        "reason_details",
+        "source_runtime",
+        "requested_execution_lane",
+        "selected_lane",
+        "worker_profile",
+        "worker_kind",
+        "route_reason",
+        "status_reason",
+        "worker_execution_attempted",
+        "requested_lane_runner_wired",
+        "selected_profile_runner_wired",
+        "next_action",
+        "source_evidence_refs",
+    )
+    for key in required:
+        _require_present(payload, key, "handoff_receipt")
+
+    _require_string(payload, "task_id", "handoff_receipt")
+    _require_string(payload, "run_id", "handoff_receipt")
+    _require_enum(payload, "receipt_kind", HANDOFF_RECEIPT_KINDS, "handoff_receipt")
+    _require_enum(payload, "status", set(DISPATCH_STATUSES), "handoff_receipt")
+    _require_bool(payload, "handoff_required", "handoff_receipt")
+    _require_string(payload, "source_runtime", "handoff_receipt")
+    _require_enum(payload, "requested_execution_lane", EXECUTION_LANES, "handoff_receipt")
+    _require_enum(payload, "selected_lane", EXECUTION_LANES, "handoff_receipt")
+    _require_string(payload, "worker_profile", "handoff_receipt")
+    _require_string(payload, "worker_kind", "handoff_receipt")
+    _require_string(payload, "route_reason", "handoff_receipt")
+    _require_string(payload, "status_reason", "handoff_receipt")
+    _require_bool(payload, "worker_execution_attempted", "handoff_receipt")
+    _require_bool(payload, "requested_lane_runner_wired", "handoff_receipt")
+    _require_bool(payload, "selected_profile_runner_wired", "handoff_receipt")
+    _require_string(payload, "next_action", "handoff_receipt")
+    _require_string_list(payload, "reason_details", "handoff_receipt", min_items=1)
+    _require_string_list(payload, "source_evidence_refs", "handoff_receipt", min_items=1)
+    reason_codes = _require_string_list(payload, "reason_codes", "handoff_receipt", min_items=1)
+    for index, reason_code in enumerate(reason_codes):
+        if reason_code not in HANDOFF_REASON_CODES:
+            raise ValueError(
+                f"handoff_receipt.reason_codes[{index}] must be one of "
+                f"{sorted(HANDOFF_REASON_CODES)}, got '{reason_code}'"
+            )
 
 
 def validate_review_result_payload(payload: Mapping[str, Any]) -> None:

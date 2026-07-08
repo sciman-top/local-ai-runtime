@@ -56,6 +56,8 @@ def test_host_local_runner_hands_off_explicit_remote_non_gui_profile_before_work
     result_path = runner.run_task(task_path)
     result_payload = json.loads(result_path.read_text(encoding="utf-8"))
     dispatch_payload = json.loads((result_path.parent / "dispatch_state.json").read_text(encoding="utf-8"))
+    handoff_receipt_path = repo_root / result_payload["handoff_receipt_ref"]
+    handoff_receipt_payload = json.loads(handoff_receipt_path.read_text(encoding="utf-8"))
 
     assert worker.call_count == 0
     assert result_payload["status"] == "waiting_handoff"
@@ -70,6 +72,22 @@ def test_host_local_runner_hands_off_explicit_remote_non_gui_profile_before_work
     assert dispatch_payload["worker_profile"] == "remote_non_gui_probe"
     assert dispatch_payload["execution_lane"] == "remote_non_gui"
     assert dispatch_payload["route_reason"] == result_payload["route_reason"]
+    assert dispatch_payload["handoff_receipt_ref"] == result_payload["handoff_receipt_ref"]
+    assert handoff_receipt_payload["receipt_kind"] == "pre_worker_handoff"
+    assert handoff_receipt_payload["status"] == "waiting_handoff"
+    assert handoff_receipt_payload["worker_execution_attempted"] is False
+    assert handoff_receipt_payload["requested_lane_runner_wired"] is False
+    assert handoff_receipt_payload["selected_profile_runner_wired"] is False
+    assert handoff_receipt_payload["requested_execution_lane"] == "remote_non_gui"
+    assert handoff_receipt_payload["selected_lane"] == "remote_non_gui"
+    assert handoff_receipt_payload["worker_profile"] == "remote_non_gui_probe"
+    assert "selected_lane_runner_not_wired" in handoff_receipt_payload["reason_codes"]
+    assert result_payload["handoff_receipt_ref"] in {
+        entry["relative_path"]
+        for entry in json.loads((result_path.parent / "evidence_index.json").read_text(encoding="utf-8"))[
+            "entries"
+        ]
+    }
 
 
 def test_remote_non_gui_promotion_suite_writes_summary_and_preserves_fail_closed_boundary(
@@ -109,10 +127,17 @@ def test_remote_non_gui_promotion_suite_writes_summary_and_preserves_fail_closed
     assert "selected_lane=remote_non_gui" in promoted_outcome.status_reason
     assert "runner_not_wired" in promoted_outcome.status_reason
     assert "requires_network=true" not in promoted_outcome.status_reason
+    assert promoted_outcome.handoff_receipt_ref.endswith("/handoff_receipt.json")
+    assert "selected_lane_runner_not_wired" in promoted_outcome.handoff_reason_codes
+    assert promoted_outcome.worker_execution_attempted is False
 
     summary_payload = json.loads(summary.summary_path.read_text(encoding="utf-8"))
     assert summary_payload["route_decision_count"] == 2
     assert summary_payload["state_counts"] == {"waiting_handoff": 2}
+    summary_outcomes = {item["task_id"]: item for item in summary_payload["task_outcomes"]}
+    assert summary_outcomes["TASK-20260707-remote-non-gui-profile-promotion"][
+        "handoff_reason_codes"
+    ] == promoted_outcome.handoff_reason_codes
 
 
 def test_cli_runs_remote_non_gui_promotion_and_prints_json(

@@ -32,6 +32,9 @@ class RemoteNonGuiPromotionOutcome:
     status_reason: str
     result_json_path: str
     dispatch_state_path: str
+    handoff_receipt_ref: str
+    handoff_reason_codes: list[str]
+    worker_execution_attempted: bool
 
 
 @dataclass(frozen=True)
@@ -253,8 +256,36 @@ def collect_remote_non_gui_promotion_summary(
         result_payload = json.loads(result_json_path.read_text(encoding="utf-8"))
         dispatch_payload = json.loads(dispatch_json_path.read_text(encoding="utf-8"))
         route_reason = str(result_payload.get("route_reason") or "")
+        handoff_receipt_ref = str(result_payload.get("handoff_receipt_ref") or "")
+        handoff_reason_codes: list[str] = []
+        worker_execution_attempted = True
         if route_reason != str(dispatch_payload.get("route_reason") or ""):
             issues.append(f"route_reason drifted between result and dispatch for {task_id}")
+        if not handoff_receipt_ref:
+            issues.append(f"Missing handoff_receipt_ref for remote_non_gui promotion task {task_id}")
+        elif handoff_receipt_ref != str(dispatch_payload.get("handoff_receipt_ref") or ""):
+            issues.append(f"handoff_receipt_ref drifted between result and dispatch for {task_id}")
+        else:
+            handoff_receipt_path = layout.repo_root / handoff_receipt_ref
+            if not handoff_receipt_path.exists():
+                issues.append(
+                    f"Missing handoff_receipt.json for remote_non_gui promotion task {task_id}: {handoff_receipt_path}"
+                )
+            else:
+                handoff_receipt_payload = json.loads(handoff_receipt_path.read_text(encoding="utf-8"))
+                raw_reason_codes = handoff_receipt_payload.get("reason_codes")
+                if isinstance(raw_reason_codes, list):
+                    handoff_reason_codes = [str(item) for item in raw_reason_codes]
+                worker_execution_attempted = bool(
+                    handoff_receipt_payload.get("worker_execution_attempted")
+                )
+                if handoff_receipt_payload.get("status") != "waiting_handoff":
+                    issues.append(
+                        f"Expected {task_id} handoff receipt status waiting_handoff, "
+                        f"found {handoff_receipt_payload.get('status')}."
+                    )
+                if worker_execution_attempted:
+                    issues.append(f"Expected {task_id} handoff receipt to prove worker was not attempted.")
 
         scenario_name, expected_worker_profile, expected_route_reason, expected_status_fragment = expected_scenarios[task_id]
         if state != "waiting_handoff":
@@ -281,6 +312,9 @@ def collect_remote_non_gui_promotion_summary(
                 status_reason=str(state_reason or ""),
                 result_json_path=str(result_json_path.relative_to(layout.repo_root)).replace("\\", "/"),
                 dispatch_state_path=str(dispatch_json_path.relative_to(layout.repo_root)).replace("\\", "/"),
+                handoff_receipt_ref=handoff_receipt_ref,
+                handoff_reason_codes=handoff_reason_codes,
+                worker_execution_attempted=worker_execution_attempted,
             )
         )
 

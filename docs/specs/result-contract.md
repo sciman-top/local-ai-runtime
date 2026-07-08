@@ -12,7 +12,7 @@
 - repo-side 当前已验证 `AgentBridge/tasks/*.md -> host_local -> result.json -> AgentBridge/results/*.md` 的 projection parity 闭环
 - repo-side 当前已允许 planner-gated 任务在 live planner 未接线或只写 planner receipt 时写出 `waiting_handoff` 正式结果
 - repo-side 当前已允许 review-gated 任务在 worker / verification 完成后写出 `needs_review` 正式结果
-- repo-side 当前会在 live planner-sidecar 路径写出 `planner_result.json` receipt，在 review-gated 路径写出 `review_result.json` receipt，并在当前 planner/review/completed outcome 写出 `closeout_bundle.json`；配置 `review_worker_profile = claude_glm_review` 且具备 bounded primary worker output summary 时，`review_result.json` 当前会是 live heterogeneous receipt，否则仍是 repo-side blocking fallback receipt
+- repo-side 当前会在 pre-worker handoff 路径写出 `handoff_receipt.json` receipt，在 live planner-sidecar 路径写出 `planner_result.json` receipt，在 review-gated 路径写出 `review_result.json` receipt，并在当前 planner/review/completed outcome 写出 `closeout_bundle.json`；配置 `review_worker_profile = claude_glm_review` 且具备 bounded primary worker output summary 时，`review_result.json` 当前会是 live heterogeneous receipt，否则仍是 repo-side blocking fallback receipt
 - repo-side 当前已让 `cleanup_status` 反映最小 cleanup truth：repo-root inline task 为 `inline_only`；runtime-managed clean isolated worktree 为 `cleaned`；需要人工保留的 isolated worktree 继续保持 `deferred`；`git worktree remove` 失败时写 `cleanup_failed`
 - 低风险写任务当前可在无额外阻断 review 的情况下直接完成；medium/high/critical 风险、policy surface、或 force-on review 仍会停在 `needs_review`
 - repo-side 当前会把 explicit/default `worker_profile` 选择原因写入 `route_reason`，并在 `max_active_leases` 超额时于 worker 前 fail closed 到 handoff
@@ -45,6 +45,7 @@
 | `cleanup_owner` | string | 由谁负责 cleanup |
 | `status_reason` | string | 结构化状态原因文本 |
 | `dispatch_state_ref` | string | `dispatch_state.json` 相对路径 |
+| `handoff_receipt_ref` | string \| null | `handoff_receipt.json` 相对路径；当前在 pre-worker handoff 路径写入 |
 | `planner_result_ref` | string \| null | `planner_result.json` 相对路径；当前仅在 live planner sidecar materialize 时写入 |
 | `review_result_ref` | string \| null | `review_result.json` 相对路径；当前在 review-gated 路径写入，live heterogeneous receipt 与 repo-side fallback receipt 都通过该字段引用 |
 | `closeout_bundle_ref` | string \| null | `closeout_bundle.json` 相对路径 |
@@ -103,7 +104,7 @@
 
 - `cleanup_status` 只反映 cleanup 结果，不代表 branch 已被删除
 - `cleanup_owner` 当前会在 `result.json` 与 `dispatch_state.json` 双写；更细的 cleanup 经过仍保留在 `worktree_cleanup` 事件
-- `closeout_bundle.json` 当前会把 cleanup truth、review receipt truth 与 repo-side / live boundary 一并收口
+- `closeout_bundle.json` 当前会把 cleanup truth、handoff/review receipt truth 与 repo-side / live boundary 一并收口
 - `deferred` 当前表示 worktree 被显式保留给后续 review / 调试 / 人工 cleanup；具体原因落在 `worktree_cleanup` 事件
 - `cleanup_failed` 当前只用于 cleanup manager 已尝试 remove 但 git remove 命令本身失败的路径
 

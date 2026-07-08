@@ -134,6 +134,9 @@
     },
     "next_action": {
       "type": "string"
+    },
+    "handoff_receipt_ref": {
+      "type": "string"
     }
   }
 }
