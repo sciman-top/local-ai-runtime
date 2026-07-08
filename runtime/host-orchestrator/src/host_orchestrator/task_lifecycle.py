@@ -20,6 +20,7 @@ RESUME_POINTS = {
     "handoff",
     "cleanup",
 }
+REVIEW_DISPOSITIONS = {"approve", "revise", "reject"}
 STALE_CANDIDATE_STATES = {"queued", "running", "input_required", "resumed"}
 LEASE_TTL = timedelta(minutes=30)
 
@@ -150,6 +151,74 @@ def retry_task(
     )
 
 
+def record_review_disposition(
+    layout: RuntimeLayout,
+    *,
+    task_id: str,
+    disposition: str,
+    disposition_at: str,
+    reason: str,
+) -> dict[str, Any]:
+    _require_review_disposition(disposition)
+    record = _load_record(layout, task_id)
+    if record.state != "needs_review":
+        raise ValueError(
+            "review disposition can only be recorded for needs_review tasks, "
+            f"got {record.state!r}"
+        )
+
+    normalized_disposition_at = normalize_timestamp(disposition_at)
+    base_dispatch_updates = {
+        "review_disposition": disposition,
+        "review_disposition_at": normalized_disposition_at,
+    }
+    if disposition == "approve":
+        return _apply_transition(
+            layout=layout,
+            record=record,
+            changed_at=normalized_disposition_at,
+            state="completed",
+            status_reason=reason or "repo-side review disposition approved",
+            next_action="repo-side review disposition approved; live acceptance still pending",
+            event_type="task_review_approved",
+            dispatch_updates=base_dispatch_updates,
+            event_payload={"review_disposition": disposition, "reason": reason},
+            release_active_leases=True,
+        )
+    if disposition == "revise":
+        return _apply_transition(
+            layout=layout,
+            record=record,
+            changed_at=normalized_disposition_at,
+            state="resumed",
+            status_reason=reason or "repo-side review requested revision",
+            next_action="retry_from_worker_execution",
+            event_type="task_review_revision_requested",
+            attempt=record.attempt + 1,
+            dispatch_updates={
+                **base_dispatch_updates,
+                "resume_point": "worker_execution",
+                "retry_rewind": "worker_execution",
+                "heartbeat_at": normalized_disposition_at,
+                "stale_after": _lease_expires_at(normalized_disposition_at),
+            },
+            event_payload={"review_disposition": disposition, "reason": reason},
+            release_active_leases=True,
+        )
+    return _apply_transition(
+        layout=layout,
+        record=record,
+        changed_at=normalized_disposition_at,
+        state="cancelled",
+        status_reason=reason or "repo-side review rejected downstream use",
+        next_action="operator may resume or retry",
+        event_type="task_review_rejected",
+        dispatch_updates=base_dispatch_updates,
+        event_payload={"review_disposition": disposition, "reason": reason},
+        release_active_leases=True,
+    )
+
+
 def _apply_transition(
     *,
     layout: RuntimeLayout,
@@ -260,12 +329,16 @@ def _refresh_closeout_bundle(
 
 
 def _closeout_status_for_state(state: str) -> str:
+    if state == "completed":
+        return "succeeded"
     if state == "resumed":
         return "partial"
     return "blocked"
 
 
 def _not_completed_for_state(state: str) -> list[str]:
+    if state == "completed":
+        return []
     if state == "cancelled":
         return ["run was explicitly cancelled before downstream closeout"]
     if state == "stale":
@@ -285,6 +358,8 @@ def _conflicts_for_cleanup(cleanup_status: str) -> list[str]:
 
 def _still_open_for_state(state: str, next_action: str) -> list[str]:
     still_open = ["live accepted"]
+    if state == "completed":
+        still_open.append("remote/vm runner acceptance if required by the broader queue")
     if state == "cancelled":
         still_open.append("explicit operator restart or closure")
     if state == "stale":
@@ -360,6 +435,11 @@ def _dispatch_state_path(layout: RuntimeLayout, record: RuntimeTaskRecord) -> Pa
 def _require_resume_point(value: str) -> None:
     if value not in RESUME_POINTS:
         raise ValueError(f"resume/retry point must be one of {sorted(RESUME_POINTS)}, got {value!r}")
+
+
+def _require_review_disposition(value: str) -> None:
+    if value not in REVIEW_DISPOSITIONS:
+        raise ValueError(f"review disposition must be one of {sorted(REVIEW_DISPOSITIONS)}, got {value!r}")
 
 
 def normalize_timestamp(value: str) -> str:

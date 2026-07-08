@@ -41,6 +41,7 @@ Local AI Runtime is a Windows-first local orchestration runtime for audited AI c
 - `P3-T05` 的 graded-autonomy runtime ledger 已落地；`result.json` 现在会盖章 `cleanup_owner / status_reason / dispatch_state_ref`
 - `P3-T06` 的 repo-side lifecycle ops 已落地；`task_lifecycle.py` 与 CLI 现在可显式 materialize `stale / cancelled / resumed`，`retry` 通过 `attempt + retry_rewind` 收口
 - `P4-T04` 的 repo-side structured receipts 已落地；live planner-sidecar 路径现在会写 `planner_result.json`，review-gated 路径会写 `review_result.json`，当前 runtime outcome 会写 `closeout_bundle.json`；配置 `review_worker_profile = claude_glm_review` 的 host_local review path 当前可 materialize bounded live heterogeneous review receipt，并会收到 runtime status、verification gates、changed files、bounded patch summary 与 primary worker output summary
+- `P4` follow-on 的 review disposition / rework loop 已落地；`needs_review` 任务可记录 `approve / revise / reject`，其中 `revise` 会进入 `worker_execution` rework，`approve` 仍不等于 `live accepted`
 - `P5-T01` 的 repo-side `leases / route / quota` 收口已落地；explicit/default `worker_profile` 现在会 materialize `route_reason`，selected profile 的 `max_active_leases` 超额时会在 worker 前 handoff
 - `P5-T02` 的 deterministic multi-worker simulation 已落地；当前可复放 `retry / route / quota / review-handoff` summary，但这仍不等于 live 多 worker scheduler
 - `P5-T03` 的 `remote_non_gui` promotion evidence 已落地；repo-owned `remote_non_gui_probe` 现在可被显式选中，但 `host_local` 只会 fail closed 到 handoff，并额外留下机器可读 `handoff_receipt.json` / `handoff_receipt_ref`，不会伪装成 remote runner 已执行

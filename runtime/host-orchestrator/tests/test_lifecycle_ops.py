@@ -11,6 +11,7 @@ from host_orchestrator.paths import RuntimeLayout
 from host_orchestrator.task_lifecycle import (
     cancel_task,
     reconcile_stale_tasks,
+    record_review_disposition,
     resume_task,
     retry_task,
 )
@@ -248,6 +249,141 @@ def test_cancel_resume_and_retry_keep_dispatch_state_and_runtime_task_in_sync(tm
     ]
 
 
+def test_review_disposition_closes_or_requeues_needs_review_tasks(tmp_path: Path) -> None:
+    _, layout = _seed_repo(tmp_path)
+
+    approve_task_id = "TASK-20260708-review-approve"
+    approve_dispatch_path = _seed_dispatch_and_runtime_task(
+        layout=layout,
+        task_id=approve_task_id,
+        run_id="review-approve-run",
+        state="needs_review",
+        next_action="heterogeneous review required before downstream use",
+        status_reason="risk_level=medium",
+    )
+    db.acquire_lease(
+        layout.control_plane_db,
+        task_id=approve_task_id,
+        worker_id="host-local-default",
+        acquired_at="2026-07-08T01:00:00Z",
+        expires_at="2026-07-08T01:30:00Z",
+        lease_token="lease-review-approve",
+    )
+
+    approve_payload = record_review_disposition(
+        layout,
+        task_id=approve_task_id,
+        disposition="approve",
+        disposition_at="2026-07-08T01:10:00Z",
+        reason="operator approved repo-side review receipt",
+    )
+
+    assert approve_payload["status"] == "completed"
+    assert approve_payload["review_disposition"] == "approve"
+    assert approve_payload["review_disposition_at"] == "2026-07-08T01:10:00Z"
+    assert approve_payload["next_action"] == "repo-side review disposition approved; live acceptance still pending"
+    assert json.loads(approve_dispatch_path.read_text(encoding="utf-8"))["status"] == "completed"
+
+    revise_task_id = "TASK-20260708-review-revise"
+    revise_dispatch_path = _seed_dispatch_and_runtime_task(
+        layout=layout,
+        task_id=revise_task_id,
+        run_id="review-revise-run",
+        state="needs_review",
+        attempt=2,
+        next_action="heterogeneous review required before downstream use",
+        status_reason="review requested changes",
+    )
+    revise_payload = record_review_disposition(
+        layout,
+        task_id=revise_task_id,
+        disposition="revise",
+        disposition_at="2026-07-08T01:20:00Z",
+        reason="review requested a worker rework pass",
+    )
+
+    assert revise_payload["status"] == "resumed"
+    assert revise_payload["attempt"] == 3
+    assert revise_payload["review_disposition"] == "revise"
+    assert revise_payload["resume_point"] == "worker_execution"
+    assert revise_payload["retry_rewind"] == "worker_execution"
+    assert revise_payload["next_action"] == "retry_from_worker_execution"
+    assert json.loads(revise_dispatch_path.read_text(encoding="utf-8"))["attempt"] == 3
+
+    reject_task_id = "TASK-20260708-review-reject"
+    reject_dispatch_path = _seed_dispatch_and_runtime_task(
+        layout=layout,
+        task_id=reject_task_id,
+        run_id="review-reject-run",
+        state="needs_review",
+        next_action="heterogeneous review required before downstream use",
+        status_reason="review found blocking issue",
+    )
+    reject_payload = record_review_disposition(
+        layout,
+        task_id=reject_task_id,
+        disposition="reject",
+        disposition_at="2026-07-08T01:30:00Z",
+        reason="review rejected downstream use",
+    )
+
+    assert reject_payload["status"] == "cancelled"
+    assert reject_payload["review_disposition"] == "reject"
+    assert reject_payload["next_action"] == "operator may resume or retry"
+    assert json.loads(reject_dispatch_path.read_text(encoding="utf-8"))["status"] == "cancelled"
+
+    with sqlite3.connect(layout.control_plane_db) as connection:
+        runtime_rows = connection.execute(
+            "SELECT task_id, state, attempt, next_action FROM runtime_tasks ORDER BY task_id"
+        ).fetchall()
+        event_types = [
+            event_type
+            for (event_type,) in connection.execute(
+                "SELECT event_type FROM events ORDER BY created_at"
+            ).fetchall()
+        ]
+        assert connection.execute(
+            "SELECT COUNT(*) FROM leases WHERE task_id = ?",
+            (approve_task_id,),
+        ).fetchone() == (0,)
+
+    assert runtime_rows == [
+        (
+            approve_task_id,
+            "completed",
+            1,
+            "repo-side review disposition approved; live acceptance still pending",
+        ),
+        (reject_task_id, "cancelled", 1, "operator may resume or retry"),
+        (revise_task_id, "resumed", 3, "retry_from_worker_execution"),
+    ]
+    assert event_types == [
+        "task_review_approved",
+        "task_review_revision_requested",
+        "task_review_rejected",
+    ]
+
+
+def test_review_disposition_requires_needs_review_state(tmp_path: Path) -> None:
+    _, layout = _seed_repo(tmp_path)
+    task_id = "TASK-20260708-review-disposition-invalid"
+    _seed_dispatch_and_runtime_task(
+        layout=layout,
+        task_id=task_id,
+        run_id="review-invalid-run",
+        state="running",
+    )
+
+    with pytest.raises(ValueError, match="can only be recorded for needs_review"):
+        record_review_disposition(
+            layout,
+            task_id=task_id,
+            disposition="approve",
+            disposition_at="2026-07-08T01:40:00Z",
+            reason="invalid state",
+        )
+
+
 def test_cli_cancel_task_updates_runtime_state(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
     repo_root, layout = _seed_repo(tmp_path)
     task_id = "TASK-20260707-cli-cancel"
@@ -279,3 +415,43 @@ def test_cli_cancel_task_updates_runtime_state(tmp_path: Path, capsys: pytest.Ca
     assert payload["status_reason"] == "cli cancel request"
     dispatch_payload = json.loads(dispatch_state_path.read_text(encoding="utf-8"))
     assert dispatch_payload["status"] == "cancelled"
+
+
+def test_cli_record_review_disposition_requeues_for_revision(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    repo_root, layout = _seed_repo(tmp_path)
+    task_id = "TASK-20260708-cli-review-disposition"
+    dispatch_state_path = _seed_dispatch_and_runtime_task(
+        layout=layout,
+        task_id=task_id,
+        run_id="cli-review-disposition-run",
+        state="needs_review",
+        next_action="heterogeneous review required before downstream use",
+    )
+
+    exit_code = cli_main(
+        [
+            "--repo-root",
+            str(repo_root),
+            "--record-review-disposition",
+            task_id,
+            "--review-disposition",
+            "revise",
+            "--at",
+            "2026-07-08T02:00:00Z",
+            "--reason",
+            "cli reviewer requested rework",
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+
+    assert exit_code == 0
+    assert payload["status"] == "resumed"
+    assert payload["attempt"] == 2
+    assert payload["review_disposition"] == "revise"
+    assert payload["next_action"] == "retry_from_worker_execution"
+    dispatch_payload = json.loads(dispatch_state_path.read_text(encoding="utf-8"))
+    assert dispatch_payload["retry_rewind"] == "worker_execution"

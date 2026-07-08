@@ -148,6 +148,16 @@
         "cleanup"
       ]
     },
+    "review_disposition": {
+      "enum": [
+        "approve",
+        "revise",
+        "reject"
+      ]
+    },
+    "review_disposition_at": {
+      "type": "string"
+    },
     "worker_profile": {
       "type": "string"
     },

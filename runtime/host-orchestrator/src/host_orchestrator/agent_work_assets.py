@@ -20,6 +20,7 @@ PLANNER_KINDS = {"codex_sdk", "gpt54_direct", "repo_policy_gate"}
 PLANNER_MODES = {"advisory", "blocking"}
 PLANNER_DISPOSITIONS = {"proceed", "handoff"}
 RECOMMENDED_ACTIONS = {"approve", "revise", "reject"}
+REVIEW_DISPOSITIONS = {"approve", "revise", "reject"}
 HANDOFF_RECEIPT_KINDS = {"pre_worker_handoff"}
 HANDOFF_REASON_CODES = {
     "execution_lane_profile_mismatch",
@@ -154,6 +155,10 @@ def validate_dispatch_state_payload(payload: Mapping[str, Any]) -> None:
         _require_enum(payload, "resume_point", RESUME_POINTS, "dispatch_state")
     if "retry_rewind" in payload and payload["retry_rewind"] is not None:
         _require_enum(payload, "retry_rewind", RESUME_POINTS, "dispatch_state")
+    if "review_disposition" in payload and payload["review_disposition"] is not None:
+        _require_enum(payload, "review_disposition", REVIEW_DISPOSITIONS, "dispatch_state")
+    if "review_disposition_at" in payload and payload["review_disposition_at"] is not None:
+        _require_string(payload, "review_disposition_at", "dispatch_state")
 
 
 def validate_closeout_bundle_payload(payload: Mapping[str, Any]) -> None:

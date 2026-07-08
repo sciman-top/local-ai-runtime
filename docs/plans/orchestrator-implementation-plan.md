@@ -167,7 +167,7 @@
 - `P6-T03` vm_gui conditional promotion evidence：completed（repo-owned `vm_gui_probe` profile、GUI-only handoff、以及显式 vm lane fail-closed summary 已收口）
 - `P5-T03` follow-on handoff receipt hardening：completed（pre-worker handoff 现在写 `handoff_receipt.json`，remote_non_gui promotion summary 会读取 `handoff_reason_codes / worker_execution_attempted`）
 - `P5-T04` remote_non_gui runner wiring readiness：completed（`runner_wired=false` 继续 pre-worker handoff；临时 `runner_wired=true` 测试配置必须绑定 repo-relative、schema-valid 的 `runner_acceptance_ref` 后才可调用注入 runner；候选 acceptance 可先通过 `host-orchestrator --validate-runner-acceptance` 对照 repo-owned profile 校验；runner 失败保持 failed dispatch 且不写成功 result）
-- next: `真实 remote host runner acceptance + review disposition / rework loop hardening`（diff-aware bounded live heterogeneous review context 已落地；branch deletion 仍不自动化；真实 GUI-only workload acceptance 仍未开始）
+- next: `真实 remote host runner acceptance`（diff-aware bounded live heterogeneous review context 与 repo-side review disposition / rework loop 已落地；branch deletion 仍不自动化；真实 GUI-only workload acceptance 仍未开始）
 
 其中 `planner/review` 继续保留在 repo `Phase 4`，不并回容器或资源 phase。
 

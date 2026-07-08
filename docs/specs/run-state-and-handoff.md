@@ -85,6 +85,7 @@ experimental `runtime_v2` 额外固定：
 - planner-gated 路径当前在 live planner sidecar 成功 materialize 时，还会额外写出 `planner_result.json`，并继续停在 `waiting_handoff`
 - review-gated 路径当前还会额外写出 `review_result.json`
 - 当前 planner/review/completed runtime outcome 还会额外写出 `closeout_bundle.json`
+- review disposition 路径当前会在 `dispatch_state.json` 中记录 `review_disposition / review_disposition_at`；`revise` 进入 `retry_from_worker_execution`，`approve` 只关闭 repo-side review hold，不代表 live accepted
 - explicit/default `worker_profile` 选择原因当前会落到 `result.json`、`dispatch_state.json`、以及 `route_decisions`
 - 若选中 profile 的 active lease 数超过 `max_active_leases`，当前会在 worker 前 handoff，并仍保留同等最小工件集合
 - 若选中 profile 的 `lane != host_local` 且 `runner_wired != true`，当前会在 worker 前 fail closed 到 handoff，并在 `handoff_receipt.json.reason_codes` 中 materialize `selected_lane_runner_not_wired`

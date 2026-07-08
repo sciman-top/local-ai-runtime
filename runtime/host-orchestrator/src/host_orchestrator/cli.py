@@ -28,9 +28,11 @@ from host_orchestrator.runtime_v2.migration import (
 from host_orchestrator.runtime_v2.evaluation import evaluate_regression_fixtures
 from host_orchestrator.runtime_v2.runner import RuntimeV2Config, RuntimeV2Runner
 from host_orchestrator.task_lifecycle import (
+    REVIEW_DISPOSITIONS,
     RESUME_POINTS,
     cancel_task,
     normalize_timestamp,
+    record_review_disposition,
     reconcile_stale_tasks,
     resume_task,
     retry_task,
@@ -167,6 +169,11 @@ def build_parser() -> argparse.ArgumentParser:
         default=None,
         help="Increment attempt and mark a runtime task as resumed from a retry rewind point.",
     )
+    lifecycle_group.add_argument(
+        "--record-review-disposition",
+        default=None,
+        help="Record an operator/reviewer disposition for a needs_review runtime task without claiming live acceptance.",
+    )
     lifecycle_v2_group = parser.add_mutually_exclusive_group()
     lifecycle_v2_group.add_argument(
         "--resume-task-v2",
@@ -251,6 +258,12 @@ def build_parser() -> argparse.ArgumentParser:
         choices=sorted(RESUME_POINTS),
         default=None,
         help="Retry rewind boundary for --retry-task.",
+    )
+    parser.add_argument(
+        "--review-disposition",
+        choices=sorted(REVIEW_DISPOSITIONS),
+        default=None,
+        help="Disposition for --record-review-disposition.",
     )
     return parser
 
@@ -625,6 +638,19 @@ def main(argv: list[str] | None = None) -> int:
             retried_at=changed_at,
             retry_rewind=args.retry_rewind,
             reason=args.reason or "operator requested a retry",
+        )
+        print(json.dumps(payload, indent=2, ensure_ascii=False))
+        return 0
+
+    if args.record_review_disposition is not None:
+        if args.review_disposition is None:
+            parser.error("--record-review-disposition requires --review-disposition")
+        payload = record_review_disposition(
+            layout,
+            task_id=args.record_review_disposition,
+            disposition=args.review_disposition,
+            disposition_at=changed_at,
+            reason=args.reason or f"operator recorded review disposition: {args.review_disposition}",
         )
         print(json.dumps(payload, indent=2, ensure_ascii=False))
         return 0

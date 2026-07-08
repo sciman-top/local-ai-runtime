@@ -73,6 +73,7 @@
 - [20260708 Runner Acceptance CLI Validation](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260708-runner-acceptance-cli-validation.md)
 - [20260708 Diff-Aware Review Context](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260708-diff-aware-review-context.md)
 - [20260708 Review Sidecar Diff Context Coverage](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260708-review-sidecar-diff-context-coverage.md)
+- [20260708 Review Disposition Rework Loop](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260708-review-disposition-rework-loop.md)
 
 当前最新结论：
 
@@ -96,6 +97,7 @@
 - `P3-T06` 的 repo-side lifecycle ops 已落地：`task_lifecycle.py` 与 CLI 现在可显式 materialize `stale / cancelled / resumed`，`retry` 通过 `attempt + retry_rewind` 收口
 - `P4-T04` 的 repo-side structured receipts 已落地：live planner-sidecar 路径现在会写 `planner_result.json`，review-gated 路径会写 `review_result.json`，当前 runtime outcome 会写 `closeout_bundle.json`，并由 `result.json / dispatch_state.json / evidence_index.json` 串起引用
 - bounded live heterogeneous review sidecar receipt 已落地并完成 diff-aware context hardening：配置 `review_worker_profile = claude_glm_review` 的 host_local review path 当前会 materialize live `review_result.json`，并把 runtime status、verification gates、changed files、bounded patch summary 与 primary worker output summary 一起送入 reviewer；缺少 bounded worker output summary 或 sidecar 失败时仍 fail closed 回 repo-side blocking receipt
+- review disposition / rework loop 已落地：`host-orchestrator --record-review-disposition <task_id> --review-disposition approve|revise|reject` 只对 `needs_review` 任务生效；`approve` 关闭 repo-side review hold 但不声明 live accepted，`revise` 通过 `attempt + retry_rewind=worker_execution` 进入 rework，`reject` 进入 cancelled
 - 一套 repo-owned 的 `主控 + 子代理 + worktree` 操作资产已落盘，可直接复用 master / explorer / worker / reviewer prompt 与 manifest / dispatch_state / closeout bundle 模板
 - operator 侧协作资产现已具备 repo-owned 自检：pytest 会校验 manifest、dispatch_state、review_result、closeout bundle 示例与 schema 关键字段不漂移
 - 官方研究与社区研究都已落成 repo-owned 证据：结论一致指向“保留本仓 canonical contract，并优先补 path guard / durable ledger / closeout receipt，而不是继续加长 prompt”
@@ -132,5 +134,5 @@
 - non-host-local runner acceptance-ref guard 已落地：non-host-local profile 若设置 `runner_wired=true` 但缺少 repo-relative 且存在的 `runner_acceptance_ref`，runtime config loading 会 fail closed，避免仅靠布尔开关伪装真实 remote/vm runner acceptance
 - non-host-local runner acceptance schema 已落地：`runner_acceptance_ref` 现在必须是 `non_host_local_runner_acceptance.v1` JSON，且 `worker_profile / lane / runner_kind / evidence_refs` 通过 runtime 与 template validator 校验；该留痕不执行真实 remote/vm runner，也不声明 live accepted
 - runner acceptance CLI validation 已落地：候选 `runner_acceptance_ref` 可先通过 `host-orchestrator --validate-runner-acceptance` 对照 repo-owned profile 校验，输出固定声明 `validation_only=true / runner_executed=false`；该留痕不执行真实 remote/vm runner，也不声明 live accepted
-- 当前预期 next action 仍是粗粒度的 `promote_phase1_execution`；repo-side planner/review/path-guard/worktree-manager/cleanup-manager/runtime-ledger/lifecycle/receipt、`P5-T01` route/quota、`P5-T02` deterministic multi-worker simulation、`P5-T03` remote_non_gui promotion evidence、`P5-T04` remote_non_gui runner wiring readiness、`P6-T01` / `P6-T02` Hermes parity / historical snapshot mapping、`P6-T03` vm_gui conditional promotion evidence、repo-owned `host_local` task entrypoint / worker factory、diff-aware bounded live heterogeneous review sidecar receipt closeout、以及 `E-T01` 字段名决策 已完成，下一 open set 收窄到真实 remote host runner acceptance 与 review disposition / rework loop hardening
+- 当前预期 next action 仍是粗粒度的 `promote_phase1_execution`；repo-side planner/review/path-guard/worktree-manager/cleanup-manager/runtime-ledger/lifecycle/receipt、`P5-T01` route/quota、`P5-T02` deterministic multi-worker simulation、`P5-T03` remote_non_gui promotion evidence、`P5-T04` remote_non_gui runner wiring readiness、`P6-T01` / `P6-T02` Hermes parity / historical snapshot mapping、`P6-T03` vm_gui conditional promotion evidence、repo-owned `host_local` task entrypoint / worker factory、diff-aware bounded live heterogeneous review sidecar receipt closeout、review disposition / rework loop、以及 `E-T01` 字段名决策 已完成，下一 open set 收窄到真实 remote host runner acceptance
 - 参考架当前不做大改：`registry` 已补成 conditional 候选；默认刷新集合不变；`skills / hermes-agent-self-evolution / openclaw` 继续保持 archive-on-demand，并作为未来本机瘦身时的第一批本地删除候选

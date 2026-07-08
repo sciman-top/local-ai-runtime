@@ -14,7 +14,7 @@
 - repo-side 当前已允许 review-gated 任务在 worker / verification 完成后写出 `needs_review` 正式结果
 - repo-side 当前会在 pre-worker handoff 路径写出 `handoff_receipt.json` receipt，在 live planner-sidecar 路径写出 `planner_result.json` receipt，在 review-gated 路径写出 `review_result.json` receipt，并在当前 planner/review/completed outcome 写出 `closeout_bundle.json`；配置 `review_worker_profile = claude_glm_review` 且具备 bounded primary worker output summary 时，`review_result.json` 当前会是 live heterogeneous receipt，否则仍是 repo-side blocking fallback receipt
 - repo-side 当前已让 `cleanup_status` 反映最小 cleanup truth：repo-root inline task 为 `inline_only`；runtime-managed clean isolated worktree 为 `cleaned`；需要人工保留的 isolated worktree 继续保持 `deferred`；`git worktree remove` 失败时写 `cleanup_failed`
-- 低风险写任务当前可在无额外阻断 review 的情况下直接完成；medium/high/critical 风险、policy surface、或 force-on review 仍会停在 `needs_review`
+- 低风险写任务当前可在无额外阻断 review 的情况下直接完成；medium/high/critical 风险、policy surface、或 force-on review 仍会停在 `needs_review`，随后只能通过 repo-side `review_disposition` 入口记录 approve / revise / reject
 - repo-side 当前会把 explicit/default `worker_profile` 选择原因写入 `route_reason`，并在 `max_active_leases` 超额时于 worker 前 fail closed 到 handoff
 - 当前代码层字段名仍是 `lane`
 - 当前字段名仍是 `compatibility_projection_ref`
@@ -98,7 +98,7 @@
 - `stale`
 - `resumed`
 
-`queued / input_required` 当前仍先保留为 schema 预留状态；`retry` 当前通过 `attempt + retry_rewind` 复用 `resumed` 路径留痕；这些都不能写成“已经 live accepted / multi-worker green”。
+`queued / input_required` 当前仍先保留为 schema 预留状态；`retry` 当前通过 `attempt + retry_rewind` 复用 `resumed` 路径留痕；`review_disposition=revise` 也复用该 rework 路径；这些都不能写成“已经 live accepted / multi-worker green”。
 
 ## Cleanup Truth
 
@@ -112,7 +112,7 @@
 
 - explicit `cancel / resume / retry / stale reconcile` 当前会同步刷新 `dispatch_state.json` 与 `runtime_tasks`
 - 若当前 run 已经存在 `result.json` 与 `closeout_bundle.json`，这些 lifecycle ops 还会更新 follow-up `next_action / status_reason / closeout` 口径
-- 这些 follow-up 只表达 repo-side 调度真相，不会把原始 `result.status` 改写成“live accepted”
+- 这些 follow-up 只表达 repo-side 调度真相，不会把原始 `result.status` 改写成“live accepted”；`review_disposition=approve` 也只关闭 repo-side review hold
 
 ## worker_kind
 

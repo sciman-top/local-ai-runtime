@@ -195,6 +195,7 @@
     - 2026-07-07 已完成 repo-side structured receipts；live planner-sidecar 路径现在会落 `planner_result.json`，review-gated 路径会落 `review_result.json`，当前 planner/review/completed runtime outcome 都会落 `closeout_bundle.json`，并由 `result.json / dispatch_state.json / evidence_index.json` 串起引用
     - 2026-07-07 follow-on closeout：配置 `review_worker_profile = claude_glm_review` 的 host_local review path 当前可 materialize bounded live heterogeneous review receipt；`claude_glm` primary task execution 与真实 remote/vm runner 仍未接线
     - 2026-07-08 follow-on hardening：host_local live review prompt 现在会同时携带 runtime status、verification gates、changed files、bounded patch summary 与 primary worker output summary；正式结果仍停在 `needs_review`
+    - 2026-07-08 follow-on disposition：`needs_review` 任务现在可通过 `--record-review-disposition approve|revise|reject` 记录 repo-side disposition；`revise` 会进入 `attempt + retry_rewind=worker_execution` rework loop，`approve` 不等于 live accepted
 
 ## Phase 5
 
