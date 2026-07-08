@@ -178,10 +178,10 @@
 - `WP3`：dependency block、ready dependency-blocked auto-continue、atomic admission、attempt-centric resume/retry 已落第一批实现
 - `WP4`：review receipt / bounded sidecar hook / pre-worker policy guard 已落第一批实现
 - `WP5`：attempt-level `regression_fixture.json` 已扩展到 completed / reviewing / gate-retryable final-result、dependency-blocked、admission-paused、pre-worker policy-guard blocked、worker-failure retryable / failed、retry queued 核心状态路径；最小 `--eval-regression-fixtures-v2` 已写出 repo-side summary
-- `WP6`：第一批 cutover drill / fail-closed guard、cutover review / manual approval gate、非破坏 rollback restore drill、operator approval evidence gate、默认未批准的 operator approval template 生成入口、以及 approval hash / sanitized audit 留痕已落地；`--cutover-v2` 在 drill 未 ready 时不修改 `runtime.active_version`，drill ready 后仍默认返回 `manual_approval_required`；`--cutover-rollback-drill-v2` 验证恢复路径但不执行 restore；`--confirm-cutover-v2` 还必须绑定通过校验的 `--cutover-approval-ref` 才进入默认入口切换路径；当前已有一条真实 `local_maint` v2 live coding probe completed，eval summary `ok=true`，cutover drill `ready=true / cutover_performed=false`
+- `WP6`：第一批 cutover drill / fail-closed guard、cutover review / manual approval gate、非破坏 rollback restore drill、archive restore acceptance、operator approval evidence gate、默认未批准的 operator approval template 生成入口、以及 approval hash / sanitized audit 留痕已落地；`--cutover-v2` 在 drill 未 ready 时不修改 `runtime.active_version`，drill ready 后仍默认返回 `manual_approval_required`；`--cutover-rollback-drill-v2` 会验证 v1 DB / v1 runs 源并写出 `archive-restore-acceptance.json`，但不执行 restore；`--confirm-cutover-v2` 还必须绑定通过校验的 `--cutover-approval-ref` 才进入默认入口切换路径；当前已有一条真实 `local_maint` v2 live coding probe completed，eval summary `ok=true`，cutover drill `ready=true / cutover_performed=false`
 - 文档/spec/verifier 已开始同步吸收 `Kernel V2`，但 `planning-status.current_active_queue` 仍保持 `PHASE-1-VERTICAL-SLICE`
 
 ### 下一步
 
-- 下一步应在不改默认入口的前提下继续收紧 archive restore acceptance 条件，或补充真实人工审批流程的外部操作 runbook
+- 下一步应在不改默认入口的前提下补充真实人工审批 / cutover / restore 操作 runbook，或继续收紧 confirmed cutover 前的人工验收证据
 - `WP6` 仍必须保持 default v1，直到 cutover 条件、门禁、人工边界与恢复路径真实满足

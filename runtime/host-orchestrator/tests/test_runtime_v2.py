@@ -94,6 +94,15 @@ def _init_git_repo(repo_root: Path) -> None:
     subprocess.run(["git", "commit", "-m", "seed runtime v2 test repo"], cwd=repo_root, check=True, capture_output=True, text=True)
 
 
+def _seed_legacy_v1_artifacts(layout: RuntimeLayout) -> None:
+    legacy_db = layout.control_plane_db
+    legacy_db.parent.mkdir(parents=True, exist_ok=True)
+    legacy_db.write_text("legacy-db-stub\n", encoding="utf-8")
+    legacy_runs_root = layout.runs_root / "legacy-run" / "TASK-LEGACY"
+    legacy_runs_root.mkdir(parents=True, exist_ok=True)
+    (legacy_runs_root / "result.json").write_text("{\"status\": \"completed\"}\n", encoding="utf-8")
+
+
 class _StaticWorker:
     def __init__(self, final_response: str = "RUNTIME_V2_OK") -> None:
         self.final_response = final_response
@@ -1059,9 +1068,7 @@ def test_runtime_v2_cli_cutover_requires_confirmation_and_operator_approval(
         worker=_StaticWorker("confirmed cutover worker output"),
     )
     runner.run_task(task_path)
-    legacy_db = layout.control_plane_db
-    legacy_db.parent.mkdir(parents=True, exist_ok=True)
-    legacy_db.write_text("legacy-db-stub\n", encoding="utf-8")
+    _seed_legacy_v1_artifacts(layout)
 
     exit_code = cli_main(
         [
@@ -1150,6 +1157,7 @@ def test_runtime_v2_cutover_approval_template_is_non_destructive_and_editable(
         worker=_StaticWorker("approval template worker output"),
     )
     runner.run_task(task_path)
+    _seed_legacy_v1_artifacts(layout)
     template_path = repo_root / ".ai" / "runs-v2" / "_cutover" / "operator-approval.template.json"
 
     exit_code = cli_main(
@@ -1247,6 +1255,7 @@ def test_runtime_v2_cutover_rollback_drill_validates_restore_path_without_cutove
         worker=_StaticWorker("rollback drill worker output"),
     )
     runner.run_task(task_path)
+    _seed_legacy_v1_artifacts(layout)
 
     summary = run_cutover_rollback_drill(
         layout=layout.with_runtime_v2_paths(
@@ -1264,10 +1273,12 @@ def test_runtime_v2_cutover_rollback_drill_validates_restore_path_without_cutove
     assert summary["cutover_performed"] is False
     assert summary["active_version"] == "v1"
     assert summary["review_summary_path"].endswith("cutover-review-summary.json")
+    assert summary["archive_restore_acceptance_path"].endswith("archive-restore-acceptance.json")
     assert summary_payload["rollback_plan"]["restore_active_version"] == "v1"
     assert check_statuses["review_manual_approval_required"] == "pass"
     assert check_statuses["restore_config_target"] == "pass"
     assert check_statuses["archive_root_available"] == "pass"
+    assert check_statuses["archive_restore_acceptance"] == "pass"
     assert check_statuses["default_entrypoint_currently_v1"] == "pass"
 
     exit_code = cli_main(["--repo-root", str(repo_root), "--cutover-rollback-drill-v2"])
@@ -1281,6 +1292,45 @@ def test_runtime_v2_cutover_rollback_drill_validates_restore_path_without_cutove
     assert payload["rollback_ready"] is True
     assert payload["restore_performed"] is False
     assert orchestrator_payload["runtime"]["active_version"] == "v1"
+
+
+def test_runtime_v2_cutover_rollback_drill_blocks_when_restore_sources_are_missing(
+    tmp_path: Path,
+) -> None:
+    repo_root, layout = _seed_repo(tmp_path)
+    task_path = _write_v2_task(repo_root, "TASK-RUNTIME-V2-RESTORE-SOURCES-MISSING")
+    runner = RuntimeV2Runner(
+        RuntimeV2Config(
+            workspace_root=repo_root,
+            layout=layout,
+            run_id="runtime-v2-restore-sources-missing",
+        ),
+        worker=_StaticWorker("restore source worker output"),
+    )
+    runner.run_task(task_path)
+
+    summary = run_cutover_rollback_drill(
+        layout=layout.with_runtime_v2_paths(
+            control_plane_db_v2=".ai/state/control-plane-v2.db",
+            artifact_root_v2=".ai/runs-v2",
+        )
+    )
+    acceptance_payload = json.loads(
+        Path(summary["archive_restore_acceptance_path"]).read_text(encoding="utf-8")
+    )
+    check_statuses = {check["name"]: check["status"] for check in summary["checks"]}
+
+    assert summary["status"] == "blocked"
+    assert summary["rollback_ready"] is False
+    assert summary["restore_performed"] is False
+    assert "archive_restore_acceptance" in summary["blocking_reasons"]
+    assert check_statuses["archive_restore_acceptance"] == "fail"
+    assert acceptance_payload["schema_version"] == "runtime_v2_archive_restore_acceptance.v1"
+    assert acceptance_payload["status"] == "blocked"
+    assert acceptance_payload["restore_performed"] is False
+    assert {"legacy_db_source_exists", "legacy_runs_source_exists"} <= set(
+        acceptance_payload["blocking_reasons"]
+    )
 
 
 def test_runtime_v2_cli_run_resume_retry_and_cutover(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]) -> None:
@@ -1364,12 +1414,7 @@ def test_runtime_v2_cli_run_resume_retry_and_cutover(tmp_path: Path, monkeypatch
     migration_manifest = write_migration_manifest(layout=layout)
     assert migration_manifest["status"] == "legacy_archived"
 
-    legacy_db = layout.control_plane_db
-    legacy_db.parent.mkdir(parents=True, exist_ok=True)
-    legacy_db.write_text("legacy-db-stub\n", encoding="utf-8")
-    legacy_runs_root = layout.runs_root / "legacy-run" / "TASK-LEGACY"
-    legacy_runs_root.mkdir(parents=True, exist_ok=True)
-    (legacy_runs_root / "result.json").write_text("{\"status\": \"completed\"}\n", encoding="utf-8")
+    _seed_legacy_v1_artifacts(layout)
 
     cutover_payload = perform_cutover(layout=layout)
     assert cutover_payload["active_version"] == "v2"

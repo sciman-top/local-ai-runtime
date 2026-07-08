@@ -142,6 +142,12 @@ def run_cutover_rollback_drill(*, layout: RuntimeLayout) -> dict[str, object]:
     except OSError as exc:
         archive_root_available = False
         archive_root_error = str(exc)
+    archive_restore_acceptance = _write_archive_restore_acceptance(
+        layout=layout,
+        rollback_plan=rollback_plan,
+        archive_root_available=archive_root_available,
+        archive_root_error=archive_root_error,
+    )
     checks = [
         _check(
             name="review_manual_approval_required",
@@ -161,6 +167,13 @@ def run_cutover_rollback_drill(*, layout: RuntimeLayout) -> dict[str, object]:
             detail="archive root must be available before a confirmed cutover can be considered recoverable",
             archive_root=str(layout.archive_root),
             error=archive_root_error,
+        ),
+        _check(
+            name="archive_restore_acceptance",
+            passed=archive_restore_acceptance.get("accepted") is True,
+            detail="rollback drill requires a separate archive restore acceptance summary before confirmed cutover",
+            summary_path=str(archive_restore_acceptance.get("summary_path") or ""),
+            blocking_reasons=list(archive_restore_acceptance.get("blocking_reasons") or []),
         ),
         _check(
             name="default_entrypoint_currently_v1",
@@ -186,8 +199,73 @@ def run_cutover_rollback_drill(*, layout: RuntimeLayout) -> dict[str, object]:
         "checks": checks,
         "blocking_reasons": blocking_reasons,
         "review_summary_path": str(review_payload.get("summary_path") or ""),
+        "archive_restore_acceptance_path": str(archive_restore_acceptance.get("summary_path") or ""),
         "summary_path": str(summary_path),
         "rollback_plan": rollback_plan,
+    }
+    summary_path.parent.mkdir(parents=True, exist_ok=True)
+    summary_path.write_text(json.dumps(payload, indent=2, ensure_ascii=True), encoding="utf-8")
+    return payload
+
+
+def _write_archive_restore_acceptance(
+    *,
+    layout: RuntimeLayout,
+    rollback_plan: dict[str, object],
+    archive_root_available: bool,
+    archive_root_error: str,
+) -> dict[str, object]:
+    legacy_db_source_exists = layout.control_plane_db.is_file()
+    legacy_runs_source_exists = layout.runs_root.is_dir()
+    checks = [
+        _check(
+            name="archive_root_available",
+            passed=archive_root_available,
+            detail="archive root must be available for v1 restore artifacts",
+            archive_root=str(layout.archive_root),
+            error=archive_root_error,
+        ),
+        _check(
+            name="legacy_db_source_exists",
+            passed=legacy_db_source_exists,
+            detail="v1 control-plane DB source must exist before confirmed cutover",
+            source_path=str(layout.control_plane_db),
+        ),
+        _check(
+            name="legacy_runs_source_exists",
+            passed=legacy_runs_source_exists,
+            detail="v1 runs root source must exist before confirmed cutover",
+            source_path=str(layout.runs_root),
+        ),
+        _check(
+            name="restore_plan_targets",
+            passed=rollback_plan.get("restore_active_version") == "v1"
+            and rollback_plan.get("restore_config_path") == ".ai/config/orchestrator.yaml",
+            detail="restore acceptance requires the rollback plan to target the repo-owned v1 config path",
+        ),
+    ]
+    blocking_reasons = [
+        str(check["name"])
+        for check in checks
+        if check["status"] != "pass"
+    ]
+    accepted = not blocking_reasons
+    summary_path = layout.runs_v2_root / "_cutover" / "archive-restore-acceptance.json"
+    payload = {
+        "schema_version": "runtime_v2_archive_restore_acceptance.v1",
+        "status": "accepted" if accepted else "blocked",
+        "accepted": accepted,
+        "restore_performed": False,
+        "cutover_performed": False,
+        "archive_root": str(layout.archive_root),
+        "legacy_db_source": str(layout.control_plane_db),
+        "legacy_db_source_exists": legacy_db_source_exists,
+        "legacy_runs_source": str(layout.runs_root),
+        "legacy_runs_source_exists": legacy_runs_source_exists,
+        "restore_config_path": str(rollback_plan.get("restore_config_path") or ""),
+        "checks": checks,
+        "blocking_reasons": blocking_reasons,
+        "summary_path": str(summary_path),
     }
     summary_path.parent.mkdir(parents=True, exist_ok=True)
     summary_path.write_text(json.dumps(payload, indent=2, ensure_ascii=True), encoding="utf-8")
