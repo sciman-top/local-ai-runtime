@@ -44,7 +44,7 @@
 - `.ai/state/control-plane-v2.db` 是 v2 双轨控制面；`.ai/runs-v2/<run_id>/<task_id>/<attempt_id>/` 是 v2 尝试级工件面
 - `.ai/runs/<run_id>/<task_id>/` 是正式 evidence 面
 - `.ai/config/*.yaml` 是 repo-owned 运行时配置真源
-- repo-owned `host_local` task entrypoint 现已落地：`host-orchestrator --run-task` 与 `runtime/host-orchestrator/scripts/run-host-task.ps1` 当前会通过 worker factory 支持 `codex_sdk / codex_exec`；在现有 built-in profile 中，`local_maint` 直接走 `codex_sdk`，而 `remote_non_gui_probe / vm_gui_probe` 仍会因 non-host_local lane 在 worker 前 handoff
+- repo-owned `host_local` task entrypoint 现已落地：`host-orchestrator --run-task` 与 `runtime/host-orchestrator/scripts/run-host-task.ps1` 当前会通过 worker factory 支持 `codex_sdk / codex_exec`；在现有 built-in profile 中，`local_maint` 直接走 `codex_sdk`，而 committed `remote_non_gui_probe / vm_gui_probe` 仍因 `runner_wired=false` 在 worker 前 handoff
 - `host_local > remote_non_gui > vm_gui` 是终态能力范围与分级晋升顺序
 - `AgentBridge-first intake` 已以安全边界接入 `host_local`；markdown task 先归一化到 repo-owned canonical 默认值，并对 execution-critical override fail closed
 - `P2-T03` 的 repo-side AgentBridge round-trip parity 已落地，但尚未自动升级为 `platform compatibility green`
@@ -60,12 +60,13 @@
 - `P5-T01` 的 repo-side `leases / route / quota` 收口已落地；explicit/default `worker_profile` 现在会 materialize `route_reason`，selected profile 的 `max_active_leases` 超额时会在 worker 前 handoff
 - `P5-T02` 的 deterministic multi-worker simulation 已落地；当前可复放 `retry / route / quota / review-handoff` summary，但这仍不等于 live 多 worker scheduler
 - `P5-T03` 的 `remote_non_gui` promotion evidence 已落地；repo-owned `remote_non_gui_probe` 现在可被显式选中，但 `host_local` 只会 fail closed 到 handoff，并额外留下机器可读 `handoff_receipt.json` / `handoff_receipt_ref`，不会伪装成 remote runner 已执行
+- `P5-T04` 的 `remote_non_gui` runner wiring readiness 已落地；临时测试配置可证明 `runner_wired=true` 会调用注入 runner，runner 失败保持 failed dispatch 且不写成功 `result.json`，但 committed profile 仍未接真实 remote runner
 - `P6-T01` / `P6-T02` 的 repo-side Hermes parity / historical snapshot mapping verifier 已落地；`run-hermes-parity.ps1` 现在会把 certified baseline doc、current known-good / boundary anchors、snapshot contract、known-good validator、以及 env-sensitive bring-up drift 收进同一 summary，但这仍不等于 `platform compatibility green`
 - `P6-T03` 的 repo-side `vm_gui` conditional promotion evidence 已落地；默认 GUI-only 请求现在会在 `host_local` 上因 `execution_lane=vm_gui; requires_gui=true` handoff，显式 `vm_gui_probe` 也只会 fail closed 到 `runner_not_wired`
 - `worktree` 当前只代表写入隔离，不代表 memory/provider/session 隔离
-- branch deletion 仍不自动化；当前 repo-side topology promotion proof已收口，next open set 收窄到 non-host_local runner wiring 与后续 review hardening
-- 当前 `host_local` task entrypoint 虽已接线真实 worker factory，且 live planner sidecar receipt 与 bounded live heterogeneous review sidecar receipt 已能在 configured host_local path 上 materialize，但这仍不等于 live `claude_glm` primary task execution、non-host_local runner、`platform compatibility green`、或 `live accepted`
-- `compatibility_projection_ref` 与 `lane` 字段名当前明确继续保留；待 non-host_local runner wiring 与后续 review 稳定性都真实落地后再复评是否迁移
+- branch deletion 仍不自动化；当前 repo-side topology promotion proof 与 runner wiring readiness 已收口，next open set 收窄到真实 remote host runner acceptance 与后续 review hardening
+- 当前 `host_local` task entrypoint 虽已接线真实 worker factory，且 live planner sidecar receipt 与 bounded live heterogeneous review sidecar receipt 已能在 configured host_local path 上 materialize，但这仍不等于 live `claude_glm` primary task execution、真实 remote/vm runner、`platform compatibility green`、或 `live accepted`
+- `compatibility_projection_ref` 与 `lane` 字段名当前明确继续保留；待真实 remote/vm runner acceptance 与后续 review 稳定性都真实落地后再复评是否迁移
 - 当前 active queue 仍是 `PHASE-1-VERTICAL-SLICE`；repo-side exit gates 已闭环，但 live posture 仍停在 `live probe ready`
 
 ## Governance Overlay

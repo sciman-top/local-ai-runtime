@@ -60,13 +60,13 @@
 
 - AgentBridge result / review 可以与 canonical result surface 做更完整的稳定 round-trip
 - verification 输出由真实 gate executor 驱动
-- 只有当 bounded live heterogeneous review receipt 与 non-host_local runner wiring 都稳定后，才结合 parity / runner 的真实稳定性重新评估 schema rename
+- 只有当 bounded live heterogeneous review receipt 与真实 remote/vm runner acceptance 都稳定后，才结合 parity / runner 的真实稳定性重新评估 schema rename
 
 迁移窗口：
 
 - 当前已明确决定继续保留 `compatibility_projection_ref` 现名，不在当前 repo-side parity / topology closeout 中改名
 - 当前已明确决定继续保留 `lane` 现名，不提前改成 `execution_lane`
-- 只有在 bounded live heterogeneous review receipt 与 non-host_local runner wiring 都稳定后，才重新评估是否需要 rename
+- 只有在 bounded live heterogeneous review receipt 与真实 remote/vm runner acceptance 都稳定后，才重新评估是否需要 rename
 - truth reset 只允许补充说明，不允许把这些改名写成当前事实
 
 ## Dispatch State Ledger

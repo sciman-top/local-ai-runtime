@@ -36,6 +36,7 @@
 - `network_profile`
 - `projection_mode`
 - `max_active_leases`
+- `runner_wired`
 - `policy_surface_globs`
 - `sensitive_paths`
 
@@ -96,6 +97,7 @@ acceptance:
 | `network_profile` | `off / restricted / on` |
 | `projection_mode` | `compatibility_dual_write / canonical_only` |
 | `max_active_leases` | 该 profile 允许同时持有的 active lease 上限；超额时在 worker 前 handoff |
+| `runner_wired` | non-host-local profile 的显式接线开关；省略时默认为 `false` |
 
 ### 当前已定义 profile
 
@@ -104,8 +106,8 @@ acceptance:
 | `local_maint` | 当前 Phase 1 host-local 默认 profile | repo-side 与 live SDK 共用入口 |
 | `claude_glm_review` | 当前 bounded live heterogeneous review receipt profile | 只 materialize host_local review receipt，不得伪装成 live task execution 或 non-host_local runner |
 | `wave1_smoke` | Wave 1 deterministic smoke profile | 只允许 repo-side mock，不得宣称 live accepted |
-| `remote_non_gui_probe` | repo-side `remote_non_gui` promotion evidence profile | 只证明 lane promotion / fail-closed handoff，不得宣称 remote runner 已执行 |
-| `vm_gui_probe` | repo-side `vm_gui` conditional promotion evidence profile | 只证明 GUI-only 条件晋升 / fail-closed handoff，不得宣称 vm runner 已执行 |
+| `remote_non_gui_probe` | repo-side `remote_non_gui` promotion / runner-wiring readiness evidence profile | 当前 committed config 保持 `runner_wired=false`，只证明 lane promotion、fail-closed handoff、以及临时 fake-runner 接线分支，不得宣称 remote runner 已执行 |
+| `vm_gui_probe` | repo-side `vm_gui` conditional promotion evidence profile | 当前 committed config 保持 `runner_wired=false`，只证明 GUI-only 条件晋升 / fail-closed handoff，不得宣称 vm runner 已执行 |
 
 ## policies.yaml
 
@@ -141,7 +143,8 @@ acceptance:
 7. selected `worker_profile` 的 active lease 数超过 `max_active_leases` 时，runtime 必须在 worker 前 fail closed 到 handoff，而不是伪装成多 worker 已调度
 8. `wave1_smoke` 这类 mock profile 只能证明 `mock green`，不能满足 `live probe ready` 或 `live accepted`
 9. 默认模型策略应当是 role-aware / risk-aware / lane-aware，而不是把所有子代理固定为同一模型与同一 reasoning effort
-10. 当 `HostLocalRunner` 选中的 profile `lane != host_local` 时，当前必须 fail closed 到 handoff，并把 non-host-local promotion 只写成 repo-side evidence，不得伪装成 remote/vm runner 已执行
+10. 当 `HostLocalRunner` 选中的 profile `lane != host_local` 且 `runner_wired != true` 时，当前必须 fail closed 到 handoff，并把 non-host-local promotion 只写成 repo-side evidence，不得伪装成 remote/vm runner 已执行
+11. 当临时测试配置显式设置 `runner_wired=true` 时，runtime 可以越过 pre-worker handoff 并调用注入的 runner；这只证明 repo-side wiring branch，不等于 committed config 已接线、真实远端执行、platform compatibility green 或 live accepted
 
 ## Mapping To Codex Runtime
 
@@ -162,6 +165,7 @@ repo contract 到当前执行实现的映射：
   - `claude_glm` -> `ClaudeCodeStructuredWorker`（当前只用于 bounded live heterogeneous review receipt）
   - `scripted / gpt54_direct` 当前仍对 live task execution fail closed，不得伪装成已接线
   - `claude_glm` 当前仍对 primary live task execution fail closed，不得把 review receipt path 写成 worker execution 已接线
+- `runner_wired` 是运行时 gate 开关，不是远端资源证明；真实 remote/vm acceptance 仍必须另有 runner receipt、host/VM evidence、task-level artifacts 与人工/业务边界裁决
 
 ## impl_pack Absorption
 

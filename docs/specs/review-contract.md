@@ -11,7 +11,7 @@
 - `review_result.json` 当前可能是 live heterogeneous reviewer receipt，也可能是在 sidecar 缺 summary / 失败 / 返回无效 payload 时的 repo-side blocking fallback receipt；fallback receipt 只表达 repo-side gate 为什么阻断
 - 低风险写任务当前默认自动推进，不因 `write_access = true` 单独触发 blocking review
 - medium/high/critical 风险、`touches_policy_surface = true`、以及 `user_forced_review = true` 当前都会阻断下游 flow
-- 当前 live review sidecar 在 isolated temp cwd 中以 `--bare --no-session-persistence` 运行；它不等于 full diff-aware review、non-host_local runner、或 `live accepted`
+- 当前 live review sidecar 在 isolated temp cwd 中以 `--bare --no-session-persistence` 运行；它不等于 full diff-aware review、真实 remote/vm runner、或 `live accepted`
 
 ## 必填字段
 

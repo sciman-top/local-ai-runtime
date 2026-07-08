@@ -67,6 +67,7 @@
 - [20260708 Runtime V2 K2-T06 Approval Acceptance Ref](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260708-runtime-v2-k2-t06-approval-acceptance-ref.md)
 - [20260708 Runtime V2 K2-T06 Approval Timestamp](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260708-runtime-v2-k2-t06-approval-timestamp.md)
 - [20260708 Remote Non-GUI Handoff Receipt](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260708-remote-non-gui-handoff-receipt.md)
+- [20260708 Remote Non-GUI Runner Wiring Readiness](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260708-remote-non-gui-runner-wiring-readiness.md)
 
 当前最新结论：
 
@@ -103,12 +104,12 @@
 - `P6-T01` / `P6-T02` 的 repo-side Hermes parity / historical snapshot mapping verifier 已完成：current known-good / boundary anchor 固定到 `known-good-20260628-225738-431.json` 与 `verify-hermes-boundary-20260628-225841-414.json`，当前 shell 中只剩 `independent_key / independent_base_url` 两个 env-sensitive bring-up gate 为红
 - `P6-T03` 的 repo-side `vm_gui` conditional promotion evidence 已完成：current summary 明确固定了 default GUI-only handoff 与 explicit `vm_gui_probe` fail-closed handoff，当前仍未落 vm runner 或真实 GUI-only workload acceptance
 - repo-owned `host_local` task entrypoint 与 worker factory 已完成：`host-orchestrator --run-task` / `run-host-task.ps1` 当前已直接消费 `local_maint` 的 `codex_sdk` 路径，并在结构上支持 `codex_exec`；built-in `codex_exec` profiles 仍保持 non-host-local handoff，而 `scripted / gpt54_direct / claude_glm` 继续 live task execution fail-closed
-- `E-T01` 的字段名决策也已固定：`compatibility_projection_ref` 与 `lane` 继续保持现名，不在当前 repo-side parity / topology closeout 中改名，待 live heterogeneous review sidecar 与 non-host_local runner 真接线后再复评
+- `E-T01` 的字段名决策也已固定：`compatibility_projection_ref` 与 `lane` 继续保持现名，不在当前 repo-side parity / topology closeout 中改名，待真实 remote/vm runner acceptance 与后续 review 稳定性都落地后再复评
 - `Kernel V2` 双轨 bootstrap 已吸收到代码、配置、测试、文档与 verifier；当前明确保持同仓演进、repo/目录名不改、默认入口不切、active queue 不变
 - `Kernel V2` 的 ready-blocked 自动续跑子切片已落地：v2 任务记录现在持久化 repo-relative `tasks.task_path`，`--run-ready-blocked-v2` 可续跑依赖已满足的 dependency-blocked task；非依赖型 `blocked` 不自动续跑
 - `Kernel V2` 的 review / policy receipt 子切片已落地：v2 `review_result.json` 现在会 materialize 结构化 `blocking_reasons`、`changed_paths`、`gate_failed`、`policy_surface_touched`
 - `Kernel V2` 的 bounded review sidecar hook 已落地：显式 review worker / worker factory 路径可 materialize sidecar receipt，缺失或失败时仍 fallback 到 repo-side blocking receipt
-- `Kernel V2` 的 pre-worker policy guard 已落地：network/profile、non-host-local lane、GUI requirement、sensitive write scope 会在 worker 前 fail-closed blocked，不会假装 non-host_local / vm_gui runner 已接线
+- `Kernel V2` 的 pre-worker policy guard 已落地：network/profile、non-host-local lane、GUI requirement、sensitive write scope 会在 worker 前 fail-closed blocked，不会假装真实 remote/vm runner 已接线
 - `Kernel V2` 的 K2-T05 regression fixture / eval summary 已落地：completed / reviewing / gate-retryable final-result、dependency-blocked、admission-paused、pre-worker policy-guard blocked、worker-failure retryable / failed、retry queued 路径会写出 attempt-level `regression_fixture.json`，并将 fixture 记录到 v2 artifacts 表；`--eval-regression-fixtures-v2` 会写出 repo-side regression fixture summary；这仍不等于 default cutover 或 live accepted
 - `Kernel V2` 的 K2-T06 cutover drill / guard 子切片已落地：`--cutover-drill-v2` 会写出 repo-side drill summary，`--cutover-v2` 在 drill 未 ready 时 fail-closed 且不改 `runtime.active_version`；默认入口仍未切换
 - `Kernel V2` 已完成一条真实 `local_maint` v2 live coding probe：`runtime-v2-live-coding-probe-20260708-1` 为 `completed`，eval summary `ok=true / fixture_count=1`，cutover drill `ready=true / cutover_performed=false`；默认入口仍未切换，也不声明 live accepted
@@ -122,5 +123,6 @@
 - `Kernel V2` 的 K2-T06 approval acceptance-ref 子切片已落地：approval template、validation、sanitized audit 与 confirmed cutover 输出现在都携带 `archive_restore_acceptance_path`，缺少当前 archive restore acceptance 引用的 approval JSON 返回 `approval_required / cutover_performed=false`；该留痕不执行 cutover，不修改默认入口
 - `Kernel V2` 的 K2-T06 approval timestamp 子切片已落地：approval validation 现在要求 `approved_at` 是 UTC ISO-8601 且以 `Z` 结尾；非 UTC 时间戳返回 `approval_required / cutover_performed=false`；该留痕不执行 cutover，不修改默认入口
 - `remote_non_gui` pre-worker handoff receipt 子切片已落地：`host_local` fail-closed handoff 现在写 `handoff_receipt.json`，并通过 `result.json / dispatch_state.json / closeout_bundle.json / evidence_index.json` 串联；promotion summary 会读取 `handoff_reason_codes / worker_execution_attempted`；该留痕不执行 remote runner，不声明 live accepted
-- 当前预期 next action 仍是粗粒度的 `promote_phase1_execution`；repo-side planner/review/path-guard/worktree-manager/cleanup-manager/runtime-ledger/lifecycle/receipt、`P5-T01` route/quota、`P5-T02` deterministic multi-worker simulation、`P5-T03` remote_non_gui promotion evidence、`P6-T01` / `P6-T02` Hermes parity / historical snapshot mapping、`P6-T03` vm_gui conditional promotion evidence、repo-owned `host_local` task entrypoint / worker factory、bounded live heterogeneous review sidecar receipt closeout、以及 `E-T01` 字段名决策 已完成，下一 open set 收窄到 non-host_local runner wiring 与后续 review hardening
+- `remote_non_gui` runner wiring readiness 子切片已落地：committed `remote_non_gui_probe` 仍保持 `runner_wired=false`，临时测试配置可证明 `runner_wired=true` 时 runtime 会调用注入 runner，runner 失败保持 failed dispatch 且不写成功 `result.json`；该留痕不执行真实 remote runner，不声明 live accepted
+- 当前预期 next action 仍是粗粒度的 `promote_phase1_execution`；repo-side planner/review/path-guard/worktree-manager/cleanup-manager/runtime-ledger/lifecycle/receipt、`P5-T01` route/quota、`P5-T02` deterministic multi-worker simulation、`P5-T03` remote_non_gui promotion evidence、`P5-T04` remote_non_gui runner wiring readiness、`P6-T01` / `P6-T02` Hermes parity / historical snapshot mapping、`P6-T03` vm_gui conditional promotion evidence、repo-owned `host_local` task entrypoint / worker factory、bounded live heterogeneous review sidecar receipt closeout、以及 `E-T01` 字段名决策 已完成，下一 open set 收窄到真实 remote host runner acceptance 与后续 review hardening
 - 参考架当前不做大改：`registry` 已补成 conditional 候选；默认刷新集合不变；`skills / hermes-agent-self-evolution / openclaw` 继续保持 archive-on-demand，并作为未来本机瘦身时的第一批本地删除候选

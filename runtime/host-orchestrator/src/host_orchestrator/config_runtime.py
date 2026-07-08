@@ -24,6 +24,7 @@ class WorkerProfile:
     network_profile: str
     projection_mode: str
     max_active_leases: int
+    runner_wired: bool = False
 
     def sandbox(self) -> Sandbox:
         if self.sandbox_profile == "workspace_write":
@@ -159,6 +160,12 @@ def load_runtime_config(repo_root: Path) -> RuntimeConfigBundle:
             network_profile=_require_string(values, "network_profile", "workers.yaml"),
             projection_mode=_require_string(values, "projection_mode", "workers.yaml"),
             max_active_leases=_require_positive_int(values, "max_active_leases", "workers.yaml"),
+            runner_wired=_optional_bool_with_default(
+                values,
+                "runner_wired",
+                "workers.yaml",
+                default=False,
+            ),
         )
 
     default_worker_profile = _require_string(run_payload, "default_worker_profile", "orchestrator.yaml")

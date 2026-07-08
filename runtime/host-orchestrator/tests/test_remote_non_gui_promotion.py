@@ -3,6 +3,9 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import pytest
+import yaml
+
 from host_orchestrator.cli import main as cli_main
 from host_orchestrator.host_local import HostLocalConfig, HostLocalRunner
 from host_orchestrator.paths import RuntimeLayout
@@ -19,6 +22,16 @@ def _seed_repo(tmp_path: Path) -> Path:
     return repo_root
 
 
+def _mark_remote_non_gui_runner_wired(repo_root: Path) -> None:
+    workers_path = repo_root / ".ai" / "config" / "workers.yaml"
+    payload = yaml.safe_load(workers_path.read_text(encoding="utf-8"))
+    payload["workers"]["remote_non_gui_probe"]["runner_wired"] = True
+    workers_path.write_text(
+        yaml.safe_dump(payload, sort_keys=False, allow_unicode=True),
+        encoding="utf-8",
+    )
+
+
 def test_host_local_runner_hands_off_explicit_remote_non_gui_profile_before_worker_execution(
     tmp_path: Path,
 ) -> None:
@@ -30,6 +43,7 @@ def test_host_local_runner_hands_off_explicit_remote_non_gui_profile_before_work
     payload = canonical_task_payload(task_id)
     payload["risk_level"] = "low"
     payload["write_access"] = False
+    payload["allowed_paths"] = ["README.md"]
     payload["execution_lane"] = "remote_non_gui"
     payload["requires_network"] = True
     payload["worker_profile"] = "remote_non_gui_probe"
@@ -88,6 +102,113 @@ def test_host_local_runner_hands_off_explicit_remote_non_gui_profile_before_work
             "entries"
         ]
     }
+
+
+def test_host_local_runner_executes_explicit_remote_non_gui_profile_when_runner_is_wired(
+    tmp_path: Path,
+) -> None:
+    from host_orchestrator.canonical_task import write_task
+
+    repo_root = _seed_repo(tmp_path)
+    _mark_remote_non_gui_runner_wired(repo_root)
+    task_id = "TASK-20260708-wired-remote-non-gui-profile"
+    task_path = repo_root / "tasks" / f"{task_id}.json"
+    payload = canonical_task_payload(task_id)
+    payload["risk_level"] = "low"
+    payload["write_access"] = False
+    payload["allowed_paths"] = ["README.md"]
+    payload["execution_lane"] = "remote_non_gui"
+    payload["requires_network"] = True
+    payload["worker_profile"] = "remote_non_gui_probe"
+    write_task(task_path, payload)
+
+    class RecordingRemoteWorker:
+        def __init__(self) -> None:
+            self.requests: list[WorkerRequest] = []
+
+        def run(self, request: WorkerRequest) -> WorkerResult:
+            self.requests.append(request)
+            return WorkerResult(
+                final_response="remote runner fixture completed",
+                raw_result={"kind": "remote_non_gui_fixture"},
+                stdout_text="remote stdout",
+                stderr_text="",
+            )
+
+    worker = RecordingRemoteWorker()
+    runner = HostLocalRunner(
+        HostLocalConfig(
+            workspace_root=repo_root,
+            layout=RuntimeLayout.from_repo_root(repo_root),
+            run_id="wired-remote-non-gui-profile-test",
+        ),
+        worker,
+    )
+
+    result_path = runner.run_task(task_path)
+    result_payload = json.loads(result_path.read_text(encoding="utf-8"))
+    dispatch_payload = json.loads((result_path.parent / "dispatch_state.json").read_text(encoding="utf-8"))
+
+    assert len(worker.requests) == 1
+    assert worker.requests[0].model == "gpt-5.4"
+    assert result_payload["status"] == "succeeded"
+    assert result_payload["worker_profile"] == "remote_non_gui_probe"
+    assert result_payload["lane"] == "remote_non_gui"
+    assert result_payload["handoff_required"] is False
+    assert result_payload["handoff_receipt_ref"] is None
+    assert result_payload["status_reason"] == "task completed within graded autonomy boundary"
+    assert dispatch_payload["status"] == "completed"
+    assert dispatch_payload["execution_lane"] == "remote_non_gui"
+    assert dispatch_payload["worker_profile"] == "remote_non_gui_probe"
+
+
+def test_wired_remote_non_gui_worker_failure_stays_failed_and_does_not_write_success_result(
+    tmp_path: Path,
+) -> None:
+    from host_orchestrator.canonical_task import write_task
+
+    repo_root = _seed_repo(tmp_path)
+    _mark_remote_non_gui_runner_wired(repo_root)
+    task_id = "TASK-20260708-wired-remote-non-gui-failure"
+    task_path = repo_root / "tasks" / f"{task_id}.json"
+    payload = canonical_task_payload(task_id)
+    payload["risk_level"] = "low"
+    payload["write_access"] = False
+    payload["execution_lane"] = "remote_non_gui"
+    payload["requires_network"] = True
+    payload["worker_profile"] = "remote_non_gui_probe"
+    write_task(task_path, payload)
+
+    class FailingRemoteWorker:
+        def run(self, request: WorkerRequest) -> WorkerResult:
+            raise RuntimeError("remote runner fixture failed")
+
+    runner = HostLocalRunner(
+        HostLocalConfig(
+            workspace_root=repo_root,
+            layout=RuntimeLayout.from_repo_root(repo_root),
+            run_id="wired-remote-non-gui-failure-test",
+        ),
+        FailingRemoteWorker(),
+    )
+
+    with pytest.raises(RuntimeError, match="remote runner fixture failed"):
+        runner.run_task(task_path)
+
+    task_run_root = (
+        repo_root
+        / ".ai"
+        / "runs"
+        / "wired-remote-non-gui-failure-test"
+        / task_id
+    )
+    dispatch_payload = json.loads((task_run_root / "dispatch_state.json").read_text(encoding="utf-8"))
+
+    assert dispatch_payload["status"] == "failed"
+    assert dispatch_payload["execution_lane"] == "remote_non_gui"
+    assert dispatch_payload["worker_profile"] == "remote_non_gui_probe"
+    assert dispatch_payload["status_reason"] == "remote runner fixture failed"
+    assert not (task_run_root / "result.json").exists()
 
 
 def test_remote_non_gui_promotion_suite_writes_summary_and_preserves_fail_closed_boundary(

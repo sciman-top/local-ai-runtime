@@ -1438,8 +1438,8 @@ class HostLocalRunner:
             "route_reason": route_reason,
             "status_reason": status_reason,
             "worker_execution_attempted": False,
-            "requested_lane_runner_wired": task.execution_lane == "host_local",
-            "selected_profile_runner_wired": worker_profile.lane == "host_local",
+            "requested_lane_runner_wired": self._lane_runner_wired(task.execution_lane),
+            "selected_profile_runner_wired": self._profile_runner_wired(worker_profile),
             "next_action": next_action,
             "source_evidence_refs": [
                 result_ref,
@@ -1748,7 +1748,7 @@ class HostLocalRunner:
         self,
         worker_profile: WorkerProfile,
     ) -> list[str]:
-        if worker_profile.lane == "host_local":
+        if self._profile_runner_wired(worker_profile):
             return []
         return [
             (
@@ -1758,6 +1758,18 @@ class HostLocalRunner:
                 f"worker_profile={worker_profile.name}"
             )
         ]
+
+    @staticmethod
+    def _profile_runner_wired(worker_profile: WorkerProfile) -> bool:
+        return worker_profile.lane == "host_local" or worker_profile.runner_wired
+
+    def _lane_runner_wired(self, lane: str) -> bool:
+        if lane == "host_local":
+            return True
+        return any(
+            profile.lane == lane and profile.runner_wired
+            for profile in self._runtime_config.workers.values()
+        )
 
     def _review_gate_reasons(self, task: CanonicalTask) -> list[str]:
         reasons: list[str] = []

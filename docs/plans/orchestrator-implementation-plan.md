@@ -120,14 +120,17 @@
   - 后置控制面扩展
 - Boundary:
   - 当前已明确决定继续保留 `compatibility_projection_ref` 与 `lane` 现名，不在当前 repo-side parity / topology closeout 中做字段改名
-  - 只有当 bounded live heterogeneous review receipt、non-host_local runner wiring、以及后续 review 稳定性都真实落地后，才重新评估是否需要 schema rename
+  - 只有当 bounded live heterogeneous review receipt、真实 remote/vm runner acceptance、以及后续 review 稳定性都真实落地后，才重新评估是否需要 schema rename
 
 ### Phase F — Topology Expansion
 
-- Status: pending
+- Status: in_progress
 - Goal:
   - `remote_non_gui` 次级推进
   - `vm_gui` 条件晋升
+- Current boundary:
+  - `remote_non_gui` runner wiring readiness contract 已落 repo-side，但 committed `remote_non_gui_probe` 仍保持 `runner_wired=false`
+  - 真实 remote host runner acceptance、真实 GUI-only workload acceptance、以及 `live accepted` 仍未开始
 
 ## Current Repo-Side Foundations
 
@@ -163,7 +166,8 @@
 - `P6-T02` historical snapshot mapping：completed（current known-good / boundary anchor 已在 implementation-status、handoff summary、以及 checklist 三面一致）
 - `P6-T03` vm_gui conditional promotion evidence：completed（repo-owned `vm_gui_probe` profile、GUI-only handoff、以及显式 vm lane fail-closed summary 已收口）
 - `P5-T03` follow-on handoff receipt hardening：completed（pre-worker handoff 现在写 `handoff_receipt.json`，remote_non_gui promotion summary 会读取 `handoff_reason_codes / worker_execution_attempted`）
-- next: `non-host_local runner wiring + follow-on review hardening`（bounded live heterogeneous review receipt 已落地；branch deletion 仍不自动化；真实 GUI-only workload acceptance 仍未开始）
+- `P5-T04` remote_non_gui runner wiring readiness：completed（`runner_wired=false` 继续 pre-worker handoff；临时 `runner_wired=true` 测试配置可调用注入 runner；runner 失败保持 failed dispatch 且不写成功 result）
+- next: `真实 remote host runner acceptance + follow-on review hardening`（bounded live heterogeneous review receipt 已落地；branch deletion 仍不自动化；真实 GUI-only workload acceptance 仍未开始）
 
 其中 `planner/review` 继续保留在 repo `Phase 4`，不并回容器或资源 phase。
 

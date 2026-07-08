@@ -37,11 +37,13 @@
     - parity / historical mapping / container lifecycle 进入同一闭环
     - 是否做 `compatibility_projection_ref` 与 `lane` rename 有明确决策
   - Status note:
-    - 2026-07-07 已完成 repo-side closeout；当前明确决定继续保留 `compatibility_projection_ref` 与 `lane` 现名，不在当前 repo-side parity / topology closeout 中做字段改名，待 non-host_local runner wiring 与后续 review 稳定性都真实落地后再复评
+    - 2026-07-07 已完成 repo-side closeout；当前明确决定继续保留 `compatibility_projection_ref` 与 `lane` 现名，不在当前 repo-side parity / topology closeout 中做字段改名，待真实 remote/vm runner acceptance 与后续 review 稳定性都真实落地后再复评
 - [ ] `F-T01` topology expansion
   - Done when:
     - `remote_non_gui` 进入 simulation
     - `vm_gui` 只有在真实 GUI-only workload 证据下才升级
+  - Status note:
+    - 2026-07-08 已补 `remote_non_gui` runner wiring readiness contract：committed `remote_non_gui_probe` 仍保持 `runner_wired=false`，临时测试配置可证明 `runner_wired=true` 时 runtime 会调用注入 runner，runner 失败保持 failed dispatch 且不写成功 result；`F-T01` 未标完成，因为真实 remote host runner acceptance 与真实 GUI-only workload evidence 仍未开始
 
 能力范围与晋升顺序固定为：`host_local > remote_non_gui > vm_gui`。
 
@@ -75,7 +77,7 @@
     - 2026-07-08 已落第一批 review / policy receipt 深化：v2 `review_result.json` 现在会 materialize 结构化 `blocking_reasons`、`changed_paths`、`gate_failed`、`policy_surface_touched`
     - 2026-07-08 已落 bounded review sidecar hook：显式 review worker / worker factory 路径可 materialize sidecar receipt，失败时仍 fallback 到 repo-side blocking receipt
     - 2026-07-08 已落 pre-worker policy guard：network/profile、non-host-local lane、GUI requirement、sensitive write scope 会在 worker 前 fail-closed blocked
-    - `K2-T04` 按当前 scoped deepening 已完成；这不代表 default cutover、non-host_local runner wiring、vm_gui runner wiring 或 live accepted
+    - `K2-T04` 按当前 scoped deepening 已完成；这不代表 default cutover、真实 remote/vm runner acceptance 或 live accepted
 - [x] `K2-T05` add trace / eval / regression fixtures for runtime_v2
   - Status note:
     - 2026-07-08 已落 attempt-level `regression_fixture.json` 核心状态覆盖：completed / reviewing / gate-retryable final-result、dependency-blocked、admission-paused、pre-worker policy-guard blocked、worker-failure retryable / failed、retry queued 路径都会写出可回放的 status/profile/gate/artifact refs 摘要，并记录到 v2 artifacts 表
@@ -191,7 +193,7 @@
     - `repo-side green` 能显式区分 structured review receipt、cleanup receipt、与 `live accepted`
   - Status note:
     - 2026-07-07 已完成 repo-side structured receipts；live planner-sidecar 路径现在会落 `planner_result.json`，review-gated 路径会落 `review_result.json`，当前 planner/review/completed runtime outcome 都会落 `closeout_bundle.json`，并由 `result.json / dispatch_state.json / evidence_index.json` 串起引用
-    - 2026-07-07 follow-on closeout：配置 `review_worker_profile = claude_glm_review` 的 host_local review path 当前可 materialize bounded live heterogeneous review receipt；`claude_glm` primary task execution 与 non-host_local runner 仍未接线
+    - 2026-07-07 follow-on closeout：配置 `review_worker_profile = claude_glm_review` 的 host_local review path 当前可 materialize bounded live heterogeneous review receipt；`claude_glm` primary task execution 与真实 remote/vm runner 仍未接线
 
 ## Phase 5
 
@@ -215,7 +217,14 @@
     - 选中 `remote_non_gui` lane/profile 时，`host_local` 会在 worker 前 fail closed 到 handoff，而不是伪装成 remote runner 已执行
     - CLI/script entrypoint 可重跑 promotion summary，并显式给出 `route_decision_count / worker_lanes / state_counts / handoff_reason_codes / worker_execution_attempted`
   - Status note:
-    - 2026-07-08 follow-on 已补 pre-worker `handoff_receipt.json` 与 promotion summary 结构化原因码；当前仍未落 remote runner、`platform compatibility green`、或 `live accepted`
+    - 2026-07-08 follow-on 已补 pre-worker `handoff_receipt.json` 与 promotion summary 结构化原因码；当前仍未落真实 remote host runner、`platform compatibility green`、或 `live accepted`
+- [x] `P5-T04` remote_non_gui runner wiring readiness
+  - Done when:
+    - committed `remote_non_gui_probe` 默认仍可 fail closed 到 handoff
+    - 临时 `runner_wired=true` 配置会调用注入 runner
+    - runner 失败保持 failed dispatch，且不写成功 `result.json`
+  - Status note:
+    - 2026-07-08 已完成 repo-side readiness contract；当前仍未落真实 remote host runner、remote host acceptance、`platform compatibility green` 或 `live accepted`
 
 ## Phase 6
 

@@ -87,8 +87,9 @@ experimental `runtime_v2` 额外固定：
 - 当前 planner/review/completed runtime outcome 还会额外写出 `closeout_bundle.json`
 - explicit/default `worker_profile` 选择原因当前会落到 `result.json`、`dispatch_state.json`、以及 `route_decisions`
 - 若选中 profile 的 active lease 数超过 `max_active_leases`，当前会在 worker 前 handoff，并仍保留同等最小工件集合
-- 若选中 profile 的 `lane != host_local` 而当前 runtime 仍是 `host_local`，当前也会在 worker 前 fail closed 到 handoff，并在 `handoff_receipt.json.reason_codes` 中 materialize `selected_lane_runner_not_wired`
-- 这些 extra receipts 表达的是 repo-side receipt truth；当前只证明 codex-backed host_local planner sidecar receipt 已接线，不等于 live `Direct GPT-5.4 API` planner、live review sidecar、或 non-host_local runner 已接线
+- 若选中 profile 的 `lane != host_local` 且 `runner_wired != true`，当前会在 worker 前 fail closed 到 handoff，并在 `handoff_receipt.json.reason_codes` 中 materialize `selected_lane_runner_not_wired`
+- 临时测试配置可显式设置 `runner_wired=true` 来证明 remote runner wiring branch 会调用注入 runner，并在 runner 异常时保持 failed dispatch；committed `remote_non_gui_probe / vm_gui_probe` 仍保持 `runner_wired=false`
+- 这些 extra receipts 表达的是 repo-side receipt truth；当前只证明 codex-backed host_local planner sidecar receipt、bounded host_local review sidecar receipt、以及 fake-runner readiness branch 已接线，不等于 live `Direct GPT-5.4 API` planner、live primary task review worker、或真实 remote/vm runner acceptance
 
 ## Cleanup Ownership
 

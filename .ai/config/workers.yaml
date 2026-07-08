@@ -42,6 +42,7 @@ workers:
     network_profile: restricted
     projection_mode: compatibility_dual_write
     max_active_leases: 1
+    runner_wired: false
 
   vm_gui_probe:
     worker_kind: codex_exec
@@ -53,3 +54,4 @@ workers:
     network_profile: "off"
     projection_mode: compatibility_dual_write
     max_active_leases: 1
+    runner_wired: false
