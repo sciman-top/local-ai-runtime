@@ -43,7 +43,7 @@
     - `remote_non_gui` 进入 simulation
     - `vm_gui` 只有在真实 GUI-only workload 证据下才升级
   - Status note:
-    - 2026-07-08 已补 `remote_non_gui` runner wiring readiness contract：committed `remote_non_gui_probe` 仍保持 `runner_wired=false`，临时测试配置可证明 `runner_wired=true` 时 runtime 会调用注入 runner，runner 失败保持 failed dispatch 且不写成功 result；`F-T01` 未标完成，因为真实 remote host runner acceptance 与真实 GUI-only workload evidence 仍未开始
+    - 2026-07-08 已补 `remote_non_gui` runner wiring readiness contract 与 acceptance-ref guard：committed `remote_non_gui_probe` 仍保持 `runner_wired=false`，临时测试配置必须同时设置 `runner_wired=true` 与 repo-relative `runner_acceptance_ref` 才会调用注入 runner，runner 失败保持 failed dispatch 且不写成功 result；`F-T01` 未标完成，因为真实 remote host runner acceptance 与真实 GUI-only workload evidence 仍未开始
 
 能力范围与晋升顺序固定为：`host_local > remote_non_gui > vm_gui`。
 
@@ -221,7 +221,7 @@
 - [x] `P5-T04` remote_non_gui runner wiring readiness
   - Done when:
     - committed `remote_non_gui_probe` 默认仍可 fail closed 到 handoff
-    - 临时 `runner_wired=true` 配置会调用注入 runner
+    - 临时 `runner_wired=true` 配置必须绑定 repo-relative `runner_acceptance_ref` 后才会调用注入 runner
     - runner 失败保持 failed dispatch，且不写成功 `result.json`
   - Status note:
     - 2026-07-08 已完成 repo-side readiness contract；当前仍未落真实 remote host runner、remote host acceptance、`platform compatibility green` 或 `live accepted`

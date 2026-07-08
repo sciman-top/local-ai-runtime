@@ -7,6 +7,7 @@ import pytest
 import yaml
 
 from host_orchestrator.cli import main as cli_main
+from host_orchestrator.config_runtime import RuntimeConfigError, load_runtime_config
 from host_orchestrator.host_local import HostLocalConfig, HostLocalRunner
 from host_orchestrator.paths import RuntimeLayout
 from host_orchestrator.worker import WorkerRequest, WorkerResult
@@ -23,6 +24,31 @@ def _seed_repo(tmp_path: Path) -> Path:
 
 
 def _mark_remote_non_gui_runner_wired(repo_root: Path) -> None:
+    acceptance_ref = "docs/change-evidence/test-remote-non-gui-runner-acceptance.json"
+    acceptance_path = repo_root / acceptance_ref
+    acceptance_path.parent.mkdir(parents=True, exist_ok=True)
+    acceptance_path.write_text(
+        json.dumps(
+            {
+                "status": "accepted_for_test",
+                "scope": "fake injected runner coverage only",
+            },
+            indent=2,
+        ),
+        encoding="utf-8",
+    )
+    workers_path = repo_root / ".ai" / "config" / "workers.yaml"
+    payload = yaml.safe_load(workers_path.read_text(encoding="utf-8"))
+    payload["workers"]["remote_non_gui_probe"]["runner_wired"] = True
+    payload["workers"]["remote_non_gui_probe"]["runner_acceptance_ref"] = acceptance_ref
+    workers_path.write_text(
+        yaml.safe_dump(payload, sort_keys=False, allow_unicode=True),
+        encoding="utf-8",
+    )
+
+
+def test_non_host_local_runner_wired_requires_acceptance_ref(tmp_path: Path) -> None:
+    repo_root = _seed_repo(tmp_path)
     workers_path = repo_root / ".ai" / "config" / "workers.yaml"
     payload = yaml.safe_load(workers_path.read_text(encoding="utf-8"))
     payload["workers"]["remote_non_gui_probe"]["runner_wired"] = True
@@ -30,6 +56,9 @@ def _mark_remote_non_gui_runner_wired(repo_root: Path) -> None:
         yaml.safe_dump(payload, sort_keys=False, allow_unicode=True),
         encoding="utf-8",
     )
+
+    with pytest.raises(RuntimeConfigError, match="runner_acceptance_ref"):
+        load_runtime_config(repo_root)
 
 
 def test_host_local_runner_hands_off_explicit_remote_non_gui_profile_before_worker_execution(

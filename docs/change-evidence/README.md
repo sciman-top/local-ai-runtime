@@ -68,6 +68,7 @@
 - [20260708 Runtime V2 K2-T06 Approval Timestamp](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260708-runtime-v2-k2-t06-approval-timestamp.md)
 - [20260708 Remote Non-GUI Handoff Receipt](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260708-remote-non-gui-handoff-receipt.md)
 - [20260708 Remote Non-GUI Runner Wiring Readiness](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260708-remote-non-gui-runner-wiring-readiness.md)
+- [20260708 Non-Host-Local Runner Acceptance Ref Guard](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260708-non-host-local-runner-acceptance-ref-guard.md)
 
 当前最新结论：
 
@@ -123,6 +124,7 @@
 - `Kernel V2` 的 K2-T06 approval acceptance-ref 子切片已落地：approval template、validation、sanitized audit 与 confirmed cutover 输出现在都携带 `archive_restore_acceptance_path`，缺少当前 archive restore acceptance 引用的 approval JSON 返回 `approval_required / cutover_performed=false`；该留痕不执行 cutover，不修改默认入口
 - `Kernel V2` 的 K2-T06 approval timestamp 子切片已落地：approval validation 现在要求 `approved_at` 是 UTC ISO-8601 且以 `Z` 结尾；非 UTC 时间戳返回 `approval_required / cutover_performed=false`；该留痕不执行 cutover，不修改默认入口
 - `remote_non_gui` pre-worker handoff receipt 子切片已落地：`host_local` fail-closed handoff 现在写 `handoff_receipt.json`，并通过 `result.json / dispatch_state.json / closeout_bundle.json / evidence_index.json` 串联；promotion summary 会读取 `handoff_reason_codes / worker_execution_attempted`；该留痕不执行 remote runner，不声明 live accepted
-- `remote_non_gui` runner wiring readiness 子切片已落地：committed `remote_non_gui_probe` 仍保持 `runner_wired=false`，临时测试配置可证明 `runner_wired=true` 时 runtime 会调用注入 runner，runner 失败保持 failed dispatch 且不写成功 `result.json`；该留痕不执行真实 remote runner，不声明 live accepted
+- `remote_non_gui` runner wiring readiness 子切片已落地：committed `remote_non_gui_probe` 仍保持 `runner_wired=false`，临时测试配置必须绑定 repo-relative `runner_acceptance_ref` 后才可用 `runner_wired=true` 调用注入 runner，runner 失败保持 failed dispatch 且不写成功 `result.json`；该留痕不执行真实 remote runner，不声明 live accepted
+- non-host-local runner acceptance-ref guard 已落地：non-host-local profile 若设置 `runner_wired=true` 但缺少 repo-relative 且存在的 `runner_acceptance_ref`，runtime config loading 会 fail closed，避免仅靠布尔开关伪装真实 remote/vm runner acceptance
 - 当前预期 next action 仍是粗粒度的 `promote_phase1_execution`；repo-side planner/review/path-guard/worktree-manager/cleanup-manager/runtime-ledger/lifecycle/receipt、`P5-T01` route/quota、`P5-T02` deterministic multi-worker simulation、`P5-T03` remote_non_gui promotion evidence、`P5-T04` remote_non_gui runner wiring readiness、`P6-T01` / `P6-T02` Hermes parity / historical snapshot mapping、`P6-T03` vm_gui conditional promotion evidence、repo-owned `host_local` task entrypoint / worker factory、bounded live heterogeneous review sidecar receipt closeout、以及 `E-T01` 字段名决策 已完成，下一 open set 收窄到真实 remote host runner acceptance 与后续 review hardening
 - 参考架当前不做大改：`registry` 已补成 conditional 候选；默认刷新集合不变；`skills / hermes-agent-self-evolution / openclaw` 继续保持 archive-on-demand，并作为未来本机瘦身时的第一批本地删除候选

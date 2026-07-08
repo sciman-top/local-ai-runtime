@@ -129,7 +129,7 @@
   - `remote_non_gui` 次级推进
   - `vm_gui` 条件晋升
 - Current boundary:
-  - `remote_non_gui` runner wiring readiness contract 已落 repo-side，但 committed `remote_non_gui_probe` 仍保持 `runner_wired=false`
+  - `remote_non_gui` runner wiring readiness contract 与 acceptance-ref guard 已落 repo-side，但 committed `remote_non_gui_probe` 仍保持 `runner_wired=false`
   - 真实 remote host runner acceptance、真实 GUI-only workload acceptance、以及 `live accepted` 仍未开始
 
 ## Current Repo-Side Foundations
@@ -166,7 +166,7 @@
 - `P6-T02` historical snapshot mapping：completed（current known-good / boundary anchor 已在 implementation-status、handoff summary、以及 checklist 三面一致）
 - `P6-T03` vm_gui conditional promotion evidence：completed（repo-owned `vm_gui_probe` profile、GUI-only handoff、以及显式 vm lane fail-closed summary 已收口）
 - `P5-T03` follow-on handoff receipt hardening：completed（pre-worker handoff 现在写 `handoff_receipt.json`，remote_non_gui promotion summary 会读取 `handoff_reason_codes / worker_execution_attempted`）
-- `P5-T04` remote_non_gui runner wiring readiness：completed（`runner_wired=false` 继续 pre-worker handoff；临时 `runner_wired=true` 测试配置可调用注入 runner；runner 失败保持 failed dispatch 且不写成功 result）
+- `P5-T04` remote_non_gui runner wiring readiness：completed（`runner_wired=false` 继续 pre-worker handoff；临时 `runner_wired=true` 测试配置必须绑定 repo-relative `runner_acceptance_ref` 后才可调用注入 runner；runner 失败保持 failed dispatch 且不写成功 result）
 - next: `真实 remote host runner acceptance + follow-on review hardening`（bounded live heterogeneous review receipt 已落地；branch deletion 仍不自动化；真实 GUI-only workload acceptance 仍未开始）
 
 其中 `planner/review` 继续保留在 repo `Phase 4`，不并回容器或资源 phase。

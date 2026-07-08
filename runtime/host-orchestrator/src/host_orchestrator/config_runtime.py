@@ -25,6 +25,7 @@ class WorkerProfile:
     projection_mode: str
     max_active_leases: int
     runner_wired: bool = False
+    runner_acceptance_ref: str | None = None
 
     def sandbox(self) -> Sandbox:
         if self.sandbox_profile == "workspace_write":
@@ -149,7 +150,7 @@ def load_runtime_config(repo_root: Path) -> RuntimeConfigBundle:
         if not isinstance(name, str):
             raise RuntimeConfigError("workers.yaml keys must be strings")
         values = _require_mapping({"entry": raw}, "entry", "workers.yaml")
-        workers[name] = WorkerProfile(
+        worker_profile = WorkerProfile(
             name=name,
             worker_kind=_require_string(values, "worker_kind", "workers.yaml"),
             lane=_require_string(values, "lane", "workers.yaml"),
@@ -166,7 +167,14 @@ def load_runtime_config(repo_root: Path) -> RuntimeConfigBundle:
                 "workers.yaml",
                 default=False,
             ),
+            runner_acceptance_ref=_optional_string(
+                values,
+                "runner_acceptance_ref",
+                "workers.yaml",
+            ),
         )
+        _validate_runner_wiring(worker_profile, repo_root)
+        workers[name] = worker_profile
 
     default_worker_profile = _require_string(run_payload, "default_worker_profile", "orchestrator.yaml")
     if default_worker_profile not in workers:
@@ -376,3 +384,35 @@ def _require_positive_int(payload: dict[str, Any], key: str, source_name: str) -
     if not isinstance(value, int) or isinstance(value, bool) or value < 1:
         raise RuntimeConfigError(f"{source_name}:{key} must be a positive integer")
     return value
+
+
+def _validate_runner_wiring(worker_profile: WorkerProfile, repo_root: Path) -> None:
+    if worker_profile.lane == "host_local" or not worker_profile.runner_wired:
+        return
+    acceptance_ref = worker_profile.runner_acceptance_ref
+    if acceptance_ref is None:
+        raise RuntimeConfigError(
+            "workers.yaml:"
+            f"{worker_profile.name}.runner_acceptance_ref is required when "
+            "runner_wired=true for a non-host-local profile"
+        )
+    ref_path = Path(acceptance_ref)
+    if ref_path.is_absolute():
+        raise RuntimeConfigError(
+            "workers.yaml:"
+            f"{worker_profile.name}.runner_acceptance_ref must be repo-relative"
+        )
+    repo_root_resolved = repo_root.resolve()
+    acceptance_path = (repo_root_resolved / ref_path).resolve()
+    try:
+        acceptance_path.relative_to(repo_root_resolved)
+    except ValueError as exc:
+        raise RuntimeConfigError(
+            "workers.yaml:"
+            f"{worker_profile.name}.runner_acceptance_ref must stay inside the repo"
+        ) from exc
+    if not acceptance_path.exists():
+        raise RuntimeConfigError(
+            "workers.yaml:"
+            f"{worker_profile.name}.runner_acceptance_ref does not exist: {acceptance_ref}"
+        )

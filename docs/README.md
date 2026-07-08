@@ -60,7 +60,7 @@
 - `P5-T01` 的 repo-side `leases / route / quota` 收口已落地；explicit/default `worker_profile` 现在会 materialize `route_reason`，selected profile 的 `max_active_leases` 超额时会在 worker 前 handoff
 - `P5-T02` 的 deterministic multi-worker simulation 已落地；当前可复放 `retry / route / quota / review-handoff` summary，但这仍不等于 live 多 worker scheduler
 - `P5-T03` 的 `remote_non_gui` promotion evidence 已落地；repo-owned `remote_non_gui_probe` 现在可被显式选中，但 `host_local` 只会 fail closed 到 handoff，并额外留下机器可读 `handoff_receipt.json` / `handoff_receipt_ref`，不会伪装成 remote runner 已执行
-- `P5-T04` 的 `remote_non_gui` runner wiring readiness 已落地；临时测试配置可证明 `runner_wired=true` 会调用注入 runner，runner 失败保持 failed dispatch 且不写成功 `result.json`，但 committed profile 仍未接真实 remote runner
+- `P5-T04` 的 `remote_non_gui` runner wiring readiness 已落地；临时测试配置必须同时设置 `runner_wired=true` 与 repo-relative `runner_acceptance_ref` 才能调用注入 runner，runner 失败保持 failed dispatch 且不写成功 `result.json`，但 committed profile 仍未接真实 remote runner
 - `P6-T01` / `P6-T02` 的 repo-side Hermes parity / historical snapshot mapping verifier 已落地；`run-hermes-parity.ps1` 现在会把 certified baseline doc、current known-good / boundary anchors、snapshot contract、known-good validator、以及 env-sensitive bring-up drift 收进同一 summary，但这仍不等于 `platform compatibility green`
 - `P6-T03` 的 repo-side `vm_gui` conditional promotion evidence 已落地；默认 GUI-only 请求现在会在 `host_local` 上因 `execution_lane=vm_gui; requires_gui=true` handoff，显式 `vm_gui_probe` 也只会 fail closed 到 `runner_not_wired`
 - `worktree` 当前只代表写入隔离，不代表 memory/provider/session 隔离

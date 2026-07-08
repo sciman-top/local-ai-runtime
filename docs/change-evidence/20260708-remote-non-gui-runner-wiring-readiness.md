@@ -9,7 +9,7 @@ This slice adds the repo-side readiness contract for future `remote_non_gui` run
 - `WorkerProfile` now accepts an optional `runner_wired` boolean, defaulting to `false`.
 - Committed `remote_non_gui_probe` and `vm_gui_probe` profiles explicitly keep `runner_wired: false`.
 - `HostLocalRunner` continues to fail closed to pre-worker handoff when a non-host-local profile is selected without `runner_wired=true`.
-- Temporary test config can set `runner_wired=true` to prove the runtime calls an injected runner instead of stopping at handoff.
+- Follow-on hardening requires non-host-local `runner_wired=true` config to bind a repo-relative `runner_acceptance_ref` before the runtime can call an injected runner instead of stopping at handoff.
 - Runner failure on that wired branch records failed dispatch and does not write a successful `result.json`.
 
 ## Verification
