@@ -57,6 +57,7 @@
 - [20260708 Runtime V2 K2-T05 Regression Eval Summary](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260708-runtime-v2-k2-t05-regression-eval-summary.md)
 - [20260708 Runtime V2 K2-T06 Cutover Drill Guard](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260708-runtime-v2-k2-t06-cutover-drill-guard.md)
 - [20260708 Runtime V2 Live Coding Probe](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260708-runtime-v2-live-coding-probe.md)
+- [20260708 Runtime V2 K2-T06 Cutover Review Rollback Drill](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260708-runtime-v2-k2-t06-cutover-review-rollback-drill.md)
 
 当前最新结论：
 
@@ -102,5 +103,6 @@
 - `Kernel V2` 的 K2-T05 regression fixture / eval summary 已落地：completed / reviewing / gate-retryable final-result、dependency-blocked、admission-paused、pre-worker policy-guard blocked、worker-failure retryable / failed、retry queued 路径会写出 attempt-level `regression_fixture.json`，并将 fixture 记录到 v2 artifacts 表；`--eval-regression-fixtures-v2` 会写出 repo-side regression fixture summary；这仍不等于 default cutover 或 live accepted
 - `Kernel V2` 的 K2-T06 cutover drill / guard 子切片已落地：`--cutover-drill-v2` 会写出 repo-side drill summary，`--cutover-v2` 在 drill 未 ready 时 fail-closed 且不改 `runtime.active_version`；默认入口仍未切换
 - `Kernel V2` 已完成一条真实 `local_maint` v2 live coding probe：`runtime-v2-live-coding-probe-20260708-1` 为 `completed`，eval summary `ok=true / fixture_count=1`，cutover drill `ready=true / cutover_performed=false`；默认入口仍未切换，也不声明 live accepted
+- `Kernel V2` 的 K2-T06 cutover review / rollback drill 子切片已落地：drill ready 后，默认 `--cutover-v2` 写出 `.ai/runs-v2/_cutover/cutover-review-summary.json` 并返回 `manual_approval_required / cutover_performed=false`；只有显式 `--confirm-cutover-v2` 才允许进入默认入口切换路径，当前真实仓未执行 confirmed cutover
 - 当前预期 next action 仍是粗粒度的 `promote_phase1_execution`；repo-side planner/review/path-guard/worktree-manager/cleanup-manager/runtime-ledger/lifecycle/receipt、`P5-T01` route/quota、`P5-T02` deterministic multi-worker simulation、`P5-T03` remote_non_gui promotion evidence、`P6-T01` / `P6-T02` Hermes parity / historical snapshot mapping、`P6-T03` vm_gui conditional promotion evidence、repo-owned `host_local` task entrypoint / worker factory、bounded live heterogeneous review sidecar receipt closeout、以及 `E-T01` 字段名决策 已完成，下一 open set 收窄到 non-host_local runner wiring 与后续 review hardening
 - 参考架当前不做大改：`registry` 已补成 conditional 候选；默认刷新集合不变；`skills / hermes-agent-self-evolution / openclaw` 继续保持 archive-on-demand，并作为未来本机瘦身时的第一批本地删除候选

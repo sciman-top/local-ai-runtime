@@ -13,7 +13,12 @@ from host_orchestrator.config_runtime import load_runtime_config
 from host_orchestrator.paths import RuntimeLayout
 from host_orchestrator.runtime_v2 import admission, storage
 from host_orchestrator.runtime_v2.contracts import RuntimeV2TaskError, load_task, write_task
-from host_orchestrator.runtime_v2.migration import perform_cutover, run_cutover_drill, write_migration_manifest
+from host_orchestrator.runtime_v2.migration import (
+    perform_cutover,
+    run_cutover_drill,
+    run_cutover_review,
+    write_migration_manifest,
+)
 from host_orchestrator.runtime_v2.runner import RuntimeV2Config, RuntimeV2Runner
 from host_orchestrator.worker import WorkerRequest, WorkerResult
 
@@ -998,6 +1003,82 @@ def test_runtime_v2_cli_cutover_fails_closed_until_drill_ready(
     assert payload["status"] == "blocked"
     assert payload["cutover_performed"] is False
     assert orchestrator_payload["runtime"]["active_version"] == "v1"
+
+
+def test_runtime_v2_cutover_review_requires_manual_confirmation_after_drill_ready(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    repo_root, layout = _seed_repo(tmp_path)
+    task_path = _write_v2_task(repo_root, "TASK-RUNTIME-V2-CUTOVER-REVIEW")
+    runner = RuntimeV2Runner(
+        RuntimeV2Config(workspace_root=repo_root, layout=layout, run_id="runtime-v2-cutover-review"),
+        worker=_StaticWorker("cutover review worker output"),
+    )
+    runner.run_task(task_path)
+
+    review = run_cutover_review(
+        layout=layout.with_runtime_v2_paths(
+            control_plane_db_v2=".ai/state/control-plane-v2.db",
+            artifact_root_v2=".ai/runs-v2",
+        )
+    )
+    review_payload = json.loads(Path(review["summary_path"]).read_text(encoding="utf-8"))
+
+    assert review["schema_version"] == "runtime_v2_cutover_review.v1"
+    assert review["status"] == "manual_approval_required"
+    assert review["manual_approval_required"] is True
+    assert review["cutover_performed"] is False
+    assert review["drill_ready"] is True
+    assert review_payload["rollback_plan"]["restore_active_version"] == "v1"
+    assert ".ai/config/orchestrator.yaml" in review["prospective_changes"]
+
+    exit_code = cli_main(["--repo-root", str(repo_root), "--cutover-v2"])
+    payload = json.loads(capsys.readouterr().out)
+    orchestrator_payload = yaml.safe_load(
+        (repo_root / ".ai" / "config" / "orchestrator.yaml").read_text(encoding="utf-8")
+    )
+
+    assert exit_code == 1
+    assert payload["schema_version"] == "runtime_v2_cutover_review.v1"
+    assert payload["status"] == "manual_approval_required"
+    assert payload["cutover_performed"] is False
+    assert orchestrator_payload["runtime"]["active_version"] == "v1"
+
+
+def test_runtime_v2_cli_cutover_requires_explicit_confirmation_when_review_ready(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    repo_root, layout = _seed_repo(tmp_path)
+    task_path = _write_v2_task(repo_root, "TASK-RUNTIME-V2-CONFIRMED-CUTOVER")
+    runner = RuntimeV2Runner(
+        RuntimeV2Config(workspace_root=repo_root, layout=layout, run_id="runtime-v2-confirmed-cutover"),
+        worker=_StaticWorker("confirmed cutover worker output"),
+    )
+    runner.run_task(task_path)
+    legacy_db = layout.control_plane_db
+    legacy_db.parent.mkdir(parents=True, exist_ok=True)
+    legacy_db.write_text("legacy-db-stub\n", encoding="utf-8")
+
+    exit_code = cli_main(
+        [
+            "--repo-root",
+            str(repo_root),
+            "--cutover-v2",
+            "--confirm-cutover-v2",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+    orchestrator_payload = yaml.safe_load(
+        (repo_root / ".ai" / "config" / "orchestrator.yaml").read_text(encoding="utf-8")
+    )
+
+    assert exit_code == 0
+    assert payload["active_version"] == "v2"
+    assert payload["cutover_review_summary_path"].endswith("cutover-review-summary.json")
+    assert payload["archived_db"] is not None
+    assert orchestrator_payload["runtime"]["active_version"] == "v2"
 
 
 def test_runtime_v2_cli_run_resume_retry_and_cutover(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]) -> None:

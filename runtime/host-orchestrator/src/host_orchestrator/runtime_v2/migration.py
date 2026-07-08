@@ -88,6 +88,45 @@ def run_cutover_drill(*, layout: RuntimeLayout) -> dict[str, object]:
     return payload
 
 
+def run_cutover_review(
+    *,
+    layout: RuntimeLayout,
+    drill_payload: dict[str, object] | None = None,
+) -> dict[str, object]:
+    layout = _resolve_runtime_v2_layout(layout)
+    if drill_payload is None:
+        drill_payload = run_cutover_drill(layout=layout)
+    drill_ready = bool(drill_payload.get("ready"))
+    summary_path = layout.runs_v2_root / "_cutover" / "cutover-review-summary.json"
+    rollback_plan = {
+        "restore_active_version": "v1",
+        "restore_config_path": ".ai/config/orchestrator.yaml",
+        "restore_legacy_db": "copy archived .ai/archive/control-plane-v1-*.db back to .ai/state/control-plane.db",
+        "restore_legacy_runs": "copy archived .ai/archive/runs-v1-* back to .ai/runs",
+        "git_recovery": "git restore .ai/config/orchestrator.yaml and remove cutover archives created by the aborted switch",
+    }
+    payload = {
+        "schema_version": "runtime_v2_cutover_review.v1",
+        "status": "manual_approval_required" if drill_ready else "blocked",
+        "manual_approval_required": drill_ready,
+        "cutover_performed": False,
+        "drill_ready": drill_ready,
+        "blocking_reasons": list(drill_payload.get("blocking_reasons") or []),
+        "drill_summary_path": str(drill_payload.get("summary_path") or ""),
+        "summary_path": str(summary_path),
+        "prospective_changes": [
+            ".ai/config/orchestrator.yaml",
+            ".ai/archive/control-plane-v1-*.db",
+            ".ai/archive/runs-v1-*",
+            "host-orchestrator --run-task default route",
+        ],
+        "rollback_plan": rollback_plan,
+    }
+    summary_path.parent.mkdir(parents=True, exist_ok=True)
+    summary_path.write_text(json.dumps(payload, indent=2, ensure_ascii=True), encoding="utf-8")
+    return payload
+
+
 def perform_cutover(*, layout: RuntimeLayout) -> dict[str, object]:
     layout = _resolve_runtime_v2_layout(layout)
     timestamp = datetime.now(timezone.utc).strftime("%Y%m%d-%H%M%S")
