@@ -1,0 +1,33 @@
+task_id: T-20260708-000001-LIVE-CODING-PROBE
+title: Runtime V2 live coding probe
+description: |
+  Create or overwrite `runtime/host-orchestrator/fixtures/runtime-v2/live-coding-probe-output.md` with exactly this content:
+
+  # Runtime V2 Live Coding Probe
+
+  status: completed
+  boundary: runtime_v2 experimental lane only; default entrypoint remains v1
+
+  Do not modify any other file.
+target_repo: local-ai-dev-orchestrator
+base_branch: main
+branch_name: codex/runtime-v2-live-coding-probe
+worktree_path: .
+allowed_paths:
+  - runtime/host-orchestrator/fixtures/runtime-v2/live-coding-probe-output.md
+forbidden_paths:
+  - .env
+  - .env.*
+  - .git/config
+write_access: true
+risk_level: low
+merge_policy: manual_merge_only
+requires_network: false
+requires_gui: false
+dependency_refs: []
+artifacts_out:
+  - .ai/runs-v2/<run_id>/T-20260708-000001-LIVE-CODING-PROBE/<attempt_id>/result.json
+  - runtime/host-orchestrator/fixtures/runtime-v2/live-coding-probe-output.md
+verification_profile: fast
+continuation_policy: auto
+worker_profile: local_maint

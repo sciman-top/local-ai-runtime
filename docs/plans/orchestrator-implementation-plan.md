@@ -178,10 +178,10 @@
 - `WP3`：dependency block、ready dependency-blocked auto-continue、atomic admission、attempt-centric resume/retry 已落第一批实现
 - `WP4`：review receipt / bounded sidecar hook / pre-worker policy guard 已落第一批实现
 - `WP5`：attempt-level `regression_fixture.json` 已扩展到 completed / reviewing / gate-retryable final-result、dependency-blocked、admission-paused、pre-worker policy-guard blocked、worker-failure retryable / failed、retry queued 核心状态路径；最小 `--eval-regression-fixtures-v2` 已写出 repo-side summary
-- `WP6`：第一批 cutover drill / fail-closed guard 已落地；`--cutover-v2` 在 drill 未 ready 时不修改 `runtime.active_version`
+- `WP6`：第一批 cutover drill / fail-closed guard 已落地；`--cutover-v2` 在 drill 未 ready 时不修改 `runtime.active_version`；当前已有一条真实 `local_maint` v2 live coding probe completed，eval summary `ok=true`，cutover drill `ready=true / cutover_performed=false`
 - 文档/spec/verifier 已开始同步吸收 `Kernel V2`，但 `planning-status.current_active_queue` 仍保持 `PHASE-1-VERTICAL-SLICE`
 
 ### 下一步
 
-- 下一步应补真实本地编码任务 v2 自动闭环证据，并重跑 `--eval-regression-fixtures-v2` 与 `--cutover-drill-v2`
+- 下一步应在不改默认入口的前提下补充 cutover review / rollback drill，确认默认入口切换的人工边界、恢复路径和证据归档口径
 - `WP6` 仍必须保持 default v1，直到 cutover 条件、门禁与人工边界真实满足

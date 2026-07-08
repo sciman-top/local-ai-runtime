@@ -235,6 +235,7 @@ cutover 之前必须同时满足：
 - `runtime_v2` 已吸收进 authoritative docs 与代码
 - `--cutover-drill-v2` 会写出 `.ai/runs-v2/_cutover/cutover-drill-summary.json`，只做前置条件检查，不切换默认入口
 - `--cutover-v2` 会先跑 cutover drill；drill 未 ready 时 fail-closed，返回 blocked summary 且不修改 `runtime.active_version`
+- 当前已有一条真实 `local_maint` v2 live coding probe completed，`--eval-regression-fixtures-v2` 为 `ok=true`，`--cutover-drill-v2` 为 `ready=true / cutover_performed=false`
 - 默认入口未切换
 - active queue 未改写
 - Hermes / AgentBridge 仍保留 compatibility / baseline / adapter 边界

@@ -85,6 +85,7 @@
   - Status note:
     - 2026-07-08 已落 `--cutover-drill-v2`：检查 `runtime_v2` enabled、默认入口仍为 v1、至少一条 completed v2 attempt、以及 regression fixture eval summary，并写出 `.ai/runs-v2/_cutover/cutover-drill-summary.json`
     - 2026-07-08 已让 `--cutover-v2` 先跑 drill；drill 未 ready 时 fail-closed，不修改 `runtime.active_version`
+    - 2026-07-08 已开放 `runtime.experimental_v2_enabled=true`，并用真实 `local_maint` / Codex SDK v2 probe 完成一条低风险本地写入任务；`--eval-regression-fixtures-v2` 当前 `fixture_count=1 / ok=true`，`--cutover-drill-v2` 当前 `ready=true / cutover_performed=false`
     - `K2-T06` 未标完成：真实默认入口切换仍需满足 cutover 条件、门禁与人工边界，当前不声明 live accepted
 
 ## Phase 1

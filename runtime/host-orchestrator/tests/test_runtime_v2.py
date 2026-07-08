@@ -17,7 +17,7 @@ from host_orchestrator.runtime_v2.migration import perform_cutover, run_cutover_
 from host_orchestrator.runtime_v2.runner import RuntimeV2Config, RuntimeV2Runner
 from host_orchestrator.worker import WorkerRequest, WorkerResult
 
-from support import copy_runtime_config, runtime_v2_task_payload
+from support import REPO_ROOT, copy_runtime_config, runtime_v2_task_payload
 
 
 def _seed_repo(tmp_path: Path, *, active_version: str = "v1") -> tuple[Path, RuntimeLayout]:
@@ -117,6 +117,39 @@ def test_runtime_config_loads_runtime_v2_sections(tmp_path: Path) -> None:
     assert set(bundle.policies.verification_profiles) >= {"fast", "full"}
     assert set(bundle.policies.continuation_policies) >= {"auto", "guarded"}
     assert "default" in bundle.policies.retry_policies
+
+
+def test_repo_runtime_v2_experimental_lane_is_enabled_without_default_cutover() -> None:
+    bundle = load_runtime_config(REPO_ROOT)
+
+    assert bundle.runtime.active_version == "v1"
+    assert bundle.runtime.experimental_v2_enabled is True
+
+
+def test_runtime_v2_live_coding_probe_fixture_is_safe_and_loadable() -> None:
+    task_path = (
+        REPO_ROOT
+        / "runtime"
+        / "host-orchestrator"
+        / "fixtures"
+        / "runtime-v2"
+        / "tasks"
+        / "T-20260708-000001-live-coding-probe.yaml"
+    )
+
+    task = load_task(task_path)
+
+    assert task.task_id == "T-20260708-000001-LIVE-CODING-PROBE"
+    assert task.worker_profile == "local_maint"
+    assert task.verification_profile == "fast"
+    assert task.continuation_policy == "auto"
+    assert task.risk_level == "low"
+    assert task.write_access is True
+    assert task.requires_network is False
+    assert task.requires_gui is False
+    assert task.allowed_paths == (
+        "runtime/host-orchestrator/fixtures/runtime-v2/live-coding-probe-output.md",
+    )
 
 
 def test_runtime_v2_task_rejects_legacy_authored_fields(tmp_path: Path) -> None:

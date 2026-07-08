@@ -5,7 +5,7 @@ run:
 
 runtime:
   active_version: v1
-  experimental_v2_enabled: false
+  experimental_v2_enabled: true
   control_plane_db_v2: .ai/state/control-plane-v2.db
   artifact_root_v2: .ai/runs-v2
 
