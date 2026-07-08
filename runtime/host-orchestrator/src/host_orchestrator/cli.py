@@ -18,6 +18,7 @@ from host_orchestrator.runtime_v2.migration import (
     run_cutover_rollback_drill,
     run_cutover_review,
     validate_cutover_operator_approval,
+    write_cutover_operator_approval_template,
     write_migration_manifest,
 )
 from host_orchestrator.runtime_v2.evaluation import evaluate_regression_fixtures
@@ -197,6 +198,11 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Run the runtime_v2 rollback restore drill without switching runtime.active_version.",
     )
+    lifecycle_v2_group.add_argument(
+        "--cutover-approval-template-v2",
+        action="store_true",
+        help="Write an editable runtime_v2 operator approval template without switching runtime.active_version.",
+    )
     parser.add_argument(
         "--confirm-cutover-v2",
         action="store_true",
@@ -207,6 +213,12 @@ def build_parser() -> argparse.ArgumentParser:
         type=Path,
         default=None,
         help="Operator approval JSON required with --confirm-cutover-v2 before switching runtime.active_version.",
+    )
+    parser.add_argument(
+        "--cutover-approval-template-output",
+        type=Path,
+        default=None,
+        help="Optional output path for --cutover-approval-template-v2.",
     )
     parser.add_argument(
         "--at",
@@ -430,6 +442,14 @@ def main(argv: list[str] | None = None) -> int:
         payload = run_cutover_rollback_drill(layout=runtime_v2_layout)
         print(json.dumps(payload, indent=2, ensure_ascii=False))
         return 0 if payload["rollback_ready"] else 1
+
+    if args.cutover_approval_template_v2:
+        payload = write_cutover_operator_approval_template(
+            layout=runtime_v2_layout,
+            output_path=args.cutover_approval_template_output,
+        )
+        print(json.dumps(payload, indent=2, ensure_ascii=False))
+        return 0 if payload["template_written"] else 1
 
     if args.revalidate_evidence_index is not None:
         evidence_index_path = args.revalidate_evidence_index

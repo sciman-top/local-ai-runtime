@@ -304,6 +304,71 @@ def validate_cutover_operator_approval(
     return payload
 
 
+def write_cutover_operator_approval_template(
+    *,
+    layout: RuntimeLayout,
+    output_path: Path | None = None,
+) -> dict[str, object]:
+    layout = _resolve_runtime_v2_layout(layout)
+    drill_payload = run_cutover_drill(layout=layout)
+    if drill_payload["ready"]:
+        review_payload = run_cutover_review(layout=layout, drill_payload=drill_payload)
+        rollback_payload = run_cutover_rollback_drill(layout=layout)
+    else:
+        review_payload = {}
+        rollback_payload = {}
+    rollback_ready = rollback_payload.get("rollback_ready") is True
+    template_ready = bool(drill_payload["ready"]) and rollback_ready
+    summary_path = layout.runs_v2_root / "_cutover" / "cutover-approval-template-summary.json"
+    template_path = (
+        _resolve_optional_repo_path(layout.repo_root, output_path)
+        if output_path is not None
+        else layout.runs_v2_root / "_cutover" / "operator-approval.template.json"
+    )
+    blocking_reasons = []
+    if not drill_payload["ready"]:
+        blocking_reasons.extend(str(item) for item in drill_payload.get("blocking_reasons") or [])
+    if drill_payload["ready"] and not rollback_ready:
+        blocking_reasons.extend(str(item) for item in rollback_payload.get("blocking_reasons") or [])
+
+    template_payload = {
+        "schema_version": "runtime_v2_cutover_operator_approval.v1",
+        "approved": False,
+        "approved_by": "",
+        "approved_at": "",
+        "review_summary_path": str(review_payload.get("summary_path") or ""),
+        "rollback_drill_summary_path": str(rollback_payload.get("summary_path") or ""),
+        "acknowledged_risks": [
+            "default_entrypoint_switch",
+            "rollback_restore_required",
+        ],
+        "operator_instructions": [
+            "Review the referenced cutover review and rollback drill summaries.",
+            "Set approved=true only after manual acceptance.",
+            "Fill approved_by and approved_at before passing this file to --cutover-approval-ref.",
+        ],
+    }
+    if template_ready:
+        template_path.parent.mkdir(parents=True, exist_ok=True)
+        template_path.write_text(json.dumps(template_payload, indent=2, ensure_ascii=True), encoding="utf-8")
+
+    payload = {
+        "schema_version": "runtime_v2_cutover_operator_approval_template.v1",
+        "status": "template_written" if template_ready else "blocked",
+        "template_written": template_ready,
+        "cutover_performed": False,
+        "template_path": str(template_path) if template_ready else "",
+        "drill_summary_path": str(drill_payload.get("summary_path") or ""),
+        "review_summary_path": str(review_payload.get("summary_path") or ""),
+        "rollback_drill_summary_path": str(rollback_payload.get("summary_path") or ""),
+        "blocking_reasons": blocking_reasons,
+        "summary_path": str(summary_path),
+    }
+    summary_path.parent.mkdir(parents=True, exist_ok=True)
+    summary_path.write_text(json.dumps(payload, indent=2, ensure_ascii=True), encoding="utf-8")
+    return payload
+
+
 def perform_cutover(*, layout: RuntimeLayout) -> dict[str, object]:
     layout = _resolve_runtime_v2_layout(layout)
     timestamp = datetime.now(timezone.utc).strftime("%Y%m%d-%H%M%S")

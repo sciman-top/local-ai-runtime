@@ -18,6 +18,7 @@ from host_orchestrator.runtime_v2.migration import (
     run_cutover_drill,
     run_cutover_rollback_drill,
     run_cutover_review,
+    validate_cutover_operator_approval,
     write_migration_manifest,
 )
 from host_orchestrator.runtime_v2.runner import RuntimeV2Config, RuntimeV2Runner
@@ -1136,6 +1137,87 @@ def test_runtime_v2_cli_cutover_requires_confirmation_and_operator_approval(
     )
     assert payload["archived_db"] is not None
     assert orchestrator_payload["runtime"]["active_version"] == "v2"
+
+
+def test_runtime_v2_cutover_approval_template_is_non_destructive_and_editable(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    repo_root, layout = _seed_repo(tmp_path)
+    task_path = _write_v2_task(repo_root, "TASK-RUNTIME-V2-APPROVAL-TEMPLATE")
+    runner = RuntimeV2Runner(
+        RuntimeV2Config(workspace_root=repo_root, layout=layout, run_id="runtime-v2-approval-template"),
+        worker=_StaticWorker("approval template worker output"),
+    )
+    runner.run_task(task_path)
+    template_path = repo_root / ".ai" / "runs-v2" / "_cutover" / "operator-approval.template.json"
+
+    exit_code = cli_main(
+        [
+            "--repo-root",
+            str(repo_root),
+            "--cutover-approval-template-v2",
+            "--cutover-approval-template-output",
+            str(template_path),
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+    template_payload = json.loads(template_path.read_text(encoding="utf-8"))
+    orchestrator_payload = yaml.safe_load(
+        (repo_root / ".ai" / "config" / "orchestrator.yaml").read_text(encoding="utf-8")
+    )
+
+    assert exit_code == 0
+    assert payload["schema_version"] == "runtime_v2_cutover_operator_approval_template.v1"
+    assert payload["status"] == "template_written"
+    assert payload["template_written"] is True
+    assert payload["cutover_performed"] is False
+    assert payload["template_path"] == str(template_path)
+    assert template_payload["schema_version"] == "runtime_v2_cutover_operator_approval.v1"
+    assert template_payload["approved"] is False
+    assert template_payload["approved_by"] == ""
+    assert template_payload["approved_at"] == ""
+    assert template_payload["review_summary_path"].endswith("cutover-review-summary.json")
+    assert template_payload["rollback_drill_summary_path"].endswith(
+        "cutover-rollback-drill-summary.json"
+    )
+    assert set(template_payload["acknowledged_risks"]) == {
+        "default_entrypoint_switch",
+        "rollback_restore_required",
+    }
+    assert orchestrator_payload["runtime"]["active_version"] == "v1"
+
+    review_payload = json.loads(Path(template_payload["review_summary_path"]).read_text(encoding="utf-8"))
+    rollback_payload = json.loads(
+        Path(template_payload["rollback_drill_summary_path"]).read_text(encoding="utf-8")
+    )
+    default_validation = validate_cutover_operator_approval(
+        layout=layout,
+        approval_ref=template_path,
+        review_payload=review_payload,
+        rollback_payload=rollback_payload,
+    )
+    assert default_validation["approved"] is False
+    assert {"approval_flag", "approval_identity"} <= set(default_validation["blocking_reasons"])
+
+    template_payload["approved"] = True
+    template_payload["approved_by"] = "test-operator"
+    template_payload["approved_at"] = "2026-07-08T00:00:00Z"
+    template_path.write_text(json.dumps(template_payload, indent=2), encoding="utf-8")
+    approved_validation = validate_cutover_operator_approval(
+        layout=layout,
+        approval_ref=template_path,
+        review_payload=review_payload,
+        rollback_payload=rollback_payload,
+    )
+    orchestrator_payload = yaml.safe_load(
+        (repo_root / ".ai" / "config" / "orchestrator.yaml").read_text(encoding="utf-8")
+    )
+
+    assert approved_validation["status"] == "approved"
+    assert approved_validation["approved"] is True
+    assert approved_validation["cutover_performed"] is False
+    assert orchestrator_payload["runtime"]["active_version"] == "v1"
 
 
 def test_runtime_v2_cutover_rollback_drill_validates_restore_path_without_cutover(
