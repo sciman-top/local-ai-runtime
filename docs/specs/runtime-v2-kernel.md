@@ -214,6 +214,7 @@
 - `--migrate-control-plane-v2`
 - `--eval-regression-fixtures-v2`
 - `--cutover-drill-v2`
+- `--cutover-rollback-drill-v2`
 - `--cutover-v2`
 - `--confirm-cutover-v2`
 
@@ -237,8 +238,9 @@ cutover 之前必须同时满足：
 - `--cutover-drill-v2` 会写出 `.ai/runs-v2/_cutover/cutover-drill-summary.json`，只做前置条件检查，不切换默认入口
 - `--cutover-v2` 会先跑 cutover drill；drill 未 ready 时 fail-closed，返回 blocked summary 且不修改 `runtime.active_version`
 - drill ready 后，`--cutover-v2` 仍会先写出 `.ai/runs-v2/_cutover/cutover-review-summary.json`，返回 `manual_approval_required` 且不修改 `runtime.active_version`
+- `--cutover-rollback-drill-v2` 会写出 `.ai/runs-v2/_cutover/cutover-rollback-drill-summary.json`，验证 review summary、恢复目标、archive root 与当前默认入口仍为 v1；它不执行 restore，也不切换默认入口
 - 只有同时传入 `--cutover-v2 --confirm-cutover-v2`，才允许执行默认入口切换；该路径必须保留 review summary 与 rollback plan 引用
-- 当前已有一条真实 `local_maint` v2 live coding probe completed，`--eval-regression-fixtures-v2` 为 `ok=true`，`--cutover-drill-v2` 为 `ready=true / cutover_performed=false`，`--cutover-v2` 默认返回 `manual_approval_required / cutover_performed=false`
+- 当前已有一条真实 `local_maint` v2 live coding probe completed，`--eval-regression-fixtures-v2` 为 `ok=true`，`--cutover-drill-v2` 为 `ready=true / cutover_performed=false`，`--cutover-v2` 默认返回 `manual_approval_required / cutover_performed=false`，`--cutover-rollback-drill-v2` 为 `ready=true / restore_performed=false`
 - 默认入口未切换
 - active queue 未改写
 - Hermes / AgentBridge 仍保留 compatibility / baseline / adapter 边界

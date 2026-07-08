@@ -15,6 +15,7 @@ from host_orchestrator.host_local import HostLocalConfig, HostLocalRunner
 from host_orchestrator.runtime_v2.migration import (
     perform_cutover,
     run_cutover_drill,
+    run_cutover_rollback_drill,
     run_cutover_review,
     write_migration_manifest,
 )
@@ -189,6 +190,11 @@ def build_parser() -> argparse.ArgumentParser:
         "--cutover-drill-v2",
         action="store_true",
         help="Run the runtime_v2 cutover drill without switching runtime.active_version.",
+    )
+    lifecycle_v2_group.add_argument(
+        "--cutover-rollback-drill-v2",
+        action="store_true",
+        help="Run the runtime_v2 rollback restore drill without switching runtime.active_version.",
     )
     parser.add_argument(
         "--confirm-cutover-v2",
@@ -400,6 +406,11 @@ def main(argv: list[str] | None = None) -> int:
         payload = run_cutover_drill(layout=runtime_v2_layout)
         print(json.dumps(payload, indent=2, ensure_ascii=False))
         return 0 if payload["ready"] else 1
+
+    if args.cutover_rollback_drill_v2:
+        payload = run_cutover_rollback_drill(layout=runtime_v2_layout)
+        print(json.dumps(payload, indent=2, ensure_ascii=False))
+        return 0 if payload["rollback_ready"] else 1
 
     if args.revalidate_evidence_index is not None:
         evidence_index_path = args.revalidate_evidence_index

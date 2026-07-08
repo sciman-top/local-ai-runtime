@@ -127,6 +127,72 @@ def run_cutover_review(
     return payload
 
 
+def run_cutover_rollback_drill(*, layout: RuntimeLayout) -> dict[str, object]:
+    layout = _resolve_runtime_v2_layout(layout)
+    runtime_config = load_runtime_config(layout.repo_root)
+    review_payload = run_cutover_review(layout=layout)
+    rollback_plan = review_payload.get("rollback_plan")
+    if not isinstance(rollback_plan, dict):
+        rollback_plan = {}
+    archive_root_error = ""
+    try:
+        layout.archive_root.mkdir(parents=True, exist_ok=True)
+        archive_root_available = True
+    except OSError as exc:
+        archive_root_available = False
+        archive_root_error = str(exc)
+    checks = [
+        _check(
+            name="review_manual_approval_required",
+            passed=review_payload.get("status") == "manual_approval_required",
+            detail="cutover rollback drill requires a ready review summary that still blocks on manual approval",
+            review_status=str(review_payload.get("status") or ""),
+        ),
+        _check(
+            name="restore_config_target",
+            passed=rollback_plan.get("restore_active_version") == "v1"
+            and rollback_plan.get("restore_config_path") == ".ai/config/orchestrator.yaml",
+            detail="rollback plan must restore runtime.active_version=v1 through the repo-owned orchestrator config",
+        ),
+        _check(
+            name="archive_root_available",
+            passed=archive_root_available,
+            detail="archive root must be available before a confirmed cutover can be considered recoverable",
+            archive_root=str(layout.archive_root),
+            error=archive_root_error,
+        ),
+        _check(
+            name="default_entrypoint_currently_v1",
+            passed=runtime_config.runtime.active_version == "v1",
+            detail="rollback drill is only non-destructive while the default entrypoint remains v1",
+            value=runtime_config.runtime.active_version,
+        ),
+    ]
+    blocking_reasons = [
+        str(check["name"])
+        for check in checks
+        if check["status"] != "pass"
+    ]
+    rollback_ready = not blocking_reasons
+    summary_path = layout.runs_v2_root / "_cutover" / "cutover-rollback-drill-summary.json"
+    payload = {
+        "schema_version": "runtime_v2_cutover_rollback_drill.v1",
+        "status": "ready" if rollback_ready else "blocked",
+        "rollback_ready": rollback_ready,
+        "restore_performed": False,
+        "cutover_performed": False,
+        "active_version": runtime_config.runtime.active_version,
+        "checks": checks,
+        "blocking_reasons": blocking_reasons,
+        "review_summary_path": str(review_payload.get("summary_path") or ""),
+        "summary_path": str(summary_path),
+        "rollback_plan": rollback_plan,
+    }
+    summary_path.parent.mkdir(parents=True, exist_ok=True)
+    summary_path.write_text(json.dumps(payload, indent=2, ensure_ascii=True), encoding="utf-8")
+    return payload
+
+
 def perform_cutover(*, layout: RuntimeLayout) -> dict[str, object]:
     layout = _resolve_runtime_v2_layout(layout)
     timestamp = datetime.now(timezone.utc).strftime("%Y%m%d-%H%M%S")
