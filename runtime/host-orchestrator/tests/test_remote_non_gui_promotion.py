@@ -365,3 +365,63 @@ def test_cli_runs_remote_non_gui_promotion_and_prints_json(
     assert payload["ok"] is True
     assert payload["scenario_count"] == 2
     assert payload["state_counts"] == {"waiting_handoff": 2}
+
+
+def test_cli_validates_runner_acceptance_ref_against_worker_profile(
+    tmp_path: Path,
+    capsys,
+) -> None:
+    repo_root = _seed_repo(tmp_path)
+    acceptance_ref = _write_remote_non_gui_acceptance_ref(repo_root)
+
+    exit_code = cli_main(
+        [
+            "--repo-root",
+            str(repo_root),
+            "--worker-profile",
+            "remote_non_gui_probe",
+            "--validate-runner-acceptance",
+            acceptance_ref,
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+
+    assert exit_code == 0
+    assert payload["status"] == "pass"
+    assert payload["acceptance_ref"] == acceptance_ref
+    assert payload["worker_profile"] == "remote_non_gui_probe"
+    assert payload["lane"] == "remote_non_gui"
+    assert payload["runner_kind"] == "codex_exec"
+    assert payload["runner_wired"] is False
+    assert payload["validation_only"] is True
+    assert payload["runner_executed"] is False
+
+
+def test_cli_runner_acceptance_validation_fails_on_profile_mismatch(
+    tmp_path: Path,
+    capsys,
+) -> None:
+    repo_root = _seed_repo(tmp_path)
+    acceptance_ref = _write_remote_non_gui_acceptance_ref(repo_root)
+
+    exit_code = cli_main(
+        [
+            "--repo-root",
+            str(repo_root),
+            "--worker-profile",
+            "vm_gui_probe",
+            "--validate-runner-acceptance",
+            acceptance_ref,
+        ]
+    )
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+
+    assert exit_code == 1
+    assert payload["status"] == "fail"
+    assert payload["acceptance_ref"] == acceptance_ref
+    assert payload["worker_profile"] == "vm_gui_probe"
+    assert "worker_profile" in payload["error"]
+    assert payload["validation_only"] is True
+    assert payload["runner_executed"] is False

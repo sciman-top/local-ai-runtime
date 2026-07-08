@@ -149,7 +149,8 @@ acceptance:
 11. 当 non-host-local profile 显式设置 `runner_wired=true` 时，必须同时提供 repo-relative、已存在、schema-valid 的 `runner_acceptance_ref`；否则 runtime config loading 必须 fail closed，不得仅凭布尔开关越过 handoff
 12. `runner_acceptance_ref` 必须是 JSON object，且最小字段为 `schema_version / acceptance_status / worker_profile / lane / runner_kind / accepted_by / accepted_at / acceptance_scope / evidence_refs`
 13. `schema_version` 必须等于 `non_host_local_runner_acceptance.v1`，`acceptance_status` 必须等于 `accepted`，且 `worker_profile / lane / runner_kind` 必须匹配当前选中的 worker profile
-14. 当临时测试配置显式设置 `runner_wired=true` 且绑定 `runner_acceptance_ref` 时，runtime 可以越过 pre-worker handoff 并调用注入的 runner；这只证明 repo-side wiring branch，不等于 committed config 已接线、真实远端执行、platform compatibility green 或 live accepted
+14. 在修改 committed `workers.yaml` 前，候选 `runner_acceptance_ref` 可通过 `host-orchestrator --validate-runner-acceptance <candidate.json> --worker-profile <profile>` 独立校验；该命令只输出 `validation_only=true / runner_executed=false` 的 JSON 结果，不执行 runner
+15. 当临时测试配置显式设置 `runner_wired=true` 且绑定 `runner_acceptance_ref` 时，runtime 可以越过 pre-worker handoff 并调用注入的 runner；这只证明 repo-side wiring branch，不等于 committed config 已接线、真实远端执行、platform compatibility green 或 live accepted
 
 ## Non-Host-Local Runner Acceptance Payload
 
@@ -159,6 +160,14 @@ acceptance:
 - `templates/non-host-local-runner-acceptance.schema.json`
 
 `runner_acceptance_ref` 只是一层机器可校验的最低证据守卫：它证明某个 non-host-local profile 的接线前置证据文件存在、结构正确、且绑定当前 `worker_profile / lane / runner_kind`。它不等同于真实 remote/vm runner 已执行，也不替代后续 runner receipt、host/VM evidence、task-level artifacts、人工/业务验收边界。
+
+候选 acceptance 文件进入 committed profile 前，必须先用 CLI 对照目标 profile 做 repo-side 校验：
+
+```powershell
+uv run --project .\runtime\host-orchestrator host-orchestrator --repo-root . --worker-profile remote_non_gui_probe --validate-runner-acceptance <candidate.json>
+```
+
+该命令只校验文件与 profile 是否匹配；成功输出也不代表 runner 已执行或已验收。
 
 ## Mapping To Codex Runtime
 

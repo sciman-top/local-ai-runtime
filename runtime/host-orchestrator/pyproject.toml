@@ -9,6 +9,9 @@ dependencies = [
     "PyYAML>=6.0",
 ]
 
+[project.scripts]
+host-orchestrator = "host_orchestrator.cli:main"
+
 [dependency-groups]
 dev = [
     "pytest>=9.0.0",

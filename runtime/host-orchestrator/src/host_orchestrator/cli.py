@@ -12,6 +12,10 @@ from host_orchestrator.multi_worker_simulation import run_multi_worker_simulatio
 from host_orchestrator.remote_non_gui_promotion import run_remote_non_gui_promotion
 from host_orchestrator.paths import RuntimeLayout, discover_repo_root
 from host_orchestrator.host_local import HostLocalConfig, HostLocalRunner
+from host_orchestrator.runner_acceptance import (
+    RunnerAcceptanceError,
+    validate_runner_acceptance_file,
+)
 from host_orchestrator.runtime_v2.migration import (
     perform_cutover,
     run_cutover_drill,
@@ -135,6 +139,12 @@ def build_parser() -> argparse.ArgumentParser:
         type=Path,
         default=None,
         help="Recompute sha256/byte_count for an existing evidence_index.json and exit non-zero on mismatch.",
+    )
+    parser.add_argument(
+        "--validate-runner-acceptance",
+        type=Path,
+        default=None,
+        help="Validate a non-host-local runner acceptance JSON against a repo-owned --worker-profile without executing the runner.",
     )
     lifecycle_group = parser.add_mutually_exclusive_group()
     lifecycle_group.add_argument(
@@ -464,6 +474,108 @@ def main(argv: list[str] | None = None) -> int:
         )
         print(json.dumps(result.to_dict(), indent=2, ensure_ascii=False))
         return 0 if result.ok else 1
+
+    if args.validate_runner_acceptance is not None:
+        acceptance_ref = args.validate_runner_acceptance.as_posix()
+        if runtime_bundle is None:
+            print(
+                json.dumps(
+                    {
+                        "status": "fail",
+                        "acceptance_ref": acceptance_ref,
+                        "worker_profile": args.worker_profile,
+                        "error": "runtime_config_unavailable",
+                        "validation_only": True,
+                        "runner_executed": False,
+                    },
+                    indent=2,
+                    ensure_ascii=False,
+                )
+            )
+            return 1
+        if args.worker_profile is None:
+            print(
+                json.dumps(
+                    {
+                        "status": "fail",
+                        "acceptance_ref": acceptance_ref,
+                        "worker_profile": None,
+                        "error": "--validate-runner-acceptance requires --worker-profile",
+                        "validation_only": True,
+                        "runner_executed": False,
+                    },
+                    indent=2,
+                    ensure_ascii=False,
+                )
+            )
+            return 1
+        try:
+            worker_profile = runtime_bundle.worker_profile(args.worker_profile)
+        except RuntimeConfigError as exc:
+            print(
+                json.dumps(
+                    {
+                        "status": "fail",
+                        "acceptance_ref": acceptance_ref,
+                        "worker_profile": args.worker_profile,
+                        "error": str(exc),
+                        "validation_only": True,
+                        "runner_executed": False,
+                    },
+                    indent=2,
+                    ensure_ascii=False,
+                )
+            )
+            return 1
+        acceptance_path = args.validate_runner_acceptance
+        if not acceptance_path.is_absolute():
+            acceptance_path = repo_root / acceptance_path
+        try:
+            validate_runner_acceptance_file(
+                acceptance_path=acceptance_path.resolve(strict=False),
+                acceptance_ref=acceptance_ref,
+                worker_profile=worker_profile.name,
+                lane=worker_profile.lane,
+                runner_kind=worker_profile.worker_kind,
+            )
+        except RunnerAcceptanceError as exc:
+            print(
+                json.dumps(
+                    {
+                        "status": "fail",
+                        "acceptance_ref": acceptance_ref,
+                        "acceptance_path": str(acceptance_path),
+                        "worker_profile": worker_profile.name,
+                        "lane": worker_profile.lane,
+                        "runner_kind": worker_profile.worker_kind,
+                        "runner_wired": worker_profile.runner_wired,
+                        "error": str(exc),
+                        "validation_only": True,
+                        "runner_executed": False,
+                    },
+                    indent=2,
+                    ensure_ascii=False,
+                )
+            )
+            return 1
+        print(
+            json.dumps(
+                {
+                    "status": "pass",
+                    "acceptance_ref": acceptance_ref,
+                    "acceptance_path": str(acceptance_path),
+                    "worker_profile": worker_profile.name,
+                    "lane": worker_profile.lane,
+                    "runner_kind": worker_profile.worker_kind,
+                    "runner_wired": worker_profile.runner_wired,
+                    "validation_only": True,
+                    "runner_executed": False,
+                },
+                indent=2,
+                ensure_ascii=False,
+            )
+        )
+        return 0
 
     changed_at = normalize_timestamp(args.at or agentbridge.utc_now_iso())
 
