@@ -193,6 +193,117 @@ def run_cutover_rollback_drill(*, layout: RuntimeLayout) -> dict[str, object]:
     return payload
 
 
+def validate_cutover_operator_approval(
+    *,
+    layout: RuntimeLayout,
+    approval_ref: Path | None,
+    review_payload: dict[str, object],
+    rollback_payload: dict[str, object],
+) -> dict[str, object]:
+    layout = _resolve_runtime_v2_layout(layout)
+    summary_path = layout.runs_v2_root / "_cutover" / "cutover-operator-approval-summary.json"
+    approval_path = _resolve_optional_repo_path(layout.repo_root, approval_ref)
+    approval_payload: dict[str, object] = {}
+    approval_error = ""
+    if approval_path is not None and approval_path.exists():
+        try:
+            loaded_payload = json.loads(approval_path.read_text(encoding="utf-8"))
+            if isinstance(loaded_payload, dict):
+                approval_payload = loaded_payload
+            else:
+                approval_error = "approval file must contain a JSON object"
+        except (OSError, json.JSONDecodeError) as exc:
+            approval_error = str(exc)
+    elif approval_path is not None:
+        approval_error = "approval file does not exist"
+
+    acknowledged_risks = approval_payload.get("acknowledged_risks")
+    if not isinstance(acknowledged_risks, list):
+        acknowledged_risks = []
+    required_risks = {"default_entrypoint_switch", "rollback_restore_required"}
+    acknowledged_risk_set = {str(item) for item in acknowledged_risks}
+    checks = [
+        _check(
+            name="approval_ref",
+            passed=approval_path is not None,
+            detail="confirmed cutover requires --cutover-approval-ref",
+            approval_ref=str(approval_path) if approval_path is not None else "",
+        ),
+        _check(
+            name="approval_file",
+            passed=approval_path is not None and approval_path.exists() and not approval_error,
+            detail="operator approval evidence must be a readable JSON object",
+            error=approval_error,
+        ),
+        _check(
+            name="approval_schema",
+            passed=approval_payload.get("schema_version") == "runtime_v2_cutover_operator_approval.v1",
+            detail="operator approval evidence must use schema runtime_v2_cutover_operator_approval.v1",
+        ),
+        _check(
+            name="approval_flag",
+            passed=approval_payload.get("approved") is True,
+            detail="operator approval evidence must set approved=true",
+        ),
+        _check(
+            name="approval_identity",
+            passed=bool(str(approval_payload.get("approved_by") or "").strip())
+            and bool(str(approval_payload.get("approved_at") or "").strip()),
+            detail="operator approval evidence must include approved_by and approved_at",
+        ),
+        _check(
+            name="review_summary_ref",
+            passed=_same_repo_path_text(
+                approval_payload.get("review_summary_path"),
+                review_payload.get("summary_path"),
+                repo_root=layout.repo_root,
+            ),
+            detail="operator approval evidence must reference the current cutover review summary",
+        ),
+        _check(
+            name="rollback_drill_summary_ref",
+            passed=_same_repo_path_text(
+                approval_payload.get("rollback_drill_summary_path"),
+                rollback_payload.get("summary_path"),
+                repo_root=layout.repo_root,
+            ),
+            detail="operator approval evidence must reference the current rollback drill summary",
+        ),
+        _check(
+            name="rollback_drill_ready",
+            passed=rollback_payload.get("rollback_ready") is True,
+            detail="confirmed cutover requires rollback drill to be ready",
+        ),
+        _check(
+            name="acknowledged_risks",
+            passed=required_risks <= acknowledged_risk_set,
+            detail="operator approval evidence must acknowledge default switch and rollback restore risks",
+            required=sorted(required_risks),
+        ),
+    ]
+    blocking_reasons = [
+        str(check["name"])
+        for check in checks
+        if check["status"] != "pass"
+    ]
+    approved = not blocking_reasons
+    payload = {
+        "schema_version": "runtime_v2_cutover_operator_approval.v1",
+        "status": "approved" if approved else "approval_required",
+        "approved": approved,
+        "cutover_performed": False,
+        "approval_ref": str(approval_path) if approval_path is not None else "",
+        "checks": checks,
+        "blocking_reasons": blocking_reasons,
+        "review_summary_path": str(review_payload.get("summary_path") or ""),
+        "rollback_drill_summary_path": str(rollback_payload.get("summary_path") or ""),
+        "summary_path": str(summary_path),
+    }
+    summary_path.parent.mkdir(parents=True, exist_ok=True)
+    summary_path.write_text(json.dumps(payload, indent=2, ensure_ascii=True), encoding="utf-8")
+    return payload
+
+
 def perform_cutover(*, layout: RuntimeLayout) -> dict[str, object]:
     layout = _resolve_runtime_v2_layout(layout)
     timestamp = datetime.now(timezone.utc).strftime("%Y%m%d-%H%M%S")
@@ -255,6 +366,26 @@ def _check(*, name: str, passed: bool, detail: str, **extra: object) -> dict[str
     }
     payload.update(extra)
     return payload
+
+
+def _resolve_optional_repo_path(repo_root: Path, value: Path | None) -> Path | None:
+    if value is None:
+        return None
+    return value if value.is_absolute() else repo_root / value
+
+
+def _same_repo_path_text(value: object, expected: object, *, repo_root: Path) -> bool:
+    if not isinstance(value, str) or not value.strip():
+        return False
+    if not isinstance(expected, str) or not expected.strip():
+        return False
+    left = Path(value)
+    right = Path(expected)
+    if not left.is_absolute():
+        left = repo_root / left
+    if not right.is_absolute():
+        right = repo_root / right
+    return left.resolve(strict=False) == right.resolve(strict=False)
 
 
 def _utc_now_iso() -> str:

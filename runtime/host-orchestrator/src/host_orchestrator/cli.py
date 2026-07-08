@@ -17,6 +17,7 @@ from host_orchestrator.runtime_v2.migration import (
     run_cutover_drill,
     run_cutover_rollback_drill,
     run_cutover_review,
+    validate_cutover_operator_approval,
     write_migration_manifest,
 )
 from host_orchestrator.runtime_v2.evaluation import evaluate_regression_fixtures
@@ -200,6 +201,12 @@ def build_parser() -> argparse.ArgumentParser:
         "--confirm-cutover-v2",
         action="store_true",
         help="Explicitly approve --cutover-v2 after review; without this flag cutover only writes the review summary.",
+    )
+    parser.add_argument(
+        "--cutover-approval-ref",
+        type=Path,
+        default=None,
+        help="Operator approval JSON required with --confirm-cutover-v2 before switching runtime.active_version.",
     )
     parser.add_argument(
         "--at",
@@ -396,9 +403,21 @@ def main(argv: list[str] | None = None) -> int:
         if not args.confirm_cutover_v2:
             print(json.dumps(review_payload, indent=2, ensure_ascii=False))
             return 1
+        rollback_payload = run_cutover_rollback_drill(layout=runtime_v2_layout)
+        approval_payload = validate_cutover_operator_approval(
+            layout=runtime_v2_layout,
+            approval_ref=args.cutover_approval_ref,
+            review_payload=review_payload,
+            rollback_payload=rollback_payload,
+        )
+        if not approval_payload["approved"]:
+            print(json.dumps(approval_payload, indent=2, ensure_ascii=False))
+            return 1
         payload = perform_cutover(layout=runtime_v2_layout)
         payload["cutover_drill_summary_path"] = drill_payload["summary_path"]
         payload["cutover_review_summary_path"] = review_payload["summary_path"]
+        payload["cutover_rollback_drill_summary_path"] = rollback_payload["summary_path"]
+        payload["cutover_operator_approval_summary_path"] = approval_payload["summary_path"]
         print(json.dumps(payload, indent=2, ensure_ascii=False))
         return 0
 
