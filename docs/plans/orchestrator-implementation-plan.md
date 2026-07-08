@@ -183,5 +183,5 @@
 
 ### 下一步
 
-- 下一步应在不改默认入口的前提下补充真实人工审批 / cutover / restore 操作 runbook，或继续收紧 confirmed cutover 前的人工验收证据
+- 下一步应在不改默认入口的前提下继续收紧 confirmed cutover 前的人工验收证据；真实人工审批 / cutover / restore 操作 runbook 已落在 `docs/runbooks/runtime-v2-cutover-operator-runbook.md`
 - `WP6` 仍必须保持 default v1，直到 cutover 条件、门禁、人工边界与恢复路径真实满足

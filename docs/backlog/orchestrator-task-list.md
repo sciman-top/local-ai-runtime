@@ -92,6 +92,7 @@
     - 2026-07-08 已补 operator approval template 入口：`--cutover-approval-template-v2` 会生成默认 `approved=false` 的可编辑 approval JSON，并引用当前 review / rollback drill summary；该入口不执行 cutover，不修改默认入口
     - 2026-07-08 已补 operator approval audit 留痕：approval validation 会记录 `approval_sha256 / approval_byte_count / approved_by / approved_at`，并写出 sanitized `operator-approval-audit.json`；该留痕不执行 cutover
     - 2026-07-08 已补 archive restore acceptance：缺少 v1 DB 或 v1 runs 源时 rollback drill 返回 blocked，confirmed cutover 因 rollback drill 未 ready 继续 fail-closed
+    - 2026-07-08 已补真实人工审批 / cutover / restore 操作 runbook：`docs/runbooks/runtime-v2-cutover-operator-runbook.md` 定义 dry-run、approval、confirmed cutover、restore、evidence 与 stop conditions；该 runbook 不执行 cutover
     - `K2-T06` 未标完成：真实默认入口切换仍需满足 cutover 条件、门禁与人工边界，当前不声明 live accepted
 
 ## Phase 1

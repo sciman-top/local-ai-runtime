@@ -243,6 +243,7 @@ cutover 之前必须同时满足：
 - drill ready 后，`--cutover-v2` 仍会先写出 `.ai/runs-v2/_cutover/cutover-review-summary.json`，返回 `manual_approval_required` 且不修改 `runtime.active_version`
 - `--cutover-rollback-drill-v2` 会写出 `.ai/runs-v2/_cutover/cutover-rollback-drill-summary.json`，并同步写出 `.ai/runs-v2/_cutover/archive-restore-acceptance.json`；它会验证 review summary、恢复目标、archive root、v1 control-plane DB 源、v1 runs 源目录与当前默认入口仍为 v1，不执行 restore，也不切换默认入口
 - `--cutover-approval-template-v2` 会写出 `.ai/runs-v2/_cutover/operator-approval.template.json` 或 `--cutover-approval-template-output` 指定路径；模板默认 `approved=false`，只生成可人工编辑的 approval JSON，不切换默认入口
+- 真实人工审批、confirmed cutover 与 restore 操作顺序见 [Runtime V2 Cutover Operator Runbook](D:/CODE/local-ai-dev-orchestrator/docs/runbooks/runtime-v2-cutover-operator-runbook.md)
 - 只有同时传入 `--cutover-v2 --confirm-cutover-v2 --cutover-approval-ref <approval.json>`，且 rollback drill / archive restore acceptance / approval JSON 都校验通过，才允许执行默认入口切换；该路径必须保留 review summary、rollback drill summary、archive restore acceptance summary、operator approval summary 与 rollback plan 引用
 - approval JSON 必须使用 `runtime_v2_cutover_operator_approval.v1`，包含 `approved=true`、`approved_by`、`approved_at`、当前 review summary path、当前 rollback drill summary path，并确认 `default_entrypoint_switch / rollback_restore_required`
 - approval validation 会写出 `approval_sha256`、`approval_byte_count`、`approved_by`、`approved_at` 与 sanitized `operator-approval-audit.json`，用于确认审批文件留痕；该审计摘要不等于执行 cutover

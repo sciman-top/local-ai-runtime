@@ -30,6 +30,7 @@
 14. [orchestrator-implementation-plan.md](D:/CODE/local-ai-dev-orchestrator/docs/plans/orchestrator-implementation-plan.md)
 15. [orchestrator-task-list.md](D:/CODE/local-ai-dev-orchestrator/docs/backlog/orchestrator-task-list.md)
 16. [hermes-compatibility-demotion.md](D:/CODE/local-ai-dev-orchestrator/docs/migrations/hermes-compatibility-demotion.md)
+17. [runtime-v2-cutover-operator-runbook.md](D:/CODE/local-ai-dev-orchestrator/docs/runbooks/runtime-v2-cutover-operator-runbook.md)
 
 ## 当前主线口径
 
@@ -38,6 +39,7 @@
 - 当前代码仍在 `runtime/host-orchestrator` 上演进，不新建平行顶层包
 - `runtime/host-orchestrator` 是 `host_local` 可信运行时内核
 - `runtime/host-orchestrator/src/host_orchestrator/runtime_v2/` 已作为同仓新内核吸收进 authoritative docs；它当前是 experimental dual-track，不是默认入口，也不要求改 repo slug / 本地目录名
+- `docs/runbooks/runtime-v2-cutover-operator-runbook.md` 是 runtime_v2 默认入口切换的人工操作 runbook；它定义 cutover / approval / restore 边界，但不表示真实仓已执行 confirmed cutover
 - `.ai/state/control-plane.db` 是调度真源
 - `.ai/state/control-plane-v2.db` 是 v2 双轨控制面；`.ai/runs-v2/<run_id>/<task_id>/<attempt_id>/` 是 v2 尝试级工件面
 - `.ai/runs/<run_id>/<task_id>/` 是正式 evidence 面
