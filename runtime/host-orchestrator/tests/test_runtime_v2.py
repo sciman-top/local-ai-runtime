@@ -1321,6 +1321,67 @@ def test_runtime_v2_cutover_approval_requires_archive_restore_acceptance_ref(
     assert validation["cutover_performed"] is False
 
 
+def test_runtime_v2_cutover_approval_requires_utc_approved_at(
+    tmp_path: Path,
+) -> None:
+    repo_root, layout = _seed_repo(tmp_path)
+    task_path = _write_v2_task(repo_root, "TASK-RUNTIME-V2-APPROVAL-TIMESTAMP")
+    runner = RuntimeV2Runner(
+        RuntimeV2Config(
+            workspace_root=repo_root,
+            layout=layout,
+            run_id="runtime-v2-approval-timestamp",
+        ),
+        worker=_StaticWorker("approval timestamp worker output"),
+    )
+    runner.run_task(task_path)
+    _seed_legacy_v1_artifacts(layout)
+
+    rollback_payload = run_cutover_rollback_drill(
+        layout=layout.with_runtime_v2_paths(
+            control_plane_db_v2=".ai/state/control-plane-v2.db",
+            artifact_root_v2=".ai/runs-v2",
+        )
+    )
+    review_payload = json.loads(
+        Path(rollback_payload["review_summary_path"]).read_text(encoding="utf-8")
+    )
+    approval_ref = repo_root / ".ai" / "runs-v2" / "_cutover" / "operator-approval.json"
+    approval_ref.write_text(
+        json.dumps(
+            {
+                "schema_version": "runtime_v2_cutover_operator_approval.v1",
+                "approved": True,
+                "approved_by": "test-operator",
+                "approved_at": "not-a-utc-timestamp",
+                "review_summary_path": review_payload["summary_path"],
+                "rollback_drill_summary_path": rollback_payload["summary_path"],
+                "archive_restore_acceptance_path": rollback_payload[
+                    "archive_restore_acceptance_path"
+                ],
+                "acknowledged_risks": [
+                    "default_entrypoint_switch",
+                    "rollback_restore_required",
+                ],
+            },
+            indent=2,
+        ),
+        encoding="utf-8",
+    )
+
+    validation = validate_cutover_operator_approval(
+        layout=layout,
+        approval_ref=approval_ref,
+        review_payload=review_payload,
+        rollback_payload=rollback_payload,
+    )
+
+    assert validation["status"] == "approval_required"
+    assert validation["approved"] is False
+    assert "approval_timestamp" in validation["blocking_reasons"]
+    assert validation["cutover_performed"] is False
+
+
 def test_runtime_v2_cutover_rollback_drill_validates_restore_path_without_cutover(
     tmp_path: Path,
     capsys: pytest.CaptureFixture[str],

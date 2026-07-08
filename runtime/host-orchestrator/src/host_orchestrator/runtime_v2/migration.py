@@ -306,6 +306,8 @@ def validate_cutover_operator_approval(
         acknowledged_risks = []
     required_risks = {"default_entrypoint_switch", "rollback_restore_required"}
     acknowledged_risk_set = {str(item) for item in acknowledged_risks}
+    approved_by = str(approval_payload.get("approved_by") or "").strip()
+    approved_at = str(approval_payload.get("approved_at") or "").strip()
     checks = [
         _check(
             name="approval_ref",
@@ -331,9 +333,14 @@ def validate_cutover_operator_approval(
         ),
         _check(
             name="approval_identity",
-            passed=bool(str(approval_payload.get("approved_by") or "").strip())
-            and bool(str(approval_payload.get("approved_at") or "").strip()),
-            detail="operator approval evidence must include approved_by and approved_at",
+            passed=bool(approved_by),
+            detail="operator approval evidence must include approved_by",
+        ),
+        _check(
+            name="approval_timestamp",
+            passed=_is_utc_timestamp_text(approved_at),
+            detail="operator approval evidence must include approved_at as a UTC ISO-8601 timestamp ending in Z",
+            approved_at=approved_at,
         ),
         _check(
             name="review_summary_ref",
@@ -605,3 +612,16 @@ def _same_repo_path_text(value: object, expected: object, *, repo_root: Path) ->
 
 def _utc_now_iso() -> str:
     return datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+
+
+def _is_utc_timestamp_text(value: object) -> bool:
+    if not isinstance(value, str):
+        return False
+    text = value.strip()
+    if not text.endswith("Z"):
+        return False
+    try:
+        parsed = datetime.fromisoformat(f"{text[:-1]}+00:00")
+    except ValueError:
+        return False
+    return parsed.utcoffset() == timezone.utc.utcoffset(None)

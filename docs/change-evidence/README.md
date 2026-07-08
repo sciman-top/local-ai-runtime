@@ -65,6 +65,7 @@
 - [20260708 Runtime V2 K2-T06 Archive Restore Acceptance](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260708-runtime-v2-k2-t06-archive-restore-acceptance.md)
 - [20260708 Runtime V2 K2-T06 Operator Runbook](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260708-runtime-v2-k2-t06-operator-runbook.md)
 - [20260708 Runtime V2 K2-T06 Approval Acceptance Ref](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260708-runtime-v2-k2-t06-approval-acceptance-ref.md)
+- [20260708 Runtime V2 K2-T06 Approval Timestamp](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260708-runtime-v2-k2-t06-approval-timestamp.md)
 
 当前最新结论：
 
@@ -118,5 +119,6 @@
 - `Kernel V2` 的 K2-T06 archive restore acceptance 子切片已落地：`--cutover-rollback-drill-v2` 现在会同步写出 `.ai/runs-v2/_cutover/archive-restore-acceptance.json`，缺少 v1 control-plane DB 或 v1 runs 源目录时返回 blocked；该留痕不执行 restore，不修改默认入口
 - `Kernel V2` 的 K2-T06 operator runbook 子切片已落地：`docs/runbooks/runtime-v2-cutover-operator-runbook.md` 定义 dry-run、approval、confirmed cutover、restore、evidence 与 stop conditions；该 runbook 不执行 cutover，不修改默认入口
 - `Kernel V2` 的 K2-T06 approval acceptance-ref 子切片已落地：approval template、validation、sanitized audit 与 confirmed cutover 输出现在都携带 `archive_restore_acceptance_path`，缺少当前 archive restore acceptance 引用的 approval JSON 返回 `approval_required / cutover_performed=false`；该留痕不执行 cutover，不修改默认入口
+- `Kernel V2` 的 K2-T06 approval timestamp 子切片已落地：approval validation 现在要求 `approved_at` 是 UTC ISO-8601 且以 `Z` 结尾；非 UTC 时间戳返回 `approval_required / cutover_performed=false`；该留痕不执行 cutover，不修改默认入口
 - 当前预期 next action 仍是粗粒度的 `promote_phase1_execution`；repo-side planner/review/path-guard/worktree-manager/cleanup-manager/runtime-ledger/lifecycle/receipt、`P5-T01` route/quota、`P5-T02` deterministic multi-worker simulation、`P5-T03` remote_non_gui promotion evidence、`P6-T01` / `P6-T02` Hermes parity / historical snapshot mapping、`P6-T03` vm_gui conditional promotion evidence、repo-owned `host_local` task entrypoint / worker factory、bounded live heterogeneous review sidecar receipt closeout、以及 `E-T01` 字段名决策 已完成，下一 open set 收窄到 non-host_local runner wiring 与后续 review hardening
 - 参考架当前不做大改：`registry` 已补成 conditional 候选；默认刷新集合不变；`skills / hermes-agent-self-evolution / openclaw` 继续保持 archive-on-demand，并作为未来本机瘦身时的第一批本地删除候选

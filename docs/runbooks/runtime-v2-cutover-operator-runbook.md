@@ -34,7 +34,7 @@
 - `--cutover-drill-v2` 返回 `ready=true / cutover_performed=false`
 - `--cutover-v2` 未带 confirmation 时返回 `manual_approval_required / cutover_performed=false`
 - `--cutover-rollback-drill-v2` 返回 `rollback_ready=true / restore_performed=false`，且 `archive_restore_acceptance_path` 指向 `archive-restore-acceptance.json`
-- operator approval JSON 已由人工填写 `approved=true / approved_by / approved_at`
+- operator approval JSON 已由人工填写 `approved=true / approved_by / approved_at`，其中 `approved_at` 必须是 UTC ISO-8601 且以 `Z` 结尾
 - approval JSON 引用的是当前 review summary、当前 rollback drill summary 与当前 archive restore acceptance summary
 - full gate 已按项目顺序通过：pytest、planning-status verifier、next-work selector、governance preflight、diff hygiene
 
@@ -89,7 +89,7 @@ uv run --project .\runtime\host-orchestrator python -m host_orchestrator --cutov
   "schema_version": "runtime_v2_cutover_operator_approval.v1",
   "approved": true,
   "approved_by": "<operator-id>",
-  "approved_at": "<UTC timestamp>",
+  "approved_at": "<UTC timestamp ending in Z>",
   "review_summary_path": "<current cutover-review-summary.json>",
   "rollback_drill_summary_path": "<current cutover-rollback-drill-summary.json>",
   "archive_restore_acceptance_path": "<current archive-restore-acceptance.json>",
@@ -201,6 +201,6 @@ git diff --check
 - `--cutover-v2` 未带 confirmation 时没有返回 `manual_approval_required`
 - `--cutover-rollback-drill-v2` 不是 ready
 - `archive-restore-acceptance.json` status 不是 `accepted`
-- approval JSON 未通过 validation，或未引用当前 `archive_restore_acceptance_path`
+- approval JSON 未通过 validation，`approved_at` 不是 UTC `Z` 时间戳，或未引用当前 `archive_restore_acceptance_path`
 - worktree 有未解释改动
 - operator 无法接受 rollback_restore_required 风险
