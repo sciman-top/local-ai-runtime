@@ -22,6 +22,8 @@
 - 当前 live review sidecar 只基于 runtime status + bounded primary worker output summary 产出 receipt，不等于 full diff-aware review 或 `live accepted`
 - 当前 live review receipt 仍以 `needs_review` 为 authoritative runtime status；它不自动升级为 approval、merge、`platform compatibility green`、或 `live accepted`
 
+Follow-on note: `docs/change-evidence/20260708-diff-aware-review-context.md` later adds changed files and bounded patch summary to the review sidecar prompt. The original boundary above describes this 2026-07-07 slice, not the latest repo truth.
+
 ## Verification
 
 - `uv run --project .\runtime\host-orchestrator python -m pytest runtime\host-orchestrator\tests\test_claude_code_worker.py runtime\host-orchestrator\tests\test_planner_adapter.py runtime\host-orchestrator\tests\test_wave1_execution.py runtime\host-orchestrator\tests\test_worker_exec.py`：pass（36 passed）

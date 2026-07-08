@@ -5,6 +5,7 @@ from datetime import datetime, timedelta, timezone
 from fnmatch import fnmatchcase
 import json
 from pathlib import Path
+import subprocess
 import tempfile
 from typing import Any
 
@@ -559,7 +560,7 @@ class HostLocalRunner:
             )
             worker = self._resolve_worker(worker_profile)
             worker_result = worker.run(request)
-            enforce_workspace_change_policy(
+            changed_paths = enforce_workspace_change_policy(
                 task=task,
                 workspace_root=guarded_workspace_root,
                 baseline_changes=baseline_changes,
@@ -688,6 +689,8 @@ class HostLocalRunner:
                     review_reasons=review_reasons,
                     result_payload=result_bundle.result_payload,
                     verification_payload=verification_payload,
+                    workspace_root=guarded_workspace_root,
+                    changed_paths=changed_paths,
                 )
                 write_review_result_artifact(result_bundle.artifacts, review_result_payload)
                 review_result_ref = self._relative_to_repo(result_bundle.artifacts.review_result)
@@ -1211,6 +1214,8 @@ class HostLocalRunner:
         review_reasons: list[str],
         result_payload: dict[str, Any],
         verification_payload: dict[str, Any],
+        workspace_root: Path,
+        changed_paths: list[str],
     ) -> dict[str, Any]:
         review_worker_profile = self._resolve_review_worker_profile()
         if review_worker_profile is None:
@@ -1255,6 +1260,11 @@ class HostLocalRunner:
                             result_payload=result_payload,
                             verification_payload=verification_payload,
                             worker_output_excerpt=worker_output_excerpt,
+                            changed_paths=changed_paths,
+                            patch_summary=self._bounded_patch_summary(
+                                workspace_root=workspace_root,
+                                changed_paths=changed_paths,
+                            ),
                         ),
                         cwd=Path(review_cwd),
                         model=review_worker_profile.model,
@@ -1358,6 +1368,8 @@ class HostLocalRunner:
         result_payload: dict[str, Any],
         verification_payload: dict[str, Any],
         worker_output_excerpt: str,
+        changed_paths: list[str],
+        patch_summary: str,
     ) -> str:
         verification_gates = "; ".join(
             f"{entry.get('gate')}={entry.get('status')}"
@@ -1366,6 +1378,7 @@ class HostLocalRunner:
         )
         review_reasons_text = ", ".join(review_reasons) if review_reasons else "none"
         verification_gates_text = verification_gates or "none"
+        changed_paths_text = ", ".join(changed_paths) if changed_paths else "none"
         status_text = (
             f"worker_status={result_payload.get('status')}; "
             f"termination_reason={result_payload.get('termination_reason')}; "
@@ -1385,11 +1398,73 @@ class HostLocalRunner:
                     f"Runtime status: {status_text}. Primary worker profile={primary_worker_profile.name}; "
                     f"review worker profile={review_worker_profile.name}."
                 ),
+                f"Changed files: {changed_paths_text}.",
+                f"Bounded patch summary:\n{patch_summary}",
                 f"Review target summary: {worker_output_excerpt}",
-                "Base the finding only on the provided runtime status and review target summary. Do not invent unrelated files, services, or requirements.",
+                "Base the finding only on the provided runtime status, changed files, bounded patch summary, and review target summary. Do not invent unrelated files, services, or requirements.",
                 "Do not ask questions.",
             ]
         )
+
+    @staticmethod
+    def _bounded_patch_summary(
+        *,
+        workspace_root: Path,
+        changed_paths: list[str],
+        max_chars: int = 2000,
+    ) -> str:
+        if not (workspace_root / ".git").exists():
+            return "git_diff_unavailable: workspace has no .git admin path"
+        if not changed_paths:
+            return "none"
+
+        try:
+            completed = subprocess.run(
+                [
+                    "git",
+                    "-C",
+                    str(workspace_root),
+                    "diff",
+                    "--no-ext-diff",
+                    "--",
+                    *changed_paths,
+                ],
+                check=False,
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+                errors="replace",
+            )
+        except OSError as exc:
+            return f"git_diff_unavailable: {exc.__class__.__name__}"
+        if completed.returncode == 0 and completed.stdout.strip():
+            return HostLocalRunner._truncate_review_context(
+                completed.stdout.strip(),
+                max_chars=max_chars,
+            )
+
+        summaries: list[str] = []
+        for path in changed_paths:
+            candidate = workspace_root / path
+            if not candidate.exists():
+                summaries.append(f"{path}: missing after worker execution")
+                continue
+            if not candidate.is_file():
+                summaries.append(f"{path}: changed non-file path")
+                continue
+            text = candidate.read_text(encoding="utf-8", errors="replace").strip()
+            normalized = " ".join(text.split())
+            summaries.append(f"{path}: {normalized or '(empty file)'}")
+        return HostLocalRunner._truncate_review_context(
+            "\n".join(summaries),
+            max_chars=max_chars,
+        )
+
+    @staticmethod
+    def _truncate_review_context(text: str, *, max_chars: int) -> str:
+        if len(text) <= max_chars:
+            return text
+        return text[: max_chars - 3].rstrip() + "..."
 
     @staticmethod
     def _review_target_excerpt(

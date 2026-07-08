@@ -49,14 +49,14 @@
 - `AgentBridge-first intake` 已以安全边界接入 `host_local`；markdown task 先归一化到 repo-owned canonical 默认值，并对 execution-critical override fail closed
 - `P2-T03` 的 repo-side AgentBridge round-trip parity 已落地，但尚未自动升级为 `platform compatibility green`
 - `P4-T01` 的 live planner sidecar receipt 已落地；当前 planner-gated task 会先运行 codex-backed planner sidecar、写出 `planner_result.json`，然后仍停在 `waiting_handoff`，尚未宣称 live `Direct GPT-5.4 API` planner 已接线
-- `P4-T02` 的 repo-side review gate 已落地；低风险任务默认自动推进，medium/high/critical 风险、policy surface、以及 force-on review 会在 worker / verification 之后停在 `needs_review`；配置 `review_worker_profile = claude_glm_review` 的 host_local review path 当前可 materialize bounded live heterogeneous review receipt，但这仍不等于 live `claude_glm` primary task execution
+- `P4-T02` 的 repo-side review gate 已落地；低风险任务默认自动推进，medium/high/critical 风险、policy surface、以及 force-on review 会在 worker / verification 之后停在 `needs_review`；配置 `review_worker_profile = claude_glm_review` 的 host_local review path 当前可 materialize diff-aware bounded live heterogeneous review receipt，但这仍不等于 live `claude_glm` primary task execution
 - `P4-T03` 的 repo-side 谓词正反覆盖已落地；`user_forced_planner / user_forced_review` 现在是 contract 承认的 force-on override，而不是文档漂浮字段
 - `P3-T02` 的 repo-side path guard 已落地；repo-escape path claim、declared worktree root drift、declared branch drift、以及 worker 结束后落在 `allowed_paths` 外或 `forbidden_paths` 内的新改动都会 fail closed；当前 git-backed 变更审计要求 workspace 具备 `.git` admin path
 - `P3-T03` 的 repo-side 最小 worktree manager 已落地；declared isolated worktree 任务现在可从 repo root 自动 create/reuse linked worktree，并在其中执行 worker 与 verification
 - `P3-T04` 的 repo-side 最小 cleanup manager 已落地；runtime 现在只会自动 remove 自己管理、且 clean 的 linked worktree，review-pending、failed、dirty、或外部直接启动的 isolated worktree 会保留并写出 `worktree_cleanup` 事件
 - `P3-T05` 的 graded-autonomy runtime ledger 已落地；`dispatch_state.json`、`result.json`、以及 `runtime_tasks` 现在共享 `attempt / next_action / cleanup_owner / cleanup_status / status_reason / dispatch_state_ref` 一组收口字段
 - `P3-T06` 的 repo-side lifecycle ops 已落地；`task_lifecycle.py` 与 CLI 现在可显式 materialize `stale / cancelled / resumed`，`retry` 通过 `attempt + retry_rewind` 收口
-- `P4-T04` 的 repo-side structured receipts 已落地；live planner-sidecar 路径现在会写 `planner_result.json`，review-gated 路径会写 `review_result.json`，当前 runtime outcome 会写 `closeout_bundle.json`，并通过 `result.json / dispatch_state.json / evidence_index.json` 串起引用；当前 live review receipt 仅基于 bounded runtime summary materialize
+- `P4-T04` 的 repo-side structured receipts 已落地；live planner-sidecar 路径现在会写 `planner_result.json`，review-gated 路径会写 `review_result.json`，当前 runtime outcome 会写 `closeout_bundle.json`，并通过 `result.json / dispatch_state.json / evidence_index.json` 串起引用；当前 live review receipt 基于 runtime status、verification gates、changed files、bounded patch summary 与 primary worker output summary materialize
 - `P5-T01` 的 repo-side `leases / route / quota` 收口已落地；explicit/default `worker_profile` 现在会 materialize `route_reason`，selected profile 的 `max_active_leases` 超额时会在 worker 前 handoff
 - `P5-T02` 的 deterministic multi-worker simulation 已落地；当前可复放 `retry / route / quota / review-handoff` summary，但这仍不等于 live 多 worker scheduler
 - `P5-T03` 的 `remote_non_gui` promotion evidence 已落地；repo-owned `remote_non_gui_probe` 现在可被显式选中，但 `host_local` 只会 fail closed 到 handoff，并额外留下机器可读 `handoff_receipt.json` / `handoff_receipt_ref`，不会伪装成 remote runner 已执行
@@ -64,8 +64,8 @@
 - `P6-T01` / `P6-T02` 的 repo-side Hermes parity / historical snapshot mapping verifier 已落地；`run-hermes-parity.ps1` 现在会把 certified baseline doc、current known-good / boundary anchors、snapshot contract、known-good validator、以及 env-sensitive bring-up drift 收进同一 summary，但这仍不等于 `platform compatibility green`
 - `P6-T03` 的 repo-side `vm_gui` conditional promotion evidence 已落地；默认 GUI-only 请求现在会在 `host_local` 上因 `execution_lane=vm_gui; requires_gui=true` handoff，显式 `vm_gui_probe` 也只会 fail closed 到 `runner_not_wired`
 - `worktree` 当前只代表写入隔离，不代表 memory/provider/session 隔离
-- branch deletion 仍不自动化；当前 repo-side topology promotion proof 与 runner wiring readiness 已收口，next open set 收窄到真实 remote host runner acceptance 与后续 review hardening
-- 当前 `host_local` task entrypoint 虽已接线真实 worker factory，且 live planner sidecar receipt 与 bounded live heterogeneous review sidecar receipt 已能在 configured host_local path 上 materialize，但这仍不等于 live `claude_glm` primary task execution、真实 remote/vm runner、`platform compatibility green`、或 `live accepted`
+- branch deletion 仍不自动化；当前 repo-side topology promotion proof、runner wiring readiness、以及 diff-aware review context 已收口，next open set 收窄到真实 remote host runner acceptance 与 review disposition / rework loop hardening
+- 当前 `host_local` task entrypoint 虽已接线真实 worker factory，且 live planner sidecar receipt 与 diff-aware bounded live heterogeneous review sidecar receipt 已能在 configured host_local path 上 materialize，但这仍不等于 live `claude_glm` primary task execution、真实 remote/vm runner、`platform compatibility green`、或 `live accepted`
 - `compatibility_projection_ref` 与 `lane` 字段名当前明确继续保留；待真实 remote/vm runner acceptance 与后续 review 稳定性都真实落地后再复评是否迁移
 - 当前 active queue 仍是 `PHASE-1-VERTICAL-SLICE`；repo-side exit gates 已闭环，但 live posture 仍停在 `live probe ready`
 

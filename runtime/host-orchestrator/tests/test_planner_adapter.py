@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 import sqlite3
+import subprocess
 
 import pytest
 
@@ -22,6 +23,72 @@ def _write_markdown_task(path: Path, front_matter: str, body: str) -> Path:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(f"---\n{front_matter}\n---\n\n{body}", encoding="utf-8", newline="\n")
     return path
+
+
+def _init_git_repo(repo_root: Path) -> None:
+    subprocess.run(
+        ["git", "init", "-b", "main"],
+        cwd=repo_root,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    subprocess.run(
+        ["git", "config", "user.name", "Codex Test"],
+        cwd=repo_root,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    subprocess.run(
+        ["git", "config", "user.email", "codex-test@example.com"],
+        cwd=repo_root,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    subprocess.run(
+        ["git", "add", "."],
+        cwd=repo_root,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    subprocess.run(
+        ["git", "commit", "-m", "test: seed repo"],
+        cwd=repo_root,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+
+
+def test_review_patch_summary_degrades_without_git_admin_path(tmp_path: Path) -> None:
+    from host_orchestrator.host_local import HostLocalRunner
+
+    assert HostLocalRunner._bounded_patch_summary(
+        workspace_root=tmp_path,
+        changed_paths=[],
+    ) == "git_diff_unavailable: workspace has no .git admin path"
+
+
+def test_review_patch_summary_degrades_when_git_diff_is_unavailable(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from host_orchestrator import host_local
+
+    (tmp_path / ".git").mkdir()
+
+    def _raise_file_not_found(*args: object, **kwargs: object) -> object:
+        raise FileNotFoundError("git")
+
+    monkeypatch.setattr(host_local.subprocess, "run", _raise_file_not_found)
+
+    assert host_local.HostLocalRunner._bounded_patch_summary(
+        workspace_root=tmp_path,
+        changed_paths=["runtime/host-orchestrator/src/host_orchestrator/host_local.py"],
+    ) == "git_diff_unavailable: FileNotFoundError"
 
 
 def test_planner_required_is_derived_from_high_risk_or_dependencies(tmp_path: Path) -> None:
@@ -518,16 +585,22 @@ def test_host_local_runner_materializes_live_heterogeneous_review_receipt(
     repo_root.mkdir()
     (repo_root / "AGENTS.md").write_text("stub", encoding="utf-8")
     copy_runtime_config(repo_root)
+    changed_path = repo_root / "runtime" / "host-orchestrator" / "src" / "host_orchestrator" / "host_local.py"
+    changed_path.parent.mkdir(parents=True)
+    changed_path.write_text("BASELINE = 'before'\n", encoding="utf-8")
 
     task_id = "TASK-20260708-live-review"
     task_path = repo_root / "tasks" / f"{task_id}.json"
     payload = canonical_task_payload(task_id)
     payload["risk_level"] = "medium"
     payload["write_access"] = True
+    payload["allowed_paths"] = ["runtime/host-orchestrator/src/host_orchestrator/host_local.py"]
     write_task(task_path, payload)
+    _init_git_repo(repo_root)
 
     class FakePrimaryWorker:
         def run(self, request: WorkerRequest) -> WorkerResult:
+            changed_path.write_text("BASELINE = 'after review hardening'\n", encoding="utf-8")
             return WorkerResult(
                 final_response=(
                     "Change summary: host_local.py wires a live review sidecar receipt after worker+verification; "
@@ -541,6 +614,10 @@ def test_host_local_runner_materializes_live_heterogeneous_review_receipt(
         def run(self, request: WorkerRequest) -> WorkerResult:
             assert "Return a blocking review receipt for this bounded runtime slice." in request.prompt
             assert "Change summary: host_local.py wires a live review sidecar receipt" in request.prompt
+            assert "Changed files: runtime/host-orchestrator/src/host_orchestrator/host_local.py" in request.prompt
+            assert "Bounded patch summary:" in request.prompt
+            assert "-BASELINE = 'before'" in request.prompt
+            assert "+BASELINE = 'after review hardening'" in request.prompt
             return WorkerResult(
                 final_response=json.dumps(
                     {
