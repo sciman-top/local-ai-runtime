@@ -429,6 +429,9 @@ def main(argv: list[str] | None = None) -> int:
         payload["cutover_drill_summary_path"] = drill_payload["summary_path"]
         payload["cutover_review_summary_path"] = review_payload["summary_path"]
         payload["cutover_rollback_drill_summary_path"] = rollback_payload["summary_path"]
+        payload["cutover_archive_restore_acceptance_path"] = rollback_payload[
+            "archive_restore_acceptance_path"
+        ]
         payload["cutover_operator_approval_summary_path"] = approval_payload["summary_path"]
         print(json.dumps(payload, indent=2, ensure_ascii=False))
         return 0

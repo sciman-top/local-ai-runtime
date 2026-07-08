@@ -1110,6 +1110,13 @@ def test_runtime_v2_cli_cutover_requires_confirmation_and_operator_approval(
                     / "_cutover"
                     / "cutover-rollback-drill-summary.json"
                 ),
+                "archive_restore_acceptance_path": str(
+                    repo_root
+                    / ".ai"
+                    / "runs-v2"
+                    / "_cutover"
+                    / "archive-restore-acceptance.json"
+                ),
                 "acknowledged_risks": [
                     "default_entrypoint_switch",
                     "rollback_restore_required",
@@ -1139,6 +1146,9 @@ def test_runtime_v2_cli_cutover_requires_confirmation_and_operator_approval(
     assert payload["active_version"] == "v2"
     assert payload["cutover_review_summary_path"].endswith("cutover-review-summary.json")
     assert payload["cutover_rollback_drill_summary_path"].endswith("cutover-rollback-drill-summary.json")
+    assert payload["cutover_archive_restore_acceptance_path"].endswith(
+        "archive-restore-acceptance.json"
+    )
     assert payload["cutover_operator_approval_summary_path"].endswith(
         "cutover-operator-approval-summary.json"
     )
@@ -1189,6 +1199,9 @@ def test_runtime_v2_cutover_approval_template_is_non_destructive_and_editable(
     assert template_payload["rollback_drill_summary_path"].endswith(
         "cutover-rollback-drill-summary.json"
     )
+    assert template_payload["archive_restore_acceptance_path"].endswith(
+        "archive-restore-acceptance.json"
+    )
     assert set(template_payload["acknowledged_risks"]) == {
         "default_entrypoint_switch",
         "rollback_restore_required",
@@ -1214,6 +1227,9 @@ def test_runtime_v2_cutover_approval_template_is_non_destructive_and_editable(
     assert default_audit_payload["schema_version"] == "runtime_v2_cutover_operator_approval_audit.v1"
     assert default_audit_payload["source_sha256"] == default_validation["approval_sha256"]
     assert default_audit_payload["approved"] is False
+    assert default_audit_payload["archive_restore_acceptance_path"].endswith(
+        "archive-restore-acceptance.json"
+    )
     assert {"approval_flag", "approval_identity"} <= set(default_validation["blocking_reasons"])
 
     template_payload["approved"] = True
@@ -1240,8 +1256,69 @@ def test_runtime_v2_cutover_approval_template_is_non_destructive_and_editable(
     assert approved_audit_payload["approved"] is True
     assert approved_audit_payload["approved_by"] == "test-operator"
     assert approved_audit_payload["source_sha256"] == approved_validation["approval_sha256"]
+    assert approved_validation["archive_restore_acceptance_path"].endswith(
+        "archive-restore-acceptance.json"
+    )
     assert approved_validation["cutover_performed"] is False
     assert orchestrator_payload["runtime"]["active_version"] == "v1"
+
+
+def test_runtime_v2_cutover_approval_requires_archive_restore_acceptance_ref(
+    tmp_path: Path,
+) -> None:
+    repo_root, layout = _seed_repo(tmp_path)
+    task_path = _write_v2_task(repo_root, "TASK-RUNTIME-V2-APPROVAL-ACCEPTANCE-REF")
+    runner = RuntimeV2Runner(
+        RuntimeV2Config(
+            workspace_root=repo_root,
+            layout=layout,
+            run_id="runtime-v2-approval-acceptance-ref",
+        ),
+        worker=_StaticWorker("approval acceptance ref worker output"),
+    )
+    runner.run_task(task_path)
+    _seed_legacy_v1_artifacts(layout)
+
+    rollback_payload = run_cutover_rollback_drill(
+        layout=layout.with_runtime_v2_paths(
+            control_plane_db_v2=".ai/state/control-plane-v2.db",
+            artifact_root_v2=".ai/runs-v2",
+        )
+    )
+    review_payload = json.loads(
+        Path(rollback_payload["review_summary_path"]).read_text(encoding="utf-8")
+    )
+    approval_ref = repo_root / ".ai" / "runs-v2" / "_cutover" / "operator-approval.json"
+    approval_ref.write_text(
+        json.dumps(
+            {
+                "schema_version": "runtime_v2_cutover_operator_approval.v1",
+                "approved": True,
+                "approved_by": "test-operator",
+                "approved_at": "2026-07-08T00:00:00Z",
+                "review_summary_path": review_payload["summary_path"],
+                "rollback_drill_summary_path": rollback_payload["summary_path"],
+                "acknowledged_risks": [
+                    "default_entrypoint_switch",
+                    "rollback_restore_required",
+                ],
+            },
+            indent=2,
+        ),
+        encoding="utf-8",
+    )
+
+    validation = validate_cutover_operator_approval(
+        layout=layout,
+        approval_ref=approval_ref,
+        review_payload=review_payload,
+        rollback_payload=rollback_payload,
+    )
+
+    assert validation["status"] == "approval_required"
+    assert validation["approved"] is False
+    assert "archive_restore_acceptance_ref" in validation["blocking_reasons"]
+    assert validation["cutover_performed"] is False
 
 
 def test_runtime_v2_cutover_rollback_drill_validates_restore_path_without_cutover(

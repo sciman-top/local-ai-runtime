@@ -51,7 +51,7 @@
   - completed / reviewing / gate-retryable final-result、dependency-blocked、admission-paused、pre-worker policy-guard blocked、worker-failure retryable / failed、retry queued 路径已写出 attempt-level `regression_fixture.json`
   - 最小 `--eval-regression-fixtures-v2` 已可重跑并写出 repo-side regression fixture summary
 - `WP6` cutover / archive / 真相面切换：进行中
-  - 第一批 `--cutover-drill-v2`、`--cutover-v2` fail-closed guard、cutover review / manual approval gate、`--cutover-rollback-drill-v2` 非破坏恢复路径检查、archive restore acceptance、`--confirm-cutover-v2` 人工确认闸门、`--cutover-approval-ref` operator approval evidence gate、`--cutover-approval-template-v2` 默认未批准模板入口、approval hash / sanitized audit 留痕、以及 `docs/runbooks/runtime-v2-cutover-operator-runbook.md` 人工操作 runbook 已落地；真实 `local_maint` v2 live coding probe 已 completed，当前 drill ready 但默认 `--cutover-v2` 仍返回 `manual_approval_required / cutover_performed=false`，缺少 v1 DB / v1 runs 恢复源或缺少/未批准 approval evidence 的 confirmed cutover 仍 fail-closed，默认入口仍未切换
+  - 第一批 `--cutover-drill-v2`、`--cutover-v2` fail-closed guard、cutover review / manual approval gate、`--cutover-rollback-drill-v2` 非破坏恢复路径检查、archive restore acceptance、`--confirm-cutover-v2` 人工确认闸门、`--cutover-approval-ref` operator approval evidence gate、`--cutover-approval-template-v2` 默认未批准模板入口、approval hash / sanitized audit 留痕、approval 对 `archive_restore_acceptance_path` 的强引用校验、以及 `docs/runbooks/runtime-v2-cutover-operator-runbook.md` 人工操作 runbook 已落地；真实 `local_maint` v2 live coding probe 已 completed，当前 drill ready 但默认 `--cutover-v2` 仍返回 `manual_approval_required / cutover_performed=false`，缺少 v1 DB / v1 runs 恢复源、缺少/未批准 approval evidence 或 approval 未引用当前 archive restore acceptance 的 confirmed cutover 仍 fail-closed，默认入口仍未切换
 
 ## 战略回调 Overlay（A-F）
 

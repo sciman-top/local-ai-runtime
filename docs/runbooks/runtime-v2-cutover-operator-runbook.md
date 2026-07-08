@@ -35,7 +35,7 @@
 - `--cutover-v2` 未带 confirmation 时返回 `manual_approval_required / cutover_performed=false`
 - `--cutover-rollback-drill-v2` 返回 `rollback_ready=true / restore_performed=false`，且 `archive_restore_acceptance_path` 指向 `archive-restore-acceptance.json`
 - operator approval JSON 已由人工填写 `approved=true / approved_by / approved_at`
-- approval JSON 引用的是当前 review summary 与当前 rollback drill summary
+- approval JSON 引用的是当前 review summary、当前 rollback drill summary 与当前 archive restore acceptance summary
 - full gate 已按项目顺序通过：pytest、planning-status verifier、next-work selector、governance preflight、diff hygiene
 
 ## 3. Dry-Run Sequence
@@ -78,6 +78,7 @@ uv run --project .\runtime\host-orchestrator python -m host_orchestrator --cutov
 
 - `review_summary_path`
 - `rollback_drill_summary_path`
+- `archive_restore_acceptance_path`
 - `acknowledged_risks`
 - `operator_instructions`
 
@@ -91,6 +92,7 @@ uv run --project .\runtime\host-orchestrator python -m host_orchestrator --cutov
   "approved_at": "<UTC timestamp>",
   "review_summary_path": "<current cutover-review-summary.json>",
   "rollback_drill_summary_path": "<current cutover-rollback-drill-summary.json>",
+  "archive_restore_acceptance_path": "<current archive-restore-acceptance.json>",
   "acknowledged_risks": [
     "default_entrypoint_switch",
     "rollback_restore_required"
@@ -116,6 +118,7 @@ uv run --project .\runtime\host-orchestrator python -m host_orchestrator --cutov
 - `cutover_drill_summary_path`
 - `cutover_review_summary_path`
 - `cutover_rollback_drill_summary_path`
+- `cutover_archive_restore_acceptance_path`
 - `cutover_operator_approval_summary_path`
 
 执行后立即复核：
@@ -198,6 +201,6 @@ git diff --check
 - `--cutover-v2` 未带 confirmation 时没有返回 `manual_approval_required`
 - `--cutover-rollback-drill-v2` 不是 ready
 - `archive-restore-acceptance.json` status 不是 `accepted`
-- approval JSON 未通过 validation
+- approval JSON 未通过 validation，或未引用当前 `archive_restore_acceptance_path`
 - worktree 有未解释改动
 - operator 无法接受 rollback_restore_required 风险

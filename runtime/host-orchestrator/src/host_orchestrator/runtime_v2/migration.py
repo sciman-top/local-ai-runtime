@@ -354,6 +354,15 @@ def validate_cutover_operator_approval(
             detail="operator approval evidence must reference the current rollback drill summary",
         ),
         _check(
+            name="archive_restore_acceptance_ref",
+            passed=_same_repo_path_text(
+                approval_payload.get("archive_restore_acceptance_path"),
+                rollback_payload.get("archive_restore_acceptance_path"),
+                repo_root=layout.repo_root,
+            ),
+            detail="operator approval evidence must reference the current archive restore acceptance summary",
+        ),
+        _check(
             name="rollback_drill_ready",
             passed=rollback_payload.get("rollback_ready") is True,
             detail="confirmed cutover requires rollback drill to be ready",
@@ -393,6 +402,9 @@ def validate_cutover_operator_approval(
         "blocking_reasons": blocking_reasons,
         "review_summary_path": str(review_payload.get("summary_path") or ""),
         "rollback_drill_summary_path": str(rollback_payload.get("summary_path") or ""),
+        "archive_restore_acceptance_path": str(
+            rollback_payload.get("archive_restore_acceptance_path") or ""
+        ),
         "summary_path": str(summary_path),
     }
     summary_path.parent.mkdir(parents=True, exist_ok=True)
@@ -425,6 +437,9 @@ def _write_operator_approval_audit(
         "approved_at": str(approval_payload.get("approved_at") or ""),
         "review_summary_path": str(approval_payload.get("review_summary_path") or ""),
         "rollback_drill_summary_path": str(approval_payload.get("rollback_drill_summary_path") or ""),
+        "archive_restore_acceptance_path": str(
+            approval_payload.get("archive_restore_acceptance_path") or ""
+        ),
         "acknowledged_risks": [str(item) for item in acknowledged_risks],
     }
     audit_path.parent.mkdir(parents=True, exist_ok=True)
@@ -466,12 +481,16 @@ def write_cutover_operator_approval_template(
         "approved_at": "",
         "review_summary_path": str(review_payload.get("summary_path") or ""),
         "rollback_drill_summary_path": str(rollback_payload.get("summary_path") or ""),
+        "archive_restore_acceptance_path": str(
+            rollback_payload.get("archive_restore_acceptance_path") or ""
+        ),
         "acknowledged_risks": [
             "default_entrypoint_switch",
             "rollback_restore_required",
         ],
         "operator_instructions": [
             "Review the referenced cutover review and rollback drill summaries.",
+            "Review the referenced archive restore acceptance summary.",
             "Set approved=true only after manual acceptance.",
             "Fill approved_by and approved_at before passing this file to --cutover-approval-ref.",
         ],
@@ -489,6 +508,9 @@ def write_cutover_operator_approval_template(
         "drill_summary_path": str(drill_payload.get("summary_path") or ""),
         "review_summary_path": str(review_payload.get("summary_path") or ""),
         "rollback_drill_summary_path": str(rollback_payload.get("summary_path") or ""),
+        "archive_restore_acceptance_path": str(
+            rollback_payload.get("archive_restore_acceptance_path") or ""
+        ),
         "blocking_reasons": blocking_reasons,
         "summary_path": str(summary_path),
     }
