@@ -82,6 +82,10 @@
     - 2026-07-08 已落最小 `--eval-regression-fixtures-v2`：从 v2 artifacts 表读取 `regression_fixture`，校验 schema / required fields / missing files，并写出 `.ai/runs-v2/_eval/regression-fixture-summary.json`
     - `K2-T05` 按当前 scoped trace / eval / regression fixture 闭环已完成；这不代表 default cutover、live accepted 或完整历史 corpus 评测平台
 - [ ] `K2-T06` run cutover drill and switch the default entrypoint only after gates are green
+  - Status note:
+    - 2026-07-08 已落 `--cutover-drill-v2`：检查 `runtime_v2` enabled、默认入口仍为 v1、至少一条 completed v2 attempt、以及 regression fixture eval summary，并写出 `.ai/runs-v2/_cutover/cutover-drill-summary.json`
+    - 2026-07-08 已让 `--cutover-v2` 先跑 drill；drill 未 ready 时 fail-closed，不修改 `runtime.active_version`
+    - `K2-T06` 未标完成：真实默认入口切换仍需满足 cutover 条件、门禁与人工边界，当前不声明 live accepted
 
 ## Phase 1
 

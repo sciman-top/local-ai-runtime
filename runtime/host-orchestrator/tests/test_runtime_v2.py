@@ -13,7 +13,7 @@ from host_orchestrator.config_runtime import load_runtime_config
 from host_orchestrator.paths import RuntimeLayout
 from host_orchestrator.runtime_v2 import admission, storage
 from host_orchestrator.runtime_v2.contracts import RuntimeV2TaskError, load_task, write_task
-from host_orchestrator.runtime_v2.migration import perform_cutover, write_migration_manifest
+from host_orchestrator.runtime_v2.migration import perform_cutover, run_cutover_drill, write_migration_manifest
 from host_orchestrator.runtime_v2.runner import RuntimeV2Config, RuntimeV2Runner
 from host_orchestrator.worker import WorkerRequest, WorkerResult
 
@@ -895,6 +895,76 @@ def test_runtime_v2_regression_fixture_eval_summary_and_cli(
     assert cli_payload["ok"] is True
     assert cli_payload["fixture_count"] == 2
     assert cli_payload["summary_path"].endswith("regression-fixture-summary.json")
+
+
+def test_runtime_v2_cutover_drill_blocks_without_completed_attempt_and_eval_summary(tmp_path: Path) -> None:
+    repo_root, layout = _seed_repo(tmp_path)
+
+    summary = run_cutover_drill(
+        layout=layout.with_runtime_v2_paths(
+            control_plane_db_v2=".ai/state/control-plane-v2.db",
+            artifact_root_v2=".ai/runs-v2",
+        )
+    )
+    summary_payload = json.loads(Path(summary["summary_path"]).read_text(encoding="utf-8"))
+    orchestrator_payload = yaml.safe_load(
+        (repo_root / ".ai" / "config" / "orchestrator.yaml").read_text(encoding="utf-8")
+    )
+
+    assert summary["schema_version"] == "runtime_v2_cutover_drill.v1"
+    assert summary["status"] == "blocked"
+    assert summary["ready"] is False
+    assert summary["cutover_performed"] is False
+    assert "completed_v2_attempt" in summary["blocking_reasons"]
+    assert "regression_fixture_eval" in summary["blocking_reasons"]
+    assert summary_payload["status"] == "blocked"
+    assert orchestrator_payload["runtime"]["active_version"] == "v1"
+
+
+def test_runtime_v2_cutover_drill_ready_after_completed_attempt_and_eval_summary(tmp_path: Path) -> None:
+    repo_root, layout = _seed_repo(tmp_path)
+    task_path = _write_v2_task(repo_root, "TASK-RUNTIME-V2-CUTOVER-DRILL")
+    runner = RuntimeV2Runner(
+        RuntimeV2Config(workspace_root=repo_root, layout=layout, run_id="runtime-v2-cutover-drill"),
+        worker=_StaticWorker("cutover drill worker output"),
+    )
+    runner.run_task(task_path)
+
+    summary = run_cutover_drill(
+        layout=layout.with_runtime_v2_paths(
+            control_plane_db_v2=".ai/state/control-plane-v2.db",
+            artifact_root_v2=".ai/runs-v2",
+        )
+    )
+
+    assert summary["status"] == "ready"
+    assert summary["ready"] is True
+    assert summary["cutover_performed"] is False
+    assert summary["blocking_reasons"] == []
+    check_statuses = {check["name"]: check["status"] for check in summary["checks"]}
+    assert check_statuses["runtime_v2_enabled"] == "pass"
+    assert check_statuses["default_entrypoint_still_v1"] == "pass"
+    assert check_statuses["completed_v2_attempt"] == "pass"
+    assert check_statuses["regression_fixture_eval"] == "pass"
+
+
+def test_runtime_v2_cli_cutover_fails_closed_until_drill_ready(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    repo_root, _ = _seed_repo(tmp_path)
+
+    exit_code = cli_main(["--repo-root", str(repo_root), "--cutover-v2"])
+    payload = json.loads(capsys.readouterr().out)
+    orchestrator_payload = yaml.safe_load(
+        (repo_root / ".ai" / "config" / "orchestrator.yaml").read_text(encoding="utf-8")
+    )
+
+    assert exit_code == 1
+    assert payload["schema_version"] == "runtime_v2_cutover_drill.v1"
+    assert payload["status"] == "blocked"
+    assert payload["cutover_performed"] is False
+    assert orchestrator_payload["runtime"]["active_version"] == "v1"
 
 
 def test_runtime_v2_cli_run_resume_retry_and_cutover(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]) -> None:

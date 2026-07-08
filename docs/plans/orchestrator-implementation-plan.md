@@ -173,14 +173,15 @@
 ### 当前已落地切片
 
 - `WP1`：双轨骨架 + experimental CLI 已落地
-  - 当前入口包括 `--run-task-v2`、`--run-ready-blocked-v2`、`--resume-task-v2`、`--retry-task-v2`、`--migrate-control-plane-v2`、`--eval-regression-fixtures-v2`、`--cutover-v2`
+  - 当前入口包括 `--run-task-v2`、`--run-ready-blocked-v2`、`--resume-task-v2`、`--retry-task-v2`、`--migrate-control-plane-v2`、`--eval-regression-fixtures-v2`、`--cutover-drill-v2`、`--cutover-v2`
 - `WP2`：v2 canonical task、6 表存储、attempt-level 工件面已落地
 - `WP3`：dependency block、ready dependency-blocked auto-continue、atomic admission、attempt-centric resume/retry 已落第一批实现
 - `WP4`：review receipt / bounded sidecar hook / pre-worker policy guard 已落第一批实现
 - `WP5`：attempt-level `regression_fixture.json` 已扩展到 completed / reviewing / gate-retryable final-result、dependency-blocked、admission-paused、pre-worker policy-guard blocked、worker-failure retryable / failed、retry queued 核心状态路径；最小 `--eval-regression-fixtures-v2` 已写出 repo-side summary
+- `WP6`：第一批 cutover drill / fail-closed guard 已落地；`--cutover-v2` 在 drill 未 ready 时不修改 `runtime.active_version`
 - 文档/spec/verifier 已开始同步吸收 `Kernel V2`，但 `planning-status.current_active_queue` 仍保持 `PHASE-1-VERTICAL-SLICE`
 
 ### 下一步
 
-- 在真实本地编码任务上跑通一条 v2 自动闭环，并保留 `--eval-regression-fixtures-v2` summary 后，才考虑 `WP6` cutover drill
-- `WP6` 仍必须保持 default v1，直到 cutover 条件与门禁真实满足
+- 下一步应补真实本地编码任务 v2 自动闭环证据，并重跑 `--eval-regression-fixtures-v2` 与 `--cutover-drill-v2`
+- `WP6` 仍必须保持 default v1，直到 cutover 条件、门禁与人工边界真实满足

@@ -50,7 +50,8 @@
 - `WP5` trace / eval / 证据闭环：进行中
   - completed / reviewing / gate-retryable final-result、dependency-blocked、admission-paused、pre-worker policy-guard blocked、worker-failure retryable / failed、retry queued 路径已写出 attempt-level `regression_fixture.json`
   - 最小 `--eval-regression-fixtures-v2` 已可重跑并写出 repo-side regression fixture summary
-- `WP6` cutover / archive / 真相面切换：待继续
+- `WP6` cutover / archive / 真相面切换：进行中
+  - 第一批 `--cutover-drill-v2` 与 `--cutover-v2` fail-closed guard 已落地；默认入口仍未切换
 
 ## 战略回调 Overlay（A-F）
 

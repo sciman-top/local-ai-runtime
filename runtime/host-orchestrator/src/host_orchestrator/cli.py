@@ -12,7 +12,7 @@ from host_orchestrator.multi_worker_simulation import run_multi_worker_simulatio
 from host_orchestrator.remote_non_gui_promotion import run_remote_non_gui_promotion
 from host_orchestrator.paths import RuntimeLayout, discover_repo_root
 from host_orchestrator.host_local import HostLocalConfig, HostLocalRunner
-from host_orchestrator.runtime_v2.migration import perform_cutover, write_migration_manifest
+from host_orchestrator.runtime_v2.migration import perform_cutover, run_cutover_drill, write_migration_manifest
 from host_orchestrator.runtime_v2.evaluation import evaluate_regression_fixtures
 from host_orchestrator.runtime_v2.runner import RuntimeV2Config, RuntimeV2Runner
 from host_orchestrator.task_lifecycle import (
@@ -179,6 +179,11 @@ def build_parser() -> argparse.ArgumentParser:
         "--cutover-v2",
         action="store_true",
         help="Archive legacy v1 control-plane artifacts and switch runtime.active_version to v2.",
+    )
+    lifecycle_v2_group.add_argument(
+        "--cutover-drill-v2",
+        action="store_true",
+        help="Run the runtime_v2 cutover drill without switching runtime.active_version.",
     )
     parser.add_argument(
         "--at",
@@ -367,9 +372,19 @@ def main(argv: list[str] | None = None) -> int:
         return 0
 
     if args.cutover_v2:
+        drill_payload = run_cutover_drill(layout=runtime_v2_layout)
+        if not drill_payload["ready"]:
+            print(json.dumps(drill_payload, indent=2, ensure_ascii=False))
+            return 1
         payload = perform_cutover(layout=runtime_v2_layout)
+        payload["cutover_drill_summary_path"] = drill_payload["summary_path"]
         print(json.dumps(payload, indent=2, ensure_ascii=False))
         return 0
+
+    if args.cutover_drill_v2:
+        payload = run_cutover_drill(layout=runtime_v2_layout)
+        print(json.dumps(payload, indent=2, ensure_ascii=False))
+        return 0 if payload["ready"] else 1
 
     if args.revalidate_evidence_index is not None:
         evidence_index_path = args.revalidate_evidence_index

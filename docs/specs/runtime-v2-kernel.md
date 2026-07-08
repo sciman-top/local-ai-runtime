@@ -213,6 +213,7 @@
 - `--retry-task-v2`
 - `--migrate-control-plane-v2`
 - `--eval-regression-fixtures-v2`
+- `--cutover-drill-v2`
 - `--cutover-v2`
 
 当前默认入口规则：
@@ -232,6 +233,8 @@ cutover 之前必须同时满足：
 当前 truth boundary 固定为：
 
 - `runtime_v2` 已吸收进 authoritative docs 与代码
+- `--cutover-drill-v2` 会写出 `.ai/runs-v2/_cutover/cutover-drill-summary.json`，只做前置条件检查，不切换默认入口
+- `--cutover-v2` 会先跑 cutover drill；drill 未 ready 时 fail-closed，返回 blocked summary 且不修改 `runtime.active_version`
 - 默认入口未切换
 - active queue 未改写
 - Hermes / AgentBridge 仍保留 compatibility / baseline / adapter 边界
