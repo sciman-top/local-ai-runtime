@@ -61,6 +61,7 @@
 - [20260708 Runtime V2 K2-T06 Rollback Restore Drill](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260708-runtime-v2-k2-t06-rollback-restore-drill.md)
 - [20260708 Runtime V2 K2-T06 Operator Approval Gate](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260708-runtime-v2-k2-t06-operator-approval-gate.md)
 - [20260708 Runtime V2 K2-T06 Approval Template](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260708-runtime-v2-k2-t06-approval-template.md)
+- [20260708 Runtime V2 K2-T06 Approval Audit](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260708-runtime-v2-k2-t06-approval-audit.md)
 
 当前最新结论：
 
@@ -110,5 +111,6 @@
 - `Kernel V2` 的 K2-T06 rollback restore drill 子切片已落地：`--cutover-rollback-drill-v2` 写出 `.ai/runs-v2/_cutover/cutover-rollback-drill-summary.json`，验证 review summary、恢复配置目标、archive root 与当前 v1 默认入口；该入口不执行 restore，也不声明 live accepted
 - `Kernel V2` 的 K2-T06 operator approval gate 子切片已落地：`--cutover-v2 --confirm-cutover-v2` 还必须附带通过校验的 `--cutover-approval-ref`，缺失或不匹配时写出 `.ai/runs-v2/_cutover/cutover-operator-approval-summary.json` 并返回 `approval_required / cutover_performed=false`；真实仓仍未执行 confirmed cutover
 - `Kernel V2` 的 K2-T06 approval template 子切片已落地：`--cutover-approval-template-v2` 会生成默认 `approved=false` 的可编辑 approval JSON，并引用当前 review / rollback drill summary；该入口不执行 cutover，不修改默认入口
+- `Kernel V2` 的 K2-T06 approval audit 子切片已落地：approval validation 会记录 approval 文件 `sha256 / byte_count / approved_by / approved_at`，并写出 sanitized `operator-approval-audit.json`；该留痕不执行 cutover，不修改默认入口
 - 当前预期 next action 仍是粗粒度的 `promote_phase1_execution`；repo-side planner/review/path-guard/worktree-manager/cleanup-manager/runtime-ledger/lifecycle/receipt、`P5-T01` route/quota、`P5-T02` deterministic multi-worker simulation、`P5-T03` remote_non_gui promotion evidence、`P6-T01` / `P6-T02` Hermes parity / historical snapshot mapping、`P6-T03` vm_gui conditional promotion evidence、repo-owned `host_local` task entrypoint / worker factory、bounded live heterogeneous review sidecar receipt closeout、以及 `E-T01` 字段名决策 已完成，下一 open set 收窄到 non-host_local runner wiring 与后续 review hardening
 - 参考架当前不做大改：`registry` 已补成 conditional 候选；默认刷新集合不变；`skills / hermes-agent-self-evolution / openclaw` 继续保持 archive-on-demand，并作为未来本机瘦身时的第一批本地删除候选

@@ -51,7 +51,7 @@
   - completed / reviewing / gate-retryable final-result、dependency-blocked、admission-paused、pre-worker policy-guard blocked、worker-failure retryable / failed、retry queued 路径已写出 attempt-level `regression_fixture.json`
   - 最小 `--eval-regression-fixtures-v2` 已可重跑并写出 repo-side regression fixture summary
 - `WP6` cutover / archive / 真相面切换：进行中
-  - 第一批 `--cutover-drill-v2`、`--cutover-v2` fail-closed guard、cutover review / manual approval gate、`--cutover-rollback-drill-v2` 非破坏恢复路径检查、`--confirm-cutover-v2` 人工确认闸门、`--cutover-approval-ref` operator approval evidence gate、以及 `--cutover-approval-template-v2` 默认未批准模板入口已落地；真实 `local_maint` v2 live coding probe 已 completed，当前 drill ready 但默认 `--cutover-v2` 仍返回 `manual_approval_required / cutover_performed=false`，缺少 approval evidence 的 confirmed cutover 仍返回 `approval_required / cutover_performed=false`，默认入口仍未切换
+  - 第一批 `--cutover-drill-v2`、`--cutover-v2` fail-closed guard、cutover review / manual approval gate、`--cutover-rollback-drill-v2` 非破坏恢复路径检查、`--confirm-cutover-v2` 人工确认闸门、`--cutover-approval-ref` operator approval evidence gate、`--cutover-approval-template-v2` 默认未批准模板入口、以及 approval hash / sanitized audit 留痕已落地；真实 `local_maint` v2 live coding probe 已 completed，当前 drill ready 但默认 `--cutover-v2` 仍返回 `manual_approval_required / cutover_performed=false`，缺少或未批准 approval evidence 的 confirmed cutover 仍返回 `approval_required / cutover_performed=false`，默认入口仍未切换
 
 ## 战略回调 Overlay（A-F）
 

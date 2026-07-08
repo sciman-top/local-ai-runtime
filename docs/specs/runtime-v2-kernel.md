@@ -245,7 +245,8 @@ cutover 之前必须同时满足：
 - `--cutover-approval-template-v2` 会写出 `.ai/runs-v2/_cutover/operator-approval.template.json` 或 `--cutover-approval-template-output` 指定路径；模板默认 `approved=false`，只生成可人工编辑的 approval JSON，不切换默认入口
 - 只有同时传入 `--cutover-v2 --confirm-cutover-v2 --cutover-approval-ref <approval.json>`，且 approval JSON 校验通过，才允许执行默认入口切换；该路径必须保留 review summary、rollback drill summary、operator approval summary 与 rollback plan 引用
 - approval JSON 必须使用 `runtime_v2_cutover_operator_approval.v1`，包含 `approved=true`、`approved_by`、`approved_at`、当前 review summary path、当前 rollback drill summary path，并确认 `default_entrypoint_switch / rollback_restore_required`
-- 当前已有一条真实 `local_maint` v2 live coding probe completed，`--eval-regression-fixtures-v2` 为 `ok=true`，`--cutover-drill-v2` 为 `ready=true / cutover_performed=false`，`--cutover-v2` 默认返回 `manual_approval_required / cutover_performed=false`，`--cutover-rollback-drill-v2` 为 `ready=true / restore_performed=false`，`--cutover-approval-template-v2` 能生成默认未批准模板，`--cutover-v2 --confirm-cutover-v2` 在缺少 `--cutover-approval-ref` 时返回 `approval_required / cutover_performed=false`
+- approval validation 会写出 `approval_sha256`、`approval_byte_count`、`approved_by`、`approved_at` 与 sanitized `operator-approval-audit.json`，用于确认审批文件留痕；该审计摘要不等于执行 cutover
+- 当前已有一条真实 `local_maint` v2 live coding probe completed，`--eval-regression-fixtures-v2` 为 `ok=true`，`--cutover-drill-v2` 为 `ready=true / cutover_performed=false`，`--cutover-v2` 默认返回 `manual_approval_required / cutover_performed=false`，`--cutover-rollback-drill-v2` 为 `ready=true / restore_performed=false`，`--cutover-approval-template-v2` 能生成默认未批准模板，`--cutover-v2 --confirm-cutover-v2` 在缺少或未批准 `--cutover-approval-ref` 时返回 `approval_required / cutover_performed=false`
 - 默认入口未切换
 - active queue 未改写
 - Hermes / AgentBridge 仍保留 compatibility / baseline / adapter 边界

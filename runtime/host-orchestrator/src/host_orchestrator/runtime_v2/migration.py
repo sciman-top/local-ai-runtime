@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import replace
 from datetime import datetime, timezone
+import hashlib
 import json
 from pathlib import Path
 import shutil
@@ -205,14 +206,19 @@ def validate_cutover_operator_approval(
     approval_path = _resolve_optional_repo_path(layout.repo_root, approval_ref)
     approval_payload: dict[str, object] = {}
     approval_error = ""
+    approval_byte_count = 0
+    approval_sha256 = ""
     if approval_path is not None and approval_path.exists():
         try:
-            loaded_payload = json.loads(approval_path.read_text(encoding="utf-8"))
+            approval_bytes = approval_path.read_bytes()
+            approval_byte_count = len(approval_bytes)
+            approval_sha256 = hashlib.sha256(approval_bytes).hexdigest()
+            loaded_payload = json.loads(approval_bytes.decode("utf-8"))
             if isinstance(loaded_payload, dict):
                 approval_payload = loaded_payload
             else:
                 approval_error = "approval file must contain a JSON object"
-        except (OSError, json.JSONDecodeError) as exc:
+        except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
             approval_error = str(exc)
     elif approval_path is not None:
         approval_error = "approval file does not exist"
@@ -287,12 +293,24 @@ def validate_cutover_operator_approval(
         if check["status"] != "pass"
     ]
     approved = not blocking_reasons
+    approval_audit_path = _write_operator_approval_audit(
+        layout=layout,
+        approval_path=approval_path,
+        approval_payload=approval_payload,
+        approval_sha256=approval_sha256,
+        approval_byte_count=approval_byte_count,
+    )
     payload = {
         "schema_version": "runtime_v2_cutover_operator_approval.v1",
         "status": "approved" if approved else "approval_required",
         "approved": approved,
         "cutover_performed": False,
         "approval_ref": str(approval_path) if approval_path is not None else "",
+        "approval_sha256": approval_sha256,
+        "approval_byte_count": approval_byte_count,
+        "approval_audit_path": str(approval_audit_path) if approval_audit_path is not None else "",
+        "approved_by": str(approval_payload.get("approved_by") or ""),
+        "approved_at": str(approval_payload.get("approved_at") or ""),
         "checks": checks,
         "blocking_reasons": blocking_reasons,
         "review_summary_path": str(review_payload.get("summary_path") or ""),
@@ -302,6 +320,38 @@ def validate_cutover_operator_approval(
     summary_path.parent.mkdir(parents=True, exist_ok=True)
     summary_path.write_text(json.dumps(payload, indent=2, ensure_ascii=True), encoding="utf-8")
     return payload
+
+
+def _write_operator_approval_audit(
+    *,
+    layout: RuntimeLayout,
+    approval_path: Path | None,
+    approval_payload: dict[str, object],
+    approval_sha256: str,
+    approval_byte_count: int,
+) -> Path | None:
+    if approval_path is None or not approval_payload:
+        return None
+    audit_path = layout.runs_v2_root / "_cutover" / "operator-approval-audit.json"
+    acknowledged_risks = approval_payload.get("acknowledged_risks")
+    if not isinstance(acknowledged_risks, list):
+        acknowledged_risks = []
+    audit_payload = {
+        "schema_version": "runtime_v2_cutover_operator_approval_audit.v1",
+        "captured_at": _utc_now_iso(),
+        "source_path": str(approval_path),
+        "source_sha256": approval_sha256,
+        "source_byte_count": approval_byte_count,
+        "approved": approval_payload.get("approved") is True,
+        "approved_by": str(approval_payload.get("approved_by") or ""),
+        "approved_at": str(approval_payload.get("approved_at") or ""),
+        "review_summary_path": str(approval_payload.get("review_summary_path") or ""),
+        "rollback_drill_summary_path": str(approval_payload.get("rollback_drill_summary_path") or ""),
+        "acknowledged_risks": [str(item) for item in acknowledged_risks],
+    }
+    audit_path.parent.mkdir(parents=True, exist_ok=True)
+    audit_path.write_text(json.dumps(audit_payload, indent=2, ensure_ascii=True), encoding="utf-8")
+    return audit_path
 
 
 def write_cutover_operator_approval_template(

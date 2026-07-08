@@ -90,6 +90,7 @@
     - 2026-07-08 已补 `--cutover-rollback-drill-v2`：验证 review summary、恢复 `runtime.active_version = v1` 的配置目标、archive root 可用性和当前默认入口仍为 v1；该入口写出 `.ai/runs-v2/_cutover/cutover-rollback-drill-summary.json`，不执行 restore
     - 2026-07-08 已补 operator approval evidence gate：`--cutover-v2 --confirm-cutover-v2` 仍必须附带 `--cutover-approval-ref <approval.json>`，且 approval JSON 需校验 schema、`approved_by / approved_at`、当前 review / rollback summary 引用、以及 `default_entrypoint_switch / rollback_restore_required` 风险确认；缺失时返回 `approval_required / cutover_performed=false`
     - 2026-07-08 已补 operator approval template 入口：`--cutover-approval-template-v2` 会生成默认 `approved=false` 的可编辑 approval JSON，并引用当前 review / rollback drill summary；该入口不执行 cutover，不修改默认入口
+    - 2026-07-08 已补 operator approval audit 留痕：approval validation 会记录 `approval_sha256 / approval_byte_count / approved_by / approved_at`，并写出 sanitized `operator-approval-audit.json`；该留痕不执行 cutover
     - `K2-T06` 未标完成：真实默认入口切换仍需满足 cutover 条件、门禁与人工边界，当前不声明 live accepted
 
 ## Phase 1

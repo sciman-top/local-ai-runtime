@@ -1197,7 +1197,15 @@ def test_runtime_v2_cutover_approval_template_is_non_destructive_and_editable(
         review_payload=review_payload,
         rollback_payload=rollback_payload,
     )
+    default_audit_payload = json.loads(
+        Path(default_validation["approval_audit_path"]).read_text(encoding="utf-8")
+    )
     assert default_validation["approved"] is False
+    assert default_validation["approval_byte_count"] > 0
+    assert len(default_validation["approval_sha256"]) == 64
+    assert default_audit_payload["schema_version"] == "runtime_v2_cutover_operator_approval_audit.v1"
+    assert default_audit_payload["source_sha256"] == default_validation["approval_sha256"]
+    assert default_audit_payload["approved"] is False
     assert {"approval_flag", "approval_identity"} <= set(default_validation["blocking_reasons"])
 
     template_payload["approved"] = True
@@ -1210,12 +1218,20 @@ def test_runtime_v2_cutover_approval_template_is_non_destructive_and_editable(
         review_payload=review_payload,
         rollback_payload=rollback_payload,
     )
+    approved_audit_payload = json.loads(
+        Path(approved_validation["approval_audit_path"]).read_text(encoding="utf-8")
+    )
     orchestrator_payload = yaml.safe_load(
         (repo_root / ".ai" / "config" / "orchestrator.yaml").read_text(encoding="utf-8")
     )
 
     assert approved_validation["status"] == "approved"
     assert approved_validation["approved"] is True
+    assert approved_validation["approved_by"] == "test-operator"
+    assert approved_validation["approved_at"] == "2026-07-08T00:00:00Z"
+    assert approved_audit_payload["approved"] is True
+    assert approved_audit_payload["approved_by"] == "test-operator"
+    assert approved_audit_payload["source_sha256"] == approved_validation["approval_sha256"]
     assert approved_validation["cutover_performed"] is False
     assert orchestrator_payload["runtime"]["active_version"] == "v1"
 
