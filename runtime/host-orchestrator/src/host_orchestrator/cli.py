@@ -13,6 +13,7 @@ from host_orchestrator.remote_non_gui_promotion import run_remote_non_gui_promot
 from host_orchestrator.paths import RuntimeLayout, discover_repo_root
 from host_orchestrator.host_local import HostLocalConfig, HostLocalRunner
 from host_orchestrator.runtime_v2.migration import perform_cutover, write_migration_manifest
+from host_orchestrator.runtime_v2.evaluation import evaluate_regression_fixtures
 from host_orchestrator.runtime_v2.runner import RuntimeV2Config, RuntimeV2Runner
 from host_orchestrator.task_lifecycle import (
     RESUME_POINTS,
@@ -158,6 +159,16 @@ def build_parser() -> argparse.ArgumentParser:
         "--retry-task-v2",
         default=None,
         help="Create a new v2 task attempt from a retry rewind point.",
+    )
+    lifecycle_v2_group.add_argument(
+        "--run-ready-blocked-v2",
+        action="store_true",
+        help="Run v2 blocked tasks whose dependency_refs are now completed.",
+    )
+    lifecycle_v2_group.add_argument(
+        "--eval-regression-fixtures-v2",
+        action="store_true",
+        help="Evaluate recorded runtime_v2 regression_fixture artifacts and print a JSON summary.",
     )
     lifecycle_v2_group.add_argument(
         "--migrate-control-plane-v2",
@@ -462,6 +473,47 @@ def main(argv: list[str] | None = None) -> int:
         )
         print(json.dumps(payload, indent=2, ensure_ascii=False))
         return 0
+
+    if args.run_ready_blocked_v2:
+        runner = RuntimeV2Runner(
+            RuntimeV2Config(
+                workspace_root=repo_root,
+                layout=runtime_v2_layout,
+                worker_profile=args.worker_profile,
+                run_id=args.run_id,
+            ),
+            worker_factory=RuntimeWorkerFactory(),
+        )
+        result_paths = runner.run_ready_blocked_tasks()
+        results = []
+        for result_path in result_paths:
+            payload = json.loads(result_path.read_text(encoding="utf-8"))
+            results.append(
+                {
+                    "result_path": str(result_path),
+                    "task_id": payload["task_id"],
+                    "run_id": payload["run_id"],
+                    "attempt_id": payload["attempt_id"],
+                    "status": payload["status"],
+                    "next_action": payload["next_action"],
+                }
+            )
+        print(
+            json.dumps(
+                {
+                    "continued_count": len(results),
+                    "results": results,
+                },
+                indent=2,
+                ensure_ascii=False,
+            )
+        )
+        return 0
+
+    if args.eval_regression_fixtures_v2:
+        payload = evaluate_regression_fixtures(layout=runtime_v2_layout)
+        print(json.dumps(payload, indent=2, ensure_ascii=False))
+        return 0 if payload["ok"] else 1
 
     if args.print_layout:
         payload = {

@@ -11,6 +11,7 @@ from uuid import uuid4
 SCHEMA_SQL_V2 = """
 CREATE TABLE IF NOT EXISTS tasks (
     task_id TEXT PRIMARY KEY,
+    task_path TEXT,
     title TEXT NOT NULL,
     risk_level TEXT NOT NULL,
     worker_profile TEXT NOT NULL,
@@ -80,6 +81,7 @@ CREATE TABLE IF NOT EXISTS events (
 @dataclass(frozen=True)
 class TaskRecord:
     task_id: str
+    task_path: str | None
     title: str
     risk_level: str
     worker_profile: str
@@ -117,6 +119,7 @@ def initialize_control_plane_v2(db_path: Path) -> Path:
     db_path.parent.mkdir(parents=True, exist_ok=True)
     with sqlite3.connect(db_path) as connection:
         connection.executescript(SCHEMA_SQL_V2)
+        _ensure_task_columns(connection)
         _ensure_attempt_columns(connection)
         connection.commit()
     return db_path
@@ -126,6 +129,7 @@ def upsert_task(
     db_path: Path,
     *,
     task_id: str,
+    task_path: str | None = None,
     title: str,
     risk_level: str,
     worker_profile: str,
@@ -145,6 +149,7 @@ def upsert_task(
             """
             INSERT INTO tasks (
                 task_id,
+                task_path,
                 title,
                 risk_level,
                 worker_profile,
@@ -158,8 +163,9 @@ def upsert_task(
                 created_at,
                 updated_at
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT(task_id) DO UPDATE SET
+                task_path = COALESCE(excluded.task_path, task_path),
                 title = excluded.title,
                 risk_level = excluded.risk_level,
                 worker_profile = excluded.worker_profile,
@@ -174,6 +180,7 @@ def upsert_task(
             """,
             (
                 task_id,
+                task_path,
                 title,
                 risk_level,
                 worker_profile,
@@ -215,24 +222,35 @@ def replace_dependencies(
 def unresolved_dependency_refs(db_path: Path, *, task_id: str) -> list[str]:
     initialize_control_plane_v2(db_path)
     with sqlite3.connect(db_path) as connection:
+        unresolved = _unresolved_dependency_refs_in_connection(
+            connection,
+            task_id=task_id,
+        )
+    return unresolved
+
+
+def ready_blocked_task_paths(db_path: Path) -> list[str]:
+    initialize_control_plane_v2(db_path)
+    with sqlite3.connect(db_path) as connection:
         rows = connection.execute(
             """
-            SELECT dependency_ref
-            FROM task_dependencies
-            WHERE task_id = ?
-            ORDER BY dependency_ref
-            """,
-            (task_id,),
+            SELECT task_id, task_path
+            FROM tasks
+            WHERE status = 'blocked'
+              AND status_reason = 'dependency_refs are not satisfied'
+              AND task_path IS NOT NULL
+            ORDER BY task_id
+            """
         ).fetchall()
-        unresolved: list[str] = []
-        for (dependency_ref,) in rows:
-            dependency = connection.execute(
-                "SELECT status FROM tasks WHERE task_id = ?",
-                (dependency_ref,),
-            ).fetchone()
-            if dependency is None or dependency[0] != "completed":
-                unresolved.append(str(dependency_ref))
-    return unresolved
+        ready_paths: list[str] = []
+        for task_id, task_path in rows:
+            unresolved = _unresolved_dependency_refs_in_connection(
+                connection,
+                task_id=str(task_id),
+            )
+            if not unresolved:
+                ready_paths.append(str(task_path))
+    return ready_paths
 
 
 def next_attempt_number(db_path: Path, *, task_id: str) -> int:
@@ -407,6 +425,7 @@ def load_task(db_path: Path, *, task_id: str) -> TaskRecord:
             """
             SELECT
                 task_id,
+                task_path,
                 title,
                 risk_level,
                 worker_profile,
@@ -428,18 +447,19 @@ def load_task(db_path: Path, *, task_id: str) -> TaskRecord:
         raise ValueError(f"Unknown v2 task: {task_id}")
     return TaskRecord(
         task_id=str(row[0]),
-        title=str(row[1]),
-        risk_level=str(row[2]),
-        worker_profile=str(row[3]),
-        verification_profile=str(row[4]),
-        continuation_policy=str(row[5]),
-        write_access=bool(row[6]),
-        requires_network=bool(row[7]),
-        requires_gui=bool(row[8]),
-        status=str(row[9]),
-        status_reason=str(row[10]) if row[10] is not None else None,
-        created_at=str(row[11]),
-        updated_at=str(row[12]),
+        task_path=str(row[1]) if row[1] is not None else None,
+        title=str(row[2]),
+        risk_level=str(row[3]),
+        worker_profile=str(row[4]),
+        verification_profile=str(row[5]),
+        continuation_policy=str(row[6]),
+        write_access=bool(row[7]),
+        requires_network=bool(row[8]),
+        requires_gui=bool(row[9]),
+        status=str(row[10]),
+        status_reason=str(row[11]) if row[11] is not None else None,
+        created_at=str(row[12]),
+        updated_at=str(row[13]),
     )
 
 
@@ -499,6 +519,15 @@ def list_tables(db_path: Path) -> set[str]:
     return {str(name) for (name,) in rows}
 
 
+def _ensure_task_columns(connection: sqlite3.Connection) -> None:
+    existing_columns = {
+        str(row[1])
+        for row in connection.execute("PRAGMA table_info(tasks)").fetchall()
+    }
+    if "task_path" not in existing_columns:
+        connection.execute("ALTER TABLE tasks ADD COLUMN task_path TEXT")
+
+
 def _ensure_attempt_columns(connection: sqlite3.Connection) -> None:
     existing_columns = {
         str(row[1])
@@ -508,3 +537,28 @@ def _ensure_attempt_columns(connection: sqlite3.Connection) -> None:
         connection.execute("ALTER TABLE task_attempts ADD COLUMN resume_point TEXT")
     if "retry_rewind" not in existing_columns:
         connection.execute("ALTER TABLE task_attempts ADD COLUMN retry_rewind TEXT")
+
+
+def _unresolved_dependency_refs_in_connection(
+    connection: sqlite3.Connection,
+    *,
+    task_id: str,
+) -> list[str]:
+    rows = connection.execute(
+        """
+        SELECT dependency_ref
+        FROM task_dependencies
+        WHERE task_id = ?
+        ORDER BY dependency_ref
+        """,
+        (task_id,),
+    ).fetchall()
+    unresolved: list[str] = []
+    for (dependency_ref,) in rows:
+        dependency = connection.execute(
+            "SELECT status FROM tasks WHERE task_id = ?",
+            (dependency_ref,),
+        ).fetchone()
+        if dependency is None or dependency[0] != "completed":
+            unresolved.append(str(dependency_ref))
+    return unresolved

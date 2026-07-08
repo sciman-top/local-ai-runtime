@@ -44,8 +44,12 @@
   - v2 canonical task、6 表存储、`.ai/runs-v2/` 工件骨架已落盘
 - `WP3` 调度 / admission / 自动继续内核：进行中
   - `dependency_refs`、原子 slot admission、`resume_point / retry_rewind` 的 v2 一等字段已落第一批实现
-- `WP4` 执行 / gate / 隔离 / sidecar 收口：待继续
-- `WP5` trace / eval / 证据闭环：待继续
+  - dependency-blocked task 现在会持久化 repo-relative `tasks.task_path`，并可在依赖完成后通过 `--run-ready-blocked-v2` 批量续跑
+- `WP4` 执行 / gate / 隔离 / sidecar 收口：进行中
+  - review receipt、bounded review sidecar hook、pre-worker policy guard 已落第一批实现；non-host_local / vm_gui primary runner 仍未接线
+- `WP5` trace / eval / 证据闭环：进行中
+  - completed / reviewing / gate-retryable final-result、dependency-blocked、admission-paused、pre-worker policy-guard blocked、worker-failure retryable / failed、retry queued 路径已写出 attempt-level `regression_fixture.json`
+  - 最小 `--eval-regression-fixtures-v2` 已可重跑并写出 repo-side regression fixture summary
 - `WP6` cutover / archive / 真相面切换：待继续
 
 ## 战略回调 Overlay（A-F）

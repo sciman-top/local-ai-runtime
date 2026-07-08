@@ -51,6 +51,10 @@
 - [20260707 Community Subagent Worktree Patterns](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260707-community-subagent-worktree-patterns.md)
 - [20260707 Reference Shelf Tuning](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260707-reference-shelf-tuning.md)
 - [20260708 Runtime V2 Dual-Track Bootstrap](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260708-runtime-v2-dual-track-bootstrap.md)
+- [20260708 Runtime V2 K2-T04 Scheduling Review Policy Gates](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260708-runtime-v2-k2-t04-scheduling-review-policy-gates.md)
+- [20260708 Runtime V2 K2-T05 Regression Fixture Seed](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260708-runtime-v2-k2-t05-regression-fixture-seed.md)
+- [20260708 Runtime V2 K2-T05 Regression Fixture State Coverage](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260708-runtime-v2-k2-t05-regression-fixture-state-coverage.md)
+- [20260708 Runtime V2 K2-T05 Regression Eval Summary](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260708-runtime-v2-k2-t05-regression-eval-summary.md)
 
 当前最新结论：
 
@@ -89,5 +93,10 @@
 - repo-owned `host_local` task entrypoint 与 worker factory 已完成：`host-orchestrator --run-task` / `run-host-task.ps1` 当前已直接消费 `local_maint` 的 `codex_sdk` 路径，并在结构上支持 `codex_exec`；built-in `codex_exec` profiles 仍保持 non-host-local handoff，而 `scripted / gpt54_direct / claude_glm` 继续 live task execution fail-closed
 - `E-T01` 的字段名决策也已固定：`compatibility_projection_ref` 与 `lane` 继续保持现名，不在当前 repo-side parity / topology closeout 中改名，待 live heterogeneous review sidecar 与 non-host_local runner 真接线后再复评
 - `Kernel V2` 双轨 bootstrap 已吸收到代码、配置、测试、文档与 verifier；当前明确保持同仓演进、repo/目录名不改、默认入口不切、active queue 不变
+- `Kernel V2` 的 ready-blocked 自动续跑子切片已落地：v2 任务记录现在持久化 repo-relative `tasks.task_path`，`--run-ready-blocked-v2` 可续跑依赖已满足的 dependency-blocked task；非依赖型 `blocked` 不自动续跑
+- `Kernel V2` 的 review / policy receipt 子切片已落地：v2 `review_result.json` 现在会 materialize 结构化 `blocking_reasons`、`changed_paths`、`gate_failed`、`policy_surface_touched`
+- `Kernel V2` 的 bounded review sidecar hook 已落地：显式 review worker / worker factory 路径可 materialize sidecar receipt，缺失或失败时仍 fallback 到 repo-side blocking receipt
+- `Kernel V2` 的 pre-worker policy guard 已落地：network/profile、non-host-local lane、GUI requirement、sensitive write scope 会在 worker 前 fail-closed blocked，不会假装 non-host_local / vm_gui runner 已接线
+- `Kernel V2` 的 K2-T05 regression fixture / eval summary 已落地：completed / reviewing / gate-retryable final-result、dependency-blocked、admission-paused、pre-worker policy-guard blocked、worker-failure retryable / failed、retry queued 路径会写出 attempt-level `regression_fixture.json`，并将 fixture 记录到 v2 artifacts 表；`--eval-regression-fixtures-v2` 会写出 repo-side regression fixture summary；这仍不等于 default cutover 或 live accepted
 - 当前预期 next action 仍是粗粒度的 `promote_phase1_execution`；repo-side planner/review/path-guard/worktree-manager/cleanup-manager/runtime-ledger/lifecycle/receipt、`P5-T01` route/quota、`P5-T02` deterministic multi-worker simulation、`P5-T03` remote_non_gui promotion evidence、`P6-T01` / `P6-T02` Hermes parity / historical snapshot mapping、`P6-T03` vm_gui conditional promotion evidence、repo-owned `host_local` task entrypoint / worker factory、bounded live heterogeneous review sidecar receipt closeout、以及 `E-T01` 字段名决策 已完成，下一 open set 收窄到 non-host_local runner wiring 与后续 review hardening
 - 参考架当前不做大改：`registry` 已补成 conditional 候选；默认刷新集合不变；`skills / hermes-agent-self-evolution / openclaw` 继续保持 archive-on-demand，并作为未来本机瘦身时的第一批本地删除候选

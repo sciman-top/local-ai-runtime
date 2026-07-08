@@ -69,8 +69,18 @@
 - [x] `K2-T03` docs / spec / verifier absorb Kernel V2 without switching active queue
   - Status note:
     - 2026-07-08 authoritative docs、路线图、实施计划、任务清单、spec、change-evidence、以及 verifier 已开始承认 `Kernel V2`，但默认入口与 active queue 仍未切换
-- [ ] `K2-T04` deepen autonomous scheduling / review / policy gates on runtime_v2
-- [ ] `K2-T05` add trace / eval / regression fixtures for runtime_v2
+- [x] `K2-T04` deepen autonomous scheduling / review / policy gates on runtime_v2
+  - Status note:
+    - 2026-07-08 已落第一批 autonomous scheduling 深化：dependency-blocked task 会持久化 repo-relative `tasks.task_path`，依赖满足后可通过 `--run-ready-blocked-v2` 批量续跑；非依赖原因的 `blocked` 不会被自动续跑
+    - 2026-07-08 已落第一批 review / policy receipt 深化：v2 `review_result.json` 现在会 materialize 结构化 `blocking_reasons`、`changed_paths`、`gate_failed`、`policy_surface_touched`
+    - 2026-07-08 已落 bounded review sidecar hook：显式 review worker / worker factory 路径可 materialize sidecar receipt，失败时仍 fallback 到 repo-side blocking receipt
+    - 2026-07-08 已落 pre-worker policy guard：network/profile、non-host-local lane、GUI requirement、sensitive write scope 会在 worker 前 fail-closed blocked
+    - `K2-T04` 按当前 scoped deepening 已完成；这不代表 default cutover、non-host_local runner wiring、vm_gui runner wiring 或 live accepted
+- [x] `K2-T05` add trace / eval / regression fixtures for runtime_v2
+  - Status note:
+    - 2026-07-08 已落 attempt-level `regression_fixture.json` 核心状态覆盖：completed / reviewing / gate-retryable final-result、dependency-blocked、admission-paused、pre-worker policy-guard blocked、worker-failure retryable / failed、retry queued 路径都会写出可回放的 status/profile/gate/artifact refs 摘要，并记录到 v2 artifacts 表
+    - 2026-07-08 已落最小 `--eval-regression-fixtures-v2`：从 v2 artifacts 表读取 `regression_fixture`，校验 schema / required fields / missing files，并写出 `.ai/runs-v2/_eval/regression-fixture-summary.json`
+    - `K2-T05` 按当前 scoped trace / eval / regression fixture 闭环已完成；这不代表 default cutover、live accepted 或完整历史 corpus 评测平台
 - [ ] `K2-T06` run cutover drill and switch the default entrypoint only after gates are green
 
 ## Phase 1

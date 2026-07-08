@@ -13,6 +13,7 @@
 - `runtime/host-orchestrator/src/host_orchestrator/runtime_v2/contracts.py`
 - `runtime/host-orchestrator/src/host_orchestrator/runtime_v2/scheduler.py`
 - `runtime/host-orchestrator/src/host_orchestrator/runtime_v2/admission.py`
+- `runtime/host-orchestrator/src/host_orchestrator/runtime_v2/storage.py`
 - `runtime/host-orchestrator/src/host_orchestrator/runtime_v2/executor.py`
 - `runtime/host-orchestrator/src/host_orchestrator/runtime_v2/artifacts.py`
 - `runtime/host-orchestrator/src/host_orchestrator/runtime_v2/tracing.py`
@@ -93,10 +94,26 @@
 当前已落第一批实现的关键路径：
 
 - `dependency_refs` 未满足 -> `blocked`
+- `dependency_refs` 后续满足 -> `--run-ready-blocked-v2` 可批量续跑 dependency-blocked task
+- pre-worker policy guard 命中 -> `blocked`
 - admission slot 冲突 -> `paused`
 - low-risk + `continuation_policy=auto` + gate 通过 -> `completed`
 - medium/high risk 或 policy surface 命中 -> `reviewing` / `paused`
 - gate failure / worker failure -> `retryable`（按 retry policy）
+
+当前 ready-blocked 自动续跑边界：
+
+- 只扫描 `status = blocked` 且 `status_reason = dependency_refs are not satisfied` 的任务
+- 只续跑已持久化 repo-relative `tasks.task_path` 的任务
+- 非依赖原因的 `blocked` 不会被批量入口自动运行
+
+当前 pre-worker policy guard 边界：
+
+- `requires_network = true` 但 selected worker profile 的 `network_profile = off` -> `blocked`
+- selected worker profile 的 `lane != host_local` -> `blocked`，因为 `runtime_v2` 当前仍未接线 non-host-local primary runner
+- `requires_gui = true` -> `blocked`，因为 `runtime_v2` 当前仍未接线 `vm_gui` primary runner
+- `write_access = true` 且 `allowed_paths` 与 repo-owned `sensitive_paths` 重叠 -> `blocked`
+- guard 命中时不会执行 worker，不会占用 admission slot，`gate_report.json` 会写入 `policy_guard.blocking_reasons`
 
 ## Storage
 
@@ -114,6 +131,12 @@
 - `artifacts`
 - `events`
 
+`tasks` 当前已把以下字段提升为一等字段：
+
+- `task_path`
+
+其中 `task_path` 存 repo-relative task path，用于 `--run-ready-blocked-v2` 在依赖满足后重新加载 canonical task；既有 DB 通过初始化时的向后兼容迁移补列。
+
 `task_attempts` 当前已把以下字段提升为一等字段：
 
 - `attempt_id`
@@ -129,17 +152,67 @@
 - `gate_report.json`
 - `trace_manifest.json`
 - `closeout_bundle.json`
+- `regression_fixture.json`
 - `sidecars/planner_result.json`
 - `sidecars/review_result.json`
+
+当前 `regression_fixture.json` 的覆盖边界：
+
+- completed / reviewing / gate-retryable final-result attempt
+- dependency-blocked attempt
+- admission-paused attempt
+- pre-worker policy-guard blocked attempt
+- worker-failure retryable / failed attempt
+- retry queued attempt；该路径不伪造 `result.json`，fixture 的 `artifact_refs.result = null`
+- fixture 会复制 attempt 的关键判定面：status、next_action、worker/verification/continuation profile、gate status、gate names、changed_paths、review flag、policy guard reasons、以及核心 artifact refs
+- `--eval-regression-fixtures-v2` 会从 v2 `artifacts.kind = regression_fixture` 读取 fixture，写出 `.ai/runs-v2/_eval/regression-fixture-summary.json`
+- 当前 eval summary 只校验 repo-side fixture schema / required fields / missing files / status counts，不等于 live cutover 验收
+
+当前 pre-worker policy guard 路径会在 `result.json` 与 `gate_report.json` 中写入：
+
+- `policy_guard_reasons[]`，每项包含 `category` 与 `detail`
+- `gate_report.policy_guard.status = blocked`
+- `gate_report.policy_guard.blocking_reasons[]`
+
+当前 `sidecars/review_result.json` 在 review-gated 路径上至少包含：
+
+- `reviewer_kind`
+- `review_mode`
+- `model`
+- `state`
+- `blocking_reasons[]`，每项包含 `category` 与 `detail`
+- `changed_paths`
+- `gate_failed`
+- `policy_surface_touched`
+- `recommended_action`
+- `sidecar_status`
+- `findings`
+- `sidecar_blocking_reasons`
+- `missing_tests`
+
+当前已 materialize 的 `blocking_reasons[].category`：
+
+- `risk_level`
+- `policy_surface`
+- `verification`
+
+当前 v2 bounded review sidecar 边界：
+
+- 显式传入 `review_worker`、显式传入 `worker_factory`、或 runner 使用 live factory 时，review-gated 路径可尝试 materialize sidecar receipt
+- sidecar 成功时，`sidecar_status = materialized`，并把由 review worker profile 派生的 reviewer/model、findings、sidecar blocking reasons 写入同一个 `review_result.json`
+- sidecar 缺失、无 primary worker summary、或 sidecar 失败时，`sidecar_status` 保持 `not_configured` 或 `fallback`，repo-side blocking receipt 仍 fail-closed 保留
+- 这不等于 `runtime_v2` 默认入口切换，也不等于 live accepted
 
 ## CLI Surface
 
 当前实验入口固定为：
 
 - `--run-task-v2`
+- `--run-ready-blocked-v2`
 - `--resume-task-v2`
 - `--retry-task-v2`
 - `--migrate-control-plane-v2`
+- `--eval-regression-fixtures-v2`
 - `--cutover-v2`
 
 当前默认入口规则：

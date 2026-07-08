@@ -23,6 +23,7 @@ class V2Artifacts:
     gate_report: Path
     trace_manifest: Path
     closeout_bundle: Path
+    regression_fixture: Path
     planner_result: Path
     review_result: Path
 
@@ -49,6 +50,7 @@ def build_artifacts(
         gate_report=attempt_root / "gate_report.json",
         trace_manifest=attempt_root / "trace_manifest.json",
         closeout_bundle=attempt_root / "closeout_bundle.json",
+        regression_fixture=attempt_root / "regression_fixture.json",
         planner_result=sidecars_root / "planner_result.json",
         review_result=sidecars_root / "review_result.json",
     )
