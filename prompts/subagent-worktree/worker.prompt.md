@@ -36,12 +36,12 @@
 - <VERIFICATION_COMMANDS>
 
 执行规则：
-1. 只做最小修改。
+1. 只做完成当前闭环所必需的最小但完整修改。
 2. 严格限制在 `allowed_paths` 内，且尽量收敛在 `write_set` 内。
 3. 如遇阻塞，立即报告，不要猜。
 4. 开始前先确认 `cwd / git root / branch / worktree` 与任务定义一致；不一致就 fail closed。
 5. 完成后自行运行相关 gate。
-6. 完成后自行 commit。
+6. 只有 manifest / merge policy 或用户明确要求时才 commit；否则保持未提交并准确汇报。
 7. 更新对应 `dispatch_state` 的 `status / status_reason / heartbeat_at / last_result_ref / next_action`。
 
 输出格式：

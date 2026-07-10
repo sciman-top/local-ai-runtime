@@ -30,6 +30,7 @@ Local AI Runtime is a Windows-first local orchestration runtime for audited AI c
 - `.ai/config/*.yaml` 是 repo-owned runtime contract；正式定义见 [docs/specs/config-and-worker-profiles.md](D:/CODE/local-ai-dev-orchestrator/docs/specs/config-and-worker-profiles.md)
 - `.ai/state/control-plane.db` 是调度真源
 - `.ai/state/control-plane-v2.db` 与 `.ai/runs-v2/` 当前只服务于 experimental `runtime_v2` 双轨面
+- `Adaptive Orchestration Overlay` 已落地：`--evaluate-orchestration-manifest` 只写 observe decision，`--run-orchestration-manifest-v2` 只通过显式 guarded profile 执行；active profile 仍是 `observe_default`，正式定义见 [docs/specs/adaptive-orchestration.md](D:/CODE/local-ai-dev-orchestrator/docs/specs/adaptive-orchestration.md)
 - `.ai/runs/<run_id>/<task_id>/` 是正式 evidence 面
 - 执行 hot path 当前收敛为 `Codex-first`；Hermes 保留风险编排、runtime ledger、跨执行器适配与历史基线职责，Claude 仍是可插拔 review sidecar
 - repo-owned `host_local` task entrypoint 现已落地：`host-orchestrator --run-task` 与 `runtime/host-orchestrator/scripts/run-host-task.ps1` 当前会通过 worker factory 支持 `codex_sdk / codex_exec`；在现有 built-in profile 中，`local_maint` 直接走 `codex_sdk`，而 committed `remote_non_gui_probe / vm_gui_probe` 仍因 `runner_wired=false` 在 worker 前 handoff
@@ -57,6 +58,7 @@ Local AI Runtime is a Windows-first local orchestration runtime for audited AI c
 - 日常使用 `主控 + 子代理 + worktree` 协作模式时，先看 [docs/主控-子代理-worktree-协作模式.md](D:/CODE/local-ai-dev-orchestrator/docs/主控-子代理-worktree-协作模式.md)
 - 可直接复用的 prompt 资产在 [prompts/subagent-worktree/README.md](D:/CODE/local-ai-dev-orchestrator/prompts/subagent-worktree/README.md)
 - 可直接复制的 manifest / checklist 模板在 [templates/agent-work-manifest.example.yaml](D:/CODE/local-ai-dev-orchestrator/templates/agent-work-manifest.example.yaml) 与 [templates/closeout-checklist.md](D:/CODE/local-ai-dev-orchestrator/templates/closeout-checklist.md)
+- 派生 decision / guarded execution 模板在 [templates/orchestration-decision.example.json](D:/CODE/local-ai-dev-orchestrator/templates/orchestration-decision.example.json) 与 [templates/orchestration-execution.example.json](D:/CODE/local-ai-dev-orchestrator/templates/orchestration-execution.example.json)
 
 ## Governance Overlay
 

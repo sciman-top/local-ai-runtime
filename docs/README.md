@@ -26,11 +26,12 @@
 10. [config-and-worker-profiles.md](D:/CODE/local-ai-dev-orchestrator/docs/specs/config-and-worker-profiles.md)
 11. [acceptance-and-gates.md](D:/CODE/local-ai-dev-orchestrator/docs/specs/acceptance-and-gates.md)
 12. [run-state-and-handoff.md](D:/CODE/local-ai-dev-orchestrator/docs/specs/run-state-and-handoff.md)
-13. [orchestrator-roadmap.md](D:/CODE/local-ai-dev-orchestrator/docs/roadmap/orchestrator-roadmap.md)
-14. [orchestrator-implementation-plan.md](D:/CODE/local-ai-dev-orchestrator/docs/plans/orchestrator-implementation-plan.md)
-15. [orchestrator-task-list.md](D:/CODE/local-ai-dev-orchestrator/docs/backlog/orchestrator-task-list.md)
-16. [hermes-compatibility-demotion.md](D:/CODE/local-ai-dev-orchestrator/docs/migrations/hermes-compatibility-demotion.md)
-17. [runtime-v2-cutover-operator-runbook.md](D:/CODE/local-ai-dev-orchestrator/docs/runbooks/runtime-v2-cutover-operator-runbook.md)
+13. [adaptive-orchestration.md](D:/CODE/local-ai-dev-orchestrator/docs/specs/adaptive-orchestration.md)
+14. [orchestrator-roadmap.md](D:/CODE/local-ai-dev-orchestrator/docs/roadmap/orchestrator-roadmap.md)
+15. [orchestrator-implementation-plan.md](D:/CODE/local-ai-dev-orchestrator/docs/plans/orchestrator-implementation-plan.md)
+16. [orchestrator-task-list.md](D:/CODE/local-ai-dev-orchestrator/docs/backlog/orchestrator-task-list.md)
+17. [hermes-compatibility-demotion.md](D:/CODE/local-ai-dev-orchestrator/docs/migrations/hermes-compatibility-demotion.md)
+18. [runtime-v2-cutover-operator-runbook.md](D:/CODE/local-ai-dev-orchestrator/docs/runbooks/runtime-v2-cutover-operator-runbook.md)
 
 ## 当前主线口径
 
@@ -42,6 +43,7 @@
 - `docs/runbooks/runtime-v2-cutover-operator-runbook.md` 是 runtime_v2 默认入口切换的人工操作 runbook；它定义 cutover / approval / restore 边界，但不表示真实仓已执行 confirmed cutover
 - `.ai/state/control-plane.db` 是调度真源
 - `.ai/state/control-plane-v2.db` 是 v2 双轨控制面；`.ai/runs-v2/<run_id>/<task_id>/<attempt_id>/` 是 v2 尝试级工件面
+- `Adaptive Orchestration Overlay` 当前以 `observe_default` 为 active profile；observe 只写 run-level decision evidence，guarded 只通过显式 runtime_v2 入口运行，不改变默认 v1 或 active queue
 - `.ai/runs/<run_id>/<task_id>/` 是正式 evidence 面
 - `.ai/config/*.yaml` 是 repo-owned 运行时配置真源
 - repo-owned `host_local` task entrypoint 现已落地：`host-orchestrator --run-task` 与 `runtime/host-orchestrator/scripts/run-host-task.ps1` 当前会通过 worker factory 支持 `codex_sdk / codex_exec`；在现有 built-in profile 中，`local_maint` 直接走 `codex_sdk`，而 committed `remote_non_gui_probe / vm_gui_probe` 仍因 `runner_wired=false` 在 worker 前 handoff
@@ -83,6 +85,8 @@
 - 协作模式说明：[docs/主控-子代理-worktree-协作模式.md](D:/CODE/local-ai-dev-orchestrator/docs/主控-子代理-worktree-协作模式.md)
 - prompt 资产入口：[prompts/subagent-worktree/README.md](D:/CODE/local-ai-dev-orchestrator/prompts/subagent-worktree/README.md)
 - manifest 模板：[templates/agent-work-manifest.example.yaml](D:/CODE/local-ai-dev-orchestrator/templates/agent-work-manifest.example.yaml)
+- orchestration decision 模板：[templates/orchestration-decision.example.json](D:/CODE/local-ai-dev-orchestrator/templates/orchestration-decision.example.json)
+- orchestration execution 模板：[templates/orchestration-execution.example.json](D:/CODE/local-ai-dev-orchestrator/templates/orchestration-execution.example.json)
 - dispatch state 模板：[templates/dispatch-state.example.json](D:/CODE/local-ai-dev-orchestrator/templates/dispatch-state.example.json)
 - review 结果模板：[templates/review-result.example.json](D:/CODE/local-ai-dev-orchestrator/templates/review-result.example.json)
 - closeout bundle 模板：[templates/closeout-bundle.example.json](D:/CODE/local-ai-dev-orchestrator/templates/closeout-bundle.example.json)

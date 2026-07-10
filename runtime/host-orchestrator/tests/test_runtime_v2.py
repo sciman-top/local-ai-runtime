@@ -133,6 +133,17 @@ def test_runtime_config_loads_runtime_v2_sections(tmp_path: Path) -> None:
     assert set(bundle.policies.verification_profiles) >= {"fast", "full"}
     assert set(bundle.policies.continuation_policies) >= {"auto", "guarded"}
     assert "default" in bundle.policies.retry_policies
+    adaptive = bundle.policies.adaptive_orchestration
+    assert adaptive.policy_version == "adaptive_orchestration.v1"
+    assert adaptive.active_profile == "observe_default"
+    assert set(adaptive.profiles) == {
+        "observe_default",
+        "guarded_read_only",
+        "guarded_isolated_writers",
+    }
+    assert bundle.workers["adaptive_read"].sandbox_profile == "read_only"
+    assert bundle.workers["adaptive_review"].sandbox_profile == "read_only"
+    assert bundle.workers["adaptive_write"].sandbox_profile == "workspace_write"
 
 
 def test_repo_runtime_v2_experimental_lane_is_enabled_without_default_cutover() -> None:

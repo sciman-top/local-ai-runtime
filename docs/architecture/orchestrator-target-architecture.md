@@ -25,6 +25,7 @@
 - `.ai/runs/<run_id>/<task_id>/result.json` 仍是正式结果主面
 - `AgentBridge results/*.md` 当前仍是 compatibility projection
 - `runtime/host-orchestrator/src/host_orchestrator/runtime_v2/` 已作为同仓新内核落地；当前只服务 dual-track migration，不切默认入口，也不要求改仓库/目录名
+- `Adaptive Orchestration Overlay` 已作为同仓 cross-cutting 能力落地；当前 active profile 是 `observe_default`，显式 guarded execution 只进入 experimental `runtime_v2`
 - `remote_non_gui` 当前已具备 repo-owned probe profile、promotion evidence、runner wiring readiness contract 与 acceptance schema guard，但 committed `remote_non_gui_probe` 仍保持 `runner_wired=false`，尚未完成真实 remote host runner acceptance；`vm_gui` 当前只有 conditional promotion / handoff proof，尚未完成真实 vm runner 或 GUI-only workload acceptance
 - `compatibility_projection_ref` 与 `lane` 字段名当前仍保持代码层 truth；当前已明确决定不在 repo-side parity / topology closeout 中改名，待真实 remote/vm runner acceptance 与后续 review 稳定性都真实落地后再复评
 
@@ -103,6 +104,23 @@
 - 它不替代 `.ai/runs/<run_id>/<task_id>/evidence_index.json`
 - `governed-ai-coding-runtime` 只作为 `governance-sidecar` companion 参与治理借鉴，不定义当前主线运行时协议
 
+## Adaptive Orchestration Overlay
+
+这层拥有动态执行策略，但不拥有 canonical task truth：
+
+- input：versioned agent-work manifest + repo policy + worker/lease/worktree state
+- decision：dependency DAG、read/write conflict graph、role/model/capability routes 与 bounded waves
+- observe：只写 `.ai/runs-v2/<run_id>/_orchestration/<decision_id>/orchestration-decision.json`
+- guarded：显式 CLI 先把 manifest 归一化为 canonical v2 tasks，再执行安全波次并写 `orchestration-execution.json`
+- evaluation：复用 runtime_v2 regression fixtures，按 hard constraints + Pareto improvement 生成 manual promotion eligibility
+
+它不得：
+
+- 让 authored `mode_preference=multi_agent` 绕过 conflict、lease、worktree 或 policy guard
+- 自动安装第三方 workflow/skill
+- 自动把 observe profile 晋升为 guarded
+- 改 `runtime.active_version`、active queue 或 live acceptance
+
 ## 规则协同边界
 
 - global rules：`D:\CODE\governed-ai-coding-runtime` 中的 `Codex + Claude` 全局规则源。
@@ -119,6 +137,8 @@
 | `worker_kind` | executor adapter | `codex_sdk / codex_exec / scripted / gpt54_direct / claude_glm` |
 | `worker_profile` | repo-owned 具名配置档 | `.ai/config/workers.yaml` |
 | `model_policy` | role-aware / risk-aware / lane-aware 调度建议 | 由 runtime 写入 `dispatch_state.json` |
+| `orchestration_profile` | observe/guarded 策略能力与预算 | `.ai/config/policies.yaml` |
+| `orchestration_decision` | 派生模式、波次、冲突、模型与能力证据 | `.ai/runs-v2/<run_id>/_orchestration/` |
 
 补充说明：
 

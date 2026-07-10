@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from dataclasses import replace
 from datetime import datetime, timezone
 from fnmatch import fnmatchcase
+import hashlib
 import json
 from pathlib import Path
 import subprocess
@@ -14,9 +15,11 @@ from typing import Any
 from host_orchestrator.config_runtime import RuntimeConfigBundle, RuntimeConfigError, load_runtime_config
 from host_orchestrator.canonical_result import build_run_id
 from host_orchestrator.path_guard import (
+    PathGuardError,
     capture_workspace_change_set,
     enforce_workspace_change_policy,
     validate_task_paths,
+    validate_worker_workspace,
 )
 from host_orchestrator.paths import RuntimeLayout
 from host_orchestrator.worker import WorkerLike, WorkerRequest
@@ -50,6 +53,14 @@ class RuntimeV2Config:
     worker_id: str = "runtime-v2-default"
     worker_profile: str | None = None
     run_id: str | None = None
+    model_override: str | None = None
+    reasoning_effort: str | None = None
+    orchestration_decision_id: str | None = None
+    orchestration_decision_ref: str | None = None
+    orchestration_policy_version: str | None = None
+    orchestration_selected_mode: str | None = None
+    orchestration_conflict_count: int = 0
+    orchestration_evaluation_context: dict[str, Any] | None = None
 
 
 class RuntimeV2Runner:
@@ -78,6 +89,11 @@ class RuntimeV2Runner:
             )
 
     def run_task(self, task_path: Path) -> Path:
+        result_path = self._run_task_impl(task_path)
+        self._attach_orchestration_context(result_path)
+        return result_path
+
+    def _run_task_impl(self, task_path: Path) -> Path:
         task = load_task(task_path)
         task_path_ref = repo_relative(self._layout, task_path.resolve())
         worker_profile = self._resolve_worker_profile(task)
@@ -253,6 +269,7 @@ class RuntimeV2Runner:
                 worker=worker,
                 worker_profile=worker_profile,
                 workspace_root=workspace_root,
+                reasoning_effort=self._config.reasoning_effort,
             )
 
             guard_task = SimpleNamespace(
@@ -559,10 +576,111 @@ class RuntimeV2Runner:
 
     def _resolve_worker_profile(self, task: RuntimeV2Task):
         if self._config.worker_profile is not None:
-            return self._runtime_config.worker_profile(self._config.worker_profile)
-        if task.worker_profile is not None:
-            return self._runtime_config.worker_profile(task.worker_profile)
-        return self._runtime_config.worker_profile()
+            profile = self._runtime_config.worker_profile(self._config.worker_profile)
+        elif task.worker_profile is not None:
+            profile = self._runtime_config.worker_profile(task.worker_profile)
+        else:
+            profile = self._runtime_config.worker_profile()
+        if self._config.model_override is not None:
+            return replace(profile, model=self._config.model_override)
+        return profile
+
+    def _attach_orchestration_context(self, result_path: Path) -> None:
+        decision_id = self._config.orchestration_decision_id
+        decision_ref = self._config.orchestration_decision_ref
+        policy_version = self._config.orchestration_policy_version
+        if decision_id is None or decision_ref is None or policy_version is None:
+            return
+
+        result_payload = json.loads(result_path.read_text(encoding="utf-8"))
+        context = {
+            "orchestration_decision_ref": decision_ref,
+            "decision_id": decision_id,
+            "policy_version": policy_version,
+        }
+        model_policy = {
+            "model": self._config.model_override,
+            "reasoning_effort": self._config.reasoning_effort,
+        }
+        attempt_root = result_path.parent
+        evidence_index_path = attempt_root / "evidence_index.json"
+        evidence_index_ref = repo_relative(self._layout, evidence_index_path)
+        artifact_paths = {
+            "result": result_path,
+            "attempt": attempt_root / "attempt.json",
+            "trace": attempt_root / "trace_manifest.json",
+            "gate": attempt_root / "gate_report.json",
+            "closeout": attempt_root / "closeout_bundle.json",
+            "review": attempt_root / "review_result.json",
+            "regression": attempt_root / "regression_fixture.json",
+        }
+        for kind, path in artifact_paths.items():
+            if not path.exists():
+                continue
+            payload = json.loads(path.read_text(encoding="utf-8"))
+            payload.update(context)
+            if kind in {"result", "closeout"}:
+                payload["evidence_index_ref"] = evidence_index_ref
+            if kind in {"result", "attempt", "trace", "regression"}:
+                payload["model_policy"] = model_policy
+            if kind == "regression":
+                artifact_refs = payload.get("artifact_refs")
+                if isinstance(artifact_refs, dict):
+                    artifact_refs["orchestration_decision"] = decision_ref
+                    artifact_refs["evidence_index"] = evidence_index_ref
+                payload["orchestration_selected_mode"] = (
+                    self._config.orchestration_selected_mode
+                )
+                payload["evaluation_context"] = (
+                    dict(self._config.orchestration_evaluation_context)
+                    if self._config.orchestration_evaluation_context is not None
+                    else None
+                )
+                payload["orchestration_metrics"] = _orchestration_metrics(
+                    result_payload=result_payload,
+                    attempt_root=attempt_root,
+                    selected_mode=self._config.orchestration_selected_mode,
+                    conflict_count=self._config.orchestration_conflict_count,
+                )
+            write_json(path, payload)
+
+        _write_orchestration_evidence_index(
+            layout=self._layout,
+            output_path=evidence_index_path,
+            result_payload=result_payload,
+            context=context,
+            decision_ref=decision_ref,
+            artifact_paths=artifact_paths,
+        )
+
+        attempt_id = str(result_payload["attempt_id"])
+        created_at = _utc_now_iso()
+        storage.record_artifact(
+            self._layout.control_plane_v2_db,
+            attempt_id=attempt_id,
+            kind="orchestration_decision",
+            path=decision_ref,
+            created_at=created_at,
+        )
+        storage.record_artifact(
+            self._layout.control_plane_v2_db,
+            attempt_id=attempt_id,
+            kind="evidence_index",
+            path=evidence_index_ref,
+            created_at=created_at,
+        )
+        storage.append_event(
+            self._layout.control_plane_v2_db,
+            task_id=str(result_payload["task_id"]),
+            attempt_id=attempt_id,
+            event_type="orchestration_decision_attached",
+            payload={
+                **context,
+                "selected_mode": self._config.orchestration_selected_mode,
+                "evidence_index_ref": evidence_index_ref,
+            },
+            created_at=created_at,
+        )
 
     def _resolve_verification_profile(self, task: RuntimeV2Task):
         try:
@@ -615,8 +733,28 @@ class RuntimeV2Runner:
             task=guard_task,
             repo_root=self._layout.repo_root,
         )
-        workspace_root.mkdir(parents=True, exist_ok=True)
-        return workspace_root
+        validated_root = validate_worker_workspace(
+            task=guard_task,
+            repo_root=self._layout.repo_root,
+            workspace_root=workspace_root,
+        )
+        if self._config.orchestration_decision_id is not None and task.write_access:
+            from host_orchestrator.adaptive_orchestration import inspect_worktree
+
+            status = inspect_worktree(
+                {
+                    "write_access": True,
+                    "worktree_path": task.worktree_path,
+                    "branch_name": task.branch_name,
+                },
+                self._layout.repo_root,
+            )
+            if not status["verified"]:
+                raise PathGuardError(
+                    "adaptive writer isolation recheck failed: "
+                    + str(status["reason_code"])
+                )
+        return validated_root
 
     def _materialize_review_payload(
         self,
@@ -1714,6 +1852,107 @@ def _usage_payload(worker_result) -> dict[str, Any] | None:
         "total_tokens": usage.total.total_tokens,
         "model_context_window": usage.model_context_window,
     }
+
+
+def _write_orchestration_evidence_index(
+    *,
+    layout: RuntimeLayout,
+    output_path: Path,
+    result_payload: dict[str, Any],
+    context: dict[str, str],
+    decision_ref: str,
+    artifact_paths: dict[str, Path],
+) -> None:
+    indexed_paths = {
+        "orchestration_decision": _resolve_artifact_ref(layout, decision_ref),
+        **artifact_paths,
+    }
+    artifacts: list[dict[str, Any]] = []
+    for kind, path in sorted(indexed_paths.items()):
+        if not path.exists():
+            continue
+        content = path.read_bytes()
+        artifacts.append(
+            {
+                "kind": kind,
+                "path": repo_relative(layout, path),
+                "sha256": hashlib.sha256(content).hexdigest(),
+                "byte_count": len(content),
+            }
+        )
+    write_json(
+        output_path,
+        {
+            "schema_version": "runtime_v2_evidence_index.v1",
+            "run_id": str(result_payload["run_id"]),
+            "task_id": str(result_payload["task_id"]),
+            "attempt_id": str(result_payload["attempt_id"]),
+            **context,
+            "artifacts": artifacts,
+        },
+    )
+
+
+def _resolve_artifact_ref(layout: RuntimeLayout, path_ref: str) -> Path:
+    path = Path(path_ref)
+    return path if path.is_absolute() else layout.repo_root / path
+
+
+def _orchestration_metrics(
+    *,
+    result_payload: dict[str, Any],
+    attempt_root: Path,
+    selected_mode: str | None,
+    conflict_count: int,
+) -> dict[str, Any]:
+    trace_path = attempt_root / "trace_manifest.json"
+    gate_path = attempt_root / "gate_report.json"
+    trace_payload = (
+        json.loads(trace_path.read_text(encoding="utf-8")) if trace_path.exists() else {}
+    )
+    gate_payload = (
+        json.loads(gate_path.read_text(encoding="utf-8")) if gate_path.exists() else {}
+    )
+    usage = trace_payload.get("usage")
+    total_tokens = usage.get("total_tokens") if isinstance(usage, dict) else None
+    status = str(result_payload.get("status") or "")
+    next_action = str(result_payload.get("next_action") or "")
+    attempt_number = int(result_payload.get("attempt_number") or 1)
+    required_artifacts = (
+        attempt_root / "result.json",
+        attempt_root / "gate_report.json",
+        attempt_root / "trace_manifest.json",
+        attempt_root / "closeout_bundle.json",
+        attempt_root / "regression_fixture.json",
+    )
+    return {
+        "task_success": status == "completed",
+        "gate_pass": str(gate_payload.get("status") or "") == "pass",
+        "evidence_complete": all(path.exists() for path in required_artifacts),
+        "total_tokens": int(total_tokens) if isinstance(total_tokens, int) else None,
+        "wall_time_ms": _elapsed_milliseconds(
+            result_payload.get("started_at"),
+            result_payload.get("finished_at"),
+        ),
+        "human_handoff_count": 1
+        if status in {"blocked", "paused", "reviewing"}
+        else 0,
+        "subagent_count": 1 if selected_mode == "multi_agent" else 0,
+        "conflict_count": conflict_count,
+        "retry_count": max(0, attempt_number - 1),
+        "rework_count": 1 if "retry" in next_action or "review" in next_action else 0,
+    }
+
+
+def _elapsed_milliseconds(started_at: object, finished_at: object) -> int | None:
+    if not isinstance(started_at, str) or not isinstance(finished_at, str):
+        return None
+    try:
+        start = datetime.fromisoformat(started_at.replace("Z", "+00:00"))
+        finish = datetime.fromisoformat(finished_at.replace("Z", "+00:00"))
+    except ValueError:
+        return None
+    return max(0, int((finish - start).total_seconds() * 1000))
 
 
 def _utc_now_iso() -> str:

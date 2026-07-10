@@ -183,6 +183,19 @@ def test_exec_fallback_builds_expected_codex_exec_command(tmp_path: Path) -> Non
     ]
 
 
+def test_exec_fallback_passes_reasoning_effort_as_codex_config(tmp_path: Path) -> None:
+    request = WorkerRequest(
+        prompt="Reply with exactly OK.",
+        cwd=tmp_path,
+        model="gpt-5.6-sol",
+        reasoning_effort="high",
+    )
+
+    argv = build_exec_argv(request, tmp_path / "last-message.txt")
+
+    assert argv[argv.index('model_reasoning_effort="high"') - 1] == "-c"
+
+
 def test_exec_fallback_worker_reads_output_last_message(tmp_path: Path) -> None:
     request = WorkerRequest(
         prompt="Reply with exactly OK.",

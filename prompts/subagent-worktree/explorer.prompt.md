@@ -13,7 +13,7 @@
 - FORBIDDEN_SCOPE: <FORBIDDEN_SCOPE>
 
 任务：
-1. 基于最新真源，提炼最小可落实现实。
+1. 基于最新真源，提炼边界清晰、风险可控、可验证且能收口的最大合理切片。
 2. 给出建议 `allowed_paths`。
 3. 给出建议 `write_set`。
 4. 给出建议 `verification_commands` 与 `artifacts_out`。
@@ -22,7 +22,7 @@
 
 输出格式：
 - Conclusion
-- Minimal slice
+- Maximum reasonable slice
 - Suggested allowed paths
 - Suggested write set
 - Suggested verification commands

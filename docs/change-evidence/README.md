@@ -74,6 +74,10 @@
 - [20260708 Diff-Aware Review Context](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260708-diff-aware-review-context.md)
 - [20260708 Review Sidecar Diff Context Coverage](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260708-review-sidecar-diff-context-coverage.md)
 - [20260708 Review Disposition Rework Loop](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260708-review-disposition-rework-loop.md)
+- [20260710 GPT-5.6 Subagent Orchestration Research](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260710-gpt56-subagent-orchestration-research.md)
+- [20260710 GPT-5.6 Bounded Subagent Orchestration](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260710-gpt56-bounded-subagent-orchestration.md)
+- [20260710 Trellis + Grill vs Superpowers Research](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260710-trellis-grill-vs-superpowers-research.md)
+- [20260710 Adaptive Orchestration Overlay](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260710-adaptive-orchestration-overlay.md)
 
 当前最新结论：
 

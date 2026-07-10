@@ -64,6 +64,40 @@
 
 - Status: completed
 
+## Adaptive Orchestration Overlay
+
+这组任务是 cross-cutting runtime overlay，不替代产品路线图、Kernel V2 cutover 或当前 selector。
+
+### AO-T01 contract split
+
+- Status: completed
+- `orchestration_constraints` 是 authorable input；`selected_mode / reason codes / waves` 只存在于 derived `orchestration_decision.v1`
+
+### AO-T02 observe engine
+
+- Status: completed
+- 纯决策引擎已覆盖 dependency、read/write、policy truth、worktree、worker capability、lane 与 lease；`--evaluate-orchestration-manifest` 不执行 worker
+
+### AO-T03 capability and model routing
+
+- Status: completed
+- role/intent/risk 路由与通用 capability IDs 已进入 repo-owned config；第三方 skill 不是 core dependency
+
+### AO-T04 guarded runtime_v2
+
+- Status: completed (repo-side experimental)
+- `--run-orchestration-manifest-v2` 只接受 guarded-ready decision，先归一化 canonical v2 tasks，再执行受限 waves；普通 v1/v2 单任务入口不变
+
+### AO-T05 evaluation and promotion gate
+
+- Status: completed (mechanism)
+- regression eval 已汇总质量/证据/token/latency/handoff/retry/rework，并只返回 manual promotion eligibility；不自动 promotion
+
+### AO-T06 representative eval corpus
+
+- Status: pending external/live evidence
+- 需要同模型、同 reasoning、同 verification 的 baseline/candidate 各至少 3 次重复；当前不得声明某一策略已全局最优
+
 ## Strategic Return Landing Order
 
 ### Phase A — Truth Reset

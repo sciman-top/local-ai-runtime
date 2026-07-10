@@ -20,7 +20,7 @@ DISPATCH_STATUSES = (
     "resumed",
 )
 
-REASONING_EFFORTS = ("low", "medium", "high", "xhigh")
+REASONING_EFFORTS = ("low", "medium", "high", "xhigh", "max")
 
 
 def build_dispatch_state_path(

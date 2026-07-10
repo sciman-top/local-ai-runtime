@@ -4,6 +4,12 @@ import argparse
 import json
 from pathlib import Path
 
+from host_orchestrator.adaptive_orchestration import (
+    AdaptiveOrchestrationError,
+    evaluate_orchestration_manifest,
+    read_active_leases,
+    write_orchestration_decision,
+)
 from host_orchestrator import agentbridge
 from host_orchestrator.config_runtime import RuntimeConfigError, load_runtime_config
 from host_orchestrator.evidence_index import revalidate_evidence_index
@@ -25,6 +31,7 @@ from host_orchestrator.runtime_v2.migration import (
     write_cutover_operator_approval_template,
     write_migration_manifest,
 )
+from host_orchestrator.runtime_v2.orchestration import run_orchestration_manifest_v2
 from host_orchestrator.runtime_v2.evaluation import evaluate_regression_fixtures
 from host_orchestrator.runtime_v2.runner import RuntimeV2Config, RuntimeV2Runner
 from host_orchestrator.task_lifecycle import (
@@ -69,6 +76,18 @@ def build_parser() -> argparse.ArgumentParser:
         type=Path,
         default=None,
         help="Run a v2 canonical JSON/YAML task through the experimental runtime_v2 entrypoint.",
+    )
+    parser.add_argument(
+        "--evaluate-orchestration-manifest",
+        type=Path,
+        default=None,
+        help="Evaluate an agent-work manifest and write an observe/guarded orchestration decision without running workers.",
+    )
+    parser.add_argument(
+        "--run-orchestration-manifest-v2",
+        type=Path,
+        default=None,
+        help="Run a manifest through the explicit guarded runtime_v2 adaptive orchestration entrypoint.",
     )
     parser.add_argument(
         "--agentbridge-root",
@@ -283,6 +302,111 @@ def main(argv: list[str] | None = None) -> int:
         if runtime_bundle is not None
         else layout
     )
+
+    if args.evaluate_orchestration_manifest is not None:
+        if runtime_bundle is None:
+            raise RuntimeConfigError(
+                "Adaptive orchestration requires repo-owned .ai/config runtime policy."
+            )
+        manifest_path = (
+            args.evaluate_orchestration_manifest
+            if args.evaluate_orchestration_manifest.is_absolute()
+            else repo_root / args.evaluate_orchestration_manifest
+        )
+        active_leases = read_active_leases(
+            db_path=runtime_v2_layout.control_plane_v2_db,
+            worker_profiles=sorted(runtime_bundle.workers),
+        )
+        try:
+            decision = evaluate_orchestration_manifest(
+                manifest_path.resolve(strict=False),
+                repo_root=repo_root,
+                runtime_config=runtime_bundle,
+                active_leases=active_leases,
+            )
+        except (AdaptiveOrchestrationError, RuntimeConfigError, ValueError) as exc:
+            print(
+                json.dumps(
+                    {
+                        "decision_status": "blocked",
+                        "error_type": type(exc).__name__,
+                        "error": str(exc),
+                        "worker_execution_attempted": False,
+                        "default_entrypoint_changed": False,
+                        "active_queue_changed": False,
+                        "live_accepted": False,
+                    },
+                    indent=2,
+                    ensure_ascii=False,
+                )
+            )
+            return 1
+        decision_path = write_orchestration_decision(
+            layout=runtime_v2_layout,
+            decision=decision,
+        )
+        print(
+            json.dumps(
+                {
+                    "decision_path": str(decision_path),
+                    "decision_id": decision["decision_id"],
+                    "run_id": decision["run_id"],
+                    "effect": decision["effect"],
+                    "decision_status": decision["decision_status"],
+                    "selected_mode": decision["selected_mode"],
+                    "reason_codes": decision["reason_codes"],
+                    "blocking_reason_codes": decision["blocking_reason_codes"],
+                    "worker_execution_attempted": False,
+                    "default_entrypoint_changed": False,
+                    "active_queue_changed": False,
+                    "live_accepted": False,
+                },
+                indent=2,
+                ensure_ascii=False,
+            )
+        )
+        return 0 if decision["decision_status"] != "blocked" else 1
+
+    if args.run_orchestration_manifest_v2 is not None:
+        manifest_path = (
+            args.run_orchestration_manifest_v2
+            if args.run_orchestration_manifest_v2.is_absolute()
+            else repo_root / args.run_orchestration_manifest_v2
+        )
+        try:
+            summary_path, summary = run_orchestration_manifest_v2(
+                manifest_path.resolve(strict=False),
+                repo_root=repo_root,
+                layout=runtime_v2_layout,
+            )
+        except (AdaptiveOrchestrationError, RuntimeConfigError, ValueError) as exc:
+            print(
+                json.dumps(
+                    {
+                        "status": "blocked",
+                        "error_type": type(exc).__name__,
+                        "error": str(exc),
+                        "worker_execution_attempted": False,
+                        "default_entrypoint_changed": False,
+                        "active_queue_changed": False,
+                        "live_accepted": False,
+                    },
+                    indent=2,
+                    ensure_ascii=False,
+                )
+            )
+            return 1
+        print(
+            json.dumps(
+                {
+                    "summary_path": str(summary_path),
+                    **summary,
+                },
+                indent=2,
+                ensure_ascii=False,
+            )
+        )
+        return 0 if summary["status"] == "completed" else 1
 
     if args.run_task is not None:
         task_path = args.run_task if args.run_task.is_absolute() else (repo_root / args.run_task)

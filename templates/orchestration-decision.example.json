@@ -1,0 +1,73 @@
+{
+  "schema_version": "orchestration_decision.v1",
+  "decision_id": "orch-example-observe",
+  "run_id": "20260710-adaptive-example",
+  "policy_version": "adaptive_orchestration.v1",
+  "profile": "observe_default",
+  "effect": "observe",
+  "decision_status": "observed",
+  "selected_mode": "multi_agent",
+  "mode_preference": "auto",
+  "reason_codes": [
+    "independent_workstreams_available"
+  ],
+  "blocking_reason_codes": [],
+  "evaluated_at": "2026-07-10T00:00:00Z",
+  "manifest_digest": "example-manifest-digest",
+  "manifest_schema_version": "agent_work_manifest.v1",
+  "evaluation_context": null,
+  "budgets": {
+    "max_concurrent_subagents": 3,
+    "max_total_subagents": 6,
+    "max_tree_depth": 1,
+    "delegated_task_count": 2,
+    "planned_worker_count": 2,
+    "nested_subagents_allowed": false
+  },
+  "conflict_policy": "serialize",
+  "stop_policy": "stop_on_scope_or_contract_conflict",
+  "waves": [
+    {
+      "wave_id": "wave-001",
+      "task_ids": ["T01", "T02"],
+      "parallel": true,
+      "execution_kind": "parallel_read_only"
+    }
+  ],
+  "conflicts": [],
+  "dependency_issues": [],
+  "task_routes": [
+    {
+      "task_id": "T01",
+      "kind": "explore",
+      "intent": "research",
+      "role": "explorer",
+      "risk_level": "low",
+      "worker_profile": "local_maint",
+      "write_access": false,
+      "planner_required": false,
+      "review_required": false,
+      "model_policy": {
+        "route": "efficient_read",
+        "model": "gpt-5.6-terra",
+        "reasoning_effort": "medium"
+      },
+      "capabilities": ["exploration"],
+      "unavailable_capabilities": [],
+      "worktree": {
+        "required": false,
+        "verified": true,
+        "reason_code": "read_only_worktree_not_required",
+        "resolved_path": null,
+        "branch": null
+      },
+      "blocking_reason_codes": []
+    }
+  ],
+  "source_evidence_refs": ["docs/architecture/planning-status.json"],
+  "runtime_boundaries": {
+    "default_entrypoint_changed": false,
+    "active_queue_changed": false,
+    "live_accepted": false
+  }
+}

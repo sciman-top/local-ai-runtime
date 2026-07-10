@@ -195,3 +195,26 @@ repo contract 到当前执行实现的映射：
 `ai_dev_orchestrator_impl_pack/07_AGENT_ROLE_MATRIX.md` 的角色分层现在只保留为历史说明。
 
 当前 authoritative truth 已迁到本文件；`07` 应标记为 `role-superseded`。
+
+## Adaptive Orchestration Config
+
+`.ai/config/policies.yaml` 新增 `adaptive_orchestration`：
+
+- `policy_version`
+- `active_profile`
+- `profiles`
+- `model_routes`
+- `capability_routes`
+- `available_capabilities`
+
+当前 profiles：`observe_default / guarded_read_only / guarded_isolated_writers`。active profile 固定为 `observe_default`。
+
+当前专用 worker profiles：
+
+- `adaptive_read`：`codex_sdk + read_only`，最多 3 leases
+- `adaptive_review`：`codex_sdk + read_only`，最多 2 leases
+- `adaptive_write`：`codex_sdk + workspace_write`，最多 2 leases；只有显式 guarded writer profile 且 worktree/path checks 为绿时才可能并行
+
+高风险 explorer 仍路由到 `adaptive_read`，只提升 model/reasoning，不提升 sandbox 写权限。任何只读 task 选择 write sandbox、或 writer 选择 read-only sandbox，都会在 decision 中阻断。
+
+这些 profile 不修改 `local_maint` 的默认地位或 `max_active_leases=1`。manifest 可以向下收紧预算，不能超过 repo profile 或平台上限；guarded 的 planned worker count 也不能超过 total budget。

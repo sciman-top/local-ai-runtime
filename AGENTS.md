@@ -24,6 +24,7 @@
 - repo-level governance evidence index：`docs/change-evidence/README.md`；它不替代 task-level `evidence_index.json`。
 - `.ai/config/orchestrator.yaml`、`.ai/config/workers.yaml`、`.ai/config/policies.yaml` 是 repo-owned runtime contract。
 - `AgentBridge` 是跨层唯一文件契约；`AgentBridge-first intake` 仍待后续接线，不得写成当前既成事实。
+- `Adaptive Orchestration Overlay` 当前 active profile 固定为 `observe_default`；guarded 只能通过显式 experimental `runtime_v2` 入口运行，不改变默认 v1、`current_active_queue` 或 `live accepted`。
 - topology 能力范围按 `host_local > remote_non_gui > vm_gui` 分级推进；`vm_gui` 无真实 GUI-only workload 证据时不进入同等级 closeout。
 - `snapshots/agentbridge-20260628/` 与 `docs/platforms/hermes/` 保留 Hermes/AgentBridge 历史基线与边界证据，但不反转当前 canonical intake / `result.json` / compatibility projection 的 repo truth。
 

@@ -12,6 +12,9 @@
     "tasks"
   ],
   "properties": {
+    "schema_version": {
+      "const": "agent_work_manifest.v1"
+    },
     "run_id": {
       "type": "string"
     },
@@ -37,7 +40,8 @@
             "low",
             "medium",
             "high",
-            "xhigh"
+            "xhigh",
+            "max"
           ]
         },
         "fallback_model": {
@@ -47,6 +51,77 @@
           "type": "string"
         }
       }
+    },
+    "orchestration_constraints": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "profile",
+        "mode_preference",
+        "max_concurrent_subagents",
+        "max_total_subagents",
+        "max_tree_depth",
+        "write_conflict_policy",
+        "stop_policy"
+      ],
+      "properties": {
+        "profile": {
+          "type": "string",
+          "minLength": 1
+        },
+        "mode_preference": {
+          "enum": ["auto", "single_agent", "multi_agent"]
+        },
+        "max_concurrent_subagents": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 3
+        },
+        "max_total_subagents": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 6
+        },
+        "max_tree_depth": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "write_conflict_policy": {
+          "enum": ["serialize", "reject"]
+        },
+        "stop_policy": {
+          "enum": ["stop_on_scope_or_contract_conflict", "finish_independent_workstreams"]
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "max_concurrent_subagents": {"const": 0}
+            }
+          },
+          "then": {
+            "properties": {
+              "max_total_subagents": {"const": 0},
+              "max_tree_depth": {"const": 0}
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "max_concurrent_subagents": {"minimum": 1}
+            }
+          },
+          "then": {
+            "properties": {
+              "max_total_subagents": {"minimum": 1},
+              "max_tree_depth": {"const": 1}
+            }
+          }
+        }
+      ]
     },
     "truth_sources": {
       "type": "array",
@@ -60,6 +135,23 @@
       "items": {
         "type": "string"
       }
+    },
+    "evaluation_context": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["experiment_id", "variant", "repeat_index"],
+      "properties": {
+        "experiment_id": {"type": "string", "minLength": 1},
+        "variant": {"enum": ["baseline", "candidate"]},
+        "repeat_index": {"type": "integer", "minimum": 1},
+        "baseline_run_id": {"type": ["string", "null"]}
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"variant": {"const": "candidate"}}},
+          "then": {"required": ["baseline_run_id"]}
+        }
+      ]
     },
     "tasks": {
       "type": "array",
@@ -106,6 +198,19 @@
               "review",
               "docs_sync",
               "closeout"
+            ]
+          },
+          "intent": {
+            "enum": [
+              "general",
+              "bugfix",
+              "feature",
+              "refactor",
+              "research",
+              "docs",
+              "review",
+              "migration",
+              "operations"
             ]
           },
           "goal": {

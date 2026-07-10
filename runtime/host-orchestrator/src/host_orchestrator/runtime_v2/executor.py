@@ -14,11 +14,13 @@ def execute_task(
     worker: WorkerLike,
     worker_profile: WorkerProfile,
     workspace_root: Path,
+    reasoning_effort: str | None = None,
 ) -> WorkerResult:
     request = WorkerRequest(
         prompt=task.render_worker_prompt(),
         cwd=workspace_root,
         model=worker_profile.model,
+        reasoning_effort=reasoning_effort,
         sandbox=worker_profile.sandbox(),
         approval_mode=worker_profile.approval_mode(),
     )

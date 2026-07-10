@@ -32,6 +32,15 @@
     "objective": {
       "type": "string"
     },
+    "orchestration_decision_ref": {
+      "type": "string"
+    },
+    "decision_id": {
+      "type": "string"
+    },
+    "policy_version": {
+      "type": "string"
+    },
     "status": {
       "enum": [
         "succeeded",

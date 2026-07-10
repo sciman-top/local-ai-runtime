@@ -1,10 +1,13 @@
 from __future__ import annotations
 
 import json
+import tomllib
 
 from host_orchestrator.agent_work_assets import (
+    DEFAULT_ORCHESTRATION_CONSTRAINTS,
     REQUIRED_VERIFICATION_COMMANDS,
     load_mapping_file,
+    normalize_manifest_payload,
     validate_closeout_bundle_payload,
     validate_dispatch_state_payload,
     validate_handoff_receipt_payload,
@@ -20,6 +23,31 @@ from host_orchestrator.runner_acceptance import (
 from support import REPO_ROOT
 
 
+def test_project_codex_config_bounds_subagents_and_read_only_roles() -> None:
+    config = tomllib.loads((REPO_ROOT / ".codex" / "config.toml").read_text(encoding="utf-8"))
+
+    assert config["sandbox_workspace_write"]["network_access"] is True
+    assert config["agents"] == {"max_threads": 4, "max_depth": 1}
+
+    expected_agents = {
+        "explorer": ("gpt-5.6-terra", "medium"),
+        "spec_reviewer": ("gpt-5.6-sol", "high"),
+        "quality_reviewer": ("gpt-5.6-sol", "high"),
+    }
+    for agent_name, (model, reasoning_effort) in expected_agents.items():
+        payload = tomllib.loads(
+            (REPO_ROOT / ".codex" / "agents" / f"{agent_name}.toml").read_text(
+                encoding="utf-8"
+            )
+        )
+        assert payload["name"] == agent_name
+        assert payload["model"] == model
+        assert payload["model_reasoning_effort"] == reasoning_effort
+        assert payload["sandbox_mode"] == "read-only"
+        assert payload["description"]
+        assert payload["developer_instructions"]
+
+
 def test_manifest_template_aligns_with_repo_owned_contract() -> None:
     payload = load_mapping_file(REPO_ROOT / "templates" / "agent-work-manifest.example.yaml")
 
@@ -28,9 +56,14 @@ def test_manifest_template_aligns_with_repo_owned_contract() -> None:
     schema = json.loads((REPO_ROOT / "templates" / "agent-work-manifest.schema.json").read_text(encoding="utf-8"))
     assert "tasks" in schema["required"]
     assert "model_policy" in schema["required"]
+    assert "schema_version" not in schema["required"]
+    assert "orchestration_constraints" not in schema["required"]
+    assert schema["properties"]["schema_version"]["const"] == "agent_work_manifest.v1"
     task_properties = schema["properties"]["tasks"]["items"]["properties"]
     assert "depends_on" in task_properties
     assert "blocked_by" not in task_properties
+    assert "general" in task_properties["intent"]["enum"]
+    assert "bugfix" in task_properties["intent"]["enum"]
     assert task_properties["user_forced_planner"]["const"] is True
     assert task_properties["user_forced_review"]["const"] is True
     verification_schema = task_properties["verification_commands"]
@@ -43,7 +76,127 @@ def test_manifest_template_aligns_with_repo_owned_contract() -> None:
         "medium",
         "high",
         "xhigh",
+        "max",
     ]
+    orchestration_schema = schema["properties"]["orchestration_constraints"]
+    assert orchestration_schema["required"] == [
+        "profile",
+        "mode_preference",
+        "max_concurrent_subagents",
+        "max_total_subagents",
+        "max_tree_depth",
+        "write_conflict_policy",
+        "stop_policy",
+    ]
+    orchestration_properties = orchestration_schema["properties"]
+    assert orchestration_properties["mode_preference"]["enum"] == [
+        "auto",
+        "single_agent",
+        "multi_agent",
+    ]
+    assert orchestration_properties["max_concurrent_subagents"]["maximum"] == 3
+    assert orchestration_properties["max_total_subagents"]["maximum"] == 6
+    assert orchestration_properties["max_tree_depth"]["maximum"] == 1
+    zero_budget_then = orchestration_schema["allOf"][0]["then"]["properties"]
+    assert zero_budget_then["max_total_subagents"]["const"] == 0
+    assert zero_budget_then["max_tree_depth"]["const"] == 0
+    enabled_budget_then = orchestration_schema["allOf"][1]["then"]["properties"]
+    assert enabled_budget_then["max_total_subagents"]["minimum"] == 1
+    assert enabled_budget_then["max_tree_depth"]["const"] == 1
+
+
+def test_legacy_manifest_normalizes_to_safe_observe_defaults() -> None:
+    payload = load_mapping_file(REPO_ROOT / "templates" / "agent-work-manifest.example.yaml")
+    payload.pop("schema_version")
+    payload.pop("orchestration_constraints")
+
+    validate_manifest_payload(payload)
+    normalized = normalize_manifest_payload(payload)
+
+    assert normalized["schema_version"] == "agent_work_manifest.v1"
+    assert normalized["orchestration_constraints"] == DEFAULT_ORCHESTRATION_CONSTRAINTS
+
+
+def test_manifest_rejects_repo_escape_path_patterns() -> None:
+    payload = load_mapping_file(REPO_ROOT / "templates" / "agent-work-manifest.example.yaml")
+    payload["tasks"][0]["read_set"] = ["../outside/**"]
+
+    try:
+        validate_manifest_payload(payload)
+    except ValueError as exc:
+        assert "must not escape the repo" in str(exc)
+    else:
+        raise AssertionError("expected repo-escape read_set to be rejected")
+
+
+def test_manifest_orchestration_constraints_enforce_bounded_delegation() -> None:
+    payload = load_mapping_file(REPO_ROOT / "templates" / "agent-work-manifest.example.yaml")
+    constraints = payload["orchestration_constraints"]
+    assert isinstance(constraints, dict)
+
+    constraints.update(
+        {
+            "max_concurrent_subagents": 0,
+            "max_total_subagents": 0,
+            "max_tree_depth": 0,
+        }
+    )
+    validate_manifest_payload(payload)
+
+    constraints.update(
+        {
+            "max_concurrent_subagents": 3,
+            "max_total_subagents": 2,
+            "max_tree_depth": 1,
+        }
+    )
+    try:
+        validate_manifest_payload(payload)
+    except ValueError as exc:
+        assert "max_concurrent_subagents cannot exceed max_total_subagents" in str(exc)
+    else:
+        raise AssertionError("expected inverted subagent budgets to be rejected")
+
+    constraints.update(
+        {
+            "max_concurrent_subagents": 4,
+            "max_total_subagents": 6,
+        }
+    )
+    try:
+        validate_manifest_payload(payload)
+    except ValueError as exc:
+        assert "max_concurrent_subagents must be between 0 and 3" in str(exc)
+    else:
+        raise AssertionError("expected excessive subagent concurrency to be rejected")
+
+    constraints.update(
+        {
+            "max_concurrent_subagents": 3,
+            "max_total_subagents": 7,
+            "max_tree_depth": 1,
+        }
+    )
+    try:
+        validate_manifest_payload(payload)
+    except ValueError as exc:
+        assert "max_total_subagents must be between 0 and 6" in str(exc)
+    else:
+        raise AssertionError("expected excessive total subagent budget to be rejected")
+
+    constraints.update(
+        {
+            "max_concurrent_subagents": 3,
+            "max_total_subagents": 6,
+            "max_tree_depth": 2,
+        }
+    )
+    try:
+        validate_manifest_payload(payload)
+    except ValueError as exc:
+        assert "max_tree_depth must be 1" in str(exc)
+    else:
+        raise AssertionError("expected nested subagent depth to be rejected")
 
 
 def test_manifest_force_on_overrides_allow_true_but_reject_false() -> None:

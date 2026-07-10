@@ -1,0 +1,105 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "OrchestrationDecision",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "decision_id",
+    "run_id",
+    "policy_version",
+    "profile",
+    "effect",
+    "decision_status",
+    "selected_mode",
+    "mode_preference",
+    "reason_codes",
+    "blocking_reason_codes",
+    "evaluated_at",
+    "manifest_digest",
+    "manifest_schema_version",
+    "evaluation_context",
+    "budgets",
+    "conflict_policy",
+    "stop_policy",
+    "waves",
+    "conflicts",
+    "dependency_issues",
+    "task_routes",
+    "source_evidence_refs",
+    "runtime_boundaries"
+  ],
+  "properties": {
+    "schema_version": {"const": "orchestration_decision.v1"},
+    "decision_id": {"type": "string", "minLength": 1},
+    "run_id": {"type": "string", "minLength": 1},
+    "policy_version": {"type": "string", "minLength": 1},
+    "profile": {"type": "string", "minLength": 1},
+    "effect": {"enum": ["observe", "guarded"]},
+    "decision_status": {"enum": ["observed", "guarded_ready", "blocked"]},
+    "selected_mode": {"enum": ["single_agent", "multi_agent"]},
+    "mode_preference": {"enum": ["auto", "single_agent", "multi_agent"]},
+    "reason_codes": {"type": "array", "items": {"type": "string"}},
+    "blocking_reason_codes": {"type": "array", "items": {"type": "string"}},
+    "evaluated_at": {"type": "string", "minLength": 1},
+    "manifest_digest": {"type": "string", "minLength": 1},
+    "manifest_schema_version": {"const": "agent_work_manifest.v1"},
+    "evaluation_context": {
+      "type": ["object", "null"]
+    },
+    "budgets": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "max_concurrent_subagents",
+        "max_total_subagents",
+        "max_tree_depth",
+        "delegated_task_count",
+        "planned_worker_count",
+        "nested_subagents_allowed"
+      ],
+      "properties": {
+        "max_concurrent_subagents": {"type": "integer", "minimum": 0, "maximum": 3},
+        "max_total_subagents": {"type": "integer", "minimum": 0, "maximum": 6},
+        "max_tree_depth": {"type": "integer", "minimum": 0, "maximum": 1},
+        "delegated_task_count": {"type": "integer", "minimum": 0, "maximum": 6},
+        "planned_worker_count": {"type": "integer", "minimum": 1},
+        "nested_subagents_allowed": {"const": false}
+      }
+    },
+    "conflict_policy": {"enum": ["serialize", "reject"]},
+    "stop_policy": {
+      "enum": ["stop_on_scope_or_contract_conflict", "finish_independent_workstreams"]
+    },
+    "waves": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["wave_id", "task_ids", "parallel", "execution_kind"],
+        "properties": {
+          "wave_id": {"type": "string"},
+          "task_ids": {"type": "array", "minItems": 1, "items": {"type": "string"}},
+          "parallel": {"type": "boolean"},
+          "execution_kind": {
+            "enum": ["serial", "parallel_read_only", "parallel_isolated_writers", "parallel_mixed"]
+          }
+        }
+      }
+    },
+    "conflicts": {"type": "array", "items": {"type": "object"}},
+    "dependency_issues": {"type": "array", "items": {"type": "object"}},
+    "task_routes": {"type": "array", "minItems": 1, "items": {"type": "object"}},
+    "source_evidence_refs": {"type": "array", "items": {"type": "string"}},
+    "runtime_boundaries": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["default_entrypoint_changed", "active_queue_changed", "live_accepted"],
+      "properties": {
+        "default_entrypoint_changed": {"const": false},
+        "active_queue_changed": {"const": false},
+        "live_accepted": {"const": false}
+      }
+    }
+  }
+}
