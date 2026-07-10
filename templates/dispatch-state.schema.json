@@ -61,7 +61,8 @@
             "low",
             "medium",
             "high",
-            "xhigh"
+            "xhigh",
+            "max"
           ]
         },
         "fallback_model": {
@@ -88,6 +89,15 @@
       "type": "string"
     },
     "route_reason": {
+      "type": "string"
+    },
+    "orchestration_decision_ref": {
+      "type": "string"
+    },
+    "decision_id": {
+      "type": "string"
+    },
+    "policy_version": {
       "type": "string"
     },
     "allowed_paths": {

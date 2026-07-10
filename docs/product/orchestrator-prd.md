@@ -61,6 +61,26 @@
 - `AGENTS.md` 共同项目规则主体 + `CLAUDE.md` thin wrapper + 控制仓 global rule source / target-project audit 协同边界
 - `runtime/host-orchestrator` 就地演进
 
+## Adaptive Orchestration Overlay
+
+`Adaptive Orchestration Overlay` 是跨 phase 的产品能力，用于在质量、安全和证据硬约束下选择满足要求的最小执行流程。它不引入 Trellis、Grill 或 Superpowers 作为核心依赖，也不把固定多代理流程写成默认策略。
+
+当前已落地能力：
+
+- `agent_work_manifest.v1` 只允许作者声明 `orchestration_constraints`，实际 `selected_mode / reason codes / waves / model / capabilities` 由 runtime 派生
+- `--evaluate-orchestration-manifest` 只生成 `orchestration_decision.v1`，不调用 worker、不创建 control-plane task state
+- `--run-orchestration-manifest-v2` 是显式 guarded 入口；manifest 先归一化为 canonical v2 tasks，再由 scheduler 执行
+- 默认单代理；只有两个以上 independent、bounded、无读写冲突且 lease/worktree 能力真实满足的 workstreams 才能并行
+- model routing 与 capability routing 由 `.ai/config/policies.yaml` 版本化配置控制
+- `--eval-regression-fixtures-v2` 可比较 baseline/candidate 的质量、证据、token、latency、handoff、retry 与 rework，并且只给出人工晋升资格
+
+当前边界：
+
+- active profile 仍是 `observe_default`
+- guarded 只属于 experimental `runtime_v2`
+- 不修改默认 v1、`PHASE-1-VERTICAL-SLICE` 或 `live accepted`
+- 尚无代表性 live corpus 证明某个 candidate 已达到全局最优；证据不足时固定返回 `insufficient_evidence`
+
 ## Kernel V2 双轨迁移
 
 当前已吸收的终态重构路径是：保留本仓作为唯一主仓，在 `runtime/host-orchestrator/src/host_orchestrator/runtime_v2/` 内实现新内核，并让旧 `host_local` / `db.py` / `verification.py` 继续承担 `legacy_v1` 默认入口，直到 cutover 条件满足。
@@ -140,6 +160,7 @@
 - 后续目标：多仓并行、route-based worker orchestration
 - 并发判定当前按 `risk + depends_on + policy_surface + write_set + repo truth surface` 共同裁决，不再只看 `write_set`
 - 模型成本当前按 `role-aware / risk-aware / lane-aware` 选择，避免把全部任务锁死为同一模型与同一 reasoning 档
+- adaptive policy 只有在 primary metrics 无回归且 secondary metrics 形成 Pareto 改善时才可进入人工晋升 review；不允许 runtime 自动提升自身权限
 
 ## Acceptance Mapping
 

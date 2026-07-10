@@ -29,6 +29,7 @@ class WorkerRequest:
     prompt: str
     cwd: Path
     model: str
+    reasoning_effort: str | None = None
     sandbox: Sandbox = Sandbox.workspace_write
     approval_mode: ApprovalMode = ApprovalMode.deny_all
 
@@ -103,12 +104,15 @@ def extract_worker_usage(result: object) -> WorkerUsage | None:
 
 
 def build_thread_start_options(request: WorkerRequest) -> dict[str, object]:
-    return {
+    options: dict[str, object] = {
         "cwd": str(request.cwd),
         "model": request.model,
         "sandbox": request.sandbox,
         "approval_mode": request.approval_mode,
     }
+    if request.reasoning_effort is not None:
+        options["config"] = {"model_reasoning_effort": request.reasoning_effort}
+    return options
 
 
 def build_turn_run_options(request: WorkerRequest) -> dict[str, object]:

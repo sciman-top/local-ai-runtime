@@ -82,6 +82,21 @@ def test_sdk_worker_request_maps_to_codex_thread_run() -> None:
     }
 
 
+def test_sdk_worker_request_passes_reasoning_effort_to_thread_config() -> None:
+    from host_orchestrator.worker import WorkerRequest, build_thread_start_options
+
+    request = WorkerRequest(
+        prompt="Inspect the bounded task.",
+        cwd=REPO_ROOT,
+        model="gpt-5.6-sol",
+        reasoning_effort="high",
+    )
+
+    options = build_thread_start_options(request)
+
+    assert options["config"] == {"model_reasoning_effort": "high"}
+
+
 def test_sdk_worker_executes_prompt_via_thread_run() -> None:
     from openai_codex import ApprovalMode, Sandbox
 

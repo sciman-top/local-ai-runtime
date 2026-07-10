@@ -2,6 +2,9 @@
   "run_id": "20260707-example",
   "repo_root": "D:/CODE/your-repo",
   "objective": "推进当前最小切片",
+  "orchestration_decision_ref": ".ai/runs-v2/20260707-example/_orchestration/orch-example-observe/orchestration-decision.json",
+  "decision_id": "orch-example-observe",
+  "policy_version": "adaptive_orchestration.v1",
   "status": "partial",
   "completed": [
     "T02 worker 已完成最小代码切片并通过 repo-side gates",

@@ -13,6 +13,37 @@ from host_orchestrator.runner_acceptance import (
 )
 
 
+ORCHESTRATION_CAPABILITIES = {
+    "clarification",
+    "systematic_debugging",
+    "test_first",
+    "exploration",
+    "spec_review",
+    "quality_review",
+    "worktree_isolation",
+}
+ORCHESTRATION_ROLES = {
+    "master",
+    "explorer",
+    "worker",
+    "spec_reviewer",
+    "quality_reviewer",
+    "closeout",
+}
+ORCHESTRATION_INTENTS = {
+    "general",
+    "bugfix",
+    "feature",
+    "refactor",
+    "research",
+    "docs",
+    "review",
+    "migration",
+    "operations",
+}
+RISK_LEVELS = {"low", "medium", "high", "critical"}
+
+
 class RuntimeConfigError(ValueError):
     """Raised when repo-owned runtime config is missing or invalid."""
 
@@ -94,12 +125,59 @@ class RetryPolicy:
 
 
 @dataclass(frozen=True)
+class OrchestrationProfile:
+    name: str
+    effect: str
+    default_mode: str
+    max_concurrent_subagents: int
+    max_total_subagents: int
+    max_tree_depth: int
+    min_independent_workstreams: int
+    parallel_read_only: bool
+    parallel_writers: bool
+    require_isolated_worktree_for_writers: bool
+    write_conflict_policy: str
+    stop_policy: str
+
+
+@dataclass(frozen=True)
+class ModelRoute:
+    name: str
+    roles: tuple[str, ...]
+    intents: tuple[str, ...]
+    risk_levels: tuple[str, ...]
+    worker_profile: str | None
+    model: str
+    reasoning_effort: str
+
+
+@dataclass(frozen=True)
+class AdaptiveOrchestrationSettings:
+    policy_version: str
+    active_profile: str
+    profiles: dict[str, OrchestrationProfile]
+    model_routes: tuple[ModelRoute, ...]
+    capability_routes: dict[str, tuple[str, ...]]
+    available_capabilities: tuple[str, ...]
+
+    def profile(self, name: str | None = None) -> OrchestrationProfile:
+        profile_name = name or self.active_profile
+        try:
+            return self.profiles[profile_name]
+        except KeyError as exc:
+            raise RuntimeConfigError(
+                f"Unknown adaptive orchestration profile: {profile_name}"
+            ) from exc
+
+
+@dataclass(frozen=True)
 class PolicySettings:
     policy_surface_globs: tuple[str, ...]
     sensitive_paths: tuple[str, ...]
     verification_profiles: dict[str, VerificationProfile]
     continuation_policies: dict[str, ContinuationPolicy]
     retry_policies: dict[str, RetryPolicy]
+    adaptive_orchestration: AdaptiveOrchestrationSettings
 
 
 @dataclass(frozen=True)
@@ -148,6 +226,26 @@ def load_runtime_config(repo_root: Path) -> RuntimeConfigBundle:
         policies_payload.get("retry_policies"),
         "retry_policies",
         "policies.yaml",
+    )
+    adaptive_orchestration_payload = _require_mapping(
+        policies_payload,
+        "adaptive_orchestration",
+        "policies.yaml",
+    )
+    orchestration_profiles_payload = _require_mapping(
+        adaptive_orchestration_payload,
+        "profiles",
+        "policies.yaml:adaptive_orchestration",
+    )
+    model_routes_payload = _require_mapping(
+        adaptive_orchestration_payload,
+        "model_routes",
+        "policies.yaml:adaptive_orchestration",
+    )
+    capability_routes_payload = _require_mapping(
+        adaptive_orchestration_payload,
+        "capability_routes",
+        "policies.yaml:adaptive_orchestration",
     )
 
     workers: dict[str, WorkerProfile] = {}
@@ -242,6 +340,209 @@ def load_runtime_config(repo_root: Path) -> RuntimeConfigBundle:
             max_attempts=_require_positive_int(values, "max_attempts", "policies.yaml"),
         )
 
+    orchestration_profiles: dict[str, OrchestrationProfile] = {}
+    for name, raw in orchestration_profiles_payload.items():
+        if not isinstance(name, str):
+            raise RuntimeConfigError(
+                "policies.yaml:adaptive_orchestration.profiles keys must be strings"
+            )
+        values = _require_mapping(
+            {"entry": raw},
+            "entry",
+            "policies.yaml:adaptive_orchestration.profiles",
+        )
+        profile = OrchestrationProfile(
+            name=name,
+            effect=_require_choice(
+                values,
+                "effect",
+                {"observe", "guarded"},
+                "policies.yaml:adaptive_orchestration.profiles",
+            ),
+            default_mode=_require_choice(
+                values,
+                "default_mode",
+                {"single_agent"},
+                "policies.yaml:adaptive_orchestration.profiles",
+            ),
+            max_concurrent_subagents=_require_non_negative_int(
+                values,
+                "max_concurrent_subagents",
+                "policies.yaml:adaptive_orchestration.profiles",
+            ),
+            max_total_subagents=_require_non_negative_int(
+                values,
+                "max_total_subagents",
+                "policies.yaml:adaptive_orchestration.profiles",
+            ),
+            max_tree_depth=_require_non_negative_int(
+                values,
+                "max_tree_depth",
+                "policies.yaml:adaptive_orchestration.profiles",
+            ),
+            min_independent_workstreams=_require_positive_int(
+                values,
+                "min_independent_workstreams",
+                "policies.yaml:adaptive_orchestration.profiles",
+            ),
+            parallel_read_only=_require_bool(
+                values,
+                "parallel_read_only",
+                "policies.yaml:adaptive_orchestration.profiles",
+            ),
+            parallel_writers=_require_bool(
+                values,
+                "parallel_writers",
+                "policies.yaml:adaptive_orchestration.profiles",
+            ),
+            require_isolated_worktree_for_writers=_require_bool(
+                values,
+                "require_isolated_worktree_for_writers",
+                "policies.yaml:adaptive_orchestration.profiles",
+            ),
+            write_conflict_policy=_require_choice(
+                values,
+                "write_conflict_policy",
+                {"serialize", "reject"},
+                "policies.yaml:adaptive_orchestration.profiles",
+            ),
+            stop_policy=_require_choice(
+                values,
+                "stop_policy",
+                {
+                    "stop_on_scope_or_contract_conflict",
+                    "finish_independent_workstreams",
+                },
+                "policies.yaml:adaptive_orchestration.profiles",
+            ),
+        )
+        _validate_orchestration_profile(profile)
+        orchestration_profiles[name] = profile
+
+    active_profile = _require_string(
+        adaptive_orchestration_payload,
+        "active_profile",
+        "policies.yaml:adaptive_orchestration",
+    )
+    if active_profile not in orchestration_profiles:
+        raise RuntimeConfigError(
+            "policies.yaml:adaptive_orchestration.active_profile must reference a defined profile"
+        )
+
+    model_routes: list[ModelRoute] = []
+    for name, raw in model_routes_payload.items():
+        if not isinstance(name, str):
+            raise RuntimeConfigError(
+                "policies.yaml:adaptive_orchestration.model_routes keys must be strings"
+            )
+        values = _require_mapping(
+            {"entry": raw},
+            "entry",
+            "policies.yaml:adaptive_orchestration.model_routes",
+        )
+        model_routes.append(
+            ModelRoute(
+                name=name,
+                roles=tuple(
+                    _require_string_list(
+                        values,
+                        "roles",
+                        "policies.yaml:adaptive_orchestration.model_routes",
+                    )
+                ),
+                intents=tuple(
+                    _require_string_list(
+                        values,
+                        "intents",
+                        "policies.yaml:adaptive_orchestration.model_routes",
+                    )
+                ),
+                risk_levels=tuple(
+                    _require_string_list(
+                        values,
+                        "risk_levels",
+                        "policies.yaml:adaptive_orchestration.model_routes",
+                    )
+                ),
+                worker_profile=_optional_string(
+                    values,
+                    "worker_profile",
+                    "policies.yaml:adaptive_orchestration.model_routes",
+                ),
+                model=_require_string(
+                    values,
+                    "model",
+                    "policies.yaml:adaptive_orchestration.model_routes",
+                ),
+                reasoning_effort=_require_choice(
+                    values,
+                    "reasoning_effort",
+                    {"low", "medium", "high", "xhigh", "max"},
+                    "policies.yaml:adaptive_orchestration.model_routes",
+                ),
+            )
+        )
+    for route in model_routes:
+        if route.worker_profile is not None and route.worker_profile not in workers:
+            raise RuntimeConfigError(
+                "policies.yaml:adaptive_orchestration.model_routes."
+                f"{route.name}.worker_profile must reference a defined worker profile"
+            )
+        _reject_unknown_values(
+            route.roles,
+            ORCHESTRATION_ROLES,
+            f"model route {route.name} roles",
+        )
+        _reject_unknown_values(
+            route.intents,
+            ORCHESTRATION_INTENTS,
+            f"model route {route.name} intents",
+        )
+        _reject_unknown_values(
+            route.risk_levels,
+            RISK_LEVELS,
+            f"model route {route.name} risk_levels",
+        )
+    if not model_routes:
+        raise RuntimeConfigError(
+            "policies.yaml:adaptive_orchestration.model_routes must not be empty"
+        )
+
+    capability_routes: dict[str, tuple[str, ...]] = {}
+    for intent, raw in capability_routes_payload.items():
+        if not isinstance(intent, str) or not isinstance(raw, list):
+            raise RuntimeConfigError(
+                "policies.yaml:adaptive_orchestration.capability_routes must map strings to string lists"
+            )
+        values = _require_string_list(
+            {"capabilities": raw},
+            "capabilities",
+            "policies.yaml:adaptive_orchestration.capability_routes",
+        )
+        if intent not in ORCHESTRATION_INTENTS:
+            raise RuntimeConfigError(
+                f"unknown adaptive orchestration capability intent: {intent}"
+            )
+        _reject_unknown_values(
+            values,
+            ORCHESTRATION_CAPABILITIES,
+            f"capability route {intent}",
+        )
+        capability_routes[intent] = tuple(values)
+
+    available_capabilities = tuple(
+        _require_string_list(
+            adaptive_orchestration_payload,
+            "available_capabilities",
+            "policies.yaml:adaptive_orchestration",
+        )
+    )
+    _reject_unknown_values(
+        available_capabilities,
+        ORCHESTRATION_CAPABILITIES,
+        "available adaptive orchestration capabilities",
+    )
+
     return RuntimeConfigBundle(
         repo_root=repo_root,
         orchestrator=OrchestratorSettings(
@@ -282,6 +583,18 @@ def load_runtime_config(repo_root: Path) -> RuntimeConfigBundle:
             verification_profiles=verification_profiles,
             continuation_policies=continuation_policies,
             retry_policies=retry_policies,
+            adaptive_orchestration=AdaptiveOrchestrationSettings(
+                policy_version=_require_string(
+                    adaptive_orchestration_payload,
+                    "policy_version",
+                    "policies.yaml:adaptive_orchestration",
+                ),
+                active_profile=active_profile,
+                profiles=orchestration_profiles,
+                model_routes=tuple(model_routes),
+                capability_routes=capability_routes,
+                available_capabilities=available_capabilities,
+            ),
         ),
         workers=workers,
     )
@@ -389,6 +702,61 @@ def _require_positive_int(payload: dict[str, Any], key: str, source_name: str) -
     if not isinstance(value, int) or isinstance(value, bool) or value < 1:
         raise RuntimeConfigError(f"{source_name}:{key} must be a positive integer")
     return value
+
+
+def _require_non_negative_int(payload: dict[str, Any], key: str, source_name: str) -> int:
+    value = payload.get(key)
+    if not isinstance(value, int) or isinstance(value, bool) or value < 0:
+        raise RuntimeConfigError(f"{source_name}:{key} must be a non-negative integer")
+    return value
+
+
+def _require_choice(
+    payload: dict[str, Any],
+    key: str,
+    allowed: set[str],
+    source_name: str,
+) -> str:
+    value = _require_string(payload, key, source_name)
+    if value not in allowed:
+        raise RuntimeConfigError(
+            f"{source_name}:{key} must be one of {sorted(allowed)}, got '{value}'"
+        )
+    return value
+
+
+def _validate_orchestration_profile(profile: OrchestrationProfile) -> None:
+    if profile.max_concurrent_subagents > 3:
+        raise RuntimeConfigError(
+            f"orchestration profile {profile.name} exceeds max_concurrent_subagents=3"
+        )
+    if profile.max_total_subagents > 6:
+        raise RuntimeConfigError(
+            f"orchestration profile {profile.name} exceeds max_total_subagents=6"
+        )
+    if profile.max_concurrent_subagents > profile.max_total_subagents:
+        raise RuntimeConfigError(
+            f"orchestration profile {profile.name} concurrency exceeds total budget"
+        )
+    if profile.max_concurrent_subagents == 0:
+        if profile.max_total_subagents != 0 or profile.max_tree_depth != 0:
+            raise RuntimeConfigError(
+                f"orchestration profile {profile.name} zero concurrency requires zero total budget and depth"
+            )
+    elif profile.max_tree_depth != 1:
+        raise RuntimeConfigError(
+            f"orchestration profile {profile.name} must keep max_tree_depth=1"
+        )
+
+
+def _reject_unknown_values(
+    values: list[str] | tuple[str, ...],
+    allowed: set[str],
+    context: str,
+) -> None:
+    unknown = sorted(set(values) - allowed)
+    if unknown:
+        raise RuntimeConfigError(f"{context} contains unknown values: {unknown}")
 
 
 def _validate_runner_wiring(worker_profile: WorkerProfile, repo_root: Path) -> None:

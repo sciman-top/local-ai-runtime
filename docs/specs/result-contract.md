@@ -19,6 +19,7 @@
 - 当前代码层字段名仍是 `lane`
 - 当前字段名仍是 `compatibility_projection_ref`
 - `runtime_v2` 的 attempt-level `result.json / gate_report.json / trace_manifest.json / closeout_bundle.json` 见 `docs/specs/runtime-v2-kernel.md`；当前默认主协议仍是本文件描述的 v1 result surface
+- adaptive guarded attempt 会附加 `orchestration_decision_ref / decision_id / policy_version`；这些字段是 additive evidence refs，不改变 v1 必填结果语义
 
 ## 必填字段
 
@@ -177,3 +178,12 @@
 
 - `docs/change-evidence/README.md` 只负责 repo-level governance evidence index。
 - 它不替代 `.ai/runs/<run_id>/<task_id>/evidence_index.json` 这一类 task-level 正式 evidence。
+
+## Adaptive Orchestration Evidence
+
+- `orchestration-decision.json` 是 run-level derived decision，不是 task result
+- `orchestration-execution.json` 是 guarded batch summary，不是 task completion claim
+- 每个实际执行的 v2 attempt 仍必须独立写 `result.json / gate_report.json / trace_manifest.json / closeout_bundle.json / regression_fixture.json / evidence_index.json`
+- `evidence_index.json` 记录 decision 与 attempt artifacts 的 sha256 / byte count；error summary 也保留 decision、policy、route 与 model 引用
+- v2 artifacts 表以 `kind=orchestration_decision / evidence_index` 将 attempt 引用到 run-level decision 和 task evidence index
+- `live_accepted` 在 decision、execution 与 task result 中都保持 false，除非既有 acceptance 流程另有真实证据

@@ -10,6 +10,7 @@
 
 - `docs/specs/config-and-worker-profiles.md`
 - `docs/specs/runtime-v2-kernel.md`（仅描述 experimental dual-track `runtime_v2`，不反转当前 v1 canonical truth）
+- `docs/specs/adaptive-orchestration.md`（定义 batch envelope、派生 decision 与 guarded 归一化，不创建平行 task truth）
 
 ## 当前事实边界
 
@@ -219,3 +220,17 @@ verification_commands:
   contract: pwsh -NoProfile -ExecutionPolicy Bypass -File snapshots/agentbridge-20260628/scripts/test-agentbridge-contract.ps1
   hotspot: null
 ```
+
+## Adaptive Orchestration Envelope
+
+`agent_work_manifest.v1` 是 operator-facing batch dispatch envelope。它可以补充 `read_set / write_set / intent / orchestration_constraints`，但 guarded 执行前必须逐项归一化为本文件或 runtime_v2 kernel 定义的 canonical task。
+
+固定边界：
+
+- `intent` 是兼容性可选提示，缺省为 `general`
+- 缺少新增顶层字段的旧 v1 manifest 只会归一化到 `observe_default + single_agent + zero delegation budget`
+- 作者只能写 `orchestration_constraints`，不能写 `selected_mode / decision_reason / waves`
+- 派生输出使用 `orchestration_decision.v1`
+- `mode_preference=multi_agent` 不是 force-on override
+- decision/execution artifacts 不替代 task contract
+- observe 不创建 canonical task 或 control-plane task state

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from copy import deepcopy
 import json
 from pathlib import Path
 from typing import Any, Mapping
@@ -9,6 +10,17 @@ import yaml
 from host_orchestrator.dispatch_state import DISPATCH_STATUSES, REASONING_EFFORTS
 
 TASK_KINDS = {"explore", "implement", "review", "docs_sync", "closeout"}
+TASK_INTENTS = {
+    "general",
+    "bugfix",
+    "feature",
+    "refactor",
+    "research",
+    "docs",
+    "review",
+    "migration",
+    "operations",
+}
 RISK_LEVELS = {"low", "medium", "high", "critical"}
 MERGE_POLICIES = {"draft_pr_only", "manual_merge_only", "never_merge"}
 EXECUTION_LANES = {"host_local", "remote_non_gui", "vm_gui"}
@@ -43,6 +55,22 @@ CLOSEOUT_STATUSES = {"succeeded", "partial", "blocked"}
 CLEANUP_STATUSES = {"deferred", "inline_only", "cleaned", "cleanup_failed"}
 TEST_STATUSES = {"pass", "fail", "skipped", "gate_na"}
 RESUME_POINTS = {"task_intake", "worker_execution", "verification", "handoff", "cleanup"}
+MANIFEST_SCHEMA_VERSION = "agent_work_manifest.v1"
+DEFAULT_ORCHESTRATION_CONSTRAINTS = {
+    "profile": "observe_default",
+    "mode_preference": "single_agent",
+    "max_concurrent_subagents": 0,
+    "max_total_subagents": 0,
+    "max_tree_depth": 0,
+    "write_conflict_policy": "serialize",
+    "stop_policy": "stop_on_scope_or_contract_conflict",
+}
+ORCHESTRATION_MODE_PREFERENCES = {"auto", "single_agent", "multi_agent"}
+WRITE_CONFLICT_POLICIES = {"serialize", "reject"}
+ORCHESTRATION_STOP_POLICIES = {
+    "stop_on_scope_or_contract_conflict",
+    "finish_independent_workstreams",
+}
 
 
 def load_mapping_file(path: Path) -> dict[str, Any]:
@@ -60,13 +88,48 @@ def load_mapping_file(path: Path) -> dict[str, Any]:
     return payload
 
 
+def normalize_manifest_payload(payload: Mapping[str, Any]) -> dict[str, Any]:
+    normalized = deepcopy(dict(payload))
+    normalized.setdefault("schema_version", MANIFEST_SCHEMA_VERSION)
+    normalized.setdefault(
+        "orchestration_constraints",
+        deepcopy(DEFAULT_ORCHESTRATION_CONSTRAINTS),
+    )
+    return normalized
+
+
 def validate_manifest_payload(payload: Mapping[str, Any]) -> None:
-    required = ("run_id", "repo_root", "objective", "model_policy", "truth_sources", "tasks")
+    payload = normalize_manifest_payload(payload)
+    required = (
+        "schema_version",
+        "run_id",
+        "repo_root",
+        "objective",
+        "model_policy",
+        "orchestration_constraints",
+        "truth_sources",
+        "tasks",
+    )
     for key in required:
         _require_present(payload, key, "manifest")
 
+    schema_version = _require_string(payload, "schema_version", "manifest")
+    if schema_version != MANIFEST_SCHEMA_VERSION:
+        raise ValueError(
+            f"manifest.schema_version must be {MANIFEST_SCHEMA_VERSION}, got '{schema_version}'"
+        )
+
     _validate_model_policy(_require_mapping(payload, "model_policy", "manifest"))
-    _require_string_list(payload, "truth_sources", "manifest", min_items=1)
+    _validate_orchestration_constraints(
+        _require_mapping(payload, "orchestration_constraints", "manifest")
+    )
+    truth_sources = _require_string_list(payload, "truth_sources", "manifest", min_items=1)
+    for index, value in enumerate(truth_sources):
+        _validate_repo_relative_pattern(value, field=f"truth_sources[{index}]")
+    if "evaluation_context" in payload:
+        _validate_evaluation_context(
+            _require_mapping(payload, "evaluation_context", "manifest")
+        )
     if "global_forbidden_scope" in payload:
         _require_string_list(payload, "global_forbidden_scope", "manifest")
 
@@ -135,6 +198,9 @@ def validate_dispatch_state_payload(payload: Mapping[str, Any]) -> None:
         _require_string(payload, "workspace_root", "dispatch_state")
     if "route_reason" in payload and payload["route_reason"] is not None:
         _require_string(payload, "route_reason", "dispatch_state")
+    for field in ("orchestration_decision_ref", "decision_id", "policy_version"):
+        if field in payload and payload[field] is not None:
+            _require_string(payload, field, "dispatch_state")
     if "notes" in payload:
         _require_string_list(payload, "notes", "dispatch_state")
     if "last_result_ref" in payload and payload["last_result_ref"] is not None:
@@ -210,6 +276,9 @@ def validate_closeout_bundle_payload(payload: Mapping[str, Any]) -> None:
         _require_string(test_payload, "evidence_ref", context)
     if "handoff_receipt_ref" in payload and payload["handoff_receipt_ref"] is not None:
         _require_string(payload, "handoff_receipt_ref", "closeout_bundle")
+    for field in ("orchestration_decision_ref", "decision_id", "policy_version"):
+        if field in payload and payload[field] is not None:
+            _require_string(payload, field, "closeout_bundle")
 
 
 def validate_handoff_receipt_payload(payload: Mapping[str, Any]) -> None:
@@ -365,15 +434,27 @@ def _validate_manifest_task(task: Mapping[str, Any], context: str) -> None:
     _require_string(task, "task_id", context)
     _require_string(task, "title", context)
     _require_enum(task, "kind", TASK_KINDS, context)
+    if "intent" in task:
+        _require_enum(task, "intent", TASK_INTENTS, context)
     _require_string(task, "goal", context)
     _require_string(task, "target_repo", context)
     _require_string(task, "base_branch", context)
     _require_string(task, "branch_name", context)
-    _require_string(task, "worktree_path", context)
-    _require_string_list(task, "read_set", context)
-    _require_string_list(task, "write_set", context)
-    _require_string_list(task, "allowed_paths", context)
-    _require_string_list(task, "forbidden_paths", context)
+    worktree_path = _require_string(task, "worktree_path", context)
+    _validate_repo_relative_pattern(worktree_path, field=f"{context}.worktree_path")
+    for field_name in (
+        "read_set",
+        "write_set",
+        "allowed_paths",
+        "forbidden_paths",
+        "artifacts_out",
+    ):
+        values = _require_string_list(task, field_name, context)
+        for index, value in enumerate(values):
+            _validate_repo_relative_pattern(
+                value,
+                field=f"{context}.{field_name}[{index}]",
+            )
     _require_bool(task, "write_access", context)
     _require_enum(task, "risk_level", RISK_LEVELS, context)
     _require_enum(task, "merge_policy", MERGE_POLICIES, context)
@@ -383,7 +464,6 @@ def _validate_manifest_task(task: Mapping[str, Any], context: str) -> None:
     _require_true_if_present(task, "user_forced_planner", context)
     _require_true_if_present(task, "user_forced_review", context)
     _require_string_list(task, "depends_on", context)
-    _require_string_list(task, "artifacts_out", context)
     _require_enum(task, "handoff_policy", HANDOFF_POLICIES, context)
     _require_string_list(task, "done_when", context, min_items=1)
     if "worker_profile" in task and task["worker_profile"] is not None:
@@ -406,6 +486,70 @@ def _validate_model_policy(payload: Mapping[str, Any]) -> None:
         _require_string(payload, "fallback_model", "model_policy")
     if "rationale" in payload and payload["rationale"] is not None:
         _require_string(payload, "rationale", "model_policy")
+
+
+def _validate_orchestration_constraints(payload: Mapping[str, Any]) -> None:
+    context = "orchestration_constraints"
+    required = (
+        "profile",
+        "mode_preference",
+        "max_concurrent_subagents",
+        "max_total_subagents",
+        "max_tree_depth",
+        "write_conflict_policy",
+        "stop_policy",
+    )
+    for key in required:
+        _require_present(payload, key, context)
+
+    _require_string(payload, "profile", context)
+    _require_enum(
+        payload,
+        "mode_preference",
+        ORCHESTRATION_MODE_PREFERENCES,
+        context,
+    )
+    max_concurrent = _require_int(payload, "max_concurrent_subagents", context)
+    max_total = _require_int(payload, "max_total_subagents", context)
+    max_tree_depth = _require_int(payload, "max_tree_depth", context)
+    _require_enum(payload, "write_conflict_policy", WRITE_CONFLICT_POLICIES, context)
+    _require_enum(payload, "stop_policy", ORCHESTRATION_STOP_POLICIES, context)
+
+    if not 0 <= max_concurrent <= 3:
+        raise ValueError(f"{context}.max_concurrent_subagents must be between 0 and 3")
+    if not 0 <= max_total <= 6:
+        raise ValueError(f"{context}.max_total_subagents must be between 0 and 6")
+    if max_concurrent > max_total:
+        raise ValueError(
+            f"{context}.max_concurrent_subagents cannot exceed max_total_subagents"
+        )
+    if max_concurrent == 0:
+        if (max_total, max_tree_depth) != (0, 0):
+            raise ValueError(
+                f"{context} zero concurrency requires zero total budget and tree depth"
+            )
+        return
+    if max_total < 1:
+        raise ValueError(f"{context}.max_total_subagents must be positive when concurrency is enabled")
+    if max_tree_depth != 1:
+        raise ValueError(
+            f"{context}.max_tree_depth must be 1 when subagent concurrency is enabled"
+        )
+
+
+def _validate_evaluation_context(payload: Mapping[str, Any]) -> None:
+    context = "evaluation_context"
+    for key in ("experiment_id", "variant", "repeat_index"):
+        _require_present(payload, key, context)
+    _require_string(payload, "experiment_id", context)
+    variant = _require_enum(payload, "variant", {"baseline", "candidate"}, context)
+    repeat_index = _require_int(payload, "repeat_index", context)
+    if repeat_index < 1:
+        raise ValueError(f"{context}.repeat_index must be >= 1")
+    if variant == "candidate":
+        _require_string(payload, "baseline_run_id", context)
+    elif "baseline_run_id" in payload and payload["baseline_run_id"] is not None:
+        _require_string(payload, "baseline_run_id", context)
 
 
 def _require_present(payload: Mapping[str, Any], key: str, context: str) -> None:
@@ -481,3 +625,13 @@ def _require_true_if_present(payload: Mapping[str, Any], key: str, context: str)
     if value is not True:
         raise ValueError(f"{context}.{key} only allows true when present; omit the field instead")
     return True
+
+
+def _validate_repo_relative_pattern(value: str, *, field: str) -> None:
+    normalized = value.replace("\\", "/").strip()
+    candidate = Path(normalized)
+    if candidate.is_absolute() or candidate.drive:
+        raise ValueError(f"{field} must be repo-relative, not absolute: {value}")
+    segments = [segment for segment in normalized.split("/") if segment not in {"", "."}]
+    if any(segment == ".." for segment in segments):
+        raise ValueError(f"{field} must not escape the repo via '..': {value}")

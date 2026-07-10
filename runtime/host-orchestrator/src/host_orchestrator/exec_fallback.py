@@ -55,7 +55,7 @@ def approval_mode_to_cli_policy(approval_mode: ApprovalMode) -> str:
 
 
 def build_exec_argv(request: WorkerRequest, output_last_message_path: Path) -> list[str]:
-    return [
+    argv = [
         "codex",
         "exec",
         "--json",
@@ -67,10 +67,15 @@ def build_exec_argv(request: WorkerRequest, output_last_message_path: Path) -> l
         sandbox_to_cli(request.sandbox),
         "-c",
         f'approval_policy="{approval_mode_to_cli_policy(request.approval_mode)}"',
+    ]
+    if request.reasoning_effort is not None:
+        argv.extend(["-c", f'model_reasoning_effort="{request.reasoning_effort}"'])
+    argv.extend([
         "--output-last-message",
         str(output_last_message_path),
         request.prompt,
-    ]
+    ])
+    return argv
 
 
 class CodexExecFallbackWorker:

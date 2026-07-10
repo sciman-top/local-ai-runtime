@@ -12,6 +12,13 @@ sensitive_paths:
   - secrets/**
 
 verification_profiles:
+  read_only:
+    build: null
+    lint: null
+    typecheck: null
+    test: null
+    contract: null
+    hotspot: null
   fast:
     build: null
     lint: null
@@ -49,3 +56,111 @@ retry_policies:
     retry_on_gate_failure: true
     retry_on_worker_failure: true
     max_attempts: 3
+
+adaptive_orchestration:
+  policy_version: "adaptive_orchestration.v1"
+  active_profile: "observe_default"
+
+  profiles:
+    observe_default:
+      effect: "observe"
+      default_mode: "single_agent"
+      max_concurrent_subagents: 3
+      max_total_subagents: 6
+      max_tree_depth: 1
+      min_independent_workstreams: 2
+      parallel_read_only: true
+      parallel_writers: false
+      require_isolated_worktree_for_writers: true
+      write_conflict_policy: "serialize"
+      stop_policy: "stop_on_scope_or_contract_conflict"
+
+    guarded_read_only:
+      effect: "guarded"
+      default_mode: "single_agent"
+      max_concurrent_subagents: 3
+      max_total_subagents: 6
+      max_tree_depth: 1
+      min_independent_workstreams: 2
+      parallel_read_only: true
+      parallel_writers: false
+      require_isolated_worktree_for_writers: true
+      write_conflict_policy: "serialize"
+      stop_policy: "stop_on_scope_or_contract_conflict"
+
+    guarded_isolated_writers:
+      effect: "guarded"
+      default_mode: "single_agent"
+      max_concurrent_subagents: 3
+      max_total_subagents: 6
+      max_tree_depth: 1
+      min_independent_workstreams: 2
+      parallel_read_only: true
+      parallel_writers: true
+      require_isolated_worktree_for_writers: true
+      write_conflict_policy: "serialize"
+      stop_policy: "stop_on_scope_or_contract_conflict"
+
+  model_routes:
+    strong_review:
+      roles: ["spec_reviewer", "quality_reviewer"]
+      intents: []
+      risk_levels: []
+      worker_profile: "adaptive_review"
+      model: "gpt-5.6-sol"
+      reasoning_effort: "high"
+    strong_control:
+      roles: ["master", "closeout"]
+      intents: []
+      risk_levels: []
+      worker_profile: "local_maint"
+      model: "gpt-5.6-sol"
+      reasoning_effort: "high"
+    strong_read:
+      roles: ["explorer"]
+      intents: []
+      risk_levels: ["high", "critical"]
+      worker_profile: "adaptive_read"
+      model: "gpt-5.6-sol"
+      reasoning_effort: "high"
+    strong_risk:
+      roles: []
+      intents: []
+      risk_levels: ["high", "critical"]
+      worker_profile: "adaptive_write"
+      model: "gpt-5.6-sol"
+      reasoning_effort: "high"
+    efficient_read:
+      roles: ["explorer"]
+      intents: ["research", "docs", "general"]
+      risk_levels: ["low", "medium"]
+      worker_profile: "adaptive_read"
+      model: "gpt-5.6-terra"
+      reasoning_effort: "medium"
+    default:
+      roles: []
+      intents: []
+      risk_levels: []
+      worker_profile: "adaptive_write"
+      model: "gpt-5.6-sol"
+      reasoning_effort: "high"
+
+  capability_routes:
+    general: []
+    bugfix: ["systematic_debugging", "test_first"]
+    feature: ["test_first"]
+    refactor: ["test_first"]
+    research: ["exploration"]
+    docs: ["exploration"]
+    review: ["spec_review", "quality_review"]
+    migration: ["clarification", "test_first"]
+    operations: ["clarification"]
+
+  available_capabilities:
+    - "clarification"
+    - "systematic_debugging"
+    - "test_first"
+    - "exploration"
+    - "spec_review"
+    - "quality_review"
+    - "worktree_isolation"

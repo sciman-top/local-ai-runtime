@@ -60,6 +60,24 @@
 - [x] `GOV-T09` add target-project `AGENTS.md + CLAUDE.md` coordination pilot
 - [x] `GOV-T10` align docs, wrapper boundary, and repo-level evidence for the pilot
 
+## Adaptive Orchestration Overlay
+
+- [x] `AO-T01` split authored constraints from derived orchestration decision
+- [x] `AO-T02` deterministic observe engine + `orchestration_decision.v1` + CLI
+- [x] `AO-T03` role/risk/intent model and generic capability routing
+- [x] `AO-T04` explicit guarded runtime_v2 manifest execution
+  - Status note:
+    - 2026-07-10 已落 `--run-orchestration-manifest-v2`；只读任务可在 worker lease 容量内并行，writer 只有 disjoint write set 与真实 worktree/branch 校验同时成立时才可并行
+    - active profile 仍是 `observe_default`，默认 v1、active queue 与 live acceptance 均未改变
+- [x] `AO-T05` orchestration regression metrics + Pareto/manual-promotion evaluator
+  - Status note:
+    - 2026-07-10 已扩展 `--eval-regression-fixtures-v2`，证据不足固定返回 `insufficient_evidence`，任何 eligible 结果也只允许进入人工 review
+- [ ] `AO-T06` representative repeated baseline/candidate corpus
+  - Done when:
+    - 同 task IDs、verification profiles、model 与 reasoning effort 的 baseline/candidate 各至少 3 次
+    - primary metrics 无回归，secondary metrics 形成 Pareto 改善
+    - 人工 review 决定是否 promotion；runtime 不自动提升 profile
+
 ## Kernel V2
 
 - [x] `K2-T01` runtime_v2 package skeleton + config fields + experimental CLI entrypoints

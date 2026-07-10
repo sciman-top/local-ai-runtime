@@ -7,14 +7,24 @@
 #   user_forced_planner: true
 #   user_forced_review: true
 
+schema_version: "agent_work_manifest.v1"
 run_id: "20260707-example"
 repo_root: "D:/CODE/your-repo"
-objective: "推进当前最小切片"
+objective: "推进当前最大合理闭环"
 
 model_policy:
-  model: "gpt-5.4"
+  model: "gpt-5.6-sol"
   reasoning_effort: "high"
-  rationale: "默认主 worker 维持高能力；更高代价路径只在高风险或 review/planner gate 命中时启用。"
+  rationale: "先以现有 high 基线评测；仅在代表性任务证明有收益时升到 max 或降低 effort。"
+
+orchestration_constraints:
+  profile: "observe_default"
+  mode_preference: "auto"
+  max_concurrent_subagents: 3
+  max_total_subagents: 6
+  max_tree_depth: 1
+  write_conflict_policy: "serialize"
+  stop_policy: "stop_on_scope_or_contract_conflict"
 
 truth_sources:
   - "README.md"
@@ -31,9 +41,10 @@ global_forbidden_scope:
 
 tasks:
   - task_id: "T01"
-    title: "只读提炼当前最小切片"
+    title: "只读提炼当前最大合理切片"
     kind: "explore"
-    goal: "提炼最小切片、allowed_paths、write_set 与 gate 建议"
+    intent: "research"
+    goal: "提炼边界清晰、风险可控、可验证且能收口的最大合理切片，并给出 allowed_paths、write_set 与 gate 建议"
     target_repo: "local-ai-dev-orchestrator"
     base_branch: "main"
     branch_name: "codex/t01-explore-slice"
@@ -65,15 +76,16 @@ tasks:
       contract: null
       hotspot: null
     done_when:
-      - "给出最小切片"
+      - "给出最大合理切片"
       - "给出 allowed_paths"
       - "给出 write_set"
       - "给出 verification_commands 建议"
 
   - task_id: "T02"
-    title: "实现当前最小代码切片"
+    title: "实现当前最大合理代码闭环"
     kind: "implement"
-    goal: "在独立 worktree 中完成当前最小代码切片并留下正式工件引用"
+    intent: "feature"
+    goal: "在独立 worktree 中完成边界清晰、风险可控且可验证的最大合理代码闭环，并留下正式工件引用"
     target_repo: "local-ai-dev-orchestrator"
     base_branch: "main"
     branch_name: "codex/t02-runtime-slice"
@@ -124,6 +136,7 @@ tasks:
   - task_id: "T03"
     title: "执行异质 review 与收口建议"
     kind: "review"
+    intent: "review"
     goal: "复核规格、正确性、安全性、测试覆盖，并输出结构化审查结论"
     target_repo: "local-ai-dev-orchestrator"
     base_branch: "main"

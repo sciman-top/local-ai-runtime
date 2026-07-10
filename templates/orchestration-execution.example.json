@@ -1,0 +1,35 @@
+{
+  "schema_version": "orchestration_execution.v1",
+  "decision_id": "orch-example-guarded",
+  "orchestration_decision_ref": ".ai/runs-v2/20260710-adaptive-example/_orchestration/orch-example-guarded/orchestration-decision.json",
+  "run_id": "20260710-adaptive-example",
+  "policy_version": "adaptive_orchestration.v1",
+  "profile": "guarded_read_only",
+  "selected_mode": "multi_agent",
+  "status": "completed",
+  "worker_execution_attempted": true,
+  "result_count": 2,
+  "status_counts": {"completed": 2},
+  "parallel_wave_count": 1,
+  "serial_wave_count": 0,
+  "skipped_task_ids": [],
+  "wall_time_ms": 1000,
+  "results": [
+    {
+      "task_id": "T01",
+      "result_path": ".ai/runs-v2/20260710-adaptive-example/T01/T01-a001/result.json",
+      "attempt_id": "T01-a001",
+      "status": "completed",
+      "next_action": "none",
+      "worker_profile": "adaptive_read",
+      "model_policy": {
+        "model": "gpt-5.6-terra",
+        "reasoning_effort": "medium"
+      },
+      "orchestration_decision_ref": ".ai/runs-v2/20260710-adaptive-example/_orchestration/orch-example-guarded/orchestration-decision.json"
+    }
+  ],
+  "default_entrypoint_changed": false,
+  "active_queue_changed": false,
+  "live_accepted": false
+}

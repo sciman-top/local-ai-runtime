@@ -251,3 +251,15 @@ cutover 之前必须同时满足：
 - 默认入口未切换
 - active queue 未改写
 - Hermes / AgentBridge 仍保留 compatibility / baseline / adapter 边界
+
+## Adaptive Orchestration Integration
+
+- `--evaluate-orchestration-manifest` 是 observe-only decision 入口，不调用 runtime_v2 worker
+- `--run-orchestration-manifest-v2` 是显式 guarded batch 入口，不替代 `--run-task-v2`
+- manifest task 先归一化为 v2 canonical task，再进入现有 dependency、admission、policy guard、worker、gate、review 和 closeout 路径
+- read-only parallelism 仍受 worker profile `max_active_leases` 限制
+- writer parallelism 还必须通过 disjoint write/read conflict、worktree root、branch 与 path guard
+- guarded writer 在执行点重新验证 repo-relative linked worktree、Git common dir、root 与 branch；验证失败不创建普通目录替代 worktree
+- planned worker count 受 `max_total_subagents` 硬限制，lease 状态不可读时 fail closed
+- attempt evidence 附加 decision ref、policy version、实际传入 worker 的 model/reasoning policy、orchestration metrics 与 `evidence_index.json`
+- active profile 仍是 observe，Adaptive Orchestration 不构成 v2 cutover 证据本身

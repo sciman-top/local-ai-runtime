@@ -34,6 +34,19 @@
 - `GOV-T09` add target-project `AGENTS.md + CLAUDE.md` coordination pilot：已完成
 - `GOV-T10` align docs, wrapper boundary, and repo-level evidence for the pilot：已完成
 
+## Adaptive Orchestration Overlay
+
+这组能力是 cross-cutting runtime overlay，不改变当前 active queue 或默认 v1。
+
+- `AO-T01` constrained manifest + derived decision contract：已完成
+- `AO-T02` deterministic observe engine + decision evidence + CLI：已完成
+- `AO-T03` role/risk/intent model and capability routing：已完成
+- `AO-T04` explicit guarded runtime_v2 manifest execution：已完成（repo-side experimental）
+- `AO-T05` regression metrics + Pareto/manual-promotion evaluation：已完成（机制）
+- `AO-T06` representative repeated baseline/candidate corpus：待真实任务证据；未声明策略已全局最优
+
+晋升顺序固定为 `observe -> guarded -> evaluated promotion`。active profile 当前仍是 `observe_default`，任何 promotion 都需要代表性重复证据与人工 review。
+
 ## Kernel V2 双轨迁移
 
 这组工作包已吸收到最新路线图，但当前默认入口未切换，active queue 也不因此改写。

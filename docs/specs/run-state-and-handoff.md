@@ -113,3 +113,13 @@ experimental `runtime_v2` 额外固定：
 - `evidence_index.json` 可枚举本次运行的重要工件
 
 这保证 Phase 1-4 即便没有完整 replay engine，也能回放最小运行轨迹。
+
+## Adaptive Orchestration State
+
+- run-level orchestration decision 使用 `orchestration_decision.v1`，不替代 task/attempt state
+- observe：`decision_status=observed`，固定 `worker_execution_attempted=false`，不创建 task runtime state
+- guarded-ready：只有显式 `--run-orchestration-manifest-v2` 才进入现有 v2 attempt state machine
+- blocked：dependency、contract、capability、profile、lease、planner 或 conflict policy 在 worker 前阻断
+- guarded execution 中任一 task 仍使用现有 `blocked / paused / running / reviewing / retryable / failed / completed` 语义
+- `stop_on_scope_or_contract_conflict` 会停止后续 waves；`finish_independent_workstreams` 只允许已证明独立的 wave 继续
+- orchestration summary 的 `partial` 不等于 task-level success，也不等于 live accepted

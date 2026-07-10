@@ -123,3 +123,15 @@ PRD 的四档继续是唯一顶层口径：
 2. 命令已写入 canonical verification surface
 3. preflight 与 docs truth 已同步
 4. 至少有一条 repo-side regression 测试覆盖升级后的 gate
+
+## Adaptive Orchestration Promotion Gate
+
+Adaptive policy promotion 不新增 acceptance tier。它只在既有 gates 全部满足后比较执行成本：
+
+- baseline/candidate 的 task IDs、verification profile、model 与 reasoning effort 必须一致
+- 两侧各至少 3 个 repeat indexes
+- task success、gate pass、evidence completeness 不得回归
+- token、batch latency、handoff、retry、rework 至少一项严格改善，其他可比较项不得变差
+- path/worktree/policy guard 不得出现越界写入
+
+满足时只返回 `eligible_for_manual_review`；没有对照证据时返回 `insufficient_evidence`；runtime 永不自动 promotion。

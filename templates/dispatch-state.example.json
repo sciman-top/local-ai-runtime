@@ -4,15 +4,18 @@
   "task_id": "T02",
   "agent_role": "worker",
   "model_policy": {
-    "model": "gpt-5.4",
+    "model": "gpt-5.6-sol",
     "reasoning_effort": "high",
-    "rationale": "主 worker 默认高能力；更高代价路径只在更高风险或 review/planner gate 命中时启用。"
+    "rationale": "先以 high 作为迁移基线；只有评测证明必要时才升到 max。"
   },
   "repo_root": "D:/CODE/your-repo",
   "target_repo": "local-ai-dev-orchestrator",
   "branch_name": "codex/t02-runtime-slice",
   "worktree_path": ".worktrees/t02-runtime-slice",
   "workspace_root": "D:/CODE/your-repo/.worktrees/t02-runtime-slice",
+  "orchestration_decision_ref": ".ai/runs-v2/20260707-example/_orchestration/orch-example-observe/orchestration-decision.json",
+  "decision_id": "orch-example-observe",
+  "policy_version": "adaptive_orchestration.v1",
   "allowed_paths": [
     "runtime/host-orchestrator/**",
     "docs/change-evidence/**"
