@@ -4,13 +4,13 @@ Local AI Runtime 是面向 Windows 本机、单操作者信任域的通用受控
 
 ## 当前状态
 
-当前规范候选是 `local-ai-runtime-0.2-v3.22`，状态为 `baseline_candidate`，`blocking_stage=baseline_approval`。冻结正文和 v3.22-bound lineage 已落盘，规范包如实为 `15 required / 2 present / 13 missing`；schema、catalog、transition table、example、fixture、migration specification、独立 verifier、最终 manifest 和一致性评审尚未闭合，因此仍是 **Request changes**，不是已批准实现基线。
+当前规范候选是 `local-ai-runtime-0.2-v3.22`，状态为 `baseline_candidate`，`blocking_stage=baseline_approval`。冻结正文和 v3.22-bound lineage 已落盘，`BaselineManifest.v1` schema、byte fixtures 与 fail-closed verifier skeleton 已完成，但最终 manifest 尚未创建且 skeleton 尚未冻结为独立 verifier；规范包仍如实为 `15 required / 2 present / 13 missing`，因此仍是 **Request changes**，不是已批准实现基线。
 
 稳定发现入口是 [baseline candidate entry](D:/CODE/local-ai-dev-orchestrator/docs/specs/local-ai-runtime-0.2-baseline-candidate.md)。它只导航到冻结 v3.22 正文，不能作为另一份规范正文、`BaselineManifest` 输入或批准证据。
 
 - 当前队列：`LOCAL-AI-RUNTIME-0.2-BASELINE-CLOSURE`
 - 当前动作：`close_baseline_normative_package_first`
-- 当前工作项：`LAR-P0A-002`
+- 当前工作项：`LAR-P0A-003`
 - 当前可执行内核：`runtime/host-orchestrator`
 - 新包 `runtime/local-ai-runtime`：尚不存在，批准前禁止创建
 - Truth Reset：未执行
@@ -54,7 +54,7 @@ pwsh -NoProfile -NonInteractive -File scripts/governance/preflight.ps1 -DisableA
 git diff --check
 ```
 
-预期 selector 结果为 `close_baseline_normative_package_first`，并返回 `LAR-P0A-002`。任何实现任务若绕过 v3.22 normative closure、Baseline Approval、Truth Reset 或 Legacy Ownership Guard，均属于非法跳阶段。
+预期 selector 结果为 `close_baseline_normative_package_first`，并返回 `LAR-P0A-003`。任何实现任务若绕过 v3.22 normative closure、Baseline Approval、Truth Reset 或 Legacy Ownership Guard，均属于非法跳阶段。
 
 ## 不可误读的结论
 

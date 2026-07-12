@@ -1,0 +1,121 @@
+{
+  "fixture_id": "BaselineManifest.v1.contract-fixtures",
+  "schema_version": 1,
+  "schema_path": "docs/specs/local-ai-runtime-0.2/normative/BaselineManifest.v1.schema.json",
+  "valid_manifest": {
+    "domain": "local-ai-runtime/BaselineManifest/v1",
+    "schema_version": 1,
+    "payload": {
+      "manifest_id": "local-ai-runtime-0.2-v3.22-fixture",
+      "manifest_version": "BaselineManifest.v1",
+      "narrative_specification_id": "local-ai-runtime-0.2-v3.22",
+      "artifacts": [
+        {
+          "artifact_id": "P0A-SOURCE",
+          "artifact_version": "local-ai-runtime-0.2-v3.22",
+          "artifact_role": "narrative_specification",
+          "path": "docs/specs/local-ai-runtime-0.2-v3.22-baseline-candidate.md",
+          "byte_count": 178330,
+          "sha256": "8338a9dcf4bbbb40ca28f4f2ec6dca37587ee94fbfbbc6e3a0063c4de379569c",
+          "schema_version": "narrative.v1",
+          "verifier_id": "SpecificationBytePolicy.v1"
+        },
+        {
+          "artifact_id": "P0A-LINEAGE",
+          "artifact_version": "BaselineLineage.v1",
+          "artifact_role": "lineage",
+          "path": "docs/specs/local-ai-runtime-0.2/normative/BaselineLineage.v1.json",
+          "byte_count": 3134,
+          "sha256": "8bb29e0fbc4990749424e07368e5b1c0f09cf378e78d1ada38b8fe998fb97b35",
+          "schema_version": "BaselineLineage.v1",
+          "verifier_id": "LocalAIRuntimeBaselineVerifier.v1"
+        }
+      ],
+      "package_review_head": {
+        "index_id": "ReviewEvidenceIndex.v1",
+        "sequence": 7,
+        "entry_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "frozen": true
+      }
+    }
+  },
+  "structural_negative_cases": [
+    {
+      "case_id": "duplicate_artifact_id",
+      "mutation": "duplicate_first_artifact_with_new_path",
+      "expected_reason": "duplicate_artifact_id"
+    },
+    {
+      "case_id": "duplicate_artifact_path",
+      "mutation": "duplicate_first_artifact_with_new_id",
+      "expected_reason": "duplicate_artifact_path"
+    },
+    {
+      "case_id": "self_hash_field",
+      "mutation": "add_payload_manifest_sha256",
+      "expected_reason": "unknown_payload_field"
+    },
+    {
+      "case_id": "manifest_self_reference",
+      "mutation": "append_manifest_artifact",
+      "expected_reason": "forbidden_artifact_role"
+    },
+    {
+      "case_id": "review_index_self_reference",
+      "mutation": "append_review_index_artifact",
+      "expected_reason": "forbidden_artifact_role"
+    },
+    {
+      "case_id": "approval_self_reference",
+      "mutation": "append_approval_record_artifact",
+      "expected_reason": "forbidden_artifact_role"
+    },
+    {
+      "case_id": "unfrozen_package_review_head",
+      "mutation": "set_package_review_head_unfrozen",
+      "expected_reason": "package_review_head_not_frozen"
+    }
+  ],
+  "byte_negative_cases": [
+    {
+      "case_id": "utf8_bom",
+      "mutation": "prefix_utf8_bom",
+      "expected_reason": "utf8_bom"
+    },
+    {
+      "case_id": "crlf",
+      "mutation": "replace_lf_with_crlf",
+      "expected_reason": "cr"
+    },
+    {
+      "case_id": "non_nfc",
+      "mutation": "insert_decomposed_character",
+      "expected_reason": "non_nfc"
+    },
+    {
+      "case_id": "trailing_space",
+      "mutation": "add_trailing_space_before_lf",
+      "expected_reason": "trailing_whitespace"
+    },
+    {
+      "case_id": "horizontal_tab",
+      "mutation": "insert_horizontal_tab",
+      "expected_reason": "control_character"
+    },
+    {
+      "case_id": "bidi_control",
+      "mutation": "insert_bidi_control",
+      "expected_reason": "format_character"
+    },
+    {
+      "case_id": "missing_terminal_lf",
+      "mutation": "remove_terminal_lf",
+      "expected_reason": "terminal_lf"
+    },
+    {
+      "case_id": "multiple_terminal_lf",
+      "mutation": "append_terminal_lf",
+      "expected_reason": "terminal_lf"
+    }
+  ]
+}

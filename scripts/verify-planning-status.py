@@ -144,6 +144,16 @@ CURRENT_LINEAGE_BYTE_COUNT = 3134
 CURRENT_LINEAGE_SHA256 = (
     "8bb29e0fbc4990749424e07368e5b1c0f09cf378e78d1ada38b8fe998fb97b35"
 )
+BASELINE_MANIFEST_SCHEMA_PATH = Path(
+    "docs/specs/local-ai-runtime-0.2/normative/BaselineManifest.v1.schema.json"
+)
+BASELINE_MANIFEST_FIXTURE_PATH = Path(
+    "docs/specs/local-ai-runtime-0.2/fixtures/baseline-bytes/manifest.json"
+)
+BASELINE_VERIFIER_SKELETON_PATH = Path("scripts/verify-local-ai-runtime-baseline.py")
+FINAL_BASELINE_MANIFEST_PATH = Path(
+    "docs/specs/local-ai-runtime-0.2/normative/BaselineManifest.v1.json"
+)
 EXPECTED_CONTRACT_PROJECTIONS = [
     {
         "projection_id": "work_definition_task_family_v1",
@@ -369,6 +379,7 @@ def verify(*, repo_root: Path, status_path: Path) -> dict[str, object]:
         )
         if inventory:
             _verify_inventory_task_links(inventory, work_items, current_work, failures)
+        _verify_manifest_contract_slice(root, work_items, inventory, failures)
 
     try:
         policy_path = _resolve_repo_path(root, str(POLICY_PATH), "selector policy")
@@ -1864,6 +1875,92 @@ def _verify_inventory_task_links(
                 "current work item must produce or lead to the first missing normative artifact: "
                 f"expected {first_producer}, got {current_work.get('task_id')}"
             )
+
+
+def _verify_manifest_contract_slice(
+    root: Path,
+    work_items: dict[str, dict[str, Any]],
+    inventory: dict[str, Any],
+    failures: list[str],
+) -> None:
+    task = work_items.get("LAR-P0A-002", {})
+    if task.get("status") != "completed":
+        return
+
+    for relative_path, label in (
+        (BASELINE_MANIFEST_SCHEMA_PATH, "BaselineManifest.v1 schema"),
+        (BASELINE_MANIFEST_FIXTURE_PATH, "BaselineManifest.v1 fixture manifest"),
+        (BASELINE_VERIFIER_SKELETON_PATH, "baseline verifier skeleton"),
+    ):
+        path = root / relative_path
+        if not path.is_file():
+            failures.append(f"completed LAR-P0A-002 is missing {label}: {relative_path}")
+            return
+        try:
+            raw = path.read_bytes()
+        except OSError as exc:
+            failures.append(f"completed LAR-P0A-002 cannot read {label}: {exc}")
+            return
+        _verify_normative_bytes(raw, label, failures)
+
+    verifier_entry = next(
+        (
+            item
+            for item in inventory.get("required_artifacts", [])
+            if isinstance(item, dict) and item.get("artifact_id") == "P0A-VERIFIER"
+        ),
+        None,
+    )
+    verifier_freeze_complete = (
+        work_items.get("LAR-P0A-012", {}).get("status") == "completed"
+    )
+    expected_verifier_status = "present" if verifier_freeze_complete else "in_progress"
+    if (
+        not isinstance(verifier_entry, dict)
+        or verifier_entry.get("status") != expected_verifier_status
+    ):
+        failures.append(
+            "P0A-VERIFIER status must follow verifier freeze state: "
+            f"expected {expected_verifier_status}"
+        )
+    manifest_close_started = work_items.get("LAR-P0A-013", {}).get("status") in {
+        "in_progress",
+        "completed",
+    }
+    if not manifest_close_started and (root / FINAL_BASELINE_MANIFEST_PATH).exists():
+        failures.append("LAR-P0A-002 must not create the final BaselineManifest instance")
+
+    command = [
+        sys.executable,
+        str(root / BASELINE_VERIFIER_SKELETON_PATH),
+        "--component",
+        "manifest",
+        "--self-test",
+    ]
+    try:
+        completed = subprocess.run(
+            command,
+            cwd=root,
+            capture_output=True,
+            text=True,
+            errors="replace",
+            timeout=30,
+            check=False,
+        )
+    except subprocess.TimeoutExpired:
+        failures.append("BaselineManifest verifier self-test timed out")
+        return
+    try:
+        payload = _loads_json_object(completed.stdout, "manifest verifier self-test")
+    except ValueError as exc:
+        failures.append(str(exc))
+        return
+    if completed.returncode != 0 or payload.get("status") != "pass":
+        failures.append(
+            "BaselineManifest verifier self-test must return exit 0 and status=pass"
+        )
+    if payload.get("final_manifest_exists") is not False:
+        failures.append("BaselineManifest verifier self-test must prove final manifest absence")
 
 
 def _verify_selector_policy(

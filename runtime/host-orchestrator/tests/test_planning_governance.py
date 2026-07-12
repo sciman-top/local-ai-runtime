@@ -45,6 +45,24 @@ LINEAGE_PATH = (
     / "normative"
     / "BaselineLineage.v1.json"
 )
+BASELINE_MANIFEST_SCHEMA_PATH = (
+    REPO_ROOT
+    / "docs"
+    / "specs"
+    / "local-ai-runtime-0.2"
+    / "normative"
+    / "BaselineManifest.v1.schema.json"
+)
+BASELINE_MANIFEST_FIXTURE_PATH = (
+    REPO_ROOT
+    / "docs"
+    / "specs"
+    / "local-ai-runtime-0.2"
+    / "fixtures"
+    / "baseline-bytes"
+    / "manifest.json"
+)
+BASELINE_PACKAGE_VERIFIER_PATH = REPO_ROOT / "scripts" / "verify-local-ai-runtime-baseline.py"
 WORK_ITEMS_PATH = REPO_ROOT / "docs" / "plans" / "local-ai-runtime-0.2-work-items.json"
 IMPLEMENTATION_PLAN_PATH = (
     REPO_ROOT / "docs" / "plans" / "orchestrator-implementation-plan.md"
@@ -141,7 +159,7 @@ def test_planning_verifier_accepts_truthful_candidate_state() -> None:
     assert payload["baseline_id"] == "local-ai-runtime-0.2-v3.22"
     assert payload["approval_active"] is False
     assert payload["missing_artifact_count"] == 13
-    assert payload["current_work_item_id"] == "LAR-P0A-002"
+    assert payload["current_work_item_id"] == "LAR-P0A-003"
     work_items = json.loads(WORK_ITEMS_PATH.read_text(encoding="utf-8"))["work_items"]
     task_ids = {item["task_id"] for item in work_items}
     assert payload["work_item_count"] == len(work_items) == 62
@@ -161,9 +179,71 @@ def test_planning_selector_returns_baseline_closure_without_preflight() -> None:
     assert completed.returncode == 0, completed.stderr
     payload = json.loads(completed.stdout)
     assert payload["next_action"] == "close_baseline_normative_package_first"
-    assert payload["current_work_item_id"] == "LAR-P0A-002"
+    assert payload["current_work_item_id"] == "LAR-P0A-003"
     assert payload["side_effects_performed"] is False
     assert payload["preflight_run"] is False
+
+
+def test_baseline_manifest_component_self_test_is_green_without_final_manifest() -> None:
+    completed = _run(
+        str(BASELINE_PACKAGE_VERIFIER_PATH), "--component", "manifest", "--self-test"
+    )
+
+    assert completed.returncode == 0, completed.stderr
+    payload = json.loads(completed.stdout)
+    assert payload == {
+        "byte_negative_fixture_count": 8,
+        "component": "manifest",
+        "final_manifest_exists": False,
+        "positive_fixture_count": 1,
+        "schema_version": "BaselineManifest.v1",
+        "status": "pass",
+        "structural_negative_fixture_count": 7,
+    }
+    assert BASELINE_MANIFEST_SCHEMA_PATH.is_file()
+    assert BASELINE_MANIFEST_FIXTURE_PATH.is_file()
+    assert not (
+        BASELINE_MANIFEST_SCHEMA_PATH.parent / "BaselineManifest.v1.json"
+    ).exists()
+
+
+def test_baseline_verifier_skeleton_fails_closed_for_full_package() -> None:
+    completed = _run(str(BASELINE_PACKAGE_VERIFIER_PATH), "--json")
+
+    assert completed.returncode == 3
+    payload = json.loads(completed.stdout)
+    assert payload["status"] == "incomplete"
+    assert payload["reason"] == "standalone_verifier_not_frozen"
+    assert payload["implemented_components"] == ["manifest_self_test"]
+
+
+def test_baseline_manifest_validator_rejects_duplicate_and_cyclic_entries() -> None:
+    namespace = runpy.run_path(str(BASELINE_PACKAGE_VERIFIER_PATH))
+    validate_manifest = namespace["validate_manifest"]
+    failure_type = namespace["ValidationFailure"]
+    fixture = json.loads(BASELINE_MANIFEST_FIXTURE_PATH.read_text(encoding="utf-8"))
+    mutations = namespace["_structural_mutations"]()
+
+    for case in fixture["structural_negative_cases"]:
+        candidate = json.loads(json.dumps(fixture["valid_manifest"]))
+        mutations[case["mutation"]](candidate)
+        with pytest.raises(failure_type) as captured:
+            validate_manifest(candidate)
+        assert captured.value.reason == case["expected_reason"], case["case_id"]
+
+
+def test_baseline_byte_validator_rejects_every_declared_byte_mutation() -> None:
+    namespace = runpy.run_path(str(BASELINE_PACKAGE_VERIFIER_PATH))
+    validate_bytes = namespace["validate_normative_bytes"]
+    mutate_bytes = namespace["_mutate_bytes"]
+    failure_type = namespace["ValidationFailure"]
+    fixture = json.loads(BASELINE_MANIFEST_FIXTURE_PATH.read_text(encoding="utf-8"))
+    raw = BASELINE_MANIFEST_FIXTURE_PATH.read_bytes()
+
+    for case in fixture["byte_negative_cases"]:
+        with pytest.raises(failure_type) as captured:
+            validate_bytes(mutate_bytes(raw, case["mutation"]), case["case_id"])
+        assert captured.value.reason == case["expected_reason"], case["case_id"]
 
 
 def test_baseline_bytes_match_planning_identity() -> None:

@@ -39,7 +39,7 @@
 
 原始 session 中 v3.17 与两份 conflicted v3.18 已按唯一 message/content 边界归档并双路径复算；v3.21 精确 `158485 / 1bfb5cd2...63fb` 已作为 superseded candidate，v3.22 精确 `178330 / 8338a9dc...569c` 与 `BaselineLineage.v1` 已冻结。它们只作为 completed DAG history，不再是 selector 可选分支。
 
-### `LAR-P0A-002` Manifest
+### 已完成：`LAR-P0A-002` Manifest
 
 固定规范字节、domain envelope、artifact path/hash/schema/verifier closure。Validator 只拒绝，不改写。Narrative ID 只绑定本文精确 bytes；每个 schema/catalog/transition/verifier 使用自己的 artifact ID/version/hash；preapproval inventory 可更新但非规范。本任务只创建 `BaselineManifest.v1` schema、非最终 fixtures 和 verifier skeleton，禁止创建最终 `BaselineManifest.v1.json`，`P0A-MANIFEST` 保持 missing。已 present artifact 禁止原地覆盖，语义修正必须新 artifact version，和 narrative 不一致时同时新建 candidate。
 
@@ -230,4 +230,4 @@ Network deny、secret scan、unknown path、reparse/hardlink、Git config、prot
 
 ## 10. 当前下一步
 
-当前 action 是 `close_baseline_normative_package_first`，task 是 `LAR-P0A-002`。它只允许创建 BaselineManifest schema、byte fixtures 和 verifier skeleton；不得创建最终 `BaselineManifest.v1.json`、批准记录、Truth Reset、`runtime/local-ai-runtime` 或修改 `.ai/config`。
+当前 action 是 `close_baseline_normative_package_first`，task 是 `LAR-P0A-003`。它只允许创建 CanonicalizationPolicy、CanonicalEnvelope schema、canonicalization fixtures 和对应 verifier component；不得创建最终 `BaselineManifest.v1.json`、批准记录、Truth Reset、`runtime/local-ai-runtime` 或修改 `.ai/config`。

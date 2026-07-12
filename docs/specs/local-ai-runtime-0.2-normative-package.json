@@ -215,7 +215,7 @@
       "kind": "normative_package_verifier",
       "artifact_version": "LocalAIRuntimeBaselineVerifier.v1",
       "path": "scripts/verify-local-ai-runtime-baseline.py",
-      "status": "missing",
+      "status": "in_progress",
       "required_for_approval": true,
       "producer_task_id": "LAR-P0A-012",
       "verification": "self_test_response_loss_and_tamper_cases"

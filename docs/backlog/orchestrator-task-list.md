@@ -4,7 +4,7 @@
 
 机器真源是 `docs/plans/local-ai-runtime-0.2-work-items.json`。本文件只作可读索引；状态、依赖、验收、命令、证据、回滚、停止条件和 prohibited actions 必须从机器真源读取。
 
-当前：`local-ai-runtime-0.2-v3.22` 为 `baseline_candidate`；队列 `LOCAL-AI-RUNTIME-0.2-BASELINE-CLOSURE`；唯一 ready 项 `LAR-P0A-002`。机器图是 `local_ai_runtime_work_items.v3` 确定性 DAG，共 62 项，其中 P1A-P1F 的 35 项是单次只领取一个的编码任务；顶层 11 项 contract projection 机械绑定规范 producer、实现 consumer 与 acceptance consumer。
+当前：`local-ai-runtime-0.2-v3.22` 为 `baseline_candidate`；队列 `LOCAL-AI-RUNTIME-0.2-BASELINE-CLOSURE`；唯一 ready 项 `LAR-P0A-003`。机器图是 `local_ai_runtime_work_items.v3` 确定性 DAG，共 62 项，其中 P1A-P1F 的 35 项是单次只领取一个的编码任务；顶层 11 项 contract projection 机械绑定规范 producer、实现 consumer 与 acceptance consumer。
 
 目标源码使用关闭布局：`approved_root_files=["__init__.py","__main__.py"]`；`approved_subpackages=["contracts","kernel","qualification","storage","execution","recovery","git_local","operations","compat"]`；`required_source_owners` 固定 bootstrap/marker 的唯一任务。`__main__.py` 只转发 contracts verifier；任务若计划其他包根功能模块、第十个首级子包、重复源码 owner 或缺失 marker，planning verifier 必须先阻断。
 
@@ -19,8 +19,8 @@
 
 - [x] `LAR-P0A-001` completed：从原始 session 归档 v3.17 exact bytes 和两份 conflicted v3.18，并完成 byte policy 与双路径 hash。
 - [x] `LAR-P0A-REBASELINE-V322` completed：冻结 v3.22、重发 v3.22-bound lineage、终结 v3.21 plan identity 并切换 v3 machine DAG。
-- [ ] `LAR-P0A-002` ready：Narrative/artifact/package 三层版本语义、manifest schema、规范字节和 verifier skeleton；不得创建最终 manifest，`P0A-MANIFEST` 保持 missing。
-- [ ] `LAR-P0A-003` pending：Canonical JSON、Git path、Windows identity/collision、alias-aware 8.3 与 `policy_query_denied` probe。
+- [x] `LAR-P0A-002` completed：Narrative/artifact/package 三层版本语义、manifest schema、规范字节和 fail-closed verifier skeleton；最终 manifest 未创建，`P0A-MANIFEST` 保持 missing，`P0A-VERIFIER` 保持 in_progress。
+- [ ] `LAR-P0A-003` ready：Canonical JSON、Git path、Windows identity/collision、alias-aware 8.3 与 `policy_query_denied` probe。
 - [ ] `LAR-P0A-004` pending：Product/routing/template、`WorkDefinition`/`TaskFamily`、永久 ordinary replay、absent-only secret/admission、原子 resubmission。
 - [ ] `LAR-P0A-005` pending：base-bound QualificationObservation、base-independent QualificationSensitiveInputSet、environment、opaque sandbox state/log、Authorization continuation、root/child effect grant。
 - [ ] `LAR-P0A-006` pending：`EffectPlan`、`writer_effect_id`/`writer_launch_id`、Writer/StageJob、marker、JOB_LIST/HANDLE_LIST、精确 stdio/EOF、suspended execution barrier、Authorization/SafetyOnly authority union、fencing/adoption。

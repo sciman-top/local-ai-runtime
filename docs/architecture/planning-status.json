@@ -64,10 +64,10 @@
     "why_now": "The v3.22 narrative and v3.22-bound lineage are frozen and verified, but thirteen required normative artifacts remain missing and Baseline Approval is inactive."
   },
   "current_work_item": {
-    "task_id": "LAR-P0A-002",
+    "task_id": "LAR-P0A-003",
     "selector_action": "close_baseline_normative_package_first",
     "status": "ready",
-    "reason": "The frozen v3.22 source and BaselineLineage.v1 are present; the next legal action is to define BaselineManifest schema and package-closure rules without creating a final manifest or approval."
+    "reason": "The BaselineManifest schema, byte fixtures and fail-closed verifier skeleton are complete without a final manifest; the next legal action is to close canonical JSON, Git path and Windows identity contracts."
   },
   "legacy_runtime_posture": {
     "current_kernel": "runtime/host-orchestrator",
@@ -105,7 +105,7 @@
     "p5_cutover_complete": false,
     "legacy_writer_retired": false
   },
-  "current_evidence_ref": "docs/change-evidence/20260712-local-ai-runtime-v3.22-candidate-rebaseline.md",
+  "current_evidence_ref": "docs/change-evidence/20260712-lar-p0a-002-manifest.md",
   "authoritative_docs": [
     "AGENTS.md",
     "README.md",
@@ -137,7 +137,7 @@
         "local-ai-runtime-0.2-v3.22",
         "baseline_candidate",
         "LOCAL-AI-RUNTIME-0.2-BASELINE-CLOSURE",
-        "LAR-P0A-002"
+        "LAR-P0A-003"
       ]
     },
     {
@@ -194,6 +194,7 @@
       "required_strings": [
         "LAR-P0A-001",
         "LAR-P0A-002",
+        "LAR-P0A-003",
         "LAR-P1A-004",
         "LAR-P1F-006",
         "ProcessHandlePolicy",

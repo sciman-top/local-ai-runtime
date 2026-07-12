@@ -412,7 +412,7 @@
       "task_id": "LAR-P0A-002",
       "phase": "P0A",
       "priority": 0,
-      "status": "ready",
+      "status": "completed",
       "title": "Define BaselineManifest and normative package closure rules",
       "goal": "Create the manifest schema, byte/version rules, fixtures and verifier skeleton without creating the final BaselineManifest instance before the package review head is frozen.",
       "depends_on": [
@@ -473,7 +473,7 @@
       "task_id": "LAR-P0A-003",
       "phase": "P0A",
       "priority": 0,
-      "status": "pending",
+      "status": "ready",
       "title": "Close canonical JSON, Git path and Windows identity contracts",
       "goal": "Materialize CanonicalizationPolicy.v1 and its positive/negative fixtures, including duplicate-key rejection, ordered-array semantics, declared set semantics and independent NTFS collision keys.",
       "depends_on": [

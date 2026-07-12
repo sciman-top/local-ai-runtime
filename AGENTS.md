@@ -7,7 +7,7 @@
 ## 1. 当前落点与目标归宿
 - 当前落点：`runtime/host-orchestrator`、`.ai/state/control-plane.db` 与既有 evidence 仍是唯一现行运行事实；`local-ai-runtime-0.2-v3.22` 只是 `baseline_candidate`，尚未批准、Truth Reset 或实现。
 - 目标归宿：Baseline Approval 后按 v3.22 在 `runtime/local-ai-runtime` 实现面向 Windows 本机、单操作者信任域的通用受控 AI 开发执行平台；Epoch 1/v0.2 为 Unified Native + 全局 capacity=1 的 deterministic commit-only Batch，legacy Hermes/AgentBridge/host-orchestrator 最终只读兼容。
-- 下一最小里程碑：执行 `LOCAL-AI-RUNTIME-0.2-BASELINE-CLOSURE` 的唯一 ready 工作项 `LAR-P0A-002`；当前 selector 必须返回 `close_baseline_normative_package_first`。
+- 下一最小里程碑：执行 `LOCAL-AI-RUNTIME-0.2-BASELINE-CLOSURE` 的唯一 ready 工作项 `LAR-P0A-003`；当前 selector 必须返回 `close_baseline_normative_package_first`。
 - 本次规则更新只是预批准 planning control-plane 对齐，不是 v3.22 的 P0B Truth Reset；不得据此创建 approval、新 runtime、Batch claim 或 live evidence。
 
 ## A. 仓库事实与模块边界

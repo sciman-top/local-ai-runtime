@@ -1,0 +1,149 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local-ai-runtime.invalid/schemas/BaselineManifest.v1.schema.json",
+  "title": "BaselineManifest.v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "domain",
+    "schema_version",
+    "payload"
+  ],
+  "properties": {
+    "domain": {
+      "const": "local-ai-runtime/BaselineManifest/v1"
+    },
+    "schema_version": {
+      "const": 1
+    },
+    "payload": {
+      "$ref": "#/$defs/payload"
+    }
+  },
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "identifier": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$"
+    },
+    "repo_relative_path": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1024,
+      "pattern": "^(?!/)(?![A-Za-z]:)(?!.*:)(?!.*(?:^|/)\\.{1,2}(?:/|$))(?!.*\\\\)(?!.*//)(?!.*\\/$)[^\\r\\n]+$"
+    },
+    "artifact_entry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "artifact_id",
+        "artifact_version",
+        "artifact_role",
+        "path",
+        "byte_count",
+        "sha256",
+        "schema_version",
+        "verifier_id"
+      ],
+      "properties": {
+        "artifact_id": {
+          "$ref": "#/$defs/identifier"
+        },
+        "artifact_version": {
+          "$ref": "#/$defs/identifier"
+        },
+        "artifact_role": {
+          "enum": [
+            "narrative_specification",
+            "lineage",
+            "schema",
+            "catalog",
+            "policy",
+            "transition_table",
+            "example",
+            "negative_fixture",
+            "migration_specification",
+            "verifier"
+          ]
+        },
+        "path": {
+          "$ref": "#/$defs/repo_relative_path"
+        },
+        "byte_count": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1073741824
+        },
+        "sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "schema_version": {
+          "$ref": "#/$defs/identifier"
+        },
+        "verifier_id": {
+          "$ref": "#/$defs/identifier"
+        }
+      }
+    },
+    "review_head": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "index_id",
+        "sequence",
+        "entry_sha256",
+        "frozen"
+      ],
+      "properties": {
+        "index_id": {
+          "const": "ReviewEvidenceIndex.v1"
+        },
+        "sequence": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "entry_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "frozen": {
+          "const": true
+        }
+      }
+    },
+    "payload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "manifest_id",
+        "manifest_version",
+        "narrative_specification_id",
+        "artifacts",
+        "package_review_head"
+      ],
+      "properties": {
+        "manifest_id": {
+          "$ref": "#/$defs/identifier"
+        },
+        "manifest_version": {
+          "const": "BaselineManifest.v1"
+        },
+        "narrative_specification_id": {
+          "$ref": "#/$defs/identifier"
+        },
+        "artifacts": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/artifact_entry"
+          }
+        },
+        "package_review_head": {
+          "$ref": "#/$defs/review_head"
+        }
+      }
+    }
+  }
+}

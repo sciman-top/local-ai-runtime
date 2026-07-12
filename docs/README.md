@@ -1,6 +1,6 @@
 # Local AI Runtime 文档索引
 
-本索引服务于冻结的 `local-ai-runtime-0.2-v3.22` 候选基线。v3.22 是现行 `baseline_candidate`、`blocking_stage=baseline_approval`；正文和 v3.22-bound lineage 已闭合，规范包仍缺 13 项，下一动作是 `close_baseline_normative_package_first / LAR-P0A-002`。
+本索引服务于冻结的 `local-ai-runtime-0.2-v3.22` 候选基线。v3.22 是现行 `baseline_candidate`、`blocking_stage=baseline_approval`；正文和 v3.22-bound lineage 已闭合，manifest schema/fixtures/verifier skeleton 已完成但不计为最终 artifact，规范包仍缺 13 项，下一动作是 `close_baseline_normative_package_first / LAR-P0A-003`。
 
 ## 真源层级
 
