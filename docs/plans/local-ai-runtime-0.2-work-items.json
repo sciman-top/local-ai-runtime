@@ -11,7 +11,8 @@
     "blocked",
     "in_progress",
     "completed",
-    "cancelled"
+    "cancelled",
+    "superseded"
   ],
   "global_constraints": [
     "Do not create a BaselineApprovalRecord until the normative package is complete and a consistency review is green.",
@@ -78,8 +79,8 @@
       "phase": "P0A",
       "priority": 0,
       "status": "ready",
-      "title": "Close the baseline lineage record",
-      "goal": "Archive the exact v3.17 bytes when available, independently verify them, and materialize BaselineLineage.v1 without promoting a provisional transcript hash to a content hash.",
+      "title": "Archive and verify the historical candidate source bytes",
+      "goal": "Extract the exact v3.17 and both conflicted v3.18 message/content bodies from the original Codex session, validate their bytes without normalization, and independently verify their SHA-256 values before any v3.22 lineage record is created.",
       "depends_on": [],
       "preconditions": [
         "v3.21 candidate bytes and SHA-256 still match planning-status.json",
@@ -87,46 +88,118 @@
       ],
       "scope": {
         "in": [
-          "v3.14-v3.17 lineage, both conflicted v3.18 archives, the exact v3.19 and frozen v3.20 archives, and the v3.21 candidate identity",
+          "Exact v3.17 and both conflicted v3.18 source-message boundaries",
+          "Existing v3.14, v3.16, v3.19, v3.20 and v3.21 identity evidence",
           "Exact-byte archive validation",
           "Two independent SHA-256 calculations"
         ],
         "out": [
+          "Creating BaselineLineage.v1 before the v3.22 identity exists",
           "Changing any baseline prose",
           "Approving v3.21",
           "Runtime code changes"
         ],
         "primary_files": [
-          "docs/specs/local-ai-runtime-0.2/normative/BaselineLineage.v1.json",
-          "docs/specs/local-ai-runtime-0.2-normative-package.json",
+          "docs/specs/local-ai-runtime-0.2/history/local-ai-runtime-0.2-v3.17.md",
+          "docs/specs/local-ai-runtime-0.2/history/local-ai-runtime-0.2-v3.18-a.md",
+          "docs/specs/local-ai-runtime-0.2/history/local-ai-runtime-0.2-v3.18-b.md",
+          "docs/specs/local-ai-runtime-0.2/history/HistoricalSourceArchive.v1.json",
           "docs/architecture/planning-status.json",
           "docs/change-evidence/<date>-lar-p0a-001-lineage.md"
         ]
       },
       "acceptance": [
-        "v3.17 and both distinct v3.18 archives are byte-for-byte grounded or the task stops with missing_source_bytes",
-        "v3.19 is recorded as a 111952-byte superseded candidate with its verified SHA-256",
-        "v3.20 is recorded as a 130890-byte superseded candidate with SHA-256 43cb98737daa5d171a9cda2dca49c8f118fb8be92745b4076948d9178e56a130",
-        "The record distinguishes canonical_predecessor, withdrawn_candidate, superseded_candidate and withdrawn_draft",
-        "The provisional v3.17 transcript hash is never labeled content_sha256",
-        "Package inventory marks P0A-LINEAGE present only after schema and dual-hash verification"
+        "v3.17 is archived as exactly 32825 bytes with SHA-256 a285f5f421a8ccd4debd8794609a2aa0eb07bb1bf651c2467a95f7cad25a5f81",
+        "v3.18-A is archived as exactly 66328 bytes with SHA-256 6924ba562dda8e69274eb80fef9e3a9699eb493570ee08330fcad5ec4bc3baa5",
+        "v3.18-B is archived as exactly 43908 bytes with SHA-256 8da5aa20fb44d95503e443822163397a2aa1df590e1916d1a5a10a6c24ea06b7",
+        "Every archive passes the normative byte policy and Python hashlib plus PowerShell Get-FileHash return the same digest",
+        "The source record identifies the original session, JSONL line, outer record type, message/content boundary and excluded envelope without storing unrelated session content",
+        "P0A-LINEAGE remains missing until v3.22 is frozen and its own candidate identity can be included"
       ],
       "verification": [
-        "python -m json.tool docs/specs/local-ai-runtime-0.2/normative/BaselineLineage.v1.json",
+        "python -m json.tool docs/specs/local-ai-runtime-0.2/history/HistoricalSourceArchive.v1.json",
         "python scripts/verify-planning-status.py",
         "git diff --check"
       ],
       "evidence_path": "docs/change-evidence/<date>-lar-p0a-001-lineage.md",
-      "rollback": "Remove only the new lineage artifact and revert its inventory/status/evidence references.",
+      "rollback": "Remove only the three new history archives, HistoricalSourceArchive record and their evidence/status references; do not modify the original session or any frozen candidate.",
       "stop_conditions": [
-        "Exact v3.17 source bytes cannot be recovered",
+        "Any of the three exact source-message bodies cannot be recovered",
         "Independent hashes disagree",
         "Any source requires silent normalization"
       ],
       "prohibited_actions": [
-        "Do not reconstruct v3.17 from memory",
+        "Do not reconstruct any candidate from memory or normalized conversation text",
         "Do not edit the v3.19 or v3.20 archives or the v3.21 candidate",
         "Do not create an approval record"
+      ],
+      "next_task_ids": [
+        "LAR-P0A-REBASELINE-V322"
+      ]
+    },
+    {
+      "task_id": "LAR-P0A-REBASELINE-V322",
+      "phase": "P0A",
+      "priority": 0,
+      "status": "pending",
+      "title": "Create and mechanically project the superseding v3.22 candidate",
+      "goal": "Create one complete self-contained v3.22 narrative, record v3.21 as its exact superseded candidate, reissue the complete lineage and atomically project the new candidate identity into every planning and implementation truth surface without approving or implementing it.",
+      "depends_on": [
+        "LAR-P0A-001"
+      ],
+      "preconditions": [
+        "All three recovered historical candidate archives pass byte-policy and dual-hash verification",
+        "v3.21 still matches 158485 bytes and SHA-256 1bfb5cd2c92c036804a6005d5b36cdd5acc6bedc4d6bf4070ccfb7a70ce063fb",
+        "No active BaselineApprovalRecord exists"
+      ],
+      "scope": {
+        "in": [
+          "A minimal superseding v3.22 narrative containing the approved architecture corrections",
+          "A terminal v3.21 work-item supersession projection and a new plan generation",
+          "PRD, architecture, roadmap, implementation plan, acceptance, backlog, stable entry, inventory, planning status, selector, verifier, tests and evidence projections"
+        ],
+        "out": [
+          "Baseline Approval or any operator approval record",
+          "Truth Reset, runtime/local-ai-runtime creation or legacy runtime behavior changes",
+          "Full Q0, live Batch claims, provider execution or live acceptance"
+        ],
+        "primary_files": [
+          "docs/specs/local-ai-runtime-0.2-v3.22-baseline-candidate.md",
+          "docs/specs/local-ai-runtime-0.2-baseline-candidate.md",
+          "docs/specs/local-ai-runtime-0.2-normative-package.json",
+          "docs/plans/local-ai-runtime-0.2-work-items.json",
+          "docs/architecture/planning-status.json",
+          "scripts/verify-planning-status.py",
+          "scripts/select-next-work.py",
+          "runtime/host-orchestrator/tests/test_planning_governance.py",
+          "docs/change-evidence/<date>-local-ai-runtime-v3.22-candidate-rebaseline.md"
+        ]
+      },
+      "acceptance": [
+        "The v3.22 candidate is byte-valid, self-contained and has an independently recomputed exact byte count and SHA-256",
+        "Its lineage includes verified v3.17, both conflicted v3.18 archives, v3.19, v3.20 and the exact superseded v3.21 identity",
+        "The active work-item identity is plan_id plus task_id; the v3.21 successor tasks are terminally superseded before v3.22 tasks reuse local IDs",
+        "Verifier, selector, planning status and all projections agree on v3.22 and the next missing normative artifact",
+        "The package remains incomplete and approval_active, truth_reset, implementation_started and p2_admitted all remain false"
+      ],
+      "verification": [
+        "uv run --project ./runtime/host-orchestrator python -m pytest runtime/host-orchestrator/tests/test_planning_governance.py",
+        "python scripts/verify-planning-status.py",
+        "python scripts/select-next-work.py",
+        "pwsh -NoProfile -NonInteractive -File scripts/governance/preflight.ps1 -DisableAutoCommit",
+        "git diff --check"
+      ],
+      "evidence_path": "docs/change-evidence/<date>-local-ai-runtime-v3.22-candidate-rebaseline.md",
+      "rollback": "Revert only the v3.22 candidate and planning projection, restore the terminal v3.21 candidate-plan pointer, and retain the independently verified history archives.",
+      "stop_conditions": [
+        "Any historical or v3.21 identity differs from its independently verified bytes",
+        "Any required v3.22 decision remains ambiguous or internally contradictory",
+        "Any projection can select implementation, approval or live execution before normative closure"
+      ],
+      "prohibited_actions": [
+        "Do not edit any frozen v3.17-v3.21 archive",
+        "Do not inherit P0A-LINEAGE=present without regenerating a v3.22-bound lineage record",
+        "Do not create approval, implementation, Q0, Batch or live evidence"
       ],
       "next_task_ids": [
         "LAR-P0A-002"
@@ -140,7 +213,7 @@
       "title": "Define BaselineManifest and normative package closure rules",
       "goal": "Create the manifest schema, byte/version rules, fixtures and verifier skeleton without creating the final BaselineManifest instance before the package review head is frozen.",
       "depends_on": [
-        "LAR-P0A-001"
+        "LAR-P0A-REBASELINE-V322"
       ],
       "preconditions": [
         "BaselineLineage.v1 is present",

@@ -29,7 +29,7 @@ EXPECTED_SELECTOR_ENTRYPOINTS = [
     "scripts/select-next-work.py",
     "scripts/governance/preflight.ps1",
 ]
-CURRENT_WORK_ITEM_COUNT = 58
+CURRENT_WORK_ITEM_COUNT = 59
 EXPECTED_ARTIFACT_IDS = [
     "P0A-SOURCE",
     "P0A-LINEAGE",
@@ -94,6 +94,7 @@ EXPECTED_WORK_ITEM_STATUSES = [
     "in_progress",
     "completed",
     "cancelled",
+    "superseded",
 ]
 EXPECTED_VERIFICATION_PROFILES = {"planning", "new_runtime"}
 
@@ -1041,7 +1042,9 @@ def _verify_work_items(
         order.append(task_id)
         phase = item.get("phase")
         task_id_parts = task_id.split("-")
-        if (
+        if task_id == "LAR-P0A-REBASELINE-V322":
+            expected_phase = "P0A"
+        elif (
             len(task_id_parts) != 3
             or task_id_parts[0] != "LAR"
             or not task_id_parts[1]
@@ -1290,6 +1293,29 @@ def _verify_work_items(
     return items
 
 
+def _work_item_reaches(
+    work_items: dict[str, dict[str, Any]], source: Any, target: Any
+) -> bool:
+    if not isinstance(source, str) or not isinstance(target, str):
+        return False
+    pending = [source]
+    visited: set[str] = set()
+    while pending:
+        task_id = pending.pop()
+        if task_id == target:
+            return True
+        if task_id in visited:
+            continue
+        visited.add(task_id)
+        item = work_items.get(task_id, {})
+        pending.extend(
+            successor
+            for successor in _work_item_list(item, "next_task_ids")
+            if isinstance(successor, str)
+        )
+    return False
+
+
 def _verify_inventory_task_links(
     inventory: dict[str, Any],
     work_items: dict[str, dict[str, Any]],
@@ -1312,9 +1338,12 @@ def _verify_inventory_task_links(
             )
     if missing:
         first_producer = missing[0].get("producer_task_id")
-        if current_work.get("task_id") != first_producer:
+        current_id = current_work.get("task_id")
+        if current_id != first_producer and not _work_item_reaches(
+            work_items, current_id, first_producer
+        ):
             failures.append(
-                "current work item must produce the first missing normative artifact: "
+                "current work item must produce or lead to the first missing normative artifact: "
                 f"expected {first_producer}, got {current_work.get('task_id')}"
             )
 
@@ -1354,6 +1383,22 @@ def _verify_selector_policy(
         allowed = []
     if current_work.get("selector_action") not in allowed:
         failures.append("current selector action is not allowed by selector policy")
+    special_actions = {
+        "LAR-P0A-001": "archive_lineage_sources_first",
+        "LAR-P0A-REBASELINE-V322": "draft_v3_22_candidate_first",
+    }
+    expected_special_action = special_actions.get(current_work.get("task_id"))
+    if expected_special_action is not None and current_work.get(
+        "selector_action"
+    ) != expected_special_action:
+        failures.append(
+            f"{current_work.get('task_id')} must select {expected_special_action}"
+        )
+    if (
+        current_work.get("selector_action") in special_actions.values()
+        and current_work.get("selector_action") != expected_special_action
+    ):
+        failures.append("special rebaseline selector action used by the wrong work item")
 
     review_sets = policy.get("baseline_review_missing_artifact_sets")
     if review_sets != EXPECTED_REVIEW_MISSING_ARTIFACT_SETS:
@@ -1556,6 +1601,8 @@ def _verify_approval_and_stages(
         if queue.get("queue_id") != "LOCAL-AI-RUNTIME-0.2-BASELINE-CLOSURE":
             failures.append("incomplete package requires baseline-closure queue")
         if current_work.get("selector_action") not in {
+            "archive_lineage_sources_first",
+            "draft_v3_22_candidate_first",
             "close_baseline_normative_package_first",
             "run_baseline_consistency_review",
         }:

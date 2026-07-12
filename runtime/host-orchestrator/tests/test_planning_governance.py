@@ -116,8 +116,8 @@ def test_planning_verifier_accepts_truthful_candidate_state() -> None:
     assert payload["current_work_item_id"] == "LAR-P0A-001"
     work_items = json.loads(WORK_ITEMS_PATH.read_text(encoding="utf-8"))["work_items"]
     task_ids = {item["task_id"] for item in work_items}
-    assert payload["work_item_count"] == len(work_items) == 58
-    assert {"LAR-P0A-001", "LAR-P5-001"} <= task_ids
+    assert payload["work_item_count"] == len(work_items) == 59
+    assert {"LAR-P0A-001", "LAR-P0A-REBASELINE-V322", "LAR-P5-001"} <= task_ids
 
 
 def test_planning_selector_returns_baseline_closure_without_preflight() -> None:
@@ -125,7 +125,7 @@ def test_planning_selector_returns_baseline_closure_without_preflight() -> None:
 
     assert completed.returncode == 0, completed.stderr
     payload = json.loads(completed.stdout)
-    assert payload["next_action"] == "close_baseline_normative_package_first"
+    assert payload["next_action"] == "archive_lineage_sources_first"
     assert payload["current_work_item_id"] == "LAR-P0A-001"
     assert payload["side_effects_performed"] is False
     assert payload["preflight_run"] is False
@@ -570,7 +570,7 @@ def test_machine_work_items_are_fine_grained_and_project_v321_semantics() -> Non
         for phase in ("P1A", "P1B", "P1C", "P1D", "P1E", "P1F")
     }
 
-    assert len(work_items) == 58
+    assert len(work_items) == 59
     assert phase_counts == {
         "P1A": 4,
         "P1B": 5,
@@ -582,6 +582,9 @@ def test_machine_work_items_are_fine_grained_and_project_v321_semantics() -> Non
     assert by_id["LAR-P1A-004"]["next_task_ids"] == ["LAR-P1B-001"]
     assert by_id["LAR-P1F-006"]["next_task_ids"] == ["LAR-P1G-001"]
     assert by_id["LAR-P1G-001"]["depends_on"] == ["LAR-P1F-006"]
+    assert by_id["LAR-P0A-001"]["next_task_ids"] == ["LAR-P0A-REBASELINE-V322"]
+    assert by_id["LAR-P0A-REBASELINE-V322"]["depends_on"] == ["LAR-P0A-001"]
+    assert by_id["LAR-P0A-002"]["depends_on"] == ["LAR-P0A-REBASELINE-V322"]
 
     final_manifest = (
         "docs/specs/local-ai-runtime-0.2/normative/BaselineManifest.v1.json"

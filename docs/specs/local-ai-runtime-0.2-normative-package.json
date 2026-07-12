@@ -83,7 +83,7 @@
       "path": "docs/specs/local-ai-runtime-0.2/normative/BaselineLineage.v1.json",
       "status": "missing",
       "required_for_approval": true,
-      "producer_task_id": "LAR-P0A-001",
+      "producer_task_id": "LAR-P0A-REBASELINE-V322",
       "verification": "schema_plus_dual_hash_evidence"
     },
     {

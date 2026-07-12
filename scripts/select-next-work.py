@@ -158,6 +158,8 @@ def select_next_work(
         )
 
     if package["status"] != "complete" or not package["approval_eligible"]:
+        historical_archive_selected = current_id == "LAR-P0A-001"
+        rebaseline_selected = current_id == "LAR-P0A-REBASELINE-V322"
         review_task_selected = current_id == "LAR-P0A-013"
         review_artifacts_pending = (
             missing in policy["baseline_review_missing_artifact_sets"]
@@ -174,11 +176,14 @@ def select_next_work(
                 verifier_status=verifier_status,
                 stage_snapshot=_stage_snapshot(status),
             )
-        action = (
-            "run_baseline_consistency_review"
-            if review_task_selected
-            else "close_baseline_normative_package_first"
-        )
+        if historical_archive_selected:
+            action = "archive_lineage_sources_first"
+        elif rebaseline_selected:
+            action = "draft_v3_22_candidate_first"
+        elif review_task_selected:
+            action = "run_baseline_consistency_review"
+        else:
+            action = "close_baseline_normative_package_first"
     elif not approval["active"]:
         action = "record_baseline_approval_first"
     elif not truth_reset["performed"]:

@@ -60,14 +60,14 @@
     "status": "in_progress",
     "source_plan": "docs/plans/orchestrator-implementation-plan.md",
     "source_work_items": "docs/plans/local-ai-runtime-0.2-work-items.json",
-    "work_item_count": 58,
+    "work_item_count": 59,
     "why_now": "The complete v3.21 candidate prose is available, but implementation is blocked until its normative package is mechanically closed and approved."
   },
   "current_work_item": {
     "task_id": "LAR-P0A-001",
-    "selector_action": "close_baseline_normative_package_first",
+    "selector_action": "archive_lineage_sources_first",
     "status": "ready",
-    "reason": "The first unresolved approval artifact is the verified baseline lineage record."
+    "reason": "The exact v3.17 and both conflicted v3.18 source-message bodies must be archived and independently verified before v3.22 can issue a new lineage record."
   },
   "legacy_runtime_posture": {
     "current_kernel": "runtime/host-orchestrator",
