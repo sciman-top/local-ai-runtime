@@ -16,6 +16,19 @@ DEFAULT_STATUS_PATH = ROOT / "docs" / "architecture" / "planning-status.json"
 POLICY_PATH = Path("docs/architecture/next-work-selection-policy.json")
 CURRENT_BASELINE_ID = "local-ai-runtime-0.2-v3.21"
 CURRENT_BASELINE_PATH = "docs/specs/local-ai-runtime-0.2-v3.21-baseline-candidate.md"
+CURRENT_BASELINE_ENTRY_PATH = "docs/specs/local-ai-runtime-0.2-baseline-candidate.md"
+BASELINE_ENTRY_ROLE = "non_normative_navigation"
+BASELINE_ENTRY_MAXIMUM_BYTE_COUNT = 4096
+EXPECTED_SELECTOR_ENTRYPOINTS = [
+    "docs/architecture/planning-status.json",
+    CURRENT_BASELINE_ENTRY_PATH,
+    CURRENT_BASELINE_PATH,
+    "docs/specs/local-ai-runtime-0.2-normative-package.json",
+    "docs/plans/local-ai-runtime-0.2-work-items.json",
+    "scripts/verify-planning-status.py",
+    "scripts/select-next-work.py",
+    "scripts/governance/preflight.ps1",
+]
 CURRENT_WORK_ITEM_COUNT = 58
 EXPECTED_ARTIFACT_IDS = [
     "P0A-SOURCE",
@@ -124,6 +137,7 @@ def verify(*, repo_root: Path, status_path: Path) -> dict[str, object]:
             "status_id",
             "updated_on",
             "baseline_candidate",
+            "baseline_entry",
             "approval_state",
             "normative_package",
             "current_active_queue",
@@ -146,6 +160,7 @@ def verify(*, repo_root: Path, status_path: Path) -> dict[str, object]:
         failures.append("planning status schema_version must be '2.0'")
 
     baseline = _as_dict(status.get("baseline_candidate"), "baseline_candidate", failures)
+    baseline_entry = _as_dict(status.get("baseline_entry"), "baseline_entry", failures)
     approval = _as_dict(status.get("approval_state"), "approval_state", failures)
     package_state = _as_dict(status.get("normative_package"), "normative_package", failures)
     queue = _as_dict(status.get("current_active_queue"), "current_active_queue", failures)
@@ -157,6 +172,7 @@ def verify(*, repo_root: Path, status_path: Path) -> dict[str, object]:
     rollout = _as_dict(status.get("rollout"), "rollout", failures)
 
     _verify_baseline(root, baseline, failures)
+    _verify_baseline_entry(root, baseline_entry, baseline, failures)
 
     inventory: dict[str, Any] = {}
     inventory_ref = package_state.get("inventory_ref")
@@ -175,6 +191,11 @@ def verify(*, repo_root: Path, status_path: Path) -> dict[str, object]:
             package_state=package_state,
             inventory=inventory,
             failures=failures,
+        )
+        _verify_baseline_entry_inventory_exclusion(
+            baseline_entry,
+            inventory,
+            failures,
         )
 
     work_items_payload: dict[str, Any] = {}
@@ -317,6 +338,124 @@ def _verify_baseline(root: Path, baseline: dict[str, Any], failures: list[str]) 
         failures.append(
             f"baseline candidate SHA-256 mismatch: expected {expected_hash}, got {actual_hash}"
         )
+
+
+def _verify_baseline_entry(
+    root: Path,
+    entry: dict[str, Any],
+    baseline: dict[str, Any],
+    failures: list[str],
+) -> None:
+    _require_fields(
+        entry,
+        [
+            "path",
+            "role",
+            "target_baseline_id",
+            "target_path",
+            "target_byte_count",
+            "target_sha256",
+            "approval_input",
+            "maximum_byte_count",
+            "byte_count",
+            "sha256",
+        ],
+        "baseline_entry",
+        failures,
+    )
+    if entry.get("path") != CURRENT_BASELINE_ENTRY_PATH:
+        failures.append(f"baseline_entry.path must be {CURRENT_BASELINE_ENTRY_PATH}")
+    if entry.get("role") != BASELINE_ENTRY_ROLE:
+        failures.append(
+            f"baseline_entry.role must be {BASELINE_ENTRY_ROLE}"
+        )
+    if entry.get("approval_input") is not False:
+        failures.append("baseline_entry.approval_input must remain false")
+    if entry.get("maximum_byte_count") != BASELINE_ENTRY_MAXIMUM_BYTE_COUNT:
+        failures.append(
+            "baseline_entry.maximum_byte_count must be "
+            f"{BASELINE_ENTRY_MAXIMUM_BYTE_COUNT}"
+        )
+
+    for entry_field, baseline_field in (
+        ("target_baseline_id", "id"),
+        ("target_path", "path"),
+        ("target_byte_count", "byte_count"),
+        ("target_sha256", "sha256"),
+    ):
+        if entry.get(entry_field) != baseline.get(baseline_field):
+            failures.append(
+                f"baseline_entry.{entry_field} must match "
+                f"baseline_candidate.{baseline_field}"
+            )
+
+    try:
+        path = _resolve_repo_path(root, entry.get("path"), "baseline entry")
+        raw = path.read_bytes()
+        text = raw.decode("utf-8")
+    except (OSError, UnicodeDecodeError, ValueError) as exc:
+        failures.append(f"baseline entry is unreadable: {exc}")
+        return
+
+    maximum = entry.get("maximum_byte_count")
+    if isinstance(maximum, int) and not isinstance(maximum, bool) and len(raw) > maximum:
+        failures.append("baseline entry exceeds its maximum_byte_count")
+    _verify_normative_bytes(raw, "baseline entry", failures)
+    expected_count = entry.get("byte_count")
+    if not isinstance(expected_count, int) or isinstance(expected_count, bool):
+        failures.append("baseline_entry.byte_count must be an integer")
+    elif len(raw) != expected_count:
+        failures.append(
+            f"baseline entry byte count mismatch: expected {expected_count}, got {len(raw)}"
+        )
+    expected_hash = entry.get("sha256")
+    if not _is_sha256(expected_hash):
+        failures.append("baseline_entry.sha256 must be 64 lowercase hex characters")
+    else:
+        actual_hash = hashlib.sha256(raw).hexdigest()
+        if actual_hash != expected_hash:
+            failures.append(
+                "baseline entry SHA-256 mismatch: "
+                f"expected {expected_hash}, got {actual_hash}"
+            )
+
+    required_markers = (
+        "role=non_normative_navigation",
+        "approval_input=false",
+        str(baseline.get("id")),
+        str(baseline.get("path")),
+        str(baseline.get("sha256")),
+        "not a narrative specification",
+        "BaselineManifest.v1",
+        "BaselineApprovalRecord",
+    )
+    for marker in required_markers:
+        if marker not in text:
+            failures.append(f"baseline entry missing required marker: {marker}")
+
+
+def _verify_baseline_entry_inventory_exclusion(
+    entry: dict[str, Any],
+    inventory: dict[str, Any],
+    failures: list[str],
+) -> None:
+    entry_path = entry.get("path")
+    if not isinstance(entry_path, str):
+        return
+
+    source = inventory.get("candidate_source")
+    if isinstance(source, dict) and source.get("path") == entry_path:
+        failures.append("baseline entry must not be the inventory candidate source")
+
+    artifacts = inventory.get("required_artifacts")
+    if not isinstance(artifacts, list):
+        return
+    for index, artifact in enumerate(artifacts):
+        if isinstance(artifact, dict) and artifact.get("path") == entry_path:
+            failures.append(
+                "baseline entry must not be a normative artifact: "
+                f"inventory.required_artifacts[{index}]"
+            )
 
 
 def _verify_normative_bytes(raw: bytes, label: str, failures: list[str]) -> None:
@@ -1268,7 +1407,13 @@ def _verify_selector_policy(
         if priorities != sorted(priorities) or len(priorities) != len(set(priorities)):
             failures.append("selector priorities must be unique and ascending")
 
-    for relative in policy.get("required_entrypoints", []):
+    required_entrypoints = policy.get("required_entrypoints")
+    if required_entrypoints != EXPECTED_SELECTOR_ENTRYPOINTS:
+        failures.append("selector required_entrypoints must match the exact control-plane set")
+        required_entrypoints = (
+            required_entrypoints if isinstance(required_entrypoints, list) else []
+        )
+    for relative in required_entrypoints:
         try:
             path = _resolve_repo_path(root, relative, "selector required entrypoint")
         except ValueError as exc:

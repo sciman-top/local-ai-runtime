@@ -12,6 +12,18 @@
     "decision": "request_changes_until_normative_package_closure",
     "blocking_stage": "baseline_approval"
   },
+  "baseline_entry": {
+    "path": "docs/specs/local-ai-runtime-0.2-baseline-candidate.md",
+    "role": "non_normative_navigation",
+    "target_baseline_id": "local-ai-runtime-0.2-v3.21",
+    "target_path": "docs/specs/local-ai-runtime-0.2-v3.21-baseline-candidate.md",
+    "target_byte_count": 158485,
+    "target_sha256": "1bfb5cd2c92c036804a6005d5b36cdd5acc6bedc4d6bf4070ccfb7a70ce063fb",
+    "approval_input": false,
+    "maximum_byte_count": 4096,
+    "byte_count": 2287,
+    "sha256": "728013566b8d879373ad2addaf7f619f516c3eaf3e7478ce361b82a3aedf5274"
+  },
   "approval_state": {
     "active": false,
     "generation": 0,
@@ -103,6 +115,7 @@
     "docs/plans/orchestrator-implementation-plan.md",
     "docs/backlog/orchestrator-task-list.md",
     "docs/specs/acceptance-and-gates.md",
+    "docs/specs/local-ai-runtime-0.2-baseline-candidate.md",
     "docs/specs/local-ai-runtime-0.2-v3.21-baseline-candidate.md",
     "docs/specs/local-ai-runtime-0.2-normative-package.json",
     "docs/plans/local-ai-runtime-0.2-work-items.json",
@@ -225,6 +238,18 @@
         "approved_root_files",
         "approved_subpackages",
         "required_source_owners"
+      ]
+    },
+    {
+      "path": "docs/specs/local-ai-runtime-0.2-baseline-candidate.md",
+      "required_strings": [
+        "role=non_normative_navigation",
+        "approval_input=false",
+        "local-ai-runtime-0.2-v3.21",
+        "docs/specs/local-ai-runtime-0.2-v3.21-baseline-candidate.md",
+        "1bfb5cd2c92c036804a6005d5b36cdd5acc6bedc4d6bf4070ccfb7a70ce063fb",
+        "BaselineManifest.v1",
+        "close_baseline_normative_package_first"
       ]
     },
     {

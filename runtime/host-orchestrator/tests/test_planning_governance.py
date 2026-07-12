@@ -16,6 +16,12 @@ BASELINE_PATH = (
     / "specs"
     / "local-ai-runtime-0.2-v3.21-baseline-candidate.md"
 )
+BASELINE_ENTRY_PATH = (
+    REPO_ROOT
+    / "docs"
+    / "specs"
+    / "local-ai-runtime-0.2-baseline-candidate.md"
+)
 V320_PATH = (
     REPO_ROOT
     / "docs"
@@ -134,6 +140,138 @@ def test_baseline_bytes_match_planning_identity() -> None:
     assert hashlib.sha256(raw).hexdigest() == "1bfb5cd2c92c036804a6005d5b36cdd5acc6bedc4d6bf4070ccfb7a70ce063fb"
     assert raw.endswith(b"\n") and not raw.endswith(b"\n\n")
     assert b"\r" not in raw
+
+
+def test_stable_baseline_entry_is_non_normative_and_targets_frozen_candidate() -> None:
+    status = json.loads(STATUS_PATH.read_text(encoding="utf-8"))
+    entry = status["baseline_entry"]
+    baseline = status["baseline_candidate"]
+    raw = BASELINE_ENTRY_PATH.read_bytes()
+    rendered = raw.decode("utf-8")
+
+    assert entry == {
+        "path": "docs/specs/local-ai-runtime-0.2-baseline-candidate.md",
+        "role": "non_normative_navigation",
+        "target_baseline_id": baseline["id"],
+        "target_path": baseline["path"],
+        "target_byte_count": baseline["byte_count"],
+        "target_sha256": baseline["sha256"],
+        "approval_input": False,
+        "maximum_byte_count": 4096,
+        "byte_count": 2287,
+        "sha256": "728013566b8d879373ad2addaf7f619f516c3eaf3e7478ce361b82a3aedf5274",
+    }
+    assert len(raw) <= entry["maximum_byte_count"]
+    assert len(raw) == entry["byte_count"]
+    assert hashlib.sha256(raw).hexdigest() == entry["sha256"]
+    for marker in (
+        "role=non_normative_navigation",
+        "approval_input=false",
+        baseline["id"],
+        baseline["path"],
+        baseline["sha256"],
+        "not a narrative specification",
+        "BaselineManifest.v1",
+        "BaselineApprovalRecord",
+    ):
+        assert marker in rendered
+
+
+def test_verifier_rejects_a_baseline_entry_as_an_approval_input(tmp_path: Path) -> None:
+    def mutate(payload: dict[str, object]) -> None:
+        entry = payload["baseline_entry"]
+        assert isinstance(entry, dict)
+        entry["approval_input"] = True
+
+    status_path = _write_status(tmp_path, mutate)
+
+    completed = _run(str(VERIFIER_PATH), "--status-path", str(status_path))
+
+    assert completed.returncode == 1
+    assert "baseline_entry.approval_input must remain false" in completed.stderr
+
+
+def test_verifier_rejects_a_baseline_entry_with_a_drifted_target_hash(tmp_path: Path) -> None:
+    def mutate(payload: dict[str, object]) -> None:
+        entry = payload["baseline_entry"]
+        assert isinstance(entry, dict)
+        entry["target_sha256"] = "0" * 64
+
+    status_path = _write_status(tmp_path, mutate)
+
+    completed = _run(str(VERIFIER_PATH), "--status-path", str(status_path))
+
+    assert completed.returncode == 1
+    assert "baseline_entry.target_sha256 must match baseline_candidate.sha256" in completed.stderr
+
+
+def test_verifier_rejects_an_oversized_baseline_entry(tmp_path: Path) -> None:
+    verify_entry = runpy.run_path(str(VERIFIER_PATH))["_verify_baseline_entry"]
+    status = json.loads(STATUS_PATH.read_text(encoding="utf-8"))
+    entry = status["baseline_entry"]
+    entry = dict(entry)
+    target = tmp_path / entry["path"]
+    target.parent.mkdir(parents=True)
+    oversized = b"x" * entry["maximum_byte_count"] + b"\n"
+    target.write_bytes(oversized)
+    entry["byte_count"] = len(oversized)
+    entry["sha256"] = hashlib.sha256(oversized).hexdigest()
+    failures: list[str] = []
+
+    verify_entry(tmp_path, entry, status["baseline_candidate"], failures)
+
+    assert "baseline entry exceeds its maximum_byte_count" in failures
+
+
+def test_verifier_rejects_baseline_entry_byte_drift(tmp_path: Path) -> None:
+    def mutate(payload: dict[str, object]) -> None:
+        entry = payload["baseline_entry"]
+        assert isinstance(entry, dict)
+        entry["sha256"] = "0" * 64
+
+    status_path = _write_status(tmp_path, mutate)
+
+    completed = _run(str(VERIFIER_PATH), "--status-path", str(status_path))
+
+    assert completed.returncode == 1
+    assert "baseline entry SHA-256 mismatch" in completed.stderr
+
+
+def test_baseline_entry_is_excluded_from_normative_inventory() -> None:
+    namespace = runpy.run_path(str(VERIFIER_PATH))
+    verify_exclusion = namespace["_verify_baseline_entry_inventory_exclusion"]
+    status = json.loads(STATUS_PATH.read_text(encoding="utf-8"))
+    inventory = json.loads(INVENTORY_PATH.read_text(encoding="utf-8"))
+    entry = status["baseline_entry"]
+    failures: list[str] = []
+
+    verify_exclusion(entry, inventory, failures)
+    assert failures == []
+
+    inventory["required_artifacts"][0]["path"] = entry["path"]
+    verify_exclusion(entry, inventory, failures)
+    assert any("must not be a normative artifact" in failure for failure in failures)
+
+    inventory = json.loads(INVENTORY_PATH.read_text(encoding="utf-8"))
+    inventory["candidate_source"]["path"] = entry["path"]
+    failures = []
+    verify_exclusion(entry, inventory, failures)
+    assert "baseline entry must not be the inventory candidate source" in failures
+
+
+def test_selector_policy_requires_the_stable_baseline_entry() -> None:
+    policy = json.loads(POLICY_PATH.read_text(encoding="utf-8"))
+
+    assert policy["required_entrypoints"] == [
+        "docs/architecture/planning-status.json",
+        "docs/specs/local-ai-runtime-0.2-baseline-candidate.md",
+        "docs/specs/local-ai-runtime-0.2-v3.21-baseline-candidate.md",
+        "docs/specs/local-ai-runtime-0.2-normative-package.json",
+        "docs/plans/local-ai-runtime-0.2-work-items.json",
+        "scripts/verify-planning-status.py",
+        "scripts/select-next-work.py",
+        "scripts/governance/preflight.ps1",
+    ]
 
 
 def test_high_risk_contracts_are_projected_into_execution_plans() -> None:

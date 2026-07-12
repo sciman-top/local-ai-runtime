@@ -18,6 +18,7 @@
 
 当前入口：
 
+- [20260712 Baseline Candidate Entry Guard](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260712-local-ai-runtime-baseline-entry-guard.md) - 无版本稳定入口绑定冻结 v3.21 身份；非规范、非批准输入，verifier 对目标映射、长度和防漂移标记 fail closed。
 - [20260712 Local AI Runtime v3.21 Candidate Rebaseline](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260712-local-ai-runtime-v3.21-candidate-rebaseline.md) - 当前候选规划真值；`baseline_candidate`、14 个 normative artifact missing、58 项 v2 机器图/33 个 P1 编码切片、关闭的九子包 source layout、selector=`close_baseline_normative_package_first`、task=`LAR-P0A-001`
 - [20260712 Local AI Runtime v3.20 Candidate Rebaseline](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260712-local-ai-runtime-v3.20-candidate-rebaseline.md) - 冻结 v3.20 byte/hash 与 superseded candidate 证据；不再是 next-work truth
 - [20260712 Local AI Runtime v3.19 Candidate Planning Rebaseline](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260712-local-ai-runtime-v3.19-candidate-rebaseline.md) - 历史候选投影与精确 v3.19 byte/hash 证据；不再是 next-work truth

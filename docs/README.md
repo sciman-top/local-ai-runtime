@@ -8,12 +8,15 @@
 
 1. 仓库运行事实和测试：说明当前真正存在什么。
 2. [planning-status.json](D:/CODE/local-ai-dev-orchestrator/docs/architecture/planning-status.json)：当前阶段、批准状态、队列和工作项。
-3. [v3.21 baseline candidate](D:/CODE/local-ai-dev-orchestrator/docs/specs/local-ai-runtime-0.2-v3.21-baseline-candidate.md)：目标产品与实现语义。
-4. [normative package inventory](D:/CODE/local-ai-dev-orchestrator/docs/specs/local-ai-runtime-0.2-normative-package.json)：规范闭包状态。
-5. [machine work items](D:/CODE/local-ai-dev-orchestrator/docs/plans/local-ai-runtime-0.2-work-items.json)：v2 执行图，机械约束 package-root/九子包 source layout，共 58 项；P1A-P1F 有 33 个单次 AI 编码切片，每次只领取 selector 返回的一项。
-6. PRD、architecture、roadmap、plan、backlog 和 acceptance：面向不同职责的投影。
+3. [baseline candidate entry](D:/CODE/local-ai-dev-orchestrator/docs/specs/local-ai-runtime-0.2-baseline-candidate.md)：受 verifier 约束的稳定导航页，不是规范正文、`BaselineManifest` 输入或批准证据。
+4. [v3.21 baseline candidate](D:/CODE/local-ai-dev-orchestrator/docs/specs/local-ai-runtime-0.2-v3.21-baseline-candidate.md)：唯一冻结的目标产品与实现语义。
+5. [normative package inventory](D:/CODE/local-ai-dev-orchestrator/docs/specs/local-ai-runtime-0.2-normative-package.json)：规范闭包状态。
+6. [machine work items](D:/CODE/local-ai-dev-orchestrator/docs/plans/local-ai-runtime-0.2-work-items.json)：v2 执行图，机械约束 package-root/九子包 source layout，共 58 项；P1A-P1F 有 33 个单次 AI 编码切片，每次只领取 selector 返回的一项。
+7. PRD、architecture、roadmap、plan、backlog 和 acceptance：面向不同职责的投影。
 
 v3.21 正文是自包含候选，不依赖 v3.14-v3.20 补语义。旧版本只进入版本谱系和评审证据，不能成为实现时的隐式要求；v3.19 和冻结 v3.20 文件保留为精确 superseded archives。本文已声明但尚未物化的规范 artifact 各自拥有独立 ID/version；首次落盘关闭 inventory 缺口，不允许原地改写正文或已 present artifact。
+
+无版本 [baseline candidate entry](D:/CODE/local-ai-dev-orchestrator/docs/specs/local-ai-runtime-0.2-baseline-candidate.md) 只提供稳定发现路径。它由 `planning-status.json` 的 `baseline_entry` 绑定到 v3.21 的 ID、路径、精确字节和 SHA-256，且 `approval_input=false`；它不能复制、替代或修订冻结正文。
 
 ## 当前权威文档
 

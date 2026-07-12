@@ -116,6 +116,7 @@
   ],
   "required_entrypoints": [
     "docs/architecture/planning-status.json",
+    "docs/specs/local-ai-runtime-0.2-baseline-candidate.md",
     "docs/specs/local-ai-runtime-0.2-v3.21-baseline-candidate.md",
     "docs/specs/local-ai-runtime-0.2-normative-package.json",
     "docs/plans/local-ai-runtime-0.2-work-items.json",
