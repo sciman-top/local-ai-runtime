@@ -26,7 +26,7 @@
 
 批准前禁止创建目标包；P0C Legacy Ownership Guard 绿色前禁止目标 runtime claim repo。
 
-目标源码的首级子包边界固定为 `contracts/kernel/qualification/storage/execution/recovery/git_local/operations/compat`。Artifact/evidence 持久化归 `storage`，Batch/doctor 等命令编排归 `operations`；不得在实现期增生平行的 `evidence`、`commands` 或其他未批准首级子包。
+目标源码的首级子包边界固定为 `contracts/kernel/qualification/storage/execution/recovery/git_local/operations/compat`。结构化机器约束固定为 `approved_root_files=["__init__.py","__main__.py"]`、`approved_subpackages=["contracts","kernel","qualification","storage","execution","recovery","git_local","operations","compat"]` 和 bootstrap/marker 到首个任务的一对一 `required_source_owners`。`__main__.py` 仅作为 `python -m local_ai_runtime contracts verify` 的薄转发层。Artifact/evidence 持久化归 `storage`，安装、激活、CLI、Batch、doctor、scheduler、managed Native 和 evaluation 编排归 `operations`；不得在包根新增其他功能模块，也不得增生平行的 `evidence`、`commands` 或其他未批准首级子包。
 
 ## 3. 逻辑架构
 
@@ -59,6 +59,7 @@ flowchart LR
 - `execution`：process env、named object、Job、marker、pipe、journal、gate。
 - `recovery`：takeover、adoption、continuation、reconcile、cleanup。
 - `git_local`：Git audit、index/object/commit/ref/finalize/remove。
+- `operations`：install/activation、CLI、Batch/doctor、scheduler、managed Native、OperatorAction 和 evaluation 的应用编排；通过批准接口调用其他包，不下沉重复机制。
 - `compat`：ownership wire 和最终只读 legacy projection。
 
 新包不得 import、调用或双写 `host_orchestrator`。共享行为必须通过批准的 wire schema 和 cross-conformance fixture 实现。

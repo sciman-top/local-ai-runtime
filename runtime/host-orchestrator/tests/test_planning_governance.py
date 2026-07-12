@@ -33,6 +33,12 @@ IMPLEMENTATION_PLAN_PATH = (
     REPO_ROOT / "docs" / "plans" / "orchestrator-implementation-plan.md"
 )
 ACCEPTANCE_PATH = REPO_ROOT / "docs" / "specs" / "acceptance-and-gates.md"
+PRD_PATH = REPO_ROOT / "docs" / "product" / "orchestrator-prd.md"
+ARCHITECTURE_PATH = (
+    REPO_ROOT / "docs" / "architecture" / "orchestrator-target-architecture.md"
+)
+ROADMAP_PATH = REPO_ROOT / "docs" / "roadmap" / "orchestrator-roadmap.md"
+BACKLOG_PATH = REPO_ROOT / "docs" / "backlog" / "orchestrator-task-list.md"
 HIGH_RISK_PROJECTION_TOKENS = frozenset(
     {
         "ProcessHandlePolicy",
@@ -52,6 +58,22 @@ HIGH_RISK_PROJECTION_TOKENS = frozenset(
 HIGH_RISK_PROJECTION_PATHS = {
     "docs/plans/local-ai-runtime-0.2-work-items.json": WORK_ITEMS_PATH,
     "docs/plans/orchestrator-implementation-plan.md": IMPLEMENTATION_PLAN_PATH,
+    "docs/specs/acceptance-and-gates.md": ACCEPTANCE_PATH,
+}
+SOURCE_LAYOUT_PROJECTION_TOKENS = frozenset(
+    {
+        "approved_root_files",
+        "approved_subpackages",
+        "required_source_owners",
+    }
+)
+SOURCE_LAYOUT_PROJECTION_PATHS = {
+    "docs/product/orchestrator-prd.md": PRD_PATH,
+    "docs/architecture/orchestrator-target-architecture.md": ARCHITECTURE_PATH,
+    "docs/roadmap/orchestrator-roadmap.md": ROADMAP_PATH,
+    "docs/plans/orchestrator-implementation-plan.md": IMPLEMENTATION_PLAN_PATH,
+    "docs/plans/local-ai-runtime-0.2-work-items.json": WORK_ITEMS_PATH,
+    "docs/backlog/orchestrator-task-list.md": BACKLOG_PATH,
     "docs/specs/acceptance-and-gates.md": ACCEPTANCE_PATH,
 }
 
@@ -138,6 +160,64 @@ def test_high_risk_contracts_are_projected_into_execution_plans() -> None:
         )
 
 
+def test_source_layout_contract_is_projected_into_all_execution_surfaces() -> None:
+    status = json.loads(STATUS_PATH.read_text(encoding="utf-8"))
+    doc_contracts = {
+        item["path"]: set(item["required_strings"])
+        for item in status["doc_contracts"]
+    }
+
+    for relative_path, path in SOURCE_LAYOUT_PROJECTION_PATHS.items():
+        missing_requirements = SOURCE_LAYOUT_PROJECTION_TOKENS - doc_contracts.get(
+            relative_path, set()
+        )
+        assert not missing_requirements, (
+            f"{relative_path} doc contract omits: {sorted(missing_requirements)}"
+        )
+
+        rendered = path.read_text(encoding="utf-8")
+        missing_projection = {
+            token for token in SOURCE_LAYOUT_PROJECTION_TOKENS if token not in rendered
+        }
+        assert not missing_projection, (
+            f"{relative_path} content omits: {sorted(missing_projection)}"
+        )
+
+
+def test_work_item_graph_declares_closed_runtime_source_layout() -> None:
+    payload = json.loads(WORK_ITEMS_PATH.read_text(encoding="utf-8"))
+
+    assert payload["schema_version"] == "local_ai_runtime_work_items.v2"
+    assert payload["runtime_source_layout"] == {
+        "source_root": "runtime/local-ai-runtime/src/local_ai_runtime/",
+        "approved_root_files": ["__init__.py", "__main__.py"],
+        "approved_subpackages": [
+            "contracts",
+            "kernel",
+            "qualification",
+            "storage",
+            "execution",
+            "recovery",
+            "git_local",
+            "operations",
+            "compat",
+        ],
+        "required_source_owners": {
+            "__init__.py": "LAR-P0D-001",
+            "__main__.py": "LAR-P0D-001",
+            "contracts/__init__.py": "LAR-P1A-001",
+            "kernel/__init__.py": "LAR-P1A-003",
+            "storage/__init__.py": "LAR-P1B-001",
+            "operations/__init__.py": "LAR-P1C-001",
+            "qualification/__init__.py": "LAR-P1C-002",
+            "execution/__init__.py": "LAR-P1D-001",
+            "recovery/__init__.py": "LAR-P1D-005",
+            "git_local/__init__.py": "LAR-P1E-001",
+            "compat/__init__.py": "LAR-P1F-006",
+        },
+    }
+
+
 def test_work_item_graph_rejects_unapproved_runtime_source_package() -> None:
     verify_work_items = runpy.run_path(str(VERIFIER_PATH))["_verify_work_items"]
     status = json.loads(STATUS_PATH.read_text(encoding="utf-8"))
@@ -159,6 +239,104 @@ def test_work_item_graph_rejects_unapproved_runtime_source_package() -> None:
     )
 
     assert "LAR-P1E-005 uses unapproved runtime source package: evidence" in failures
+
+
+def test_work_item_graph_rejects_unapproved_runtime_source_root_module() -> None:
+    verify_work_items = runpy.run_path(str(VERIFIER_PATH))["_verify_work_items"]
+    status = json.loads(STATUS_PATH.read_text(encoding="utf-8"))
+    work_items = json.loads(WORK_ITEMS_PATH.read_text(encoding="utf-8"))
+    evidence_task = next(
+        item for item in work_items["work_items"] if item["task_id"] == "LAR-P1E-005"
+    )
+    evidence_task["scope"]["primary_files"][0] = (
+        "runtime/local-ai-runtime/src/local_ai_runtime/evidence.py"
+    )
+    failures: list[str] = []
+
+    verify_work_items(
+        work_items,
+        status["baseline_candidate"],
+        status["current_active_queue"],
+        status["current_work_item"],
+        failures,
+    )
+
+    assert "LAR-P1E-005 uses unapproved runtime source root file: evidence.py" in failures
+
+
+def test_work_item_graph_rejects_duplicate_runtime_source_owner() -> None:
+    verify_work_items = runpy.run_path(str(VERIFIER_PATH))["_verify_work_items"]
+    status = json.loads(STATUS_PATH.read_text(encoding="utf-8"))
+    work_items = json.loads(WORK_ITEMS_PATH.read_text(encoding="utf-8"))
+    contracts_task = next(
+        item for item in work_items["work_items"] if item["task_id"] == "LAR-P1A-002"
+    )
+    contracts_task["scope"]["primary_files"].append(
+        "runtime/local-ai-runtime/src/local_ai_runtime/contracts/__init__.py"
+    )
+    failures: list[str] = []
+
+    verify_work_items(
+        work_items,
+        status["baseline_candidate"],
+        status["current_active_queue"],
+        status["current_work_item"],
+        failures,
+    )
+
+    assert any(
+        "runtime source path must have exactly one owner" in failure
+        and "contracts/__init__.py" in failure
+        for failure in failures
+    )
+
+
+def test_runtime_source_tree_rejects_unapproved_root_module(tmp_path: Path) -> None:
+    verify_source_tree = runpy.run_path(str(VERIFIER_PATH))[
+        "_verify_runtime_source_tree"
+    ]
+    source_root = (
+        tmp_path / "runtime" / "local-ai-runtime" / "src" / "local_ai_runtime"
+    )
+    source_root.mkdir(parents=True)
+    (source_root / "__init__.py").write_text("", encoding="utf-8")
+    (source_root / "evidence.py").write_text("", encoding="utf-8")
+    failures: list[str] = []
+
+    verify_source_tree(
+        tmp_path,
+        {
+            "source_root": "runtime/local-ai-runtime/src/local_ai_runtime/",
+            "approved_root_files": ["__init__.py", "__main__.py"],
+            "approved_subpackages": [
+                "contracts",
+                "kernel",
+                "qualification",
+                "storage",
+                "execution",
+                "recovery",
+                "git_local",
+                "operations",
+                "compat",
+            ],
+            "required_source_owners": {
+                "__init__.py": "LAR-P0D-001",
+                "__main__.py": "LAR-P0D-001",
+                "contracts/__init__.py": "LAR-P1A-001",
+                "kernel/__init__.py": "LAR-P1A-003",
+                "storage/__init__.py": "LAR-P1B-001",
+                "operations/__init__.py": "LAR-P1C-001",
+                "qualification/__init__.py": "LAR-P1C-002",
+                "execution/__init__.py": "LAR-P1D-001",
+                "recovery/__init__.py": "LAR-P1D-005",
+                "git_local/__init__.py": "LAR-P1E-001",
+                "compat/__init__.py": "LAR-P1F-006",
+            },
+        },
+        failures,
+    )
+
+    assert "runtime source tree contains unapproved root file: evidence.py" in failures
 
 
 def test_work_item_graph_rejects_malformed_machine_fields() -> None:

@@ -53,6 +53,8 @@ Batch 只接受四字段 `BatchSubmission`：repo、template、closed parameters
 
 可信 controller 负责 canonicalization、qualification、Authorization、state/guard、Job、fencing、journal、artifact、Git object、evidence、backup、scheduler 和 operator action。模型输出永远不是磁盘/Git事实真源。
 
+目标源码布局是关闭集合：`approved_root_files=["__init__.py","__main__.py"]`；`approved_subpackages=["contracts","kernel","qualification","storage","execution","recovery","git_local","operations","compat"]`；`required_source_owners` 把两个 bootstrap 文件和九个子包 marker 各绑定到唯一任务。`__main__.py` 仅转发稳定 contracts-verifier CLI；包根不得新增 installer、activation、CLI、evidence、commands 或其他功能模块。安装、激活、CLI、Batch、doctor、scheduler、managed Native 和 evaluation 的应用编排统一归 `operations`，证据/Artifact 持久化归 `storage`。
+
 ### 4.4 Legacy compatibility
 
 Hermes、AgentBridge、现有 `host-orchestrator`、旧 DB 和历史 evidence 先受 ownership guard 保护，再逐仓 cutover。最终只保留只读 compat reader、历史 evidence 和 task refs；不双写数据库。
@@ -151,7 +153,7 @@ Batch 0.2 禁止多 writer、subagent、Approval、SDK、多 Provider、动态 f
 
 ## 9. 非功能需求
 
-- Python 3.11+ 模块化单体，offline、frozen、可重现 build/test。
+- Python 3.11.x 模块化单体；具体 patch、解释器绝对路径、版本、file identity 和 SHA-256 由 `RuntimeToolchainManifest` 锁定，offline、frozen、可重现 build/test。
 - Windows NTFS crash behavior 必须通过 no-replace、atomic replace、FlushFileBuffers 和 power-loss probes 证明。
 - SQLite `DELETE + FULL + short transaction`。
 - 单 writer capacity=1，scheduler 每五分钟最多 drain 一项。

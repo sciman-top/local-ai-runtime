@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import stat
 import subprocess
 import sys
 import unicodedata
@@ -46,20 +47,33 @@ EXPECTED_REVIEW_MISSING_ARTIFACT_SETS = [
     ["P0A-REVIEW"],
 ]
 RUNTIME_SOURCE_PREFIX = "runtime/local-ai-runtime/src/local_ai_runtime/"
-APPROVED_RUNTIME_SOURCE_PACKAGES = frozenset(
-    {
-        "compat",
-        "contracts",
-        "execution",
-        "git_local",
-        "kernel",
-        "operations",
-        "qualification",
-        "recovery",
-        "storage",
-    }
+APPROVED_RUNTIME_SOURCE_ROOT_FILES = ("__init__.py", "__main__.py")
+APPROVED_RUNTIME_SOURCE_PACKAGES = (
+    "contracts",
+    "kernel",
+    "qualification",
+    "storage",
+    "execution",
+    "recovery",
+    "git_local",
+    "operations",
+    "compat",
 )
-WORK_ITEM_SCHEMA_VERSION = "local_ai_runtime_work_items.v1"
+EXPECTED_RUNTIME_SOURCE_OWNERS = {
+    "__init__.py": "LAR-P0D-001",
+    "__main__.py": "LAR-P0D-001",
+    "contracts/__init__.py": "LAR-P1A-001",
+    "kernel/__init__.py": "LAR-P1A-003",
+    "storage/__init__.py": "LAR-P1B-001",
+    "operations/__init__.py": "LAR-P1C-001",
+    "qualification/__init__.py": "LAR-P1C-002",
+    "execution/__init__.py": "LAR-P1D-001",
+    "recovery/__init__.py": "LAR-P1D-005",
+    "git_local/__init__.py": "LAR-P1E-001",
+    "compat/__init__.py": "LAR-P1F-006",
+}
+IGNORED_RUNTIME_SOURCE_TREE_ENTRIES = frozenset({"__pycache__"})
+WORK_ITEM_SCHEMA_VERSION = "local_ai_runtime_work_items.v2"
 EXPECTED_WORK_ITEM_STATUSES = [
     "ready",
     "pending",
@@ -179,6 +193,11 @@ def verify(*, repo_root: Path, status_path: Path) -> dict[str, object]:
             baseline,
             queue,
             current_work,
+            failures,
+        )
+        _verify_runtime_source_tree(
+            root,
+            work_items_payload.get("runtime_source_layout"),
             failures,
         )
         if inventory:
@@ -738,6 +757,7 @@ def _verify_work_items(
             "status_catalog",
             "global_constraints",
             "verification_profiles",
+            "runtime_source_layout",
             "work_items",
         ],
         "work-item plan",
@@ -788,6 +808,42 @@ def _verify_work_items(
                     "work-item verification profile must be a unique non-empty "
                     f"string array: {profile_name}"
                 )
+    runtime_source_layout = payload.get("runtime_source_layout")
+    if not isinstance(runtime_source_layout, dict):
+        failures.append("work-item runtime_source_layout must be an object")
+    else:
+        expected_layout_keys = {
+            "source_root",
+            "approved_root_files",
+            "approved_subpackages",
+            "required_source_owners",
+        }
+        if set(runtime_source_layout) != expected_layout_keys:
+            failures.append(
+                "work-item runtime_source_layout must contain exactly source_root, "
+                "approved_root_files, approved_subpackages and required_source_owners"
+            )
+        if runtime_source_layout.get("source_root") != RUNTIME_SOURCE_PREFIX:
+            failures.append("work-item runtime source_root must match the approved root")
+        if runtime_source_layout.get("approved_root_files") != list(
+            APPROVED_RUNTIME_SOURCE_ROOT_FILES
+        ):
+            failures.append(
+                "work-item approved_root_files must contain only __init__.py and __main__.py"
+            )
+        if runtime_source_layout.get("approved_subpackages") != list(
+            APPROVED_RUNTIME_SOURCE_PACKAGES
+        ):
+            failures.append(
+                "work-item approved_subpackages must match the frozen nine-package order"
+            )
+        if (
+            runtime_source_layout.get("required_source_owners")
+            != EXPECTED_RUNTIME_SOURCE_OWNERS
+        ):
+            failures.append(
+                "work-item required_source_owners must match the bootstrap/initializer ownership map"
+            )
     items_value = payload.get("work_items")
     if not isinstance(items_value, list) or not items_value:
         failures.append("work-item plan work_items must be a non-empty array")
@@ -917,6 +973,7 @@ def _verify_work_items(
                     )
 
     position = {task_id: index for index, task_id in enumerate(order)}
+    runtime_source_path_owners: dict[str, list[str]] = {}
     for task_id, item in items.items():
         dependencies = _work_item_list(item, "depends_on")
         for dependency in dependencies:
@@ -988,6 +1045,8 @@ def _verify_work_items(
             "pinned Python 3.11",
             "contracts/kernel/qualification/storage/execution/recovery/"
             "git_local/operations/compat modules",
+            "approved_root_files",
+            "approved_subpackages",
         ],
     }
     for task_id, tokens in required_task_tokens.items():
@@ -1042,13 +1101,33 @@ def _verify_work_items(
             if not isinstance(path, str) or not path.startswith(RUNTIME_SOURCE_PREFIX):
                 continue
             relative_path = path.removeprefix(RUNTIME_SOURCE_PREFIX)
+            runtime_source_path_owners.setdefault(relative_path, []).append(task_id)
             if "/" not in relative_path:
+                if relative_path not in APPROVED_RUNTIME_SOURCE_ROOT_FILES:
+                    failures.append(
+                        f"{task_id} uses unapproved runtime source root file: "
+                        f"{relative_path}"
+                    )
                 continue
             source_package = relative_path.split("/", 1)[0]
             if source_package not in APPROVED_RUNTIME_SOURCE_PACKAGES:
                 failures.append(
                     f"{task_id} uses unapproved runtime source package: {source_package}"
                 )
+
+    for relative_path, owners in runtime_source_path_owners.items():
+        if len(owners) != 1:
+            failures.append(
+                "runtime source path must have exactly one owner: "
+                f"{relative_path}: {owners}"
+            )
+    for relative_path, expected_owner in EXPECTED_RUNTIME_SOURCE_OWNERS.items():
+        actual_owners = runtime_source_path_owners.get(relative_path, [])
+        if actual_owners != [expected_owner]:
+            failures.append(
+                "runtime required source owner mismatch: "
+                f"{relative_path}: expected={expected_owner}, actual={actual_owners}"
+            )
 
     ready = [task_id for task_id, item in items.items() if item.get("status") == "ready"]
     current_id = current_work.get("task_id")
@@ -1380,6 +1459,119 @@ def _verify_authoritative_docs(
         for token in required:
             if not isinstance(token, str) or token not in text:
                 failures.append(f"doc contract missing required string: {relative}:{token}")
+
+
+def _verify_runtime_source_tree(
+    root: Path,
+    layout: Any,
+    failures: list[str],
+) -> None:
+    if not isinstance(layout, dict):
+        return
+    source_root_value = layout.get("source_root")
+    if not isinstance(source_root_value, str):
+        return
+    try:
+        source_root = _resolve_repo_path(
+            root,
+            source_root_value.rstrip("/"),
+            "runtime source root",
+        )
+    except ValueError as exc:
+        failures.append(str(exc))
+        return
+    if not source_root.exists():
+        return
+    if not source_root.is_dir():
+        failures.append("runtime source root must be a directory")
+        return
+
+    root_files = layout.get("approved_root_files")
+    subpackages = layout.get("approved_subpackages")
+    if not isinstance(root_files, list) or not isinstance(subpackages, list):
+        return
+    approved_root_files = set(root_files)
+    approved_subpackages = set(subpackages)
+
+    for child in sorted(source_root.iterdir(), key=lambda path: path.name):
+        if child.name in IGNORED_RUNTIME_SOURCE_TREE_ENTRIES:
+            continue
+        try:
+            child_stat = child.lstat()
+        except OSError as exc:
+            failures.append(
+                f"runtime source tree entry is unreadable: {child.name}: {exc}"
+            )
+            continue
+        reparse_flag = getattr(stat, "FILE_ATTRIBUTE_REPARSE_POINT", 0)
+        file_attributes = getattr(child_stat, "st_file_attributes", 0)
+        if child.is_symlink() or bool(file_attributes & reparse_flag):
+            failures.append(
+                f"runtime source tree contains symlink/reparse entry: {child.name}"
+            )
+            continue
+        if child.is_file():
+            if child.name not in approved_root_files:
+                failures.append(
+                    f"runtime source tree contains unapproved root file: {child.name}"
+                )
+            continue
+        if child.is_dir():
+            if child.name not in approved_subpackages:
+                failures.append(
+                    f"runtime source tree contains unapproved subpackage: {child.name}"
+                )
+                continue
+            _verify_runtime_source_subtree(
+                source_root,
+                child,
+                failures,
+            )
+            continue
+        failures.append(f"runtime source tree contains unsupported entry: {child.name}")
+
+
+def _verify_runtime_source_subtree(
+    source_root: Path,
+    directory: Path,
+    failures: list[str],
+) -> None:
+    pending = [directory]
+    while pending:
+        current = pending.pop()
+        try:
+            children = sorted(current.iterdir(), key=lambda path: path.name)
+        except OSError as exc:
+            relative = current.relative_to(source_root).as_posix()
+            failures.append(
+                f"runtime source tree directory is unreadable: {relative}: {exc}"
+            )
+            continue
+        for child in children:
+            if child.name in IGNORED_RUNTIME_SOURCE_TREE_ENTRIES:
+                continue
+            relative = child.relative_to(source_root).as_posix()
+            try:
+                child_stat = child.lstat()
+            except OSError as exc:
+                failures.append(
+                    f"runtime source tree entry is unreadable: {relative}: {exc}"
+                )
+                continue
+            reparse_flag = getattr(stat, "FILE_ATTRIBUTE_REPARSE_POINT", 0)
+            file_attributes = getattr(child_stat, "st_file_attributes", 0)
+            if child.is_symlink() or bool(file_attributes & reparse_flag):
+                failures.append(
+                    f"runtime source tree contains symlink/reparse entry: {relative}"
+                )
+                continue
+            if child.is_dir():
+                pending.append(child)
+                continue
+            if not child.is_file():
+                failures.append(
+                    f"runtime source tree contains unsupported entry: {relative}"
+                )
 
 
 def _work_item_list(item: dict[str, Any], field: str) -> list[Any]:

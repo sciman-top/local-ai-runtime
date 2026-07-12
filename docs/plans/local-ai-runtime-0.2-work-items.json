@@ -1,5 +1,5 @@
 {
-  "schema_version": "local_ai_runtime_work_items.v1",
+  "schema_version": "local_ai_runtime_work_items.v2",
   "plan_id": "local-ai-runtime-0.2-v3.21-implementation-work-items",
   "baseline_id": "local-ai-runtime-0.2-v3.21",
   "baseline_status": "baseline_candidate",
@@ -19,6 +19,7 @@
     "Do not create runtime/local-ai-runtime before Baseline Approval and the P0B Truth Reset.",
     "Do not claim Implementation Acceptance, Full Q0, P2 admission, live acceptance, or cutover without their durable records.",
     "Keep each implementation slice reviewable; five primary files is a target, not a mechanical failure gate.",
+    "Keep runtime source closed to approved_root_files and approved_subpackages; package-root files are bootstrap-only and all functional modules belong to approved subpackages.",
     "Preserve user changes and roll back only the current task diff."
   ],
   "verification_profiles": {
@@ -39,6 +40,37 @@
       "python scripts/select-next-work.py",
       "git diff --check"
     ]
+  },
+  "runtime_source_layout": {
+    "source_root": "runtime/local-ai-runtime/src/local_ai_runtime/",
+    "approved_root_files": [
+      "__init__.py",
+      "__main__.py"
+    ],
+    "approved_subpackages": [
+      "contracts",
+      "kernel",
+      "qualification",
+      "storage",
+      "execution",
+      "recovery",
+      "git_local",
+      "operations",
+      "compat"
+    ],
+    "required_source_owners": {
+      "__init__.py": "LAR-P0D-001",
+      "__main__.py": "LAR-P0D-001",
+      "contracts/__init__.py": "LAR-P1A-001",
+      "kernel/__init__.py": "LAR-P1A-003",
+      "storage/__init__.py": "LAR-P1B-001",
+      "operations/__init__.py": "LAR-P1C-001",
+      "qualification/__init__.py": "LAR-P1C-002",
+      "execution/__init__.py": "LAR-P1D-001",
+      "recovery/__init__.py": "LAR-P1D-005",
+      "git_local/__init__.py": "LAR-P1E-001",
+      "compat/__init__.py": "LAR-P1F-006"
+    }
   },
   "work_items": [
     {
@@ -1147,7 +1179,7 @@
       "priority": 0,
       "status": "blocked",
       "title": "Create the isolated local-ai-runtime package and acceptance harness",
-      "goal": "Create the pinned Python 3.11 modular-monolith skeleton, offline lock/build/test/lint/typecheck harness and contract CLI without importing host_orchestrator.",
+      "goal": "Create the modular-monolith skeleton with a RuntimeToolchainManifest-pinned Python 3.11.x patch, offline lock/build/test/lint/typecheck harness and contract CLI without importing host_orchestrator.",
       "depends_on": [
         "LAR-P0C-003"
       ],
@@ -1159,6 +1191,7 @@
         "in": [
           "runtime/local-ai-runtime package",
           "contracts/kernel/qualification/storage/execution/recovery/git_local/operations/compat modules",
+          "Closed source layout with approved_root_files=[__init__.py,__main__.py], the required_source_owners map and the nine approved_subpackages",
           "Offline development gates"
         ],
         "out": [
@@ -1169,13 +1202,14 @@
           "runtime/local-ai-runtime/pyproject.toml",
           "runtime/local-ai-runtime/uv.lock",
           "runtime/local-ai-runtime/src/local_ai_runtime/__init__.py",
-          "runtime/local-ai-runtime/tests/test_scaffold.py",
-          "docs/change-evidence/<date>-lar-p0d-001-scaffold.md"
+          "runtime/local-ai-runtime/src/local_ai_runtime/__main__.py",
+          "runtime/local-ai-runtime/tests/test_scaffold.py"
         ]
       },
       "acceptance": [
         "Offline build and frozen tests pass",
         "Import scan proves no host_orchestrator dependency",
+        "The package root contains only __init__.py plus a thin __main__.py contracts-verifier bootstrap, and every functional source module belongs to an approved subpackage",
         "contracts verify exposes stable JSON",
         "No executable Batch path exists yet"
       ],
@@ -1191,7 +1225,8 @@
       "rollback": "Remove only the new package skeleton and its planning/evidence references.",
       "stop_conditions": [
         "Offline dependency resolution is not reproducible",
-        "New package imports legacy implementation"
+        "New package imports legacy implementation",
+        "A planned or materialized source path falls outside the closed runtime source layout"
       ],
       "prohibited_actions": [
         "Do not copy legacy runtime code wholesale",
@@ -1227,6 +1262,7 @@
           "Persistent storage"
         ],
         "primary_files": [
+          "runtime/local-ai-runtime/src/local_ai_runtime/contracts/__init__.py",
           "runtime/local-ai-runtime/src/local_ai_runtime/contracts/canonical.py",
           "runtime/local-ai-runtime/src/local_ai_runtime/contracts/paths.py",
           "runtime/local-ai-runtime/tests/contracts/test_canonical.py",
@@ -1339,6 +1375,7 @@
           "CLI rendering"
         ],
         "primary_files": [
+          "runtime/local-ai-runtime/src/local_ai_runtime/kernel/__init__.py",
           "runtime/local-ai-runtime/src/local_ai_runtime/kernel/state_policy.py",
           "runtime/local-ai-runtime/src/local_ai_runtime/kernel/guards.py",
           "runtime/local-ai-runtime/tests/kernel/test_state_policy.py",
@@ -1452,6 +1489,7 @@
           "Backup file copying"
         ],
         "primary_files": [
+          "runtime/local-ai-runtime/src/local_ai_runtime/storage/__init__.py",
           "runtime/local-ai-runtime/src/local_ai_runtime/storage/database.py",
           "runtime/local-ai-runtime/src/local_ai_runtime/storage/migrations.py",
           "runtime/local-ai-runtime/tests/storage/test_database.py",
@@ -1733,8 +1771,9 @@
           "Provider login mutation"
         ],
         "primary_files": [
-          "runtime/local-ai-runtime/src/local_ai_runtime/installer.py",
-          "runtime/local-ai-runtime/src/local_ai_runtime/activation.py",
+          "runtime/local-ai-runtime/src/local_ai_runtime/operations/__init__.py",
+          "runtime/local-ai-runtime/src/local_ai_runtime/operations/installer.py",
+          "runtime/local-ai-runtime/src/local_ai_runtime/operations/activation.py",
           "runtime/local-ai-runtime/tests/platform/test_installation.py",
           "runtime/local-ai-runtime/tests/platform/test_activation.py"
         ]
@@ -1789,6 +1828,7 @@
           "Repo/template qualification"
         ],
         "primary_files": [
+          "runtime/local-ai-runtime/src/local_ai_runtime/qualification/__init__.py",
           "runtime/local-ai-runtime/src/local_ai_runtime/qualification/toolchain.py",
           "runtime/local-ai-runtime/src/local_ai_runtime/qualification/environment.py",
           "runtime/local-ai-runtime/tests/qualification/test_toolchain.py",
@@ -2075,6 +2115,7 @@
           "Git or artifact effects"
         ],
         "primary_files": [
+          "runtime/local-ai-runtime/src/local_ai_runtime/execution/__init__.py",
           "runtime/local-ai-runtime/src/local_ai_runtime/execution/named_objects.py",
           "runtime/local-ai-runtime/src/local_ai_runtime/execution/job.py",
           "runtime/local-ai-runtime/tests/execution/test_named_objects.py",
@@ -2315,6 +2356,7 @@
           "Interactive repair automation"
         ],
         "primary_files": [
+          "runtime/local-ai-runtime/src/local_ai_runtime/recovery/__init__.py",
           "runtime/local-ai-runtime/src/local_ai_runtime/recovery/takeover.py",
           "runtime/local-ai-runtime/src/local_ai_runtime/recovery/actions.py",
           "runtime/local-ai-runtime/tests/recovery/test_adoption.py",
@@ -2430,6 +2472,7 @@
           "Remote Git"
         ],
         "primary_files": [
+          "runtime/local-ai-runtime/src/local_ai_runtime/git_local/__init__.py",
           "runtime/local-ai-runtime/src/local_ai_runtime/git_local/identity.py",
           "runtime/local-ai-runtime/src/local_ai_runtime/git_local/audit.py",
           "runtime/local-ai-runtime/tests/git_local/test_identity.py",
@@ -2784,8 +2827,8 @@
           "Production activation or cutover"
         ],
         "primary_files": [
-          "runtime/local-ai-runtime/src/local_ai_runtime/cli.py",
-          "runtime/local-ai-runtime/src/local_ai_runtime/cli_output.py",
+          "runtime/local-ai-runtime/src/local_ai_runtime/operations/cli.py",
+          "runtime/local-ai-runtime/src/local_ai_runtime/operations/cli_output.py",
           "runtime/local-ai-runtime/tests/cli/test_command_tree.py",
           "runtime/local-ai-runtime/tests/cli/test_json_exit_contract.py"
         ]
@@ -3072,6 +3115,7 @@
           "Running live cohort or production cutover"
         ],
         "primary_files": [
+          "runtime/local-ai-runtime/src/local_ai_runtime/compat/__init__.py",
           "runtime/local-ai-runtime/src/local_ai_runtime/compat/commands.py",
           "runtime/local-ai-runtime/src/local_ai_runtime/operations/evaluation.py",
           "runtime/local-ai-runtime/tests/compat/test_commands.py",

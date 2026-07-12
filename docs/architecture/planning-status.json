@@ -138,7 +138,10 @@
       "required_strings": [
         "Unified Native + Batch",
         "baseline_candidate",
-        "minimum-operator"
+        "minimum-operator",
+        "approved_root_files",
+        "approved_subpackages",
+        "required_source_owners"
       ]
     },
     {
@@ -147,7 +150,10 @@
         "Python Policy/Evidence Kernel",
         "runtime/host-orchestrator",
         "runtime/local-ai-runtime",
-        "contracts/kernel/qualification/storage/execution/recovery/git_local/operations/compat"
+        "contracts/kernel/qualification/storage/execution/recovery/git_local/operations/compat",
+        "approved_root_files",
+        "approved_subpackages",
+        "required_source_owners"
       ]
     },
     {
@@ -155,7 +161,10 @@
       "required_strings": [
         "P0A",
         "P0B",
-        "P5"
+        "P5",
+        "approved_root_files",
+        "approved_subpackages",
+        "required_source_owners"
       ]
     },
     {
@@ -177,6 +186,9 @@
         "runtime_external_v1",
         "EvidenceProjectionAcceptance",
         "contracts/kernel/qualification/storage/execution/recovery/git_local/operations/compat",
+        "approved_root_files",
+        "approved_subpackages",
+        "required_source_owners",
         "Baseline Approval",
         "Implementation Acceptance"
       ]
@@ -196,7 +208,10 @@
         "RuntimeIntegrityKeyEnvelope",
         "runtime_external_v1",
         "EvidenceProjectionAcceptance",
-        "contracts/kernel/qualification/storage/execution/recovery/git_local/operations/compat"
+        "contracts/kernel/qualification/storage/execution/recovery/git_local/operations/compat",
+        "approved_root_files",
+        "approved_subpackages",
+        "required_source_owners"
       ]
     },
     {
@@ -206,7 +221,10 @@
         "LAR-P1A-004",
         "LAR-P1F-006",
         "LAR-P1G-001",
-        "LAR-P5-001"
+        "LAR-P5-001",
+        "approved_root_files",
+        "approved_subpackages",
+        "required_source_owners"
       ]
     },
     {
@@ -227,7 +245,10 @@
         "RuntimeIntegrityKeyEnvelope",
         "runtime_external_v1",
         "EvidenceProjectionAcceptance",
-        "contracts/kernel/qualification/storage/execution/recovery/git_local/operations/compat"
+        "contracts/kernel/qualification/storage/execution/recovery/git_local/operations/compat",
+        "approved_root_files",
+        "approved_subpackages",
+        "required_source_owners"
       ]
     }
   ],

@@ -6,6 +6,8 @@
 
 当前：`local-ai-runtime-0.2-v3.21` 为 `baseline_candidate`；队列 `LOCAL-AI-RUNTIME-0.2-BASELINE-CLOSURE`；唯一 ready 项 `LAR-P0A-001`。机器图共 58 项，其中 P1A-P1F 的 33 项是单次只领取一个的编码任务，不得按阶段整包实现。
 
+目标源码使用关闭布局：`approved_root_files=["__init__.py","__main__.py"]`；`approved_subpackages=["contracts","kernel","qualification","storage","execution","recovery","git_local","operations","compat"]`；`required_source_owners` 固定 bootstrap/marker 的唯一任务。`__main__.py` 只转发 contracts verifier；任务若计划其他包根功能模块、第十个首级子包、重复源码 owner 或缺失 marker，planning verifier 必须先阻断。
+
 状态含义：
 
 - `[ ] ready`：当前唯一允许执行。
@@ -49,7 +51,7 @@ P0C 前新 Batch claim 始终禁止。
 
 ## P0D：Package Scaffold
 
-- [!] `LAR-P0D-001` blocked：创建 `runtime/local-ai-runtime`、offline lock/build/test/contracts/ruff/pyright harness；不执行 writer，不 import legacy。
+- [!] `LAR-P0D-001` blocked：以 manifest 锁定 Python 3.11.x patch，创建 `runtime/local-ai-runtime`、包根 marker、薄 `__main__.py` contracts-verifier bootstrap 和 offline lock/build/test/contracts/ruff/pyright harness；不执行 writer，不 import legacy，不创建其他包根功能模块。
 
 ## P1：Implementation
 
@@ -62,7 +64,7 @@ P0C 前新 Batch claim 始终禁止。
 - [!] `LAR-P1B-003` blocked：lease/fence、grant/revoke、fenced action/continuation CAS repositories。
 - [!] `LAR-P1B-004` blocked：event/journal cursor、outbox/artifact/receipt metadata，DB 不领先 flush。
 - [!] `LAR-P1B-005` blocked：persistence failpoint、tamper audit 与 response-loss matrix。
-- [!] `LAR-P1C-001` blocked：content-addressed install、activation CAS 与 compatible rollback。
+- [!] `LAR-P1C-001` blocked：在 `operations/installer.py` 与 `operations/activation.py` 实现 content-addressed install、activation CAS 与 compatible rollback，并首次创建 `operations/__init__.py`。
 - [!] `LAR-P1C-002` blocked：pinned toolchain 与 immutable qualified environment binding。
 - [!] `LAR-P1C-003` blocked：repo/template qualification、global AuthState、Authorization/revoke。
 - [!] `LAR-P1C-004` blocked：untrusted overlay、effective config/tool inventory、opaque sandbox state/log。
@@ -80,7 +82,7 @@ P0C 前新 Batch claim 始终禁止。
 - [!] `LAR-P1E-004` blocked：finalize index -> detached HEAD -> task-ref 三步 CAS publication。
 - [!] `LAR-P1E-005` blocked：artifact、`runtime_external_v1` evidence、six-condition receipt 与 no-hash-cycle closeout。
 - [!] `LAR-P1E-006` blocked：safe cleanup、quiescent backup、key envelopes、anti-rollback isolated restore drill。
-- [!] `LAR-P1F-001` blocked：strict command tree、stable JSON envelope、exit/reason mapping。
+- [!] `LAR-P1F-001` blocked：在 `operations/cli.py` 与 `operations/cli_output.py` 实现 strict command tree、stable JSON envelope、exit/reason mapping；禁止回到包根创建 CLI 模块。
 - [!] `LAR-P1F-002` blocked：Batch prepare/submit/status/cancel/retry/reconcile/resolve/doctor handlers。
 - [!] `LAR-P1F-003` blocked：single-capacity recovery-first scheduler、parking/dedupe、task definition dry run。
 - [!] `LAR-P1F-004` blocked：managed Native maintenance 与 intent-before-termination emergency kill。

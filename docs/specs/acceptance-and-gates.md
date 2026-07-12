@@ -28,7 +28,7 @@ Baseline Approval 不要求 runtime code 存在。当前 `blocking_stage=baselin
 
 - approved baseline generation 仍 active；
 - Truth Reset 与 Legacy Ownership Guard 绿色；
-- `runtime/local-ai-runtime/src/local_ai_runtime/` 只包含 `contracts/kernel/qualification/storage/execution/recovery/git_local/operations/compat` 这组批准的首级子包，且不 import legacy package；
+- `runtime/local-ai-runtime/src/local_ai_runtime/` 满足 `approved_root_files=["__init__.py","__main__.py"]`、`approved_subpackages=["contracts","kernel","qualification","storage","execution","recovery","git_local","operations","compat"]` 和一对一 `required_source_owners`，批准序列为 `contracts/kernel/qualification/storage/execution/recovery/git_local/operations/compat`；`__main__.py` 只能转发 contracts verifier。任何其他包根功能模块、未批准首级子包、重复源码 owner、缺失 marker、symlink/reparse source entry 或 legacy import 都使验收失败；
 - 新包、migrations、CLI、runbooks、legacy conformance、crash matrix、key-envelope backup/restore drill 与 suspended-only production-restore state machine 完整；
 - 固定 offline build/test/contracts/ruff/pyright/planning/diff 门全部绿色；
 - 不以 repo-side simulation、legacy evidence 或 probe-only 结果替代；
@@ -117,6 +117,7 @@ git diff --check
 - activation-bound `runtime_external_v1`、`EvidenceProjectionAcceptance`、evidence root与repo/Git/worktree/attempt/controller-sensitive roots的identity/ancestry/alias隔离；
 - purpose-separated `QuarantineKeyEnvelope`/`RuntimeIntegrityKeyEnvelope`、same-SID DPAPI unwrap、`BackupRestoreEligibility`、`BackupPostActivity` marker-before-mutation、immutable `BackupRestoreIntent` 与single consumption；
 - Full/quick/daily Q0 和 reason-code catalogs。
+- source-layout contract：包根只允许 `__init__.py` 和薄 `__main__.py`，每个功能模块属于批准子包，规划清单与实际 source tree 使用同一 allowlist verifier。
 
 每个大小、时间、path、override 和 command-line limit 必须有 limit-1/limit/limit+1。
 

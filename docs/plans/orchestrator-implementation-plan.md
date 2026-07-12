@@ -22,7 +22,7 @@
 
 1. 运行 `python scripts/verify-planning-status.py`。非零先修规划，不做产品任务。
 2. 运行 `python scripts/select-next-work.py`，确认 `next_action` 和 `current_work_item.task_id`。
-3. 读取 JSON 中该项全部字段。依赖、前置条件、停止条件或授权不能证明时停止。
+3. 读取 JSON 中该项全部字段及顶层 `runtime_source_layout`。依赖、前置条件、停止条件、授权或目标源码路径不能证明时停止。
 4. 在 evidence note 先记录目标归宿、当前落点、计划修改文件、回滚和验证命令。
 5. 对 contract 任务先写 negative fixture/verifier；对实现任务先写 failing test。
 6. 只做满足 acceptance 的最小切片，不顺手实现后继 phase。
@@ -90,7 +90,7 @@ P0C 的顺序固定：
 
 ### 包与依赖
 
-目标归宿 `runtime/local-ai-runtime/src/local_ai_runtime/`，模块为 `contracts/kernel/qualification/storage/execution/recovery/git_local/operations/compat`。固定 Python 3.11.x，具体 patch version 由 `RuntimeToolchainManifest` 锁定；使用 offline build、frozen lock，且不得 import legacy package。
+目标归宿 `runtime/local-ai-runtime/src/local_ai_runtime/`，机器布局固定为 `approved_root_files=["__init__.py","__main__.py"]`、`approved_subpackages=["contracts","kernel","qualification","storage","execution","recovery","git_local","operations","compat"]` 和 bootstrap/marker 到任务的一对一 `required_source_owners`；批准首级子包序列即 `contracts/kernel/qualification/storage/execution/recovery/git_local/operations/compat`。`__main__.py` 只转发 contracts-verifier CLI，包根不承载其他功能代码；installer、activation、CLI、Batch、doctor、scheduler、managed Native 和 evaluation 全部归 `operations`，Artifact/evidence 持久化归 `storage`。固定 Python 3.11.x，具体 patch version 由 `RuntimeToolchainManifest` 锁定；使用 offline build、frozen lock，且不得 import legacy package。
 
 ### 开发顺序
 
@@ -119,7 +119,7 @@ P0C 的顺序固定：
 
 | Work item | 单一交付 | 退出证明 |
 |---|---|---|
-| `LAR-P1C-001` | immutable install、activation CAS、compatible rollback | replace/flush crash matrix 绿色 |
+| `LAR-P1C-001` | `operations` 内 immutable install、activation CAS、compatible rollback | replace/flush crash matrix 绿色，包根无功能模块 |
 | `LAR-P1C-002` | pinned toolchain 与 immutable environment binding | absolute identity/hash/offline verification |
 | `LAR-P1C-003` | repo/template qualification、AuthState、Authorization | sensitive closure 可复算、keyring-only、revoke 线性化 |
 | `LAR-P1C-004` | untrusted overlay、effective config、opaque sandbox state | tool inventory 和 sandbox boundary 绿色 |
@@ -154,7 +154,7 @@ P0C 的顺序固定：
 
 | Work item | 单一交付 | 退出证明 |
 |---|---|---|
-| `LAR-P1F-001` | stable command tree、JSON envelope、exit/reason mapping | strict parser/read-only commands 零副作用 |
+| `LAR-P1F-001` | `operations` 内 stable command tree、JSON envelope、exit/reason mapping | strict parser/read-only commands 零副作用，包根无 CLI 模块 |
 | `LAR-P1F-002` | Batch prepare/submit/status/recovery handlers | policy-first transition、permanent replay |
 | `LAR-P1F-003` | single-capacity scheduler 与 parked waits | recovery-first、外部等待释放 capacity、未安装 scheduler |
 | `LAR-P1F-004` | managed Native maintenance 与 emergency kill | normal drain 不 kill、kill intent 先于 termination |

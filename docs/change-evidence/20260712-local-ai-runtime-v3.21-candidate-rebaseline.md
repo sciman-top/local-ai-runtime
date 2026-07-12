@@ -25,6 +25,18 @@ Intentionally unchanged:
 - default runtime entrypoints, repo ownership, target-repo cutover and existing task evidence;
 - `runtime/local-ai-runtime`, which does not exist before approved task `LAR-P0D-001`.
 
+## External Review Disposition
+
+The follow-up review is accepted on the principal decision: v3.21 remains frozen, no v3.22 is created, the disposition remains **Request changes**, and the only normative-package approval class still open is the 14 missing artifacts. The twelve high-risk process/environment/evidence/restore contracts, selector structured-output checks and fixed Python 3.11.x policy remain required projections.
+
+Three implementation-planning details required correction before that statement was mechanically true:
+
+- the machine graph still planned `installer.py`, `activation.py`, `cli.py` and `cli_output.py` at the package root even though the frozen boundary permits only nine functional subpackages;
+- the architecture responsibility list named the nine-subpackage sequence but omitted the `operations` responsibility row;
+- PRD and roadmap prose still said `Python 3.11+` instead of a concrete Python 3.11.x patch pinned by `RuntimeToolchainManifest`.
+
+The correction does not alter v3.21 narrative bytes or the normative missing-artifact count. The non-normative machine graph is now `local_ai_runtime_work_items.v2`, declares a closed `runtime_source_layout`, permits only root `__init__.py` and a thin `__main__.py` contracts-verifier bootstrap, routes install/activation/CLI into `operations`, binds required bootstrap/marker paths through `required_source_owners`, and makes the planning verifier inspect planned path ownership plus any materialized source-root entries.
+
 ## Candidate And Archive Identity
 
 | Artifact | Status | Bytes | SHA-256 |
@@ -47,12 +59,12 @@ The v3.21 byte policy is UTF-8 without BOM, LF only, NFC, exactly one terminal L
 - `runtime_external_v1` evidence is runtime-managed and identity/ancestry/alias-disjoint from repo, Git, worktree, attempt and controller-sensitive roots.
 - Quarantine and runtime-integrity key envelopes are purpose-separated and DPAPI wrapped. Restore is suspended-only, single-consumption and rejected after post-backup authoritative mutation.
 - Mandatory resource protection is `accounting_kill_audit` plus a 1 GiB `EmergencyDiskReserveRecord`; `HardWriteQuotaCapability` remains an optional Full-Q0-qualified enhancement.
-- Target implementation is pinned to Python 3.11.x and exactly the approved `contracts/kernel/qualification/storage/execution/recovery/git_local/operations/compat` source subpackages. Artifact/evidence persistence maps to `storage`; Batch/doctor orchestration maps to `operations`.
+- Target implementation is pinned to a manifest-identified Python 3.11.x patch and exactly the approved `contracts/kernel/qualification/storage/execution/recovery/git_local/operations/compat` source subpackages. `approved_root_files` contains only `__init__.py` and a thin `__main__.py`; install/activation/CLI/Batch/doctor/scheduler/managed-Native/evaluation orchestration maps to `operations`, while Artifact/evidence persistence maps to `storage`.
 - Narrative ID, versioned normative artifact IDs and immutable final `BaselineManifest` are separate version layers. `package_review_head -> manifest closure review -> approval_review_head` is append-only and non-circular.
 
 ## AI Execution Projection
 
-`docs/plans/local-ai-runtime-0.2-work-items.json` contains 58 ordered work items. P1A-P1F contains 33 single-session implementation slices with phase counts `4 + 5 + 6 + 6 + 6 + 6`. Each task declares dependencies, preconditions, in/out scope, concrete primary files, acceptance checks, repo-root commands, evidence, local rollback, stop conditions, prohibited actions and one successor boundary.
+`docs/plans/local-ai-runtime-0.2-work-items.json` uses `local_ai_runtime_work_items.v2` and contains 58 ordered work items. P1A-P1F contains 33 single-session implementation slices with phase counts `4 + 5 + 6 + 6 + 6 + 6`. Each task declares dependencies, preconditions, in/out scope, concrete primary files, acceptance checks, repo-root commands, evidence, local rollback, stop conditions, prohibited actions and one successor boundary. The top-level source-layout object is the single machine-readable allowlist for package-root files and first-level subpackages.
 
 Current state is deliberately narrow:
 
@@ -66,16 +78,16 @@ Current state is deliberately narrow:
 
 The selector additionally fails closed when `LAR-P0A-013` and the exact declared final-review missing-artifact set are not paired. The verifier reports malformed nested work-item/inventory collections instead of raising an unstructured exception.
 
-The work graph verifier now fixes the schema/status set, validates phase/task-ID agreement, non-negative priority, closed verification-profile keys, unique non-empty string collections, approved source subpackages and `git diff --check` on every work item. The selector accepts a verifier subprocess only when its structured output says `status=pass` and attests the same baseline and current work-item identities; exit 0 with empty, malformed or mismatched output returns `repair_gate_first`.
+The work graph verifier now fixes the schema/status set, validates phase/task-ID agreement, non-negative priority, closed verification-profile keys, unique non-empty string collections, exact root/subpackage layout, one owner per source path, complete initializer ownership, actual materialized source-tree entries and `git diff --check` on every work item. The selector accepts a verifier subprocess only when its structured output says `status=pass` and attests the same baseline and current work-item identities; exit 0 with empty, malformed or mismatched output returns `repair_gate_first`.
 
 ## Five-Axis Review
 
 | Axis | Result |
 |---|---|
-| Correctness | Closed the doc-contract projection gap, malformed machine-field acceptance, P3/P4 missing diff hygiene and selector exit-0/non-JSON false success. |
-| Architecture | Removed planned `evidence/` and `commands/` source packages that violated the frozen module boundary; retained the nine approved subpackages only. |
+| Correctness | Closed the doc-contract projection gap, malformed machine-field acceptance, P3/P4 missing diff hygiene, selector exit-0/non-JSON false success and package-root source bypass. |
+| Architecture | Removed planned `evidence/` and `commands/` packages, moved install/activation/CLI out of the package root into `operations`, added the missing `operations` responsibility row and retained only the nine approved functional subpackages. |
 | Security | High-risk handle/environment/evidence/restore requirements are projected into work items, implementation plan, acceptance and planning contracts; verifier/selector failure remains fail closed. |
-| Readability | P1 phase-closing IDs are explicit, Python support is stated as pinned 3.11.x rather than ambiguous `3.11+`, and every task remains at five or fewer primary files. |
+| Readability | P1 phase-closing IDs are explicit, all active projections state a manifest-pinned Python 3.11.x patch, source ownership is explicit, and every task remains at five or fewer primary files. |
 | Performance | Planning verifier and selector remain bounded read-only checks; no runtime hot path, dependency, scheduler or live process changed. |
 
 ## Changed Files
@@ -106,8 +118,8 @@ All commands ran from `D:\CODE\local-ai-dev-orchestrator` on 2026-07-12.
 | JSON selector policy | `python -m json.tool docs/architecture/next-work-selection-policy.json` | 0 | valid JSON |
 | script parse | `python -m py_compile scripts/verify-planning-status.py scripts/select-next-work.py` | 0 | no syntax error |
 | Python lint | `uv run --project ./runtime/host-orchestrator ruff check scripts/verify-planning-status.py scripts/select-next-work.py runtime/host-orchestrator/tests/test_planning_governance.py` | 0 | all checks passed |
-| focused governance | `uv run --project ./runtime/host-orchestrator python -m pytest runtime/host-orchestrator/tests/test_planning_governance.py -q` | 0 | 23 passed |
-| full legacy test | `uv run --project ./runtime/host-orchestrator python -m pytest` | 0 | 181 passed |
+| focused governance | `uv run --project ./runtime/host-orchestrator python -m pytest runtime/host-orchestrator/tests/test_planning_governance.py -q` | 0 | 28 passed |
+| full legacy test | `uv run --project ./runtime/host-orchestrator python -m pytest` | 0 | 186 passed |
 | contract/invariant | `python scripts/verify-planning-status.py` | 0 | v3.21, 158485 bytes, 14 missing artifacts, 58 work items, `LAR-P0A-001` |
 | read-only selector | `python scripts/select-next-work.py` | 0 | `close_baseline_normative_package_first`, no side effects, no preflight |
 | governance preflight | `pwsh -NoProfile -NonInteractive -File scripts/governance/preflight.ps1 -DisableAutoCommit` | 0 | test/contract/selector/scripts/diff passed |
