@@ -2,16 +2,17 @@
 
 ## 1. 状态与架构原则
 
-目标规范为 `local-ai-runtime-0.2-v3.21`，当前仍是 baseline candidate。本文描述批准后的目标，不宣称组件已经实现。
+目标规范为 `local-ai-runtime-0.2-v3.22`，当前仍是 baseline candidate。本文描述批准后的目标，不宣称组件已经实现。
 
 核心原则：
 
 - 自由判断留在 Human-controlled Native；无人值守 Batch 只执行已批准、封闭、可复算的任务。
-- Python Policy/Evidence Kernel 是可信控制面，Codex writer 是不可信、一次性的受限计算进程。
-- 全局 capacity=1；writer at-most-once；controller side effects 用 fence、CAS、immutable intent/result 收口。
+- Python Policy/Evidence Kernel 是可信控制面，Codex writer 是不可信、zero-or-one execution-commit 的受限计算进程。
+- Epoch 1 是 Windows 本机、单操作者、单 SQLite authority、全局 capacity=1；controller side effects 用 authority、fence、CAS、immutable intent/result、read-back 和 reconcile 收口。
 - Git commit/ref 是唯一交付，evidence 外置；不 merge/push。
 - 当前 `runtime/host-orchestrator` 与目标 `runtime/local-ai-runtime` 之间只共享 ownership wire contract，不共享数据库或实现模块。
 - 不以“最终一致”掩盖不可解释的进程、对象、ref、worktree 或 evidence 状态。
+- 长期产品范围是受控本地开发工作流，不预建跨平台、多租户、分布式或第二 agent runtime 空壳；未实现 protocol 的能力始终 unsupported。
 
 ## 2. 当前态与目标态
 
@@ -20,7 +21,7 @@
 | 运行内核 | `runtime/host-orchestrator` | `runtime/local-ai-runtime/src/local_ai_runtime/` |
 | 状态 | `.ai/state/control-plane.db`，另有 experimental runtime_v2 | `%LOCALAPPDATA%/LocalAIRuntime/state` 独立 DB |
 | 运行证据 | legacy `.ai/runs/...` | 外置 `evidence`、journal、receipt、artifact index |
-| 所有权 | 尚无 v3.21 shared guard | versioned ownership wire + repo mutex + generation |
+| 所有权 | 尚无 v3.22 shared guard | versioned ownership wire + repo mutex + generation |
 | 执行 | legacy host-local paths | isolated Job-bound writer/gate/Git adapters |
 | 迁移 | 未开始 | guard legacy -> implement isolated -> per-repo cutover -> read-only compat |
 
@@ -31,22 +32,28 @@
 ## 3. 逻辑架构
 
 ```mermaid
-flowchart LR
+flowchart TB
     U["Operator / Scheduler"] --> CLI["Stable CLI + JSON"]
     U --> N["Managed Native Launcher"]
     CLI --> K["Python Policy/Evidence Kernel"]
+    K --> P["Runtime Composition + Execution Profile"]
     K --> Q["Qualification + Authorization"]
     K --> S["State / Guard / Storage"]
-    K --> E["Execution + Job + Recovery"]
-    K --> G["Deterministic Git Adapter"]
+    P --> C["Codex Capability Adapter"]
+    P --> E["Windows Execution + Job Adapter"]
+    P --> G["Git Capability Adapter"]
+    P --> T["Toolchain + Gate Adapter"]
     K --> V["Evidence / Artifact / Backup"]
-    E --> W["One Codex Writer"]
-    E --> T["Offline Gate Processes"]
+    C --> W["One Codex Writer"]
+    E --> W
+    T --> O["Offline Gate Processes"]
     G --> R["Registered Local Repo"]
     V --> X["External Evidence Root"]
     L["Legacy host-orchestrator"] -. "ownership wire only" .-> K
     N --> R
 ```
+
+稳定 kernel 负责 task/attempt/generation、lease/fence/CAS、qualification/Authorization、recovery、evidence、backup/migration/rollback 和 activation authority。可演进层只实现由同一 `RuntimeCompositionManifest` 绑定并共同验收的 Codex/Windows/Git/toolchain capability 与 `ExecutionProfile`。Profile 只能选择已实现能力，不能把 Provider、network、delivery、Git format 或 concurrency protocol变成配置开关。
 
 ### 3.1 模块化单体
 
@@ -68,7 +75,7 @@ flowchart LR
 
 可信：hash-pinned controller、当前 SID、OS keyring、宿主 OS 与批准的 immutable artifacts。
 
-不可信或需验证：repo 内容、project config、AGENTS/skills、Codex output、working tree、Git config、environment drift、named object、reparse/hardlink、external Native edits。
+不可信或需验证：repo 内容、project config、AGENTS/skills、Codex output、working tree、Git config、environment drift、named object、reparse/hardlink、external Native edits。平台机械限制这些输入可造成的副作用，但不声称消除 prompt injection、语义误导或错误 patch。
 
 明确不防御：已攻陷的同 SID controller、内核、pagefile、物理主机。安全结论只能说“已声明与已检测敏感信息零泄漏”。
 
@@ -108,7 +115,8 @@ Git path 保留原始 UTF-8 拼写，只验证不改写。Windows collision key 
 
 ### 6.2 主要数据聚合
 
-- Baseline/activation/toolchain/environment/profile generations。
+- Baseline/architecture epoch/capability/profile/composition/activation/toolchain/environment generations。
+- WorkDefinition、TaskFamily、RepoProfile、EffectPlan、GateGraph、EvaluationProfile 与 CapabilitySnapshot。
 - Repo/template qualification 与 `QualificationSensitiveInputSet`。
 - SubmissionFamily、BatchTask、Attempt、Authorization、Continuation、AuthorizationExecutionGrant、SafetyOnlyExecutionRecord。
 - JobIdentity、WriterLaunchRecord、StageLaunchRecord、writer marker、WriteAccountingSnapshot、EmergencyDiskReserveRecord、optional HardWriteQuotaReservation、journal segment、event chain、receipt。
@@ -151,7 +159,7 @@ launch_intent
 
 Spawn 使用 `CREATE_SUSPENDED + PROC_THREAD_ATTRIBUTE_JOB_LIST` 原子加入预建 Job。PID/creation time 持久化后才是 `spawned_suspended`；writer 使用 `WriterLaunchRecord`，gate/Git/probe/recovery helper 使用 `StageLaunchRecord`，两者都在 resume 前绑定恰好一个 execution authority 和对应 execution-commit barrier。Writer/正常 gate 使用 active-Authorization grant；可收养 controller action 的 Git/helper child process 使用绑定 parent action grant、current fenced head 与 exact StageJob 的 inherited grant；封闭 safety helper 使用 `SafetyOnlyExecutionRecord`。Revoke 与 root grant 由同一 repo-lock/`BEGIN IMMEDIATE` 顺序线性化。
 
-一旦 execution committed，该 task generation 永久禁止再启动 writer，零 tool/零 mutation 也不能证明未执行。合法重做只能由原子 resubmission 创建新 task generation。
+`writer_effect_id=stable(task_generation,resolved_writer_intent)`；`writer_launch_id=unique(writer_effect_id,attempt_id)`。同一 task generation 的 writer execution commit 为 0 或 1；同一 attempt 最多一个 launch/process identity。只有 suspended process 在 execution commit 前被证明终止时，fresh attempt 才能复用 effect ID 并创建新 launch ID。一旦 committed，该 task generation 永久禁止再启动 writer，零 tool/零 mutation 或 `resume_outcome_unknown` 都不能证明未执行；原进程仍须被 exact PID/Job 跟踪、drain、终止和 seal，无法闭合时写稳定 unresolved result，不发布 commit/ref。合法语义重做只能由原子 resubmission 创建新 task generation。
 
 同名 Job 即使零进程也不能复用。检查、关闭检查 handle、重新 CreateJobObject 全程持 attempt mutex；`ERROR_ALREADY_EXISTS` 继续 park，不能换名绕过。
 
@@ -161,7 +169,7 @@ Spawn 使用 `CREATE_SUSPENDED + PROC_THREAD_ATTRIBUTE_JOB_LIST` 原子加入预
 
 第一次 adoption 的 prior head 是 intent hash；后续指向 prior adoption hash。插入 adoption 与更新 head 在同一事务，`UNIQUE(action_id, prior_head_hash)` 防分叉。Writer 永不可 adoption。
 
-可 adoption 的 controller action 仅限结果完全确定的 worktree、object、artifact、finalize、task-ref、remove 和绑定完整 JobIdentity 的 terminate_job。正常 action 的 adoption 继承同一 root Authorization grant；`terminate_job` 继承同一 safety-only authority，不得因 Authorization 已撤销而失去终止能力。Process record 本身不可 adoption，前一 process 结果未知时只能终止或只读 reconcile，不能另起替代 process。
+可 adoption 的 controller action 仅限具有 immutable logical-effect grant、确定 postcondition verifier 和稳定 read-back 的 worktree、object、artifact、finalize、task-ref、remove 与绑定完整 JobIdentity 的 terminate_job。正常 action 的 adoption 继承同一 root Authorization grant；`terminate_job` 继承同一 safety-only authority，不得因 Authorization 已撤销而失去终止能力。Process record 本身不可 adoption；只有证明前一 child process 已终止且 postcondition 不确定性已消除后，才能启动下一确定 child step。Writer 不因缺少可重试 postcondition 而被排除出 Batch，但 committed 后绝不重跑。
 
 ## 10. Git publication
 
@@ -182,7 +190,7 @@ flowchart LR
     K --> L["Remove worktree"]
 ```
 
-Existing objects 通过 canonical type+size+payload/OID 验证，不能比较 loose zlib bytes。Claim CAS 只生成一次 UTC 秒并绑定 attempt/Git manifest；commit 固定唯一 parent、header order、identity 和 message grammar。Worktree `logs/HEAD` 必须由 create action收口，HEAD/task-ref使用 `--no-create-reflog` 并前后证明log不存在。Finalize 不使用 `reset --hard`。
+`git_hybrid_materialization_v1` 中，controller 先独立生成 canonical blob/tree/commit payload、reachability graph 和 expected OID；pinned Git `hash-object -w` 只向 attempt-local object directory materialize，再用 `cat-file` read-back type/size/payload。Existing objects 通过 canonical type+size+payload/OID 验证，不能比较 loose zlib bytes，也不能把 Git plumbing 当作唯一 oracle。Claim CAS 只生成一次 UTC 秒并绑定 attempt/Git manifest；commit 固定唯一 parent、header order、identity 和 message grammar。Worktree `logs/HEAD` 必须由 create action收口，HEAD/task-ref使用 `--no-create-reflog` 并前后证明log不存在。Finalize 不使用 `reset --hard`。
 
 ## 11. Native、Batch 与 ownership
 
@@ -211,9 +219,15 @@ Ownership record 绑定 canonical common-dir identity、owner、status、generat
 ## 13. Qualification、门与演进
 
 - Baseline Approval 只批准规范 artifact。
-- Implementation Acceptance 只批准代码和 offline evidence。
-- Full Q0 绑定真实 Codex/Git/Windows/sandbox/adapter/model/profile/toolchain。
+- `RuntimeCompositionManifest C` 绑定 architecture epoch、approved baseline、capability set、ExecutionProfile、staged installation 和 implementation/toolchain/adapter/schema/probe hashes；Implementation Acceptance 产生只绑定 C 的 `I(C)`。
+- Full Q0 在 `current.json` 仍指向旧版本时测试 staged installation，产生 `Q(C,I,staged_identity)`；它不绑定尚不存在的 activation bundle/record。
+- `RuntimeActivationBundle B(C,I,Q,expected_previous_active)` 是唯一完整组合。Activation 持专用 named mutex，先 durable intent，再锁内重读 expected head、atomic replace/read-back `current.json` 并立即 quick preflight；结果写 immutable A。
+- `SelectedRuntimeIdentity={bundle_hash,resulting_generation,current_pointer_checksum}` 只表示指针已选择；只有 terminal A 为 `activated_and_preflight_passed` 时，`ActiveRuntimeIdentity={selected_identity,activation_record_hash}` 才存在并可授权 production qualification、Authorization 和 attempt。`selected_not_admitted` 或未终结 intent 必须 suspended/recovery-first。
 - Quick preflight 每 attempt；daily canary 持续验证行为。
-- binary、model、profile、permission、feature、Git/state/canonicalization policy、adapter、probe、environment 或 schema 变化都创建新 generation，并触发 Full Q0、requalification 和 Authorization。
+- `Q0TriggerPolicy` 对 composition diff 分类：已证明 envelope 内的收窄 timeout/resource/path/gate 可走 scoped requalification + new Authorization + canary；新 adapter/provider/runtime engine、sandbox/token/permission/tool inventory、Git/network/delivery、Windows helper、canonicalization/persistence/schema/migration/probe或 unknown diff 必须 Implementation Acceptance + Full Q0。
+
+演进层级固定为：profile generation 选择已证明能力；capability generation 引入新 effect protocol；architecture epoch 改变 concurrency/trust/authority topology。Epoch 1 全局 capacity 永久为 1；跨 repo 多 writer需要 successor epoch 的 migration、resource/auth/backup/maintenance/recovery protocol 和完整 crash/conformance matrix。同 repo并发、多操作者或多信任域属于更晚独立 epoch。
+
+Portfolio selection 留在同一 Python/SQLite control plane，只消费 qualification-bound、content-addressed、closed-schema backlog data；不执行 repo 自带 selector code、脚本、表达式或 prompt。P4 在 B2/per-repo 下完成；绿色后 `LAR-P4-002` 才可独立激活 B3，P5 不依赖 B3。
 
 当前架构执行入口由 [machine work items](D:/CODE/local-ai-dev-orchestrator/docs/plans/local-ai-runtime-0.2-work-items.json) 控制；不能从本图直接跳到代码实现。

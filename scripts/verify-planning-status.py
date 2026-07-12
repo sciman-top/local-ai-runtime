@@ -14,9 +14,12 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_STATUS_PATH = ROOT / "docs" / "architecture" / "planning-status.json"
 POLICY_PATH = Path("docs/architecture/next-work-selection-policy.json")
-CURRENT_BASELINE_ID = "local-ai-runtime-0.2-v3.21"
-CURRENT_BASELINE_PATH = "docs/specs/local-ai-runtime-0.2-v3.21-baseline-candidate.md"
+CURRENT_BASELINE_ID = "local-ai-runtime-0.2-v3.22"
+CURRENT_BASELINE_PATH = "docs/specs/local-ai-runtime-0.2-v3.22-baseline-candidate.md"
 CURRENT_BASELINE_ENTRY_PATH = "docs/specs/local-ai-runtime-0.2-baseline-candidate.md"
+CURRENT_LINEAGE_PATH = (
+    "docs/specs/local-ai-runtime-0.2/normative/BaselineLineage.v1.json"
+)
 HISTORICAL_SOURCE_RECORD_PATH = (
     "docs/specs/local-ai-runtime-0.2/history/HistoricalSourceArchive.v1.json"
 )
@@ -32,7 +35,25 @@ EXPECTED_SELECTOR_ENTRYPOINTS = [
     "scripts/select-next-work.py",
     "scripts/governance/preflight.ps1",
 ]
-CURRENT_WORK_ITEM_COUNT = 59
+EXPECTED_SELECTOR_STEPS = [
+    ("planning_integrity_red", "repair_gate_first"),
+    ("baseline_review_closure_pending", "run_baseline_consistency_review"),
+    ("normative_package_incomplete", "close_baseline_normative_package_first"),
+    ("approval_eligible_without_active_approval", "record_baseline_approval_first"),
+    ("approved_truth_reset_missing", "implement_truth_reset_first"),
+    ("truth_reset_done_legacy_guard_missing", "implement_legacy_guard_first"),
+    ("legacy_guard_done_implementation_incomplete", "implement_local_ai_runtime_first"),
+    ("implementation_complete_acceptance_missing", "run_implementation_acceptance_first"),
+    ("implementation_accepted_full_q0_missing", "run_full_q0_first"),
+    ("full_q0_green_p2_pilot_missing", "run_single_p2_pilot_first"),
+    ("p2_pilot_green_p3_missing", "run_five_scheduled_self_host_first"),
+    ("p3_green_p4_missing", "run_30_task_cohort_first"),
+    ("p4_green_b3_work_item_selected", "activate_b3_portfolio_generation_first"),
+    ("p4_green_p5_missing", "cut_over_repositories_first"),
+    ("p5_complete", "operate_approved_runtime"),
+]
+EXPECTED_SELECTOR_ACTIONS = [action for _, action in EXPECTED_SELECTOR_STEPS]
+CURRENT_WORK_ITEM_COUNT = 62
 EXPECTED_ARTIFACT_IDS = [
     "P0A-SOURCE",
     "P0A-LINEAGE",
@@ -53,9 +74,9 @@ EXPECTED_ARTIFACT_IDS = [
 EXPECTED_P1_IMPLEMENTATION_TASK_IDS = {
     *(f"LAR-P1A-{index:03d}" for index in range(1, 5)),
     *(f"LAR-P1B-{index:03d}" for index in range(1, 6)),
-    *(f"LAR-P1C-{index:03d}" for index in range(1, 7)),
+    *(f"LAR-P1C-{index:03d}" for index in range(1, 8)),
     *(f"LAR-P1D-{index:03d}" for index in range(1, 7)),
-    *(f"LAR-P1E-{index:03d}" for index in range(1, 7)),
+    *(f"LAR-P1E-{index:03d}" for index in range(1, 8)),
     *(f"LAR-P1F-{index:03d}" for index in range(1, 7)),
 }
 EXPECTED_REVIEW_MISSING_ARTIFACT_SETS = [
@@ -89,7 +110,7 @@ EXPECTED_RUNTIME_SOURCE_OWNERS = {
     "compat/__init__.py": "LAR-P1F-006",
 }
 IGNORED_RUNTIME_SOURCE_TREE_ENTRIES = frozenset({"__pycache__"})
-WORK_ITEM_SCHEMA_VERSION = "local_ai_runtime_work_items.v2"
+WORK_ITEM_SCHEMA_VERSION = "local_ai_runtime_work_items.v3"
 EXPECTED_WORK_ITEM_STATUSES = [
     "ready",
     "pending",
@@ -100,6 +121,126 @@ EXPECTED_WORK_ITEM_STATUSES = [
     "superseded",
 ]
 EXPECTED_VERIFICATION_PROFILES = {"planning", "new_runtime"}
+EXPECTED_NEW_RUNTIME_VERIFICATION = [
+    "uv lock --check --offline --project runtime/local-ai-runtime",
+    "uv build --offline --project runtime/local-ai-runtime runtime/local-ai-runtime",
+    "uv run --locked --offline --project runtime/local-ai-runtime python -m pytest",
+    "uv run --locked --offline --project runtime/local-ai-runtime python -m local_ai_runtime contracts verify",
+    "uv run --locked --offline --project runtime/local-ai-runtime ruff check runtime/local-ai-runtime",
+    "uv run --locked --offline --project runtime/local-ai-runtime pyright --project runtime/local-ai-runtime",
+    "python scripts/verify-planning-status.py",
+    "python scripts/select-next-work.py",
+    "git diff --check",
+]
+EXPECTED_GRAPH_ROOTS = ["LAR-P0A-001"]
+EXPECTED_SUPERSEDED_PLAN = {
+    "plan_id": "local-ai-runtime-0.2-v3.21-implementation-work-items",
+    "terminal_status": "superseded",
+    "last_commit": "0405140eabea71037b0d3bf72bfc7d765c415b23",
+    "byte_count": 170102,
+    "sha256": "8737c9e68d95ff10f18dfd42df16ca5a2f908ff16c7021c309dacd44ed4d844b",
+}
+CURRENT_LINEAGE_BYTE_COUNT = 3134
+CURRENT_LINEAGE_SHA256 = (
+    "8bb29e0fbc4990749424e07368e5b1c0f09cf378e78d1ada38b8fe998fb97b35"
+)
+EXPECTED_CONTRACT_PROJECTIONS = [
+    {
+        "projection_id": "work_definition_task_family_v1",
+        "required_contract_tokens": ["WorkDefinition", "TaskFamily"],
+        "normative_producer_task_id": "LAR-P0A-004",
+        "implementation_task_ids": ["LAR-P1A-002", "LAR-P1F-003"],
+        "acceptance_task_ids": ["LAR-P1G-001", "LAR-P4-001"],
+    },
+    {
+        "projection_id": "effect_plan_v1",
+        "required_contract_tokens": ["EffectPlan"],
+        "normative_producer_task_id": "LAR-P0A-006",
+        "implementation_task_ids": ["LAR-P1A-002", "LAR-P1B-003", "LAR-P1D-003"],
+        "acceptance_task_ids": ["LAR-P1G-001"],
+    },
+    {
+        "projection_id": "gate_graph_v1",
+        "required_contract_tokens": ["GateGraph"],
+        "normative_producer_task_id": "LAR-P0A-010",
+        "implementation_task_ids": ["LAR-P1D-006"],
+        "acceptance_task_ids": ["LAR-P1E-007", "LAR-P1G-001"],
+    },
+    {
+        "projection_id": "three_level_evolution_v1",
+        "required_contract_tokens": [
+            "profile_generation",
+            "capability_generation",
+            "architecture_epoch",
+        ],
+        "normative_producer_task_id": "LAR-P0A-010",
+        "implementation_task_ids": ["LAR-P1A-002", "LAR-P1C-001", "LAR-P1C-006"],
+        "acceptance_task_ids": ["LAR-P1G-001", "LAR-Q0-001"],
+    },
+    {
+        "projection_id": "writer_effect_launch_identity_v1",
+        "required_contract_tokens": ["writer_effect_id", "writer_launch_id"],
+        "normative_producer_task_id": "LAR-P0A-006",
+        "implementation_task_ids": ["LAR-P1B-003", "LAR-P1D-002"],
+        "acceptance_task_ids": ["LAR-P1G-001"],
+    },
+    {
+        "projection_id": "durable_operator_action_inbox_v1",
+        "required_contract_tokens": [
+            "durable_local_status_v1",
+            "qualified_windows_toast_v1",
+        ],
+        "normative_producer_task_id": "LAR-P0A-009",
+        "implementation_task_ids": ["LAR-P1F-005"],
+        "acceptance_task_ids": ["LAR-P1G-001"],
+    },
+    {
+        "projection_id": "git_hybrid_materialization_v1",
+        "required_contract_tokens": [
+            "git_hybrid_materialization_v1",
+            "hash-object -w",
+            "cat-file",
+        ],
+        "normative_producer_task_id": "LAR-P0A-008",
+        "implementation_task_ids": ["LAR-P1E-003"],
+        "acceptance_task_ids": ["LAR-P1E-007", "LAR-P1G-001"],
+    },
+    {
+        "projection_id": "q0_trigger_policy_v1",
+        "required_contract_tokens": ["Q0TriggerPolicy"],
+        "normative_producer_task_id": "LAR-P0A-010",
+        "implementation_task_ids": ["LAR-P1C-006"],
+        "acceptance_task_ids": ["LAR-P1G-001", "LAR-Q0-001"],
+    },
+    {
+        "projection_id": "controlled_baseline_approval_v1",
+        "required_contract_tokens": [
+            "BaselineApprovalCommandPolicy",
+            "anti_replay_challenge",
+        ],
+        "normative_producer_task_id": "LAR-P0A-013",
+        "implementation_task_ids": [],
+        "acceptance_task_ids": ["LAR-GOV-001"],
+    },
+    {
+        "projection_id": "activation_admission_chain_v1",
+        "required_contract_tokens": [
+            "RuntimeCompositionManifest",
+            "SelectedRuntimeIdentity",
+            "ActiveRuntimeIdentity",
+        ],
+        "normative_producer_task_id": "LAR-P0A-010",
+        "implementation_task_ids": ["LAR-P1C-001"],
+        "acceptance_task_ids": ["LAR-P1G-001", "LAR-Q0-001"],
+    },
+    {
+        "projection_id": "portfolio_data_only_v1",
+        "required_contract_tokens": ["portfolio_data_only_v1"],
+        "normative_producer_task_id": "LAR-P0A-009",
+        "implementation_task_ids": ["LAR-P1F-003"],
+        "acceptance_task_ids": ["LAR-P4-001", "LAR-P4-002"],
+    },
+]
 
 
 def main() -> int:
@@ -131,7 +272,7 @@ def main() -> int:
 
 def verify(*, repo_root: Path, status_path: Path) -> dict[str, object]:
     root = repo_root.resolve(strict=False)
-    status = _load_json(status_path)
+    status, status_raw = _load_json_with_bytes(status_path)
     failures: list[str] = []
 
     _require_fields(
@@ -201,6 +342,7 @@ def verify(*, repo_root: Path, status_path: Path) -> dict[str, object]:
             inventory,
             failures,
         )
+        _verify_current_lineage(root, baseline, inventory, failures)
 
     work_items_payload: dict[str, Any] = {}
     work_items_ref = queue.get("source_work_items")
@@ -230,7 +372,7 @@ def verify(*, repo_root: Path, status_path: Path) -> dict[str, object]:
 
     try:
         policy_path = _resolve_repo_path(root, str(POLICY_PATH), "selector policy")
-        policy = _load_json(policy_path)
+        policy, policy_raw = _load_json_with_bytes(policy_path)
     except ValueError as exc:
         failures.append(str(exc))
         policy = {}
@@ -275,6 +417,9 @@ def verify(*, repo_root: Path, status_path: Path) -> dict[str, object]:
     return {
         "status": "pass",
         "status_path": _relative_or_absolute(root, status_path),
+        "status_sha256": hashlib.sha256(status_raw).hexdigest(),
+        "selector_policy_path": _relative_or_absolute(root, policy_path),
+        "selector_policy_sha256": hashlib.sha256(policy_raw).hexdigest(),
         "baseline_id": baseline["id"],
         "baseline_status": baseline["status"],
         "baseline_byte_count": baseline["byte_count"],
@@ -743,6 +888,203 @@ def _verify_historical_source_record(
             failures.append(f"{archive_id} historical source boundary mismatch")
 
 
+def _project_inventory_lineage(
+    entries: list[Any], failures: list[str]
+) -> dict[str, Any]:
+    canonical_predecessors: list[dict[str, Any]] = []
+    withdrawn_candidates: list[dict[str, Any]] = []
+    superseded_candidates: list[dict[str, Any]] = []
+    conflicted_archives: dict[str, list[dict[str, Any]]] = {}
+    conflicted_sources: dict[str, set[str]] = {}
+    withdrawn_drafts: list[dict[str, Any]] = []
+
+    for index, value in enumerate(entries):
+        label = f"BaselineLineage.v1.entries[{index}]"
+        entry = _as_dict(value, label, failures)
+        role = entry.get("role")
+        entry_id = entry.get("id")
+        if not isinstance(entry_id, str) or not entry_id:
+            failures.append(f"{label}.id must be a non-empty string")
+            continue
+
+        if role == "canonical_predecessor":
+            canonical_predecessors.append(
+                {"id": entry_id, "sha256": entry.get("sha256")}
+            )
+        elif role == "withdrawn_candidate":
+            withdrawn_candidates.append(
+                {"id": entry_id, "sha256": entry.get("sha256")}
+            )
+        elif role == "superseded_candidate":
+            candidate = {
+                "id": entry_id,
+                "sha256": entry.get("sha256"),
+                "byte_count": entry.get("byte_count"),
+                "path": entry.get("path"),
+            }
+            if "source_record" in entry:
+                candidate["source_record"] = entry.get("source_record")
+            candidate["archive_status"] = "present_verified_archive"
+            superseded_candidates.append(candidate)
+        elif role == "conflicted_candidate_archive":
+            shared_id = entry.get("shared_candidate_id")
+            source_record = entry.get("source_record")
+            if not isinstance(shared_id, str) or not shared_id:
+                failures.append(f"{label}.shared_candidate_id must be a non-empty string")
+                continue
+            if not isinstance(source_record, str) or not source_record:
+                failures.append(f"{label}.source_record must be a non-empty string")
+                continue
+            conflicted_archives.setdefault(shared_id, []).append(
+                {
+                    "archive_id": entry_id,
+                    "path": entry.get("path"),
+                    "byte_count": entry.get("byte_count"),
+                    "sha256": entry.get("sha256"),
+                }
+            )
+            conflicted_sources.setdefault(shared_id, set()).add(source_record)
+        elif role == "withdrawn_draft":
+            withdrawn_drafts.append({"id": entry_id, "sha256": None})
+        else:
+            failures.append(f"{label}.role is unknown: {role!r}")
+
+    if len(canonical_predecessors) != 1:
+        failures.append("BaselineLineage.v1 must contain exactly one canonical predecessor")
+
+    conflicted_candidates: list[dict[str, Any]] = []
+    for shared_id, archives in conflicted_archives.items():
+        sources = conflicted_sources[shared_id]
+        if len(sources) != 1:
+            failures.append(
+                f"conflicted candidate {shared_id} archives must share one source record"
+            )
+        conflicted_candidates.append(
+            {
+                "id": shared_id,
+                "required_distinct_archives": len(archives),
+                "verified_archives": archives,
+                "source_record": next(iter(sources), None),
+                "archive_status": "present_verified_archives",
+            }
+        )
+
+    return {
+        "canonical_predecessor": (
+            canonical_predecessors[0] if canonical_predecessors else None
+        ),
+        "withdrawn_candidates": withdrawn_candidates,
+        "superseded_candidates": superseded_candidates,
+        "conflicted_candidate_ids": conflicted_candidates,
+        "withdrawn_drafts": withdrawn_drafts,
+    }
+
+
+def _verify_current_lineage(
+    root: Path,
+    baseline: dict[str, Any],
+    inventory: dict[str, Any],
+    failures: list[str],
+) -> None:
+    artifacts = inventory.get("required_artifacts")
+    if not isinstance(artifacts, list):
+        return
+    lineage_artifact = next(
+        (
+            artifact
+            for artifact in artifacts
+            if isinstance(artifact, dict)
+            and artifact.get("artifact_id") == "P0A-LINEAGE"
+        ),
+        None,
+    )
+    expected_artifact = {
+        "artifact_version": "BaselineLineage.v1",
+        "path": CURRENT_LINEAGE_PATH,
+        "status": "present",
+        "byte_count": CURRENT_LINEAGE_BYTE_COUNT,
+        "sha256": CURRENT_LINEAGE_SHA256,
+        "producer_task_id": "LAR-P0A-REBASELINE-V322",
+    }
+    if lineage_artifact is None:
+        failures.append("inventory must contain the P0A-LINEAGE artifact")
+        return
+    for field, expected in expected_artifact.items():
+        if lineage_artifact.get(field) != expected:
+            failures.append(f"P0A-LINEAGE.{field} must equal {expected!r}")
+
+    try:
+        lineage_path = _resolve_repo_path(root, CURRENT_LINEAGE_PATH, "BaselineLineage.v1")
+        raw = lineage_path.read_bytes()
+        lineage = _loads_json_object(raw.decode("utf-8"), CURRENT_LINEAGE_PATH)
+    except (OSError, UnicodeDecodeError, ValueError) as exc:
+        failures.append(f"BaselineLineage.v1 is unreadable: {exc}")
+        return
+    _verify_normative_bytes(raw, "BaselineLineage.v1", failures)
+    if len(raw) != CURRENT_LINEAGE_BYTE_COUNT:
+        failures.append("BaselineLineage.v1 byte count mismatch")
+    if hashlib.sha256(raw).hexdigest() != CURRENT_LINEAGE_SHA256:
+        failures.append("BaselineLineage.v1 SHA-256 mismatch")
+    if lineage.get("domain") != "local-ai-runtime/BaselineLineage/v1":
+        failures.append("BaselineLineage.v1 domain mismatch")
+    if lineage.get("schema_version") != 1:
+        failures.append("BaselineLineage.v1 schema_version must be 1")
+    payload = _as_dict(lineage.get("payload"), "BaselineLineage.v1.payload", failures)
+    expected_candidate = {
+        "byte_count": baseline.get("byte_count"),
+        "id": baseline.get("id"),
+        "path": baseline.get("path"),
+        "role": "baseline_candidate",
+        "sha256": baseline.get("sha256"),
+    }
+    if payload.get("candidate") != expected_candidate:
+        failures.append("BaselineLineage.v1 candidate must bind the current v3.22 identity")
+
+    entries_value = payload.get("entries")
+    if not isinstance(entries_value, list):
+        failures.append("BaselineLineage.v1 entries must be an array")
+        return
+    entries = {
+        entry.get("id"): entry for entry in entries_value if isinstance(entry, dict)
+    }
+    expected_v321 = {
+        "byte_count": 158485,
+        "id": "local-ai-runtime-0.2-v3.21",
+        "path": "docs/specs/local-ai-runtime-0.2-v3.21-baseline-candidate.md",
+        "role": "superseded_candidate",
+        "sha256": "1bfb5cd2c92c036804a6005d5b36cdd5acc6bedc4d6bf4070ccfb7a70ce063fb",
+    }
+    if entries.get("local-ai-runtime-0.2-v3.21") != expected_v321:
+        failures.append("BaselineLineage.v1 must bind the exact superseded v3.21 identity")
+    if len(entries) != len(entries_value):
+        failures.append("BaselineLineage.v1 entry IDs must be unique")
+
+    projected_inventory_lineage = _project_inventory_lineage(entries_value, failures)
+    if inventory.get("lineage") != projected_inventory_lineage:
+        failures.append("inventory lineage must exactly project BaselineLineage.v1")
+
+    historical = _as_dict(
+        payload.get("historical_source_archive"),
+        "BaselineLineage.v1.historical_source_archive",
+        failures,
+    )
+    historical_path = historical.get("path")
+    try:
+        historical_bytes = _resolve_repo_path(
+            root, historical_path, "BaselineLineage historical source"
+        ).read_bytes()
+    except (OSError, ValueError) as exc:
+        failures.append(f"BaselineLineage historical source is unreadable: {exc}")
+    else:
+        if historical.get("byte_count") != len(historical_bytes):
+            failures.append("BaselineLineage historical source byte count mismatch")
+        if (
+            not _is_sha256(historical.get("sha256"))
+            or hashlib.sha256(historical_bytes).hexdigest() != historical.get("sha256")
+        ):
+            failures.append("BaselineLineage historical source SHA-256 mismatch")
+
+
 def _verify_inventory(
     *,
     root: Path,
@@ -778,7 +1120,7 @@ def _verify_inventory(
     if inventory.get("baseline_id") != baseline.get("id"):
         failures.append("inventory baseline_id must match planning baseline id")
     if inventory.get("package_id") != f"{CURRENT_BASELINE_ID}-normative-package":
-        failures.append("inventory package_id must match the v3.21 package identity")
+        failures.append("inventory package_id must match the v3.22 package identity")
     if inventory.get("blocking_stage") != baseline.get("blocking_stage"):
         failures.append("inventory blocking_stage must match planning baseline")
 
@@ -796,7 +1138,7 @@ def _verify_inventory(
     artifact_ids = [item.get("artifact_id") for item in artifacts if isinstance(item, dict)]
     if artifact_ids != EXPECTED_ARTIFACT_IDS:
         failures.append(
-            "inventory artifact IDs/order must match the v3.21 closure sequence"
+            "inventory artifact IDs/order must match the v3.22 closure sequence"
         )
 
     seen_ids: set[str] = set()
@@ -1031,6 +1373,10 @@ def _verify_work_items(
             "schema_version",
             "plan_id",
             "baseline_id",
+            "supersedes_plan",
+            "task_identity",
+            "graph_policy",
+            "contract_projection_policy",
             "baseline_status",
             "blocking_stage",
             "updated_on",
@@ -1048,13 +1394,17 @@ def _verify_work_items(
             f"work-item schema_version must be {WORK_ITEM_SCHEMA_VERSION}"
         )
     if payload.get("plan_id") != f"{CURRENT_BASELINE_ID}-implementation-work-items":
-        failures.append("work-item plan_id must match the v3.21 implementation graph")
+        failures.append("work-item plan_id must match the v3.22 implementation graph")
     if payload.get("baseline_id") != baseline.get("id"):
         failures.append("work-item baseline_id must match planning baseline")
     if payload.get("baseline_status") != baseline.get("status"):
         failures.append("work-item baseline_status must match planning baseline")
     if payload.get("blocking_stage") != baseline.get("blocking_stage"):
         failures.append("work-item blocking_stage must match planning baseline")
+    if payload.get("supersedes_plan") != EXPECTED_SUPERSEDED_PLAN:
+        failures.append("work-item supersedes_plan must match the frozen v3.21 plan identity")
+    if payload.get("task_identity") != "plan_id_plus_task_id":
+        failures.append("work-item task_identity must be plan_id_plus_task_id")
     if not isinstance(payload.get("updated_on"), str) or not payload["updated_on"].strip():
         failures.append("work-item updated_on must be a non-empty string")
     global_constraints = payload.get("global_constraints")
@@ -1088,6 +1438,10 @@ def _verify_work_items(
                     "work-item verification profile must be a unique non-empty "
                     f"string array: {profile_name}"
                 )
+        if verification_profiles.get("new_runtime") != EXPECTED_NEW_RUNTIME_VERIFICATION:
+            failures.append(
+                "work-item new_runtime verification profile must match the locked offline command set"
+            )
     runtime_source_layout = payload.get("runtime_source_layout")
     if not isinstance(runtime_source_layout, dict):
         failures.append("work-item runtime_source_layout must be an object")
@@ -1143,7 +1497,7 @@ def _verify_work_items(
         failures.append("work-item status_catalog must be a unique array")
         status_catalog = []
     elif status_catalog != EXPECTED_WORK_ITEM_STATUSES:
-        failures.append("work-item status_catalog must match the v3.21 state set and order")
+        failures.append("work-item status_catalog must match the v3.22 state set and order")
 
     required = [
         "task_id",
@@ -1274,8 +1628,19 @@ def _verify_work_items(
                 failures.append(f"{task_id} references unknown successor {successor}")
             elif task_id not in _work_item_list(items[successor], "depends_on"):
                 failures.append(f"{task_id} successor {successor} must depend on it")
+        for dependency in dependencies:
+            if not isinstance(dependency, str) or dependency not in items:
+                continue
+            if task_id not in _work_item_list(items[dependency], "next_task_ids"):
+                failures.append(
+                    f"{task_id} dependency {dependency} must list it as successor"
+                )
 
     _verify_acyclic_dependencies(items, failures)
+    _verify_graph_policy(payload.get("graph_policy"), items, current_work, failures)
+    _verify_contract_projection_policy(
+        payload.get("contract_projection_policy"), items, failures
+    )
     actual_p1_ids = {
         task_id
         for task_id in items
@@ -1354,6 +1719,19 @@ def _verify_work_items(
         manifest_close_task, "primary_files"
     ):
         failures.append("LAR-P0A-013 must create the final BaselineManifest instance")
+
+    p4_cohort = items.get("LAR-P4-001", {})
+    b3_activation = items.get("LAR-P4-002", {})
+    p5_cutover = items.get("LAR-P5-001", {})
+    if _work_item_list(b3_activation, "depends_on") != ["LAR-P4-001"]:
+        failures.append("B3 activation must depend only on the green P4 cohort")
+    if _work_item_list(p5_cutover, "depends_on") != ["LAR-P4-001"]:
+        failures.append("P5 must depend on the green P4 cohort, not B3 activation")
+    if _work_item_list(p4_cohort, "next_task_ids") != [
+        "LAR-P4-002",
+        "LAR-P5-001",
+    ]:
+        failures.append("P4 must independently release B3 activation and P5 cutover")
 
     for task_id in EXPECTED_P1_IMPLEMENTATION_TASK_IDS:
         item = items.get(task_id)
@@ -1521,29 +1899,27 @@ def _verify_selector_policy(
     ):
         failures.append("selector allowed_next_actions must be a unique array")
         allowed = []
+    if allowed != EXPECTED_SELECTOR_ACTIONS:
+        failures.append("selector allowed_next_actions must match the v3.22 action catalog")
     if current_work.get("selector_action") not in allowed:
         failures.append("current selector action is not allowed by selector policy")
-    special_actions = {
-        "LAR-P0A-001": "archive_lineage_sources_first",
-        "LAR-P0A-REBASELINE-V322": "draft_v3_22_candidate_first",
+    completed_history_actions = {
+        "archive_lineage_sources_first",
+        "draft_v3_22_candidate_first",
     }
-    expected_special_action = special_actions.get(current_work.get("task_id"))
-    if expected_special_action is not None and current_work.get(
-        "selector_action"
-    ) != expected_special_action:
+    forbidden_history_actions = sorted(completed_history_actions.intersection(allowed))
+    if forbidden_history_actions:
         failures.append(
-            f"{current_work.get('task_id')} must select {expected_special_action}"
+            "selector must not allow a completed historical selector action: "
+            f"{forbidden_history_actions}"
         )
-    if (
-        current_work.get("selector_action") in special_actions.values()
-        and current_work.get("selector_action") != expected_special_action
-    ):
-        failures.append("special rebaseline selector action used by the wrong work item")
+    if current_work.get("selector_action") in completed_history_actions:
+        failures.append("current work item cannot select a completed historical action")
 
     review_sets = policy.get("baseline_review_missing_artifact_sets")
     if review_sets != EXPECTED_REVIEW_MISSING_ARTIFACT_SETS:
         failures.append(
-            "selector baseline_review_missing_artifact_sets must match the v3.21 manifest/review closure"
+            "selector baseline_review_missing_artifact_sets must match the v3.22 manifest/review closure"
         )
     missing = package_state.get("missing_artifact_ids")
     review_phase = (
@@ -1591,6 +1967,15 @@ def _verify_selector_policy(
                 )
         if priorities != sorted(priorities) or len(priorities) != len(set(priorities)):
             failures.append("selector priorities must be unique and ascending")
+        actual_steps = [
+            (item.get("condition_id"), item.get("next_action"))
+            for item in selection
+            if isinstance(item, dict)
+        ]
+        if actual_steps != EXPECTED_SELECTOR_STEPS:
+            failures.append(
+                "selector condition/action order must match the v3.22 stage graph"
+            )
 
     required_entrypoints = policy.get("required_entrypoints")
     if required_entrypoints != EXPECTED_SELECTOR_ENTRYPOINTS:
@@ -1657,6 +2042,10 @@ def _verify_approval_and_stages(
             rollout.get("p3_scheduled_self_host_complete"),
         ),
         ("rollout.p4_cohort_complete", rollout.get("p4_cohort_complete")),
+        (
+            "rollout.b3_portfolio_generation_active",
+            rollout.get("b3_portfolio_generation_active"),
+        ),
         ("rollout.p5_cutover_complete", rollout.get("p5_cutover_complete")),
         ("rollout.legacy_writer_retired", rollout.get("legacy_writer_retired")),
     ):
@@ -1714,6 +2103,10 @@ def _verify_approval_and_stages(
         "p3_scheduled_self_host_complete"
     ):
         failures.append("P4 completion requires P3 scheduled self-host evidence")
+    if rollout.get("b3_portfolio_generation_active") and not rollout.get(
+        "p4_cohort_complete"
+    ):
+        failures.append("B3 portfolio activation requires the green P4 cohort")
     if rollout.get("p5_cutover_complete") and not rollout.get("p4_cohort_complete"):
         failures.append("P5 completion requires the P4 cohort")
     if rollout.get("legacy_writer_retired") and not rollout.get("p5_cutover_complete"):
@@ -1741,8 +2134,6 @@ def _verify_approval_and_stages(
         if queue.get("queue_id") != "LOCAL-AI-RUNTIME-0.2-BASELINE-CLOSURE":
             failures.append("incomplete package requires baseline-closure queue")
         if current_work.get("selector_action") not in {
-            "archive_lineage_sources_first",
-            "draft_v3_22_candidate_first",
             "close_baseline_normative_package_first",
             "run_baseline_consistency_review",
         }:
@@ -1942,13 +2333,205 @@ def _verify_acyclic_dependencies(
         visit(task_id)
 
 
+def _verify_graph_policy(
+    value: Any,
+    items: dict[str, dict[str, Any]],
+    current_work: dict[str, Any],
+    failures: list[str],
+) -> None:
+    policy = _as_dict(value, "work-item graph_policy", failures)
+    expected = {
+        "kind": "deterministic_dag_v1",
+        "root_task_ids": EXPECTED_GRAPH_ROOTS,
+        "ready_order": ["priority_ascending", "task_id_utf8_ascending"],
+        "single_selected_ready_task": True,
+        "real_writer_requires": ["LAR-P1G-001", "LAR-Q0-001"],
+    }
+    if policy != expected:
+        failures.append("work-item graph_policy must match the deterministic v3.22 DAG policy")
+
+    for root in EXPECTED_GRAPH_ROOTS:
+        if root not in items:
+            failures.append(f"declared graph root does not exist: {root}")
+        elif _work_item_list(items[root], "depends_on"):
+            failures.append(f"declared graph root must have no dependencies: {root}")
+
+    reachable: set[str] = set()
+    pending = list(reversed(EXPECTED_GRAPH_ROOTS))
+    while pending:
+        task_id = pending.pop()
+        if task_id in reachable or task_id not in items:
+            continue
+        reachable.add(task_id)
+        pending.extend(
+            reversed(
+                [
+                    successor
+                    for successor in _work_item_list(items[task_id], "next_task_ids")
+                    if isinstance(successor, str)
+                ]
+            )
+        )
+    unreachable = sorted(set(items) - reachable)
+    if unreachable:
+        failures.append(
+            "work items are not reachable from the declared graph roots: "
+            f"{unreachable}"
+        )
+
+    ready = [
+        (item.get("priority"), task_id)
+        for task_id, item in items.items()
+        if item.get("status") == "ready"
+        and isinstance(item.get("priority"), int)
+        and not isinstance(item.get("priority"), bool)
+    ]
+    selected = min(ready, default=(None, None), key=lambda entry: (entry[0], entry[1]))
+    if selected[1] != current_work.get("task_id"):
+        failures.append(
+            "current work item must match deterministic priority/task-id ready selection"
+        )
+
+
+def _verify_contract_projection_policy(
+    value: Any,
+    items: dict[str, dict[str, Any]],
+    failures: list[str],
+) -> None:
+    policy = _as_dict(value, "work-item contract_projection_policy", failures)
+    if policy.get("kind") != "closed_contract_projection_v1":
+        failures.append(
+            "work-item contract_projection_policy.kind must be closed_contract_projection_v1"
+        )
+    if policy.get("projection_identity") != "plan_id_plus_projection_id":
+        failures.append(
+            "work-item projection_identity must be plan_id_plus_projection_id"
+        )
+    rules = policy.get("rules")
+    if (
+        not isinstance(rules, list)
+        or not rules
+        or not all(isinstance(rule, str) and rule for rule in rules)
+        or len(rules) != len(set(rules))
+    ):
+        failures.append("work-item projection rules must be unique non-empty strings")
+    if policy.get("projections") != EXPECTED_CONTRACT_PROJECTIONS:
+        failures.append(
+            "work-item contract projections must match the frozen v3.22 projection catalog"
+        )
+
+    expected_by_task: dict[str, dict[str, list[str]]] = {}
+    expected_tokens_by_task: dict[str, list[str]] = {}
+
+    def add_projection(task_id: str, kind: str, projection_id: str) -> None:
+        declaration = expected_by_task.setdefault(
+            task_id, {"produces": [], "implements": [], "accepts": []}
+        )
+        declaration[kind].append(projection_id)
+
+    def add_tokens(task_id: str, tokens: list[str]) -> None:
+        task_tokens = expected_tokens_by_task.setdefault(task_id, [])
+        for token in tokens:
+            if token not in task_tokens:
+                task_tokens.append(token)
+
+    for projection in EXPECTED_CONTRACT_PROJECTIONS:
+        projection_id = projection["projection_id"]
+        producer = projection["normative_producer_task_id"]
+        implementations = projection["implementation_task_ids"]
+        acceptances = projection["acceptance_task_ids"]
+        participants = [producer, *implementations, *acceptances]
+        if producer not in items or not producer.startswith("LAR-P0A-"):
+            failures.append(
+                f"{projection_id} must have one existing P0A normative producer"
+            )
+        if not implementations and not acceptances:
+            failures.append(
+                f"{projection_id} must have an implementation or acceptance consumer"
+            )
+        if len(participants) != len(set(participants)):
+            failures.append(f"{projection_id} task roles must not overlap")
+        for task_id in participants:
+            if task_id not in items:
+                failures.append(f"{projection_id} references unknown task {task_id}")
+        add_projection(producer, "produces", projection_id)
+        for task_id in implementations:
+            add_projection(task_id, "implements", projection_id)
+        for task_id in acceptances:
+            add_projection(task_id, "accepts", projection_id)
+        for task_id in participants:
+            add_tokens(task_id, projection["required_contract_tokens"])
+
+    for task_id, item in items.items():
+        expected_declaration = expected_by_task.get(task_id)
+        actual_declaration = item.get("contract_projections")
+        if expected_declaration is None:
+            if actual_declaration is not None:
+                failures.append(
+                    f"{task_id} must not declare unreferenced contract projections"
+                )
+            if item.get("contract_projection_tokens") is not None:
+                failures.append(
+                    f"{task_id} must not declare unreferenced contract projection tokens"
+                )
+            continue
+        if not isinstance(actual_declaration, dict):
+            failures.append(f"{task_id}.contract_projections must be an object")
+            actual_declaration = {}
+        elif set(actual_declaration) != {"produces", "implements", "accepts"}:
+            failures.append(
+                f"{task_id}.contract_projections must contain exactly "
+                "produces, implements and accepts"
+            )
+        for kind in ("produces", "implements", "accepts"):
+            expected_ids = expected_declaration[kind]
+            if actual_declaration.get(kind) != expected_ids:
+                failures.append(
+                    f"{task_id}.{kind} projections must exactly match policy"
+                )
+                for projection_id in expected_ids:
+                    role = {
+                        "produces": "producer",
+                        "implements": "implementation",
+                        "accepts": "acceptance",
+                    }[kind]
+                    failures.append(
+                        f"{projection_id} {role} reverse projection mismatch for {task_id}"
+                    )
+        actual_tokens = item.get("contract_projection_tokens")
+        expected_tokens = expected_tokens_by_task[task_id]
+        if actual_tokens != expected_tokens:
+            failures.append(
+                f"{task_id} contract projection tokens must exactly match policy"
+            )
+            for projection in EXPECTED_CONTRACT_PROJECTIONS:
+                projection_id = projection["projection_id"]
+                if projection_id not in sum(expected_declaration.values(), []):
+                    continue
+                missing = [
+                    token
+                    for token in projection["required_contract_tokens"]
+                    if not isinstance(actual_tokens, list) or token not in actual_tokens
+                ]
+                for token in missing:
+                    failures.append(
+                        f"{projection_id} task {task_id} missing required contract token: {token}"
+                    )
+
+
 def _load_json(path: Path) -> dict[str, Any]:
+    payload, _ = _load_json_with_bytes(path)
+    return payload
+
+
+def _load_json_with_bytes(path: Path) -> tuple[dict[str, Any], bytes]:
     try:
-        text = path.read_text(encoding="utf-8")
+        raw = path.read_bytes()
+        text = raw.decode("utf-8")
     except (OSError, UnicodeDecodeError) as exc:
         raise ValueError(f"JSON file is not readable: {path} ({exc})") from exc
 
-    return _loads_json_object(text, str(path))
+    return _loads_json_object(text, str(path)), raw
 
 
 def _loads_json_object(text: str, label: str) -> dict[str, Any]:

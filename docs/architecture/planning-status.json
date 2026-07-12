@@ -3,11 +3,11 @@
   "status_id": "local-ai-runtime-0.2-rebaseline-status",
   "updated_on": "2026-07-12",
   "baseline_candidate": {
-    "id": "local-ai-runtime-0.2-v3.21",
-    "title": "Local AI Runtime 0.2 v3.21 Unified Native + Batch Deterministic Minimum-Operator Implementation Baseline Candidate",
-    "path": "docs/specs/local-ai-runtime-0.2-v3.21-baseline-candidate.md",
-    "byte_count": 158485,
-    "sha256": "1bfb5cd2c92c036804a6005d5b36cdd5acc6bedc4d6bf4070ccfb7a70ce063fb",
+    "id": "local-ai-runtime-0.2-v3.22",
+    "title": "Local AI Runtime 0.2 v3.22 Windows-Local Governed AI Development Execution Baseline Candidate",
+    "path": "docs/specs/local-ai-runtime-0.2-v3.22-baseline-candidate.md",
+    "byte_count": 178330,
+    "sha256": "8338a9dcf4bbbb40ca28f4f2ec6dca37587ee94fbfbbc6e3a0063c4de379569c",
     "status": "baseline_candidate",
     "decision": "request_changes_until_normative_package_closure",
     "blocking_stage": "baseline_approval"
@@ -15,14 +15,14 @@
   "baseline_entry": {
     "path": "docs/specs/local-ai-runtime-0.2-baseline-candidate.md",
     "role": "non_normative_navigation",
-    "target_baseline_id": "local-ai-runtime-0.2-v3.21",
-    "target_path": "docs/specs/local-ai-runtime-0.2-v3.21-baseline-candidate.md",
-    "target_byte_count": 158485,
-    "target_sha256": "1bfb5cd2c92c036804a6005d5b36cdd5acc6bedc4d6bf4070ccfb7a70ce063fb",
+    "target_baseline_id": "local-ai-runtime-0.2-v3.22",
+    "target_path": "docs/specs/local-ai-runtime-0.2-v3.22-baseline-candidate.md",
+    "target_byte_count": 178330,
+    "target_sha256": "8338a9dcf4bbbb40ca28f4f2ec6dca37587ee94fbfbbc6e3a0063c4de379569c",
     "approval_input": false,
     "maximum_byte_count": 4096,
-    "byte_count": 2394,
-    "sha256": "584dc1e08b25b7c4513f5938a8e0377bcef0f2c080d04ba152296292bdec665d"
+    "byte_count": 2454,
+    "sha256": "077e3d028dce30712633abcc6000aab7fc00d40dc98ad5098c3af0033d723f67"
   },
   "approval_state": {
     "active": false,
@@ -36,9 +36,8 @@
     "status": "incomplete",
     "approval_eligible": false,
     "required_artifact_count": 15,
-    "present_artifact_count": 1,
+    "present_artifact_count": 2,
     "missing_artifact_ids": [
-      "P0A-LINEAGE",
       "P0A-CANONICAL",
       "P0A-PRODUCT",
       "P0A-QUALIFICATION",
@@ -56,18 +55,19 @@
   },
   "current_active_queue": {
     "queue_id": "LOCAL-AI-RUNTIME-0.2-BASELINE-CLOSURE",
-    "label": "Supersede v3.21 with the reviewed v3.22 candidate before normative closure",
+    "label": "Close the frozen v3.22 normative package before Baseline Approval",
     "status": "in_progress",
     "source_plan": "docs/plans/orchestrator-implementation-plan.md",
     "source_work_items": "docs/plans/local-ai-runtime-0.2-work-items.json",
-    "work_item_count": 59,
-    "why_now": "The historical source bytes are now independently verified, but v3.21 must be superseded by the reviewed v3.22 candidate before any normative artifact work continues."
+    "source_plan_id": "local-ai-runtime-0.2-v3.22-implementation-work-items",
+    "work_item_count": 62,
+    "why_now": "The v3.22 narrative and v3.22-bound lineage are frozen and verified, but thirteen required normative artifacts remain missing and Baseline Approval is inactive."
   },
   "current_work_item": {
-    "task_id": "LAR-P0A-REBASELINE-V322",
-    "selector_action": "draft_v3_22_candidate_first",
+    "task_id": "LAR-P0A-002",
+    "selector_action": "close_baseline_normative_package_first",
     "status": "ready",
-    "reason": "The exact v3.17 and both conflicted v3.18 source-message bodies are archived and verified; the next legal action is to create and atomically project the superseding v3.22 candidate."
+    "reason": "The frozen v3.22 source and BaselineLineage.v1 are present; the next legal action is to define BaselineManifest schema and package-closure rules without creating a final manifest or approval."
   },
   "legacy_runtime_posture": {
     "current_kernel": "runtime/host-orchestrator",
@@ -77,7 +77,7 @@
     "new_package_exists": false,
     "legacy_guard_complete": false,
     "new_batch_claims_allowed": false,
-    "notes": "Existing host-orchestrator and runtime_v2 behavior remain unchanged during candidate closure. They are migration inputs, not the v3.21 target implementation."
+    "notes": "Existing host-orchestrator and runtime_v2 behavior remain unchanged during candidate closure. They are migration inputs, not the v3.22 target implementation."
   },
   "truth_reset": {
     "performed": false,
@@ -101,10 +101,11 @@
     "p2_pilot_complete": false,
     "p3_scheduled_self_host_complete": false,
     "p4_cohort_complete": false,
+    "b3_portfolio_generation_active": false,
     "p5_cutover_complete": false,
     "legacy_writer_retired": false
   },
-  "current_evidence_ref": "docs/change-evidence/20260712-local-ai-runtime-v3.21-candidate-rebaseline.md",
+  "current_evidence_ref": "docs/change-evidence/20260712-local-ai-runtime-v3.22-candidate-rebaseline.md",
   "authoritative_docs": [
     "AGENTS.md",
     "README.md",
@@ -116,7 +117,7 @@
     "docs/backlog/orchestrator-task-list.md",
     "docs/specs/acceptance-and-gates.md",
     "docs/specs/local-ai-runtime-0.2-baseline-candidate.md",
-    "docs/specs/local-ai-runtime-0.2-v3.21-baseline-candidate.md",
+    "docs/specs/local-ai-runtime-0.2-v3.22-baseline-candidate.md",
     "docs/specs/local-ai-runtime-0.2-normative-package.json",
     "docs/plans/local-ai-runtime-0.2-work-items.json",
     "docs/architecture/next-work-selection-policy.json"
@@ -125,25 +126,26 @@
     {
       "path": "AGENTS.md",
       "required_strings": [
-        "local-ai-runtime-0.2-v3.21",
+        "local-ai-runtime-0.2-v3.22",
         "LOCAL-AI-RUNTIME-0.2-BASELINE-CLOSURE",
-        "draft_v3_22_candidate_first"
+        "close_baseline_normative_package_first"
       ]
     },
     {
       "path": "README.md",
       "required_strings": [
-        "local-ai-runtime-0.2-v3.21",
+        "local-ai-runtime-0.2-v3.22",
         "baseline_candidate",
-        "LOCAL-AI-RUNTIME-0.2-BASELINE-CLOSURE"
+        "LOCAL-AI-RUNTIME-0.2-BASELINE-CLOSURE",
+        "LAR-P0A-002"
       ]
     },
     {
       "path": "docs/README.md",
       "required_strings": [
-        "local-ai-runtime-0.2-v3.21",
+        "local-ai-runtime-0.2-v3.22",
         "blocking_stage=baseline_approval",
-        "draft_v3_22_candidate_first"
+        "close_baseline_normative_package_first"
       ]
     },
     {
@@ -152,6 +154,11 @@
         "Unified Native + Batch",
         "baseline_candidate",
         "minimum-operator",
+        "WorkDefinition",
+        "TaskFamily",
+        "profile generation",
+        "capability generation",
+        "architecture epoch",
         "approved_root_files",
         "approved_subpackages",
         "required_source_owners"
@@ -175,6 +182,8 @@
         "P0A",
         "P0B",
         "P5",
+        "LAR-P4-002",
+        "B2/per-repo",
         "approved_root_files",
         "approved_subpackages",
         "required_source_owners"
@@ -184,6 +193,7 @@
       "path": "docs/plans/orchestrator-implementation-plan.md",
       "required_strings": [
         "LAR-P0A-001",
+        "LAR-P0A-002",
         "LAR-P1A-004",
         "LAR-P1F-006",
         "ProcessHandlePolicy",
@@ -221,6 +231,15 @@
         "RuntimeIntegrityKeyEnvelope",
         "runtime_external_v1",
         "EvidenceProjectionAcceptance",
+        "WorkDefinition",
+        "TaskFamily",
+        "EffectPlan",
+        "GateGraph",
+        "Q0TriggerPolicy",
+        "writer_effect_id",
+        "writer_launch_id",
+        "durable_local_status_v1",
+        "git_hybrid_materialization_v1",
         "contracts/kernel/qualification/storage/execution/recovery/git_local/operations/compat",
         "approved_root_files",
         "approved_subpackages",
@@ -231,6 +250,7 @@
       "path": "docs/backlog/orchestrator-task-list.md",
       "required_strings": [
         "LAR-P0A-001",
+        "LAR-P0A-002",
         "LAR-P1A-004",
         "LAR-P1F-006",
         "LAR-P1G-001",
@@ -245,11 +265,11 @@
       "required_strings": [
         "role=non_normative_navigation",
         "approval_input=false",
-        "local-ai-runtime-0.2-v3.21",
-        "docs/specs/local-ai-runtime-0.2-v3.21-baseline-candidate.md",
-        "1bfb5cd2c92c036804a6005d5b36cdd5acc6bedc4d6bf4070ccfb7a70ce063fb",
+        "local-ai-runtime-0.2-v3.22",
+        "docs/specs/local-ai-runtime-0.2-v3.22-baseline-candidate.md",
+        "8338a9dcf4bbbb40ca28f4f2ec6dca37587ee94fbfbbc6e3a0063c4de379569c",
         "BaselineManifest.v1",
-        "draft_v3_22_candidate_first"
+        "close_baseline_normative_package_first"
       ]
     },
     {
@@ -270,6 +290,11 @@
         "RuntimeIntegrityKeyEnvelope",
         "runtime_external_v1",
         "EvidenceProjectionAcceptance",
+        "RuntimeCompositionManifest",
+        "SelectedRuntimeIdentity",
+        "ActiveRuntimeIdentity",
+        "uv lock --check --offline",
+        "uv run --locked --offline",
         "contracts/kernel/qualification/storage/execution/recovery/git_local/operations/compat",
         "approved_root_files",
         "approved_subpackages",
@@ -284,5 +309,5 @@
     "p2_admission.admitted=true while implementation.full_q0_passed=false",
     "legacy_runtime_posture.new_batch_claims_allowed=true while legacy_runtime_posture.legacy_guard_complete=false"
   ],
-  "rollback_ref": "Revert only the v3.21 candidate-planning projection; keep v3.19/v3.20 archives, runtime/host-orchestrator, .ai/config and live state unchanged."
+  "rollback_ref": "Revert only the v3.22 candidate-planning projection; keep frozen v3.17-v3.22 bytes, runtime/host-orchestrator, .ai/config and live state unchanged."
 }

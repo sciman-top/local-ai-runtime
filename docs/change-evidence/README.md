@@ -1,6 +1,7 @@
 # Change Evidence Index
 
-- [20260712 Local AI Runtime historical source archive](20260712-local-ai-runtime-historical-source-archive.md): exact v3.17/v3.18 source-message boundaries, byte-policy validation and independent dual-hash evidence; does not close the v3.22 lineage or approve a baseline.
+- [20260712 Local AI Runtime v3.22 Candidate Rebaseline](20260712-local-ai-runtime-v3.22-candidate-rebaseline.md): frozen v3.22 identity, v3.22-bound lineage, 62-task deterministic DAG, eleven closed contract projections and the current preapproval truth boundary.
+- [20260712 Local AI Runtime historical source archive](20260712-local-ai-runtime-historical-source-archive.md): exact v3.17/v3.18 source-message boundaries, byte-policy validation and independent dual-hash evidence; it is a lineage input, not an approval record.
 
 这个目录只存 **repo-level governance evidence**，不存 task-level `.ai/runs/<run_id>/<task_id>/` 正式工件。
 
@@ -12,16 +13,17 @@
 
 ## 2026-07-12 当前规划真值
 
-- v3.21 是 `baseline_candidate`，不是 approved baseline；v3.19 与冻结 v3.20 只作为精确 superseded archives 保留。
+- v3.22 是 `baseline_candidate`，不是 approved baseline；v3.17、两份 conflicted v3.18、v3.19-v3.21 只作为精确历史/被替代身份保留。
 - 当前队列是 `LOCAL-AI-RUNTIME-0.2-BASELINE-CLOSURE`。
-- 当前 selector 是 `close_baseline_normative_package_first`，唯一 ready task 是 `LAR-P0A-001`。
+- 当前 selector 是 `close_baseline_normative_package_first`，唯一 ready task 是 `LAR-P0A-002`；规范包为 15 required / 2 present / 13 missing。
 - `runtime/host-orchestrator` 仍是现行内核；没有 Truth Reset、新 Batch、Implementation Acceptance、Full Q0 或 P2 admission。
 - 下方 2026-07-06 至 2026-07-10 的 Phase 1/runtime_v2 selector 结论是历史 evidence，不再是 next-work truth。
 
 当前入口：
 
-- [20260712 Baseline Candidate Entry Guard](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260712-local-ai-runtime-baseline-entry-guard.md) - 无版本稳定入口绑定冻结 v3.21 身份；非规范、非批准输入，verifier 对目标映射、长度和防漂移标记 fail closed。
-- [20260712 Local AI Runtime v3.21 Candidate Rebaseline](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260712-local-ai-runtime-v3.21-candidate-rebaseline.md) - 当前候选规划真值；`baseline_candidate`、14 个 normative artifact missing、58 项 v2 机器图/33 个 P1 编码切片、关闭的九子包 source layout、selector=`close_baseline_normative_package_first`、task=`LAR-P0A-001`
+- [20260712 Local AI Runtime v3.22 Candidate Rebaseline](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260712-local-ai-runtime-v3.22-candidate-rebaseline.md) - 当前候选规划真值；`baseline_candidate`、13 个 normative artifact missing、62 项 v3 deterministic DAG/35 个 P1 编码切片、11 项闭合投影、selector=`close_baseline_normative_package_first`、task=`LAR-P0A-002`
+- [20260712 Baseline Candidate Entry Guard](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260712-local-ai-runtime-baseline-entry-guard.md) - 无版本稳定入口是非规范、非批准输入；当前目标身份由 v3.22 rebaseline 和 planning verifier 约束，原 evidence 只记录入口机制的首次建立。
+- [20260712 Local AI Runtime v3.21 Candidate Rebaseline](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260712-local-ai-runtime-v3.21-candidate-rebaseline.md) - 精确 v3.21 候选及其旧 planning projection；现为 superseded candidate evidence，不再是 next-work truth
 - [20260712 Local AI Runtime v3.20 Candidate Rebaseline](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260712-local-ai-runtime-v3.20-candidate-rebaseline.md) - 冻结 v3.20 byte/hash 与 superseded candidate 证据；不再是 next-work truth
 - [20260712 Local AI Runtime v3.19 Candidate Planning Rebaseline](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260712-local-ai-runtime-v3.19-candidate-rebaseline.md) - 历史候选投影与精确 v3.19 byte/hash 证据；不再是 next-work truth
 - [20260706 Verification Runner Minimal Gates](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260706-verification-runner-minimal-gates.md)

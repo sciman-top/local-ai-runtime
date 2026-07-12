@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 from datetime import date
+import hashlib
 import json
 import subprocess
 import sys
@@ -13,6 +14,24 @@ ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_STATUS_PATH = ROOT / "docs" / "architecture" / "planning-status.json"
 DEFAULT_POLICY_PATH = ROOT / "docs" / "architecture" / "next-work-selection-policy.json"
 DEFAULT_VERIFIER_PATH = ROOT / "scripts" / "verify-planning-status.py"
+EXPECTED_SELECTOR_STEPS = [
+    ("planning_integrity_red", "repair_gate_first"),
+    ("baseline_review_closure_pending", "run_baseline_consistency_review"),
+    ("normative_package_incomplete", "close_baseline_normative_package_first"),
+    ("approval_eligible_without_active_approval", "record_baseline_approval_first"),
+    ("approved_truth_reset_missing", "implement_truth_reset_first"),
+    ("truth_reset_done_legacy_guard_missing", "implement_legacy_guard_first"),
+    ("legacy_guard_done_implementation_incomplete", "implement_local_ai_runtime_first"),
+    ("implementation_complete_acceptance_missing", "run_implementation_acceptance_first"),
+    ("implementation_accepted_full_q0_missing", "run_full_q0_first"),
+    ("full_q0_green_p2_pilot_missing", "run_single_p2_pilot_first"),
+    ("p2_pilot_green_p3_missing", "run_five_scheduled_self_host_first"),
+    ("p3_green_p4_missing", "run_30_task_cohort_first"),
+    ("p4_green_b3_work_item_selected", "activate_b3_portfolio_generation_first"),
+    ("p4_green_p5_missing", "cut_over_repositories_first"),
+    ("p5_complete", "operate_approved_runtime"),
+]
+EXPECTED_SELECTOR_ACTIONS = [action for _, action in EXPECTED_SELECTOR_STEPS]
 
 
 def main() -> int:
@@ -44,7 +63,7 @@ def select_next_work(
 ) -> dict[str, object]:
     root = repo_root.resolve(strict=False)
     try:
-        policy = _load_json(policy_path)
+        policy, initial_policy_raw = _load_json_with_bytes(policy_path)
         reasons = _validate_policy(policy)
         governance_issues = _inspect_required_refs(root, policy)
     except ValueError as exc:
@@ -104,7 +123,8 @@ def select_next_work(
         )
 
     try:
-        status = _load_json(status_path)
+        current_policy, current_policy_raw = _load_json_with_bytes(policy_path)
+        status, status_raw = _load_json_with_bytes(status_path)
     except ValueError as exc:
         return _result(
             action="repair_gate_first",
@@ -112,6 +132,34 @@ def select_next_work(
             current_work_item_id=None,
             policy_path=policy_path,
             governance_issues=[str(exc)],
+            verifier_status=verifier_status,
+            stage_snapshot=None,
+        )
+
+    identity_issues: list[str] = []
+    if current_policy_raw != initial_policy_raw or current_policy != policy:
+        identity_issues.append("selector policy changed while verification was running")
+    if not _attested_path_matches(
+        root, verifier_payload.get("selector_policy_path"), policy_path
+    ) or verifier_payload.get("selector_policy_sha256") != hashlib.sha256(
+        current_policy_raw
+    ).hexdigest():
+        identity_issues.append(
+            "planning verifier selector policy identity does not match the consumed policy bytes"
+        )
+    if not _attested_path_matches(
+        root, verifier_payload.get("status_path"), status_path
+    ) or verifier_payload.get("status_sha256") != hashlib.sha256(status_raw).hexdigest():
+        identity_issues.append(
+            "planning status identity attested by verifier does not match the consumed bytes"
+        )
+    if identity_issues:
+        return _result(
+            action="repair_gate_first",
+            reason=reasons["repair_gate_first"],
+            current_work_item_id=None,
+            policy_path=policy_path,
+            governance_issues=identity_issues,
             verifier_status=verifier_status,
             stage_snapshot=None,
         )
@@ -158,8 +206,6 @@ def select_next_work(
         )
 
     if package["status"] != "complete" or not package["approval_eligible"]:
-        historical_archive_selected = current_id == "LAR-P0A-001"
-        rebaseline_selected = current_id == "LAR-P0A-REBASELINE-V322"
         review_task_selected = current_id == "LAR-P0A-013"
         review_artifacts_pending = (
             missing in policy["baseline_review_missing_artifact_sets"]
@@ -176,11 +222,7 @@ def select_next_work(
                 verifier_status=verifier_status,
                 stage_snapshot=_stage_snapshot(status),
             )
-        if historical_archive_selected:
-            action = "archive_lineage_sources_first"
-        elif rebaseline_selected:
-            action = "draft_v3_22_candidate_first"
-        elif review_task_selected:
+        if review_task_selected:
             action = "run_baseline_consistency_review"
         else:
             action = "close_baseline_normative_package_first"
@@ -204,6 +246,11 @@ def select_next_work(
         action = "run_five_scheduled_self_host_first"
     elif not rollout["p4_cohort_complete"]:
         action = "run_30_task_cohort_first"
+    elif (
+        current_id == "LAR-P4-002"
+        and not rollout["b3_portfolio_generation_active"]
+    ):
+        action = "activate_b3_portfolio_generation_first"
     elif not rollout["p5_cutover_complete"] or not rollout["legacy_writer_retired"]:
         action = "cut_over_repositories_first"
     else:
@@ -262,6 +309,10 @@ def _validate_policy(policy: dict[str, Any]) -> dict[str, str]:
         raise ValueError(
             "selector allowed_next_actions must be a unique string array containing repair_gate_first"
         )
+    if allowed != EXPECTED_SELECTOR_ACTIONS:
+        raise ValueError(
+            "selector allowed_next_actions must match the v3.22 action catalog"
+        )
     review_sets = policy["baseline_review_missing_artifact_sets"]
     if (
         not isinstance(review_sets, list)
@@ -299,6 +350,15 @@ def _validate_policy(policy: dict[str, Any]) -> dict[str, str]:
     missing_reasons = [action for action in allowed if action not in reasons]
     if missing_reasons:
         raise ValueError("selector actions missing reasons: " + ", ".join(missing_reasons))
+    actual_steps = [
+        (item.get("condition_id"), item.get("next_action"))
+        for item in selection
+        if isinstance(item, dict)
+    ]
+    if actual_steps != EXPECTED_SELECTOR_STEPS:
+        raise ValueError(
+            "selector condition/action order must match the v3.22 stage graph"
+        )
     entrypoints = policy["required_entrypoints"]
     if not isinstance(entrypoints, list) or not all(
         isinstance(item, str) and item for item in entrypoints
@@ -419,6 +479,9 @@ def _stage_snapshot(status: dict[str, Any]) -> dict[str, object]:
             "p3_scheduled_self_host_complete"
         ],
         "p4_cohort_complete": status["rollout"]["p4_cohort_complete"],
+        "b3_portfolio_generation_active": status["rollout"][
+            "b3_portfolio_generation_active"
+        ],
         "p5_cutover_complete": status["rollout"]["p5_cutover_complete"],
         "legacy_writer_retired": status["rollout"]["legacy_writer_retired"],
     }
@@ -449,12 +512,18 @@ def _result(
 
 
 def _load_json(path: Path) -> dict[str, Any]:
+    payload, _ = _load_json_with_bytes(path)
+    return payload
+
+
+def _load_json_with_bytes(path: Path) -> tuple[dict[str, Any], bytes]:
     try:
-        text = path.read_text(encoding="utf-8")
+        raw = path.read_bytes()
+        text = raw.decode("utf-8")
         payload = _loads_json_object(text, str(path))
     except (OSError, UnicodeDecodeError, ValueError) as exc:
         raise ValueError(f"JSON file is unreadable or invalid: {path}: {exc}") from exc
-    return payload
+    return payload, raw
 
 
 def _loads_json_object(text: str, label: str) -> dict[str, Any]:
@@ -494,6 +563,15 @@ def _repo_path(root: Path, value: Any) -> Path:
     except ValueError as exc:
         raise ValueError(f"path escapes repo root: {value}") from exc
     return path
+
+
+def _attested_path_matches(root: Path, attested: Any, actual: Path) -> bool:
+    if not isinstance(attested, str) or not attested:
+        return False
+    attested_path = Path(attested)
+    if not attested_path.is_absolute():
+        attested_path = root / attested_path
+    return attested_path.resolve(strict=False) == actual.resolve(strict=False)
 
 
 if __name__ == "__main__":

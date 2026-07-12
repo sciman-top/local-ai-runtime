@@ -2,7 +2,7 @@
 
 ## 1. Goal
 
-依据 `local-ai-runtime-0.2-v3.21`，从当前 legacy `runtime/host-orchestrator` 迁移到 Unified Native + Batch deterministic minimum-operator runtime，同时保持副作用可归属、writer at-most-once、Git publication deterministic、证据 secret-safe、迁移可逐仓回滚。
+依据 `local-ai-runtime-0.2-v3.22`，从当前 legacy `runtime/host-orchestrator` 迁移到 Windows-local single-operator general-purpose governed AI development execution platform，同时保持副作用可归属、writer zero-or-one execution commit、Git publication deterministic、证据 secret-safe、迁移可逐仓回滚。
 
 当前只执行 P0A normative closure。机器任务真源是 [local-ai-runtime-0.2-work-items.json](D:/CODE/local-ai-dev-orchestrator/docs/plans/local-ai-runtime-0.2-work-items.json)；本文解释如何执行，不复制每个字段。
 
@@ -22,22 +22,22 @@
 
 1. 运行 `python scripts/verify-planning-status.py`。非零先修规划，不做产品任务。
 2. 运行 `python scripts/select-next-work.py`，确认 `next_action` 和 `current_work_item.task_id`。
-3. 读取 JSON 中该项全部字段及顶层 `runtime_source_layout`。依赖、前置条件、停止条件、授权或目标源码路径不能证明时停止。
+3. 读取 JSON 中该项全部字段及顶层 `runtime_source_layout`、`graph_policy`、`contract_projection_policy`。任务身份是 `plan_id + task_id`；superseded v3.21 plan 的同名结果不能关闭 v3.22 任务。依赖、前置条件、projection role、停止条件、授权或目标源码路径不能证明时停止。
 4. 在 evidence note 先记录目标归宿、当前落点、计划修改文件、回滚和验证命令。
 5. 对 contract 任务先写 negative fixture/verifier；对实现任务先写 failing test。
 6. 只做满足 acceptance 的最小切片，不顺手实现后继 phase。
 7. 按任务 `verification` 执行，再按仓库固定门顺序补全。
 8. 逐条把 acceptance 映射到命令和证据；不能映射即未完成。
-9. 把该项改为 completed，并只将依赖完全满足的一个后继项改为 ready。
+9. 把该项改为 completed；按 `priority_ascending + task_id_utf8_ascending` 从依赖完全满足的 ready set 选择唯一 current task，DAG 中未选中的可运行兄弟保持 pending/blocked。
 10. 更新 planning-status 的 current work item、package counts/flags 和 evidence ref；重新运行 selector。
 
 状态不能一次批量“全部完成”。工作项响应丢失时先读当前文件事实和既有 evidence，幂等补齐同一结果。
 
 ## 4. P0A 规范闭包计划
 
-### `LAR-P0A-001` 谱系
+### 已完成：`LAR-P0A-001` 与 `LAR-P0A-REBASELINE-V322`
 
-先归档精确 v3.14、v3.16、v3.17、两份 conflicted v3.18、v3.19 和冻结 v3.20。v3.17 只有 provisional transcript hash；没有 exact bytes 就以 `missing_source_bytes` 停止，不能重构或把 provisional hash 升格。每个来源由 pinned Python 与 PowerShell 两条独立路径复算，review 文件只进入非规范 ReviewEvidenceIndex。
+原始 session 中 v3.17 与两份 conflicted v3.18 已按唯一 message/content 边界归档并双路径复算；v3.21 精确 `158485 / 1bfb5cd2...63fb` 已作为 superseded candidate，v3.22 精确 `178330 / 8338a9dc...569c` 与 `BaselineLineage.v1` 已冻结。它们只作为 completed DAG history，不再是 selector 可选分支。
 
 ### `LAR-P0A-002` Manifest
 
@@ -48,13 +48,13 @@
 按依赖顺序完成：
 
 1. `LAR-P0A-003` canonicalization/path：preserved arrays、set duplicate rejection、Git spelling 与 Windows collision key分离、alias-aware 8.3 handle identity、`policy_query_denied` 行为 probe。
-2. `LAR-P0A-004` product/submission：封闭参数；bounded parse -> canonicalize -> volatile lookup -> authorized replay -> absent-only secret/admission -> transaction recheck；ordinary submit 永久返回 root；原子 successor。
+2. `LAR-P0A-004` product/submission：`WorkDefinition`、`TaskFamily`、封闭参数；bounded parse -> canonicalize -> volatile lookup -> authorized replay -> absent-only secret/admission -> transaction recheck；ordinary submit 永久返回 root；原子 successor。
 3. `LAR-P0A-005` qualification/auth/sandbox：完整 sensitive-input union、base-independent reusable set、base-bound observation refresh、opaque `sandbox.log`、Authorization continuation、root effect grant 与 revoke 线性化。
-4. `LAR-P0A-006` execution/fencing：Writer/StageJob suspended launch、`ProcessHandlePolicy`、`PROC_THREAD_ATTRIBUTE_JOB_LIST + PROC_THREAD_ATTRIBUTE_HANDLE_LIST`、`STARTF_USESTDHANDLES` 精确 stdio、`ChildHandleManifest`/parent-end close/EOF、execution-commit barrier、Authorization/SafetyOnly authority union、controller-action child process grant、same-name Job、连续 adoption。
+4. `LAR-P0A-006` execution/fencing：`EffectPlan`、稳定 `writer_effect_id` 与 attempt-scoped `writer_launch_id`、Writer/StageJob suspended launch、`ProcessHandlePolicy`、`PROC_THREAD_ATTRIBUTE_JOB_LIST + PROC_THREAD_ATTRIBUTE_HANDLE_LIST`、`STARTF_USESTDHANDLES` 精确 stdio、`ChildHandleManifest`/parent-end close/EOF、execution-commit barrier、Authorization/SafetyOnly authority union、controller-action child process grant、same-name Job、连续 adoption。
 5. `LAR-P0A-007` evidence：append-only event matrix、pre-scan secret-safe projection、journal/segment/receipt、artifact/quarantine、`runtime_external_v1`、`EvidenceProjectionAcceptance`、purpose-separated `QuarantineKeyEnvelope`/`RuntimeIntegrityKeyEnvelope`，以及 `BackupRestoreEligibility`/`BackupPostActivity`/`BackupRestoreIntent` anti-rollback 协议。
-6. `LAR-P0A-008` Git：config deny、controlled index/object plan、canonical existing-object verify、claim time、no-reflog index/HEAD/ref/evidence/remove 顺序。
-7. `LAR-P0A-009` state/guard：family/task/attempt/platform/repo/template/autonomy/operator tables，完整 rows、GuardCatalog precedence/DAG 和未知组合分流。
-8. `LAR-P0A-010` Q0/resource：feature/process/gate catalogs、Windows environment `OrdinalIgnoreCase` 唯一键与 hidden-entry 拒绝、handle/EOF/evidence/DPAPI/restore probes、mandatory `accounting_kill_audit`、1 GiB emergency reserve、optional HardWriteQuotaCapability、limit-1/limit/limit+1。
+6. `LAR-P0A-008` Git：`git_hybrid_materialization_v1`，controller canonical payload/expected OID + pinned Git `hash-object -w` + `cat-file` read-back；config deny、claim time、no-reflog index/HEAD/ref/evidence/remove 顺序。
+7. `LAR-P0A-009` state/guard：family/task/attempt/platform/repo/template/autonomy/operator tables、`durable_local_status_v1` 与 optional `qualified_windows_toast_v1`、`portfolio_data_only_v1`，完整 rows、GuardCatalog precedence/DAG 和未知组合分流。
+8. `LAR-P0A-010` Q0/resource：`GateGraph`、profile generation -> capability generation -> architecture epoch、`Q0TriggerPolicy`、非循环 activation admission、feature/process/gate catalogs、Windows environment `OrdinalIgnoreCase` 唯一键与 hidden-entry 拒绝、handle/EOF/evidence/DPAPI/restore probes、mandatory `accounting_kill_audit`、1 GiB emergency reserve、optional HardWriteQuotaCapability、limit-1/limit/limit+1。
 
 后一个 bundle 可以引用前一个已固定的 identity，不允许循环引用、隐藏 defaults 或用 narrative prose 代替 machine row。
 
@@ -69,6 +69,10 @@
 ### `LAR-P0A-013` Review
 
 先运行覆盖全部 narrative/artifact/fixture/verifier 的 preliminary consistency review，清零 P0/P1 finding 并冻结 `package_review_head`；再一次性创建最终 `BaselineManifest.v1.json`，运行 closure verifier，随后 append manifest-closure review，使 `approval_review_head` 成为 package head 的可验证后继。只有 `P0A-MANIFEST` 与 `P0A-REVIEW` 都 present 且 closure review 绿色才把 package 标为 approval eligible。批准是独立外部授权动作，不由 verifier 自签。
+
+### Contract projection 闭包
+
+v3 machine plan 的 11 项 projection 都必须形成“唯一 P0A producer -> P1 implements -> P1G/Q0/P4 accepts”的双向机器关系：WorkDefinition/TaskFamily、EffectPlan、GateGraph、三级演进、writer effect/launch identity、durable operator inbox、Git hybrid、Q0TriggerPolicy、controlled approval、activation admission 和 data-only portfolio。Verifier 检查 projection ID、role、task phase、token 和引用闭包；只在自然语言中提到契约不算完成。
 
 ## 5. P0B/P0C 迁移护栏
 
@@ -90,11 +94,11 @@ P0C 的顺序固定：
 
 ### 包与依赖
 
-目标归宿 `runtime/local-ai-runtime/src/local_ai_runtime/`，机器布局固定为 `approved_root_files=["__init__.py","__main__.py"]`、`approved_subpackages=["contracts","kernel","qualification","storage","execution","recovery","git_local","operations","compat"]` 和 bootstrap/marker 到任务的一对一 `required_source_owners`；批准首级子包序列即 `contracts/kernel/qualification/storage/execution/recovery/git_local/operations/compat`。`__main__.py` 只转发 contracts-verifier CLI，包根不承载其他功能代码；installer、activation、CLI、Batch、doctor、scheduler、managed Native 和 evaluation 全部归 `operations`，Artifact/evidence 持久化归 `storage`。固定 Python 3.11.x，具体 patch version 由 `RuntimeToolchainManifest` 锁定；使用 offline build、frozen lock，且不得 import legacy package。
+目标归宿 `runtime/local-ai-runtime/src/local_ai_runtime/`，机器布局固定为 `approved_root_files=["__init__.py","__main__.py"]`、`approved_subpackages=["contracts","kernel","qualification","storage","execution","recovery","git_local","operations","compat"]` 和 bootstrap/marker 到任务的一对一 `required_source_owners`；批准首级子包序列即 `contracts/kernel/qualification/storage/execution/recovery/git_local/operations/compat`。`__main__.py` 只转发 contracts-verifier CLI，包根不承载其他功能代码；installer、activation、CLI、Batch、doctor、scheduler、managed Native 和 evaluation 全部归 `operations`，Artifact/evidence 持久化归 `storage`。固定 Python 3.11.x，具体 patch version 由 `RuntimeToolchainManifest` 锁定；先执行 `uv lock --check --offline`，后续 gate 使用 `uv run --locked --offline`，且不得 import legacy package。
 
 ### 开发顺序
 
-机器图总计 58 项。P1A-P1F 共 33 个编码切片，数量为 `4 + 5 + 6 + 6 + 6 + 6`；所有任务严格串行依赖，当前任务未 completed 时，后继任务不得顺手实现。每次 AI 会话只执行 selector 返回的一项，其精确文件、验收和命令以 machine work item 为准。
+机器图总计 62 项。P1A-P1F 共 35 个编码切片，数量为 `4 + 5 + 7 + 6 + 7 + 6`；依赖图是确定性 DAG，不再伪装成单链。独立 fixture/adapter 分支可并行准备，但当前任务未 completed 时不得顺手关闭后继任务；每次 AI 会话只执行 selector 返回的一项，其精确文件、projection role、验收和命令以 machine work item 为准。真实 writer 仍须位于 Implementation Acceptance + Full Q0 之后。
 
 #### P1A Contracts/kernel
 
@@ -125,6 +129,7 @@ P0C 的顺序固定：
 | `LAR-P1C-004` | untrusted overlay、effective config、opaque sandbox state | tool inventory 和 sandbox boundary 绿色 |
 | `LAR-P1C-005` | `accounting_kill_audit` 与 emergency reserve lifecycle | 500 ms fallback、fenced release/rebuild、optional quota 不冒充 |
 | `LAR-P1C-006` | Full/quick/daily offline Q0 harness | exact probe IDs、generation binding、scope-aware report |
+| `LAR-P1C-007` | Codex CapabilityAdapter + `adapter_no_write_smoke_v1` | disposable repo、无 writer grant/process、零 Git/control-plane mutation |
 
 #### P1D Execution/recovery
 
@@ -149,6 +154,7 @@ P0C 的顺序固定：
 | `LAR-P1E-004` | finalize index -> HEAD -> task-ref | 三个独立 CAS action，ref 永不提前 |
 | `LAR-P1E-005` | artifact、`runtime_external_v1` evidence、receipt | no-replace、六项 receipt、无 hash 环或 secret oracle |
 | `LAR-P1E-006` | cleanup 与 quiescent backup/restore drill | 不删未知文件、anti-rollback、isolated restore |
+| `LAR-P1E-007` | provider-free `fixture_closeout_rehearsal_v1` | GateGraph + Git hybrid + evidence/cleanup 全链，fixture-only |
 
 #### P1F CLI/operations
 
@@ -156,12 +162,12 @@ P0C 的顺序固定：
 |---|---|---|
 | `LAR-P1F-001` | `operations` 内 stable command tree、JSON envelope、exit/reason mapping | strict parser/read-only commands 零副作用，包根无 CLI 模块 |
 | `LAR-P1F-002` | Batch prepare/submit/status/recovery handlers | policy-first transition、permanent replay |
-| `LAR-P1F-003` | single-capacity scheduler 与 parked waits | recovery-first、外部等待释放 capacity、未安装 scheduler |
+| `LAR-P1F-003` | single-capacity scheduler、parked waits 与 data-only portfolio selector | recovery-first、外部等待释放 capacity、repo selector code拒绝、未安装 scheduler |
 | `LAR-P1F-004` | managed Native maintenance 与 emergency kill | normal drain 不 kill、kill intent 先于 termination |
-| `LAR-P1F-005` | OperatorAction/WorkSession、runbooks、人工分钟计量 | 唯一建议命令、无 prompt/secret/free-text reason |
+| `LAR-P1F-005` | OperatorAction/WorkSession、`durable_local_status_v1` inbox、runbooks、人工分钟计量 | 唯一建议命令、optional toast不影响 action、无 prompt/secret/free-text reason |
 | `LAR-P1F-006` | compat/cutover/evaluation dry-run surfaces | 不改 ownership/live state，固定 paired/cohort 公式 |
 
-`LAR-P1G-001` 单独执行 Implementation Acceptance：运行全套 offline gate、migration、crash、conformance、backup/restore 和 rollback drill；不运行 live writer，也不创建 Full Q0/P2 Admission。
+`LAR-P1G-001` 单独冻结 `RuntimeCompositionManifest C` 并执行 Implementation Acceptance `I(C)`：运行全套 offline gate、migration、crash、conformance、backup/restore 和 rollback drill；不运行 live writer，也不创建 Full Q0/P2 Admission。`LAR-Q0-001` 再执行 staged `Q(C,I,staged)`，组装 `B(C,I,Q,expected_previous_active)`，持 activation mutex/durable intent 完成 `current.json` expected-head CAS/read-back和 immediate preflight；只有 terminal `ActiveRuntimeIdentity` 可打开 P2。
 
 每片尽量不超过 5 个主要文件，但这是 review 目标，不是机械失败门。需要跨模块时先增加明确接口/fixture，再拆后继项。
 
@@ -183,8 +189,8 @@ P0C 的顺序固定：
 
 ### At-most-once
 
-- task generation 最多一个 writer execution commit；
-- attempt 最多一个 writer process；
+- task generation 恰有一个稳定 `writer_effect_id`，writer execution commit 为 0 或 1；
+- attempt 最多一个 `writer_launch_id` 和 writer process；pre-commit fresh attempt使用同一 effect ID、新 launch ID；
 - stage run 最多一个 process/execution commit；
 - attempt/effect 恰好一种 execution authority；inherited child grant只能引用同一 parent action grant和current head；
 - action 最多一个 terminal result；
@@ -224,4 +230,4 @@ Network deny、secret scan、unknown path、reparse/hardlink、Git config、prot
 
 ## 10. 当前下一步
 
-当前 action 是 `close_baseline_normative_package_first`，task 是 `LAR-P0A-001`。其完成前不得开始 `LAR-P0A-002`，更不得执行 Truth Reset、创建 `runtime/local-ai-runtime` 或修改 `.ai/config`。
+当前 action 是 `close_baseline_normative_package_first`，task 是 `LAR-P0A-002`。它只允许创建 BaselineManifest schema、byte fixtures 和 verifier skeleton；不得创建最终 `BaselineManifest.v1.json`、批准记录、Truth Reset、`runtime/local-ai-runtime` 或修改 `.ai/config`。

@@ -2,16 +2,16 @@
   "schema_version": "local_ai_runtime_normative_package_inventory.v1",
   "record_kind": "preapproval_inventory",
   "normative": false,
-  "package_id": "local-ai-runtime-0.2-v3.21-normative-package",
-  "baseline_id": "local-ai-runtime-0.2-v3.21",
+  "package_id": "local-ai-runtime-0.2-v3.22-normative-package",
+  "baseline_id": "local-ai-runtime-0.2-v3.22",
   "package_status": "incomplete",
   "approval_eligible": false,
   "blocking_stage": "baseline_approval",
   "updated_on": "2026-07-12",
   "candidate_source": {
-    "path": "docs/specs/local-ai-runtime-0.2-v3.21-baseline-candidate.md",
-    "byte_count": 158485,
-    "sha256": "1bfb5cd2c92c036804a6005d5b36cdd5acc6bedc4d6bf4070ccfb7a70ce063fb",
+    "path": "docs/specs/local-ai-runtime-0.2-v3.22-baseline-candidate.md",
+    "byte_count": 178330,
+    "sha256": "8338a9dcf4bbbb40ca28f4f2ec6dca37587ee94fbfbbc6e3a0063c4de379569c",
     "status": "baseline_candidate"
   },
   "lineage": {
@@ -46,6 +46,13 @@
         "sha256": "43cb98737daa5d171a9cda2dca49c8f118fb8be92745b4076948d9178e56a130",
         "byte_count": 130890,
         "path": "docs/specs/local-ai-runtime-0.2-v3.20-baseline-candidate.md",
+        "archive_status": "present_verified_archive"
+      },
+      {
+        "id": "local-ai-runtime-0.2-v3.21",
+        "sha256": "1bfb5cd2c92c036804a6005d5b36cdd5acc6bedc4d6bf4070ccfb7a70ce063fb",
+        "byte_count": 158485,
+        "path": "docs/specs/local-ai-runtime-0.2-v3.21-baseline-candidate.md",
         "archive_status": "present_verified_archive"
       }
     ],
@@ -82,11 +89,11 @@
     {
       "artifact_id": "P0A-SOURCE",
       "kind": "candidate_spec",
-      "artifact_version": "local-ai-runtime-0.2-v3.21",
-      "path": "docs/specs/local-ai-runtime-0.2-v3.21-baseline-candidate.md",
+      "artifact_version": "local-ai-runtime-0.2-v3.22",
+      "path": "docs/specs/local-ai-runtime-0.2-v3.22-baseline-candidate.md",
       "status": "present",
-      "byte_count": 158485,
-      "sha256": "1bfb5cd2c92c036804a6005d5b36cdd5acc6bedc4d6bf4070ccfb7a70ce063fb",
+      "byte_count": 178330,
+      "sha256": "8338a9dcf4bbbb40ca28f4f2ec6dca37587ee94fbfbbc6e3a0063c4de379569c",
       "required_for_approval": true,
       "producer_task_id": null,
       "verification": "byte_format_and_sha256"
@@ -96,7 +103,9 @@
       "kind": "lineage_archive_and_manifest",
       "artifact_version": "BaselineLineage.v1",
       "path": "docs/specs/local-ai-runtime-0.2/normative/BaselineLineage.v1.json",
-      "status": "missing",
+      "status": "present",
+      "byte_count": 3134,
+      "sha256": "8bb29e0fbc4990749424e07368e5b1c0f09cf378e78d1ada38b8fe998fb97b35",
       "required_for_approval": true,
       "producer_task_id": "LAR-P0A-REBASELINE-V322",
       "verification": "schema_plus_dual_hash_evidence"
@@ -233,7 +242,6 @@
     }
   ],
   "missing_artifact_ids": [
-    "P0A-LINEAGE",
     "P0A-CANONICAL",
     "P0A-PRODUCT",
     "P0A-QUALIFICATION",

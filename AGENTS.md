@@ -5,17 +5,17 @@
 **最后更新**: 2026-07-12
 
 ## 1. 当前落点与目标归宿
-- 当前落点：`runtime/host-orchestrator`、`.ai/state/control-plane.db` 与既有 evidence 仍是唯一现行运行事实；`local-ai-runtime-0.2-v3.21` 只是 `baseline_candidate`，尚未批准、Truth Reset 或实现。
-- 目标归宿：Baseline Approval 后按 v3.21 在 `runtime/local-ai-runtime` 实现 Unified Native + Batch deterministic minimum-operator runtime；legacy Hermes/AgentBridge/host-orchestrator 最终只读兼容。
-- 下一最小里程碑：执行 `LOCAL-AI-RUNTIME-0.2-BASELINE-CLOSURE` 的唯一 ready 工作项 `LAR-P0A-REBASELINE-V322`；当前 selector 必须返回 `draft_v3_22_candidate_first`。
-- 本次规则更新只是预批准 planning control-plane 对齐，不是 v3.21 的 P0B Truth Reset；不得据此创建 approval、新 runtime、Batch claim 或 live evidence。
+- 当前落点：`runtime/host-orchestrator`、`.ai/state/control-plane.db` 与既有 evidence 仍是唯一现行运行事实；`local-ai-runtime-0.2-v3.22` 只是 `baseline_candidate`，尚未批准、Truth Reset 或实现。
+- 目标归宿：Baseline Approval 后按 v3.22 在 `runtime/local-ai-runtime` 实现面向 Windows 本机、单操作者信任域的通用受控 AI 开发执行平台；Epoch 1/v0.2 为 Unified Native + 全局 capacity=1 的 deterministic commit-only Batch，legacy Hermes/AgentBridge/host-orchestrator 最终只读兼容。
+- 下一最小里程碑：执行 `LOCAL-AI-RUNTIME-0.2-BASELINE-CLOSURE` 的唯一 ready 工作项 `LAR-P0A-002`；当前 selector 必须返回 `close_baseline_normative_package_first`。
+- 本次规则更新只是预批准 planning control-plane 对齐，不是 v3.22 的 P0B Truth Reset；不得据此创建 approval、新 runtime、Batch claim 或 live evidence。
 
 ## A. 仓库事实与模块边界
 - `runtime/host-orchestrator` 是当前 `host_local` 可信内核；active Baseline Approval、Truth Reset 和 Legacy Ownership Guard 之前，禁止创建 `runtime/local-ai-runtime` 或其他平行执行包。
 - `.ai/state/control-plane.db` 是调度真源；`.ai/config/*.yaml` 是 repo-owned runtime contract。
 - `.ai/runs/<run_id>/<task_id>/` 是 task-level 正式证据；`docs/change-evidence/README.md` 是 repo-level 治理证据索引，二者不得混用。
-- v3.21 候选正文、normative package inventory、machine work items 与 planning status 只定义目标和阶段门；它们不得覆盖当前 runtime 数据契约或伪造实现证据。
-- AgentBridge、adaptive overlay 和 experimental `runtime_v2` 继续按现有实现工作，但只作为 legacy/迁移输入，不驱动 v3.21 下一任务或证明新 baseline 已实现。
+- v3.22 候选正文、normative package inventory、v3 机器 work items 与 planning status 只定义目标和阶段门；它们不得覆盖当前 runtime 数据契约或伪造实现证据。
+- AgentBridge、adaptive overlay 和 experimental `runtime_v2` 继续按现有实现工作，但只作为 legacy/迁移输入，不驱动 v3.22 下一任务或证明新 baseline 已实现。
 - `private-local/` 存本机 secret/探针且不提交；snapshot/Hermes 目录是历史兼容证据，不反转当前主线。
 
 ## B. 执行与风险边界
@@ -41,6 +41,6 @@
 ## D. Global Rule -> Repo Action
 - `R1-R5`：先由 planning status/selector 确认唯一 ready task；批准前不新增 runtime，后续只按 machine work item 的范围和回滚切片执行。
 - `R6`：C 章顺序不变，build/hotspot 缺口按完整 N/A 留痕。
-- `R7`：保护已验证的 v3.17、两份 v3.18、v3.19、v3.20 archive bytes/hash、v3.21 candidate bytes/hash、artifact/approval generations、task/result/review、AgentBridge、`.ai` 真源与历史 snapshot 边界。
+- `R7`：保护已验证的 v3.17、两份 v3.18、v3.19、v3.20、v3.21 archive bytes/hash、冻结 v3.22 candidate bytes/hash、artifact/approval/plan generations、task/result/review、AgentBridge、`.ai` 真源与历史 snapshot 边界。
 - `R8`：严格区分 repo-level 与 task-level evidence，并写明回滚。
 - `E4`：planning status/selector/preflight 承接健康但不替代三层批准门；`E5`：高漂移依赖先做 reference 比对；`E6`：contract/schema/runtime 变化同步 migration、compat、rollback 和新 generation。
