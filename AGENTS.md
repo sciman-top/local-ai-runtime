@@ -7,7 +7,7 @@
 ## 1. 当前落点与目标归宿
 - 当前落点：`runtime/host-orchestrator`、`.ai/state/control-plane.db` 与既有 evidence 仍是唯一现行运行事实；`local-ai-runtime-0.2-v3.21` 只是 `baseline_candidate`，尚未批准、Truth Reset 或实现。
 - 目标归宿：Baseline Approval 后按 v3.21 在 `runtime/local-ai-runtime` 实现 Unified Native + Batch deterministic minimum-operator runtime；legacy Hermes/AgentBridge/host-orchestrator 最终只读兼容。
-- 下一最小里程碑：执行 `LOCAL-AI-RUNTIME-0.2-BASELINE-CLOSURE` 的唯一 ready 工作项 `LAR-P0A-001`；当前 selector 必须返回 `close_baseline_normative_package_first`。
+- 下一最小里程碑：执行 `LOCAL-AI-RUNTIME-0.2-BASELINE-CLOSURE` 的唯一 ready 工作项 `LAR-P0A-REBASELINE-V322`；当前 selector 必须返回 `draft_v3_22_candidate_first`。
 - 本次规则更新只是预批准 planning control-plane 对齐，不是 v3.21 的 P0B Truth Reset；不得据此创建 approval、新 runtime、Batch claim 或 live evidence。
 
 ## A. 仓库事实与模块边界
@@ -41,6 +41,6 @@
 ## D. Global Rule -> Repo Action
 - `R1-R5`：先由 planning status/selector 确认唯一 ready task；批准前不新增 runtime，后续只按 machine work item 的范围和回滚切片执行。
 - `R6`：C 章顺序不变，build/hotspot 缺口按完整 N/A 留痕。
-- `R7`：保护 v3.19/v3.20 archive bytes/hash、v3.21 candidate bytes/hash、artifact/approval generations、task/result/review、AgentBridge、`.ai` 真源与历史 snapshot 边界。
+- `R7`：保护已验证的 v3.17、两份 v3.18、v3.19、v3.20 archive bytes/hash、v3.21 candidate bytes/hash、artifact/approval generations、task/result/review、AgentBridge、`.ai` 真源与历史 snapshot 边界。
 - `R8`：严格区分 repo-level 与 task-level evidence，并写明回滚。
 - `E4`：planning status/selector/preflight 承接健康但不替代三层批准门；`E5`：高漂移依赖先做 reference 比对；`E6`：contract/schema/runtime 变化同步 migration、compat、rollback 和新 generation。

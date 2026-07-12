@@ -17,6 +17,9 @@ POLICY_PATH = Path("docs/architecture/next-work-selection-policy.json")
 CURRENT_BASELINE_ID = "local-ai-runtime-0.2-v3.21"
 CURRENT_BASELINE_PATH = "docs/specs/local-ai-runtime-0.2-v3.21-baseline-candidate.md"
 CURRENT_BASELINE_ENTRY_PATH = "docs/specs/local-ai-runtime-0.2-baseline-candidate.md"
+HISTORICAL_SOURCE_RECORD_PATH = (
+    "docs/specs/local-ai-runtime-0.2/history/HistoricalSourceArchive.v1.json"
+)
 BASELINE_ENTRY_ROLE = "non_normative_navigation"
 BASELINE_ENTRY_MAXIMUM_BYTE_COUNT = 4096
 EXPECTED_SELECTOR_ENTRYPOINTS = [
@@ -601,6 +604,143 @@ def _verify_lineage_archives(
             failures.append("unarchived v3.17 sha256 must remain null")
         if not _is_sha256(v317.get("provisional_transcript_sha256")):
             failures.append("unarchived v3.17 must retain a provisional transcript SHA-256")
+
+    historical_record_path = root / HISTORICAL_SOURCE_RECORD_PATH
+    if historical_record_path.is_file():
+        try:
+            historical_record = _load_json(historical_record_path)
+        except ValueError as exc:
+            failures.append(str(exc))
+        else:
+            _verify_historical_source_record(root, historical_record, failures)
+
+    conflicted = lineage.get("conflicted_candidate_ids")
+    if not isinstance(conflicted, list) or len(conflicted) != 1:
+        failures.append("inventory lineage must contain exactly one conflicted candidate ID")
+    else:
+        v318 = _as_dict(conflicted[0], "inventory.lineage.conflicted_candidate_ids[0]", failures)
+        expected_v318_archives = [
+            {
+                "archive_id": "local-ai-runtime-0.2-v3.18-a",
+                "path": "docs/specs/local-ai-runtime-0.2/history/local-ai-runtime-0.2-v3.18-a.md",
+                "byte_count": 66328,
+                "sha256": "6924ba562dda8e69274eb80fef9e3a9699eb493570ee08330fcad5ec4bc3baa5",
+            },
+            {
+                "archive_id": "local-ai-runtime-0.2-v3.18-b",
+                "path": "docs/specs/local-ai-runtime-0.2/history/local-ai-runtime-0.2-v3.18-b.md",
+                "byte_count": 43908,
+                "sha256": "8da5aa20fb44d95503e443822163397a2aa1df590e1916d1a5a10a6c24ea06b7",
+            },
+        ]
+        if v318.get("id") != "local-ai-runtime-0.2-v3.18":
+            failures.append("conflicted candidate ID must remain local-ai-runtime-0.2-v3.18")
+        if v318.get("required_distinct_archives") != 2:
+            failures.append("v3.18 must require exactly two distinct archives")
+        if v318.get("verified_archives") != expected_v318_archives:
+            failures.append("v3.18 verified archive identities must match recovered bytes")
+        if v318.get("archive_status") != "present_verified_archives":
+            failures.append("v3.18 archive_status must be present_verified_archives")
+        if v318.get("source_record") != HISTORICAL_SOURCE_RECORD_PATH:
+            failures.append("v3.18 source_record must reference HistoricalSourceArchive.v1")
+
+
+def _verify_historical_source_record(
+    root: Path, record: dict[str, Any], failures: list[str]
+) -> None:
+    if record.get("schema_version") != "HistoricalSourceArchive.v1":
+        failures.append("historical source record schema_version mismatch")
+    if record.get("record_kind") != "exact_message_content_archive":
+        failures.append("historical source record kind mismatch")
+    if record.get("normative") is not False:
+        failures.append("historical source record must be non-normative")
+    if record.get("session_id") != "019f5081-9022-7681-9378-fa14e695131b":
+        failures.append("historical source record session_id mismatch")
+    if record.get("session_basename") != (
+        "rollout-2026-07-11T17-28-21-019f5081-9022-7681-9378-fa14e695131b.jsonl"
+    ):
+        failures.append("historical source record session basename mismatch")
+    if record.get("required_independent_hash_methods") != [
+        "python_hashlib_sha256",
+        "powershell_get_file_hash_sha256",
+    ]:
+        failures.append("historical source record must require both independent hash methods")
+
+    expected = {
+        "local-ai-runtime-0.2-v3.17": (
+            "docs/specs/local-ai-runtime-0.2/history/local-ai-runtime-0.2-v3.17.md",
+            32825,
+            "a285f5f421a8ccd4debd8794609a2aa0eb07bb1bf651c2467a95f7cad25a5f81",
+            7409,
+            "assistant",
+            "output_text",
+            "unwrap_proposed_plan",
+            16,
+            16,
+        ),
+        "local-ai-runtime-0.2-v3.18-a": (
+            "docs/specs/local-ai-runtime-0.2/history/local-ai-runtime-0.2-v3.18-a.md",
+            66328,
+            "6924ba562dda8e69274eb80fef9e3a9699eb493570ee08330fcad5ec4bc3baa5",
+            8408,
+            "assistant",
+            "output_text",
+            "unwrap_proposed_plan",
+            16,
+            16,
+        ),
+        "local-ai-runtime-0.2-v3.18-b": (
+            "docs/specs/local-ai-runtime-0.2/history/local-ai-runtime-0.2-v3.18-b.md",
+            43908,
+            "8da5aa20fb44d95503e443822163397a2aa1df590e1916d1a5a10a6c24ea06b7",
+            8429,
+            "user",
+            "input_text",
+            "from_unique_title",
+            105,
+            0,
+        ),
+    }
+    archives = record.get("archives")
+    if not isinstance(archives, list) or len(archives) != len(expected):
+        failures.append("historical source record must contain exactly three archives")
+        return
+    seen: set[str] = set()
+    for index, value in enumerate(archives):
+        archive = _as_dict(value, f"historical archives[{index}]", failures)
+        archive_id = archive.get("archive_id")
+        if archive_id not in expected or archive_id in seen:
+            failures.append(f"unexpected or duplicate historical archive ID: {archive_id!r}")
+            continue
+        seen.add(archive_id)
+        path_value, byte_count, sha256, line, role, content_type, extraction, prefix, suffix = expected[archive_id]
+        if archive.get("path") != path_value:
+            failures.append(f"{archive_id} historical path mismatch")
+        try:
+            raw = _resolve_repo_path(root, path_value, archive_id).read_bytes()
+        except (OSError, ValueError) as exc:
+            failures.append(f"{archive_id} historical archive is unreadable: {exc}")
+            continue
+        _verify_normative_bytes(raw, f"{archive_id} historical archive", failures)
+        if archive.get("byte_count") != byte_count or len(raw) != byte_count:
+            failures.append(f"{archive_id} historical byte count mismatch")
+        if archive.get("sha256") != sha256 or hashlib.sha256(raw).hexdigest() != sha256:
+            failures.append(f"{archive_id} historical SHA-256 mismatch")
+        source = _as_dict(archive.get("source"), f"{archive_id}.source", failures)
+        expected_source = {
+            "jsonl_line": line,
+            "outer_record_type": "response_item",
+            "payload_type": "message",
+            "role": role,
+            "content_index": 0,
+            "content_type": content_type,
+            "text_field": "payload.content[0].text",
+            "extraction": extraction,
+            "excluded_prefix_utf8_bytes": prefix,
+            "excluded_suffix_utf8_bytes": suffix,
+        }
+        if source != expected_source:
+            failures.append(f"{archive_id} historical source boundary mismatch")
 
 
 def _verify_inventory(

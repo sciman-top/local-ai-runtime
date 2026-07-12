@@ -1,6 +1,6 @@
 # Local AI Runtime 文档索引
 
-本索引服务于 `local-ai-runtime-0.2-v3.21` 候选重基线。当前状态固定为 `baseline_candidate`、`blocking_stage=baseline_approval`，下一动作是 `close_baseline_normative_package_first`。
+本索引当前服务于从 `local-ai-runtime-0.2-v3.21` 转向 v3.22 的候选重基线。v3.21 仍是冻结的现行 `baseline_candidate`、`blocking_stage=baseline_approval`，但历史源字节已经闭合，下一动作是 `draft_v3_22_candidate_first`。
 
 ## 真源层级
 

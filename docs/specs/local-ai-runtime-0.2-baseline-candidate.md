@@ -27,8 +27,9 @@ implementation.
 
 The v3.21 candidate remains **Request changes**. Its normative package is
 incomplete: one candidate source is present and fourteen required artifacts are
-still missing. The current ready work item is `LAR-P0A-001`, selected as
-`close_baseline_normative_package_first`.
+still missing. The historical v3.17 and both conflicted v3.18 source bodies are
+now archived and independently verified. The current ready work item is
+`LAR-P0A-REBASELINE-V322`, selected as `draft_v3_22_candidate_first`.
 
 - [Planning status](../architecture/planning-status.json): machine truth for
   baseline identity, approval state, queue, and current work item.

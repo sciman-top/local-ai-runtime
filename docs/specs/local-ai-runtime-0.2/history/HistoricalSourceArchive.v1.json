@@ -1,0 +1,74 @@
+{
+  "schema_version": "HistoricalSourceArchive.v1",
+  "record_kind": "exact_message_content_archive",
+  "normative": false,
+  "session_id": "019f5081-9022-7681-9378-fa14e695131b",
+  "session_basename": "rollout-2026-07-11T17-28-21-019f5081-9022-7681-9378-fa14e695131b.jsonl",
+  "byte_policy": "SpecificationBytePolicy.v1",
+  "required_independent_hash_methods": [
+    "python_hashlib_sha256",
+    "powershell_get_file_hash_sha256"
+  ],
+  "archives": [
+    {
+      "archive_id": "local-ai-runtime-0.2-v3.17",
+      "path": "docs/specs/local-ai-runtime-0.2/history/local-ai-runtime-0.2-v3.17.md",
+      "byte_count": 32825,
+      "sha256": "a285f5f421a8ccd4debd8794609a2aa0eb07bb1bf651c2467a95f7cad25a5f81",
+      "source": {
+        "jsonl_line": 7409,
+        "outer_record_type": "response_item",
+        "payload_type": "message",
+        "role": "assistant",
+        "content_index": 0,
+        "content_type": "output_text",
+        "text_field": "payload.content[0].text",
+        "extraction": "unwrap_proposed_plan",
+        "excluded_prefix_utf8_bytes": 16,
+        "excluded_suffix_utf8_bytes": 16
+      }
+    },
+    {
+      "archive_id": "local-ai-runtime-0.2-v3.18-a",
+      "path": "docs/specs/local-ai-runtime-0.2/history/local-ai-runtime-0.2-v3.18-a.md",
+      "byte_count": 66328,
+      "sha256": "6924ba562dda8e69274eb80fef9e3a9699eb493570ee08330fcad5ec4bc3baa5",
+      "source": {
+        "jsonl_line": 8408,
+        "outer_record_type": "response_item",
+        "payload_type": "message",
+        "role": "assistant",
+        "content_index": 0,
+        "content_type": "output_text",
+        "text_field": "payload.content[0].text",
+        "extraction": "unwrap_proposed_plan",
+        "excluded_prefix_utf8_bytes": 16,
+        "excluded_suffix_utf8_bytes": 16
+      }
+    },
+    {
+      "archive_id": "local-ai-runtime-0.2-v3.18-b",
+      "path": "docs/specs/local-ai-runtime-0.2/history/local-ai-runtime-0.2-v3.18-b.md",
+      "byte_count": 43908,
+      "sha256": "8da5aa20fb44d95503e443822163397a2aa1df590e1916d1a5a10a6c24ea06b7",
+      "source": {
+        "jsonl_line": 8429,
+        "outer_record_type": "response_item",
+        "payload_type": "message",
+        "role": "user",
+        "content_index": 0,
+        "content_type": "input_text",
+        "text_field": "payload.content[0].text",
+        "extraction": "from_unique_title",
+        "excluded_prefix_utf8_bytes": 105,
+        "excluded_suffix_utf8_bytes": 0
+      }
+    }
+  ],
+  "invariants": [
+    "No encoding, newline, Unicode, whitespace or Markdown normalization is permitted.",
+    "The original session remains read-only and is not copied into the repository.",
+    "Existing archive paths are verified byte-for-byte and never overwritten.",
+    "This record is source provenance, not BaselineLineage.v1 or Baseline Approval."
+  ]
+}

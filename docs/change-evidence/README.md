@@ -1,5 +1,7 @@
 # Change Evidence Index
 
+- [20260712 Local AI Runtime historical source archive](20260712-local-ai-runtime-historical-source-archive.md): exact v3.17/v3.18 source-message boundaries, byte-policy validation and independent dual-hash evidence; does not close the v3.22 lineage or approve a baseline.
+
 这个目录只存 **repo-level governance evidence**，不存 task-level `.ai/runs/<run_id>/<task_id>/` 正式工件。
 
 边界：

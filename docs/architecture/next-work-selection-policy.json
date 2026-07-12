@@ -145,7 +145,7 @@
     },
     {
       "path": "docs/README.md",
-      "contains": "close_baseline_normative_package_first"
+      "contains": "draft_v3_22_candidate_first"
     },
     {
       "path": "docs/plans/orchestrator-implementation-plan.md",

@@ -78,7 +78,7 @@
       "task_id": "LAR-P0A-001",
       "phase": "P0A",
       "priority": 0,
-      "status": "ready",
+      "status": "completed",
       "title": "Archive and verify the historical candidate source bytes",
       "goal": "Extract the exact v3.17 and both conflicted v3.18 message/content bodies from the original Codex session, validate their bytes without normalization, and independently verify their SHA-256 values before any v3.22 lineage record is created.",
       "depends_on": [],
@@ -141,7 +141,7 @@
       "task_id": "LAR-P0A-REBASELINE-V322",
       "phase": "P0A",
       "priority": 0,
-      "status": "pending",
+      "status": "ready",
       "title": "Create and mechanically project the superseding v3.22 candidate",
       "goal": "Create one complete self-contained v3.22 narrative, record v3.21 as its exact superseded candidate, reissue the complete lineage and atomically project the new candidate identity into every planning and implementation truth surface without approving or implementing it.",
       "depends_on": [

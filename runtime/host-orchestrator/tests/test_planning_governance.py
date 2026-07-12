@@ -7,6 +7,8 @@ import runpy
 import subprocess
 import sys
 
+import pytest
+
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 STATUS_PATH = REPO_ROOT / "docs" / "architecture" / "planning-status.json"
@@ -30,6 +32,7 @@ V320_PATH = (
 )
 VERIFIER_PATH = REPO_ROOT / "scripts" / "verify-planning-status.py"
 SELECTOR_PATH = REPO_ROOT / "scripts" / "select-next-work.py"
+HISTORY_EXTRACTOR_PATH = REPO_ROOT / "scripts" / "extract-local-ai-runtime-history.py"
 POLICY_PATH = REPO_ROOT / "docs" / "architecture" / "next-work-selection-policy.json"
 INVENTORY_PATH = (
     REPO_ROOT / "docs" / "specs" / "local-ai-runtime-0.2-normative-package.json"
@@ -113,7 +116,7 @@ def test_planning_verifier_accepts_truthful_candidate_state() -> None:
     assert payload["baseline_id"] == "local-ai-runtime-0.2-v3.21"
     assert payload["approval_active"] is False
     assert payload["missing_artifact_count"] == 14
-    assert payload["current_work_item_id"] == "LAR-P0A-001"
+    assert payload["current_work_item_id"] == "LAR-P0A-REBASELINE-V322"
     work_items = json.loads(WORK_ITEMS_PATH.read_text(encoding="utf-8"))["work_items"]
     task_ids = {item["task_id"] for item in work_items}
     assert payload["work_item_count"] == len(work_items) == 59
@@ -125,8 +128,8 @@ def test_planning_selector_returns_baseline_closure_without_preflight() -> None:
 
     assert completed.returncode == 0, completed.stderr
     payload = json.loads(completed.stdout)
-    assert payload["next_action"] == "archive_lineage_sources_first"
-    assert payload["current_work_item_id"] == "LAR-P0A-001"
+    assert payload["next_action"] == "draft_v3_22_candidate_first"
+    assert payload["current_work_item_id"] == "LAR-P0A-REBASELINE-V322"
     assert payload["side_effects_performed"] is False
     assert payload["preflight_run"] is False
 
@@ -158,8 +161,8 @@ def test_stable_baseline_entry_is_non_normative_and_targets_frozen_candidate() -
         "target_sha256": baseline["sha256"],
         "approval_input": False,
         "maximum_byte_count": 4096,
-        "byte_count": 2287,
-        "sha256": "728013566b8d879373ad2addaf7f619f516c3eaf3e7478ce361b82a3aedf5274",
+        "byte_count": 2394,
+        "sha256": "584dc1e08b25b7c4513f5938a8e0377bcef0f2c080d04ba152296292bdec665d",
     }
     assert len(raw) <= entry["maximum_byte_count"]
     assert len(raw) == entry["byte_count"]
@@ -511,6 +514,97 @@ def test_normative_byte_validator_rejects_non_lf_unicode_boundaries() -> None:
         failures: list[str] = []
         validator(f"# candidate{forbidden}\n".encode(), "candidate", failures)
         assert failures, f"U+{ord(forbidden):04X} unexpectedly passed"
+
+
+def test_history_extractor_enforces_message_boundaries_and_no_replace(
+    tmp_path: Path,
+) -> None:
+    namespace = runpy.run_path(str(HISTORY_EXTRACTOR_PATH))
+    extract_body = namespace["_extract_body"]
+    publish_or_verify = namespace["_publish_or_verify"]
+    specs = namespace["SOURCE_SPECS"]
+
+    wrapped = {
+        "type": "response_item",
+        "payload": {
+            "type": "message",
+            "role": "assistant",
+            "content": [
+                {
+                    "type": "output_text",
+                    "text": "<proposed_plan>\nbody\n</proposed_plan>",
+                }
+            ],
+        },
+    }
+    body, source = extract_body(wrapped, specs[0])
+    assert body == "body\n"
+    assert source["excluded_prefix_utf8_bytes"] == len("<proposed_plan>\n")
+    assert source["excluded_suffix_utf8_bytes"] == len("</proposed_plan>")
+
+    path = tmp_path / "archive.md"
+    publish_or_verify(path, b"body\n", False)
+    publish_or_verify(path, b"body\n", False)
+    with pytest.raises(ValueError, match="will not be overwritten"):
+        publish_or_verify(path, b"changed\n", False)
+
+
+def test_history_extractor_rejects_ambiguous_or_changed_source_shape() -> None:
+    namespace = runpy.run_path(str(HISTORY_EXTRACTOR_PATH))
+    extract_body = namespace["_extract_body"]
+    specs = namespace["SOURCE_SPECS"]
+
+    malformed = {
+        "type": "response_item",
+        "payload": {
+            "type": "message",
+            "role": "assistant",
+            "content": [{"type": "output_text", "text": "body\n"}],
+        },
+    }
+    with pytest.raises(ValueError, match="exact plan envelope"):
+        extract_body(malformed, specs[0])
+
+    duplicate_title = {
+        "type": "response_item",
+        "payload": {
+            "type": "message",
+            "role": "user",
+            "content": [
+                {
+                    "type": "input_text",
+                    "text": namespace["V318_TITLE"] + "\n" + namespace["V318_TITLE"] + "\n",
+                }
+            ],
+        },
+    }
+    with pytest.raises(ValueError, match="exactly one v3.18 title"):
+        extract_body(duplicate_title, specs[2])
+
+
+def test_historical_archives_match_source_record_and_planning_verifier() -> None:
+    namespace = runpy.run_path(str(VERIFIER_PATH))
+    verify_record = namespace["_verify_historical_source_record"]
+    record_path = (
+        REPO_ROOT
+        / "docs"
+        / "specs"
+        / "local-ai-runtime-0.2"
+        / "history"
+        / "HistoricalSourceArchive.v1.json"
+    )
+    record = json.loads(record_path.read_text(encoding="utf-8"))
+    failures: list[str] = []
+
+    verify_record(REPO_ROOT, record, failures)
+
+    assert failures == []
+    assert [item["byte_count"] for item in record["archives"]] == [32825, 66328, 43908]
+    assert [item["sha256"] for item in record["archives"]] == [
+        "a285f5f421a8ccd4debd8794609a2aa0eb07bb1bf651c2467a95f7cad25a5f81",
+        "6924ba562dda8e69274eb80fef9e3a9699eb493570ee08330fcad5ec4bc3baa5",
+        "8da5aa20fb44d95503e443822163397a2aa1df590e1916d1a5a10a6c24ea06b7",
+    ]
 
 
 def test_superseded_v319_archive_matches_declared_lineage() -> None:
