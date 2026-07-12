@@ -8,8 +8,19 @@
 - task-level `result.json`、`verification_summary.json`、`cost_summary.json`、`evidence_index.json` 仍属于 `.ai/runs/<run_id>/<task_id>/`
 - 这里的索引只回答“当前仓的治理增强面何时、为何、如何被刷新”
 
+## 2026-07-12 当前规划真值
+
+- v3.21 是 `baseline_candidate`，不是 approved baseline；v3.19 与冻结 v3.20 只作为精确 superseded archives 保留。
+- 当前队列是 `LOCAL-AI-RUNTIME-0.2-BASELINE-CLOSURE`。
+- 当前 selector 是 `close_baseline_normative_package_first`，唯一 ready task 是 `LAR-P0A-001`。
+- `runtime/host-orchestrator` 仍是现行内核；没有 Truth Reset、新 Batch、Implementation Acceptance、Full Q0 或 P2 admission。
+- 下方 2026-07-06 至 2026-07-10 的 Phase 1/runtime_v2 selector 结论是历史 evidence，不再是 next-work truth。
+
 当前入口：
 
+- [20260712 Local AI Runtime v3.21 Candidate Rebaseline](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260712-local-ai-runtime-v3.21-candidate-rebaseline.md) - 当前候选规划真值；`baseline_candidate`、14 个 normative artifact missing、58 项机器图/33 个 P1 编码切片、selector=`close_baseline_normative_package_first`、task=`LAR-P0A-001`
+- [20260712 Local AI Runtime v3.20 Candidate Rebaseline](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260712-local-ai-runtime-v3.20-candidate-rebaseline.md) - 冻结 v3.20 byte/hash 与 superseded candidate 证据；不再是 next-work truth
+- [20260712 Local AI Runtime v3.19 Candidate Planning Rebaseline](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260712-local-ai-runtime-v3.19-candidate-rebaseline.md) - 历史候选投影与精确 v3.19 byte/hash 证据；不再是 next-work truth
 - [20260706 Verification Runner Minimal Gates](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260706-verification-runner-minimal-gates.md)
 - [20260706 Host Local Robustness And Lease Helpers](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260706-host-local-robustness-and-lease-helpers.md)
 - [20260706 Strategic Regression](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260706-strategic-regression.md)
@@ -79,7 +90,7 @@
 - [20260710 Trellis + Grill vs Superpowers Research](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260710-trellis-grill-vs-superpowers-research.md)
 - [20260710 Adaptive Orchestration Overlay](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260710-adaptive-orchestration-overlay.md)
 
-当前最新结论：
+2026-07-10 历史结论（已被 2026-07-12 candidate rebaseline 替代）：
 
 - authoritative docs 已回调为 `Hermes -> AgentBridge -> Codex` 三层主线
 - 当前 repo truth 仍保持 canonical intake、`result.json` 正式 evidence、以及 compatibility projection

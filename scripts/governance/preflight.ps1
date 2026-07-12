@@ -92,7 +92,7 @@ $repoRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 $records = New-Object System.Collections.Generic.List[object]
 $failures = New-Object System.Collections.Generic.List[string]
 
-$records.Add((New-GateRecord -Gate 'build' -Status 'gate_na' -Reason 'repo-owned build gate is not defined yet for the current Hermes -> AgentBridge -> Codex runtime mainline' -AlternativeVerification 'uv run --project .\runtime\host-orchestrator python -m pytest' -EvidenceLink 'docs/specs/acceptance-and-gates.md' -ExpiresAt 'when a repo-owned build gate is introduced'))
+$records.Add((New-GateRecord -Gate 'build' -Status 'gate_na' -Reason 'the v3.21 slice changes candidate planning artifacts and runtime/local-ai-runtime does not exist yet' -AlternativeVerification 'uv run --project .\runtime\host-orchestrator python -m pytest' -EvidenceLink 'docs/specs/acceptance-and-gates.md' -ExpiresAt 'LAR-P0D-001 creates runtime/local-ai-runtime'))
 
 $testResult = Invoke-CheckedCommand -Command 'uv run --project .\runtime\host-orchestrator python -m pytest' -Action {
     uv run --project .\runtime\host-orchestrator python -m pytest
@@ -114,16 +114,16 @@ if ($contractResult.exit_code -ne 0) {
     $records.Add((New-GateRecord -Gate 'contract/invariant' -Status 'pass' -Command $contractResult.command -KeyOutput $contractResult.output))
 }
 
-$records.Add((New-GateRecord -Gate 'hotspot' -Status 'gate_na' -Reason 'repo-owned hotspot gate is not defined yet for the current Hermes -> AgentBridge -> Codex runtime mainline' -AlternativeVerification 'repo-side proof is currently limited to verifier + pytest + diff hygiene' -EvidenceLink 'docs/specs/acceptance-and-gates.md' -ExpiresAt 'when a repo-owned hotspot gate is introduced'))
+$records.Add((New-GateRecord -Gate 'hotspot' -Status 'gate_na' -Reason 'the v3.21 slice changes planning contracts rather than executable runtime hot paths' -AlternativeVerification 'planning governance tests + verifier + selector + git diff --check' -EvidenceLink 'docs/specs/acceptance-and-gates.md' -ExpiresAt 'the first executable runtime slice after LAR-P0D-001'))
 
-$docsResult = Invoke-CheckedCommand -Command 'python .\scripts\verify-planning-status.py' -Action {
-    python .\scripts\verify-planning-status.py
+$selectorResult = Invoke-CheckedCommand -Command 'python .\scripts\select-next-work.py' -Action {
+    python .\scripts\select-next-work.py
 }
-if ($docsResult.exit_code -ne 0) {
-    $records.Add((New-GateRecord -Gate 'Docs' -Status 'fail' -Command $docsResult.command -KeyOutput $docsResult.output))
-    $failures.Add('Docs')
+if ($selectorResult.exit_code -ne 0) {
+    $records.Add((New-GateRecord -Gate 'Planning selection' -Status 'fail' -Command $selectorResult.command -KeyOutput $selectorResult.output))
+    $failures.Add('Planning selection')
 } else {
-    $records.Add((New-GateRecord -Gate 'Docs' -Status 'pass' -Command $docsResult.command -KeyOutput $docsResult.output))
+    $records.Add((New-GateRecord -Gate 'Planning selection' -Status 'pass' -Command $selectorResult.command -KeyOutput $selectorResult.output))
 }
 
 $scriptsResult = Invoke-CheckedCommand -Command 'python -m py_compile scripts/*.py && parse scripts/*.ps1' -Action {

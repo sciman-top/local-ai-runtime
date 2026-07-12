@@ -1,114 +1,242 @@
 {
-  "schema_version": "1.0",
-  "status_id": "orchestrator-rebaseline-status",
-  "updated_on": "2026-07-10",
+  "schema_version": "2.0",
+  "status_id": "local-ai-runtime-0.2-rebaseline-status",
+  "updated_on": "2026-07-12",
+  "baseline_candidate": {
+    "id": "local-ai-runtime-0.2-v3.21",
+    "title": "Local AI Runtime 0.2 v3.21 Unified Native + Batch Deterministic Minimum-Operator Implementation Baseline Candidate",
+    "path": "docs/specs/local-ai-runtime-0.2-v3.21-baseline-candidate.md",
+    "byte_count": 158485,
+    "sha256": "1bfb5cd2c92c036804a6005d5b36cdd5acc6bedc4d6bf4070ccfb7a70ce063fb",
+    "status": "baseline_candidate",
+    "decision": "request_changes_until_normative_package_closure",
+    "blocking_stage": "baseline_approval"
+  },
+  "approval_state": {
+    "active": false,
+    "generation": 0,
+    "approval_record": null,
+    "revocation_record": null,
+    "reason": "The candidate prose exists, but required normative schemas, catalogs, transition tables, examples, fixtures, verifier and consistency review are incomplete."
+  },
+  "normative_package": {
+    "inventory_ref": "docs/specs/local-ai-runtime-0.2-normative-package.json",
+    "status": "incomplete",
+    "approval_eligible": false,
+    "required_artifact_count": 15,
+    "present_artifact_count": 1,
+    "missing_artifact_ids": [
+      "P0A-LINEAGE",
+      "P0A-CANONICAL",
+      "P0A-PRODUCT",
+      "P0A-QUALIFICATION",
+      "P0A-EXECUTION",
+      "P0A-EVIDENCE",
+      "P0A-GIT",
+      "P0A-STATE",
+      "P0A-Q0",
+      "P0A-MIGRATION",
+      "P0A-EXAMPLES",
+      "P0A-VERIFIER",
+      "P0A-MANIFEST",
+      "P0A-REVIEW"
+    ]
+  },
   "current_active_queue": {
-    "queue_id": "PHASE-1-VERTICAL-SLICE",
-    "label": "Real SDK Vertical Slice And Canonical Runtime Evidence",
+    "queue_id": "LOCAL-AI-RUNTIME-0.2-BASELINE-CLOSURE",
+    "label": "Close v3.21 normative package before implementation",
     "status": "in_progress",
     "source_plan": "docs/plans/orchestrator-implementation-plan.md",
-    "source_backlog": "docs/backlog/orchestrator-task-list.md",
-    "why_now": "Local AI Runtime keeps the same active queue after the strategic return. The repo now accepts compliant AgentBridge markdown task intake on host_local through a fail-closed adapter, completes a repo-side projection parity loop from markdown task to result.json plus markdown projection, and still keeps result.json as formal evidence with AgentBridge markdown as compatibility projection. With host_local crash recovery, lease helpers, exec fallback process-guard, the minimal verification runner, the safe intake adapter, a repo-owned host_local task entrypoint plus worker factory support for `codex_sdk / codex_exec`, repo-side parity, a live planner-sidecar receipt boundary, the repo-side review gate, repo-side predicate coverage plus force-on overrides, the git-backed write-boundary enforcement, the minimal worktree manager, the cleanup manager, the runtime-backed `dispatch_state.json` ledger, repo-side `stale / cancelled / resumed / retry` lifecycle helpers, repo-side `planner_result.json` receipts, repo-side `review_result.json` receipts, repo-side `closeout_bundle.json` receipts, repo-side `leases / route / quota` closeout, deterministic multi-worker simulation, remote_non_gui promotion evidence, a repo-owned Hermes parity / historical snapshot mapping verifier, vm_gui conditional promotion evidence, a diff-aware bounded live heterogeneous review sidecar receipt on configured host_local review paths, remote_non_gui runner wiring readiness, review disposition / rework loop, and an explicit E-T01 decision to keep `compatibility_projection_ref` and `lane` unchanged until real remote/vm runner acceptance plus follow-on review stability are both grounded, the repo-side topology promotion proof now includes the P5-T04 readiness branch while the next bounded execution sequence turns to real remote host runner acceptance and the selector stays at promote_phase1_execution. In parallel, Kernel V2 dual-track bootstrap, K2-T04 scheduling/review/policy-gate deepening, K2-T05 regression fixture / eval summary coverage, the K2-T06 cutover drill / fail-closed guard, one real `local_maint` runtime_v2 live coding probe, the K2-T06 cutover review / rollback drill with explicit manual confirmation boundary, the non-destructive K2-T06 rollback restore drill, the K2-T06 operator approval evidence gate, the K2-T06 approval template, the K2-T06 approval audit, the K2-T06 archive restore acceptance, the K2-T06 operator runbook, the K2-T06 approval acceptance-ref gate, and the K2-T06 approval timestamp gate are now absorbed into code, config, tests, docs, and verifier surfaces, including ready-blocked continuation, structured review receipts, a bounded review sidecar hook, pre-worker policy guard, completed / reviewing / gate-retryable final-result, dependency-blocked, admission-paused, pre-worker policy-guard blocked, worker-failure retryable / failed, retry queued `regression_fixture.json` attempts, `--eval-regression-fixtures-v2`, `--cutover-drill-v2`, `--cutover-rollback-drill-v2`, `archive-restore-acceptance.json`, guarded `--cutover-v2`, `--confirm-cutover-v2`, `--cutover-approval-ref`, `--cutover-approval-template-v2`, `archive_restore_acceptance_path`, `approval_timestamp`, and `runtime-v2-cutover-operator-runbook.md`; the latest cutover drill is ready with `cutover_performed=false`, default `--cutover-v2` now returns `manual_approval_required / cutover_performed=false`, `--cutover-rollback-drill-v2` now requires v1 DB and v1 runs restore sources and writes `archive-restore-acceptance.json` with `restore_performed=false`, missing, unapproved, non-UTC-timestamped, or archive-restore-acceptance-mismatched operator approval evidence returns `approval_required / cutover_performed=false`, approval validation records approval hash / byte count / operator fields / UTC approval_timestamp / archive_restore_acceptance_path / sanitized audit, and the approval template generator writes a default unapproved template, so the default entrypoint is still v1 and the active queue remains unchanged."
+    "source_work_items": "docs/plans/local-ai-runtime-0.2-work-items.json",
+    "work_item_count": 58,
+    "why_now": "The complete v3.21 candidate prose is available, but implementation is blocked until its normative package is mechanically closed and approved."
   },
-  "current_decision_gate": {
-    "selector": "promote_phase1_execution",
-    "selector_source": "scripts/select-next-work.py",
-    "as_of": "2026-07-08",
-    "proof_ref": "docs/change-evidence/20260708-review-disposition-rework-loop.md",
-    "blocking_reasons": []
+  "current_work_item": {
+    "task_id": "LAR-P0A-001",
+    "selector_action": "close_baseline_normative_package_first",
+    "status": "ready",
+    "reason": "The first unresolved approval artifact is the verified baseline lineage record."
   },
-  "current_live_posture": {
-    "status": "live_probe_ready",
-    "gpt54_gateway_probe_status": "ready",
-    "codex_exec_probe_status": "ready",
-    "as_of": "2026-07-08",
-    "summary": "Local AI Runtime currently executes repo-side through canonical normalization on host_local, writes result.json as formal evidence, writes `.ai/runs/<run_id>/<task_id>/dispatch_state.json` as the runtime ledger companion, writes `planner_result.json` on live planner-sidecar paths, writes `review_result.json` on review-gated paths, writes `closeout_bundle.json` on current planner/review/completed runtime outcomes, and keeps AgentBridge results as compatibility projection. The execution hot path is Codex-first on `host_local`, while Hermes stays in the repo truth as the risk/ledger/cross-executor sidecar and Claude now materializes a bounded live review sidecar receipt on configured host_local review paths. host_local crash recovery, minimal lease lifecycle helpers, exec fallback process-tree guarding, the minimal verification runner, a fail-closed AgentBridge markdown intake adapter, a repo-owned host_local task entrypoint plus worker factory support for `codex_sdk / codex_exec`, repo-side projection parity, a live planner-sidecar receipt boundary, a repo-side review gate, repo-side predicate coverage plus force-on overrides, git-backed write-boundary enforcement, a minimal worktree manager, a cleanup manager, the runtime-backed dispatch ledger, repo-side lifecycle helpers, repo-side route selection plus lease quota handoff guard, deterministic multi-worker simulation, remote_non_gui promotion evidence, vm_gui conditional promotion evidence, repo-side structured receipts, and a repo-owned Hermes parity suite are now landed. The host_local task entrypoint currently materializes `host-orchestrator --run-task` and `run-host-task.ps1` from repo-owned worker profiles, directly exercises `local_maint` through `codex_sdk`, keeps committed built-in non-host-local profiles on the `runner_wired=false` handoff boundary until a real remote/vm runner is accepted, and keeps `scripted / gpt54_direct / claude_glm` fail-closed for live primary task execution rather than pretending they already run. The Hermes parity suite materializes the certified baseline doc, the current known-good / boundary anchors, the snapshot contract, the known-good validator, and the historical container lifecycle boundary into one rerunnable summary; in the current shell only the env-sensitive `independent_key / independent_base_url` bring-up gates remain intentionally red. The repo now also has a remote_non_gui promotion suite that replays both default local-lane handoff and explicit remote-profile fail-closed handoff across 2 scenarios while keeping leases drained and workers idle, plus a vm_gui promotion suite that replays both default GUI-only handoff and explicit `vm_gui_probe` fail-closed handoff across 2 scenarios while keeping leases drained and workers idle; both are repo-side promotion proofs, not live remote/vm execution or `live accepted`. The repo-side runner wiring readiness branch can use temporary `runner_wired=true` test config to call an injected runner and prove failed-dispatch behavior, but committed profiles remain fail-closed. The current repo-side closeout also keeps the E-T01 field-name boundary: `compatibility_projection_ref` and `lane` stay unchanged until real remote/vm runner acceptance and any follow-on review stability work are both real. Planner-gated tasks currently run a codex-backed live planner sidecar on eligible host_local profiles, write `planner_result.json`, and still stop at `waiting_handoff` before any primary worker execution; review-gated tasks currently stop at `needs_review` after worker plus verification and before downstream flow while also writing `review_result.json`; when a configured `review_worker_profile` has bounded primary worker output summary, the runtime now runs a `claude_glm_review` sidecar in `--bare --no-session-persistence` mode from an isolated temp cwd and writes a diff-aware live heterogeneous review receipt with changed files and bounded patch summary, and when that sidecar cannot materialize it falls back fail-closed to a repo-side blocking receipt. Review disposition now records approve / revise / reject only for `needs_review` tasks: approve closes the repo-side review hold while keeping live acceptance open, revise increments `attempt` and records `retry_rewind=worker_execution`, and reject moves the task to cancelled. Declared isolated worktree tasks now fail closed on repo-escape path claims, worktree root drift, branch drift, and post-run writes outside `allowed_paths` or inside `forbidden_paths` when the workspace has a `.git` admin path; worktree isolation currently covers writes only and does not imply memory/provider/session isolation. Runtime-managed clean linked worktrees now auto-remove after a successful non-handoff run, while review-pending, failed, dirty, or externally launched isolated worktrees stay deferred with an auditable `worktree_cleanup` event, and unexpected remove errors surface as `cleanup_failed`. `result.json` now carries `cleanup_owner`, `status_reason`, `dispatch_state_ref`, `planner_result_ref`, `review_result_ref`, `closeout_bundle_ref`, and `route_reason`, while `dispatch_state.json` and `route_decisions` materialize the same repo-owned route choice. Canonical tasks may now explicitly select a repo-owned `worker_profile`; when omitted, the orchestrator default profile fills it, and selected profile `max_active_leases` exhaustion now fails closed to pre-worker handoff rather than pretending a multi-worker scheduler is already live. Repo-side lifecycle ops can now materialize `cancelled / stale / resumed`; explicit `cancel / resume / retry` clear active leases, while `resume / retry` refresh `heartbeat_at / stale_after`, and `retry` increments `attempt` while recording `retry_rewind`; `queued / input_required` still remain reserved. Branch deletion still remains out of scope. `user_forced_planner / user_forced_review` now act as force-on-only overrides rather than documentation-only fields. Hermes -> AgentBridge -> Codex remains the product mainline and migration target; live planner sidecar currently materializes only on codex-backed host_local profiles, bounded live heterogeneous review receipts currently materialize from runtime status, verification gates, changed files, bounded patch summary, and primary worker output summary on configured host_local review paths, repo-side review disposition does not create real approval evidence, real non-host_local runners are still not accepted, `runner_wired=true` remains test-only for fake injected runner coverage, execution-critical markdown overrides remain intentionally unsupported, and these repo-side planner/review/path-guard/worktree/cleanup/ledger/route/quota/simulation/promotion/receipt claims do not yet mean live `Direct GPT-5.4` planner, live `Claude Code + GLM-5.2` primary task execution, platform compatibility green, or live accepted. The GPT-5.4 gateway probe and the codex exec minimum probe are ready; network_proxy remains platform_na, so current live execution should still stay within pure local task boundaries. Kernel V2 dual-track bootstrap, K2-T04 repo-side deepening, K2-T05 regression fixture / eval summary coverage, K2-T06 cutover drill / fail-closed guard, one real `local_maint` runtime_v2 live coding probe, K2-T06 cutover review / rollback drill, K2-T06 rollback restore drill, K2-T06 operator approval gate, K2-T06 approval template, K2-T06 approval audit, K2-T06 archive restore acceptance, K2-T06 operator runbook, K2-T06 approval acceptance-ref gate, and K2-T06 approval timestamp gate are now truth surfaces with their own `control-plane-v2.db` and `.ai/runs-v2/<run_id>/<task_id>/<attempt_id>/` artifacts; v2 persists repo-relative `task_path`, can auto-continue dependency-blocked tasks when dependencies complete, writes structured review receipts and bounded review sidecar receipts, blocks network/profile mismatch, non-host-local lane, GUI requirement, or sensitive write scope before worker execution, writes attempt-level `regression_fixture.json` for completed / reviewing / gate-retryable final-result, dependency-blocked, admission-paused, pre-worker policy-guard blocked, worker-failure retryable / failed, and retry queued attempts, can evaluate those fixtures through `--eval-regression-fixtures-v2` into `.ai/runs-v2/_eval/regression-fixture-summary.json`, can run `--cutover-drill-v2` before guarded `--cutover-v2`, can run `--cutover-rollback-drill-v2` to validate the non-destructive restore path and write `.ai/runs-v2/_cutover/archive-restore-acceptance.json`, can generate a default unapproved operator approval template with `archive_restore_acceptance_path` through `--cutover-approval-template-v2`, records approval `sha256 / byte_count / approved_by / approved_at / archive_restore_acceptance_path / operator-approval-audit.json` during validation, requires `approved_at` to pass a UTC `Z` timestamp check, and now has `docs/runbooks/runtime-v2-cutover-operator-runbook.md` for human dry-run / approval / confirmed cutover / restore order while still requiring both `--confirm-cutover-v2` and a valid `--cutover-approval-ref` before any CLI default-entrypoint switch. The latest cutover drill is ready with `cutover_performed=false`; default `--cutover-v2` now returns `manual_approval_required / cutover_performed=false`, `--cutover-rollback-drill-v2` now requires v1 DB and v1 runs restore sources and writes `archive-restore-acceptance.json` with `restore_performed=false`, missing, unapproved, non-UTC-timestamped, or archive-restore-acceptance-mismatched operator approval evidence returns `approval_required / cutover_performed=false`, the approval template generator writes `approved=false` and `archive_restore_acceptance_path`, and the default entrypoint is still v1 until cutover conditions, gates, rollback evidence, and the manual default-switch boundary are met."
+  "legacy_runtime_posture": {
+    "current_kernel": "runtime/host-orchestrator",
+    "current_control_plane": ".ai/state/control-plane.db",
+    "status": "unchanged_current_runtime",
+    "new_package_path": "runtime/local-ai-runtime",
+    "new_package_exists": false,
+    "legacy_guard_complete": false,
+    "new_batch_claims_allowed": false,
+    "notes": "Existing host-orchestrator and runtime_v2 behavior remain unchanged during candidate closure. They are migration inputs, not the v3.21 target implementation."
   },
-  "adaptive_orchestration_overlay": {
-    "status": "repo_side_experimental",
-    "policy_version": "adaptive_orchestration.v1",
-    "active_profile": "observe_default",
-    "observe_entrypoint": "--evaluate-orchestration-manifest",
-    "guarded_entrypoint": "--run-orchestration-manifest-v2",
-    "decision_evidence": ".ai/runs-v2/<run_id>/_orchestration/<decision_id>/orchestration-decision.json",
-    "promotion_status": "insufficient_evidence",
-    "proof_ref": "docs/change-evidence/20260710-adaptive-orchestration-overlay.md",
-    "default_entrypoint_changed": false,
-    "active_queue_changed": false,
-    "live_accepted": false
+  "truth_reset": {
+    "performed": false,
+    "permitted": false,
+    "required_active_approval_generation": 1,
+    "post_reset_queue": "MINIMUM-OPERATOR-COMMIT-ONLY-TRANSITION",
+    "post_reset_selector": "implement_legacy_guard_first"
   },
-  "certified_baseline": {
-    "queue_id": "HERMES-AGENTBRIDGE-BASELINE",
-    "label": "Hermes AgentBridge Historical Baseline And Strategic Reference",
-    "status": "certified_historical_baseline",
-    "evidence_ref": "docs/platforms/hermes/README.md",
-    "claim_boundary": "Hermes/AgentBridge remains the certified historical baseline and strategic north-star reference for Local AI Runtime as a three-layer product line. Current repo runtime truth stays on canonical internal normalization plus result.json evidence and compatibility projection, with direct host_local markdown intake now wired under repo-owned defaults and fail-closed override rejection."
+  "implementation": {
+    "started": false,
+    "package_created": false,
+    "code_complete": false,
+    "implementation_acceptance_active": false,
+    "full_q0_passed": false
   },
+  "p2_admission": {
+    "admitted": false,
+    "reason": "P2 requires active Baseline Approval, completed Truth Reset, Legacy Ownership Guard, active Implementation Acceptance and Full Q0."
+  },
+  "rollout": {
+    "p2_pilot_complete": false,
+    "p3_scheduled_self_host_complete": false,
+    "p4_cohort_complete": false,
+    "p5_cutover_complete": false,
+    "legacy_writer_retired": false
+  },
+  "current_evidence_ref": "docs/change-evidence/20260712-local-ai-runtime-v3.21-candidate-rebaseline.md",
   "authoritative_docs": [
+    "AGENTS.md",
     "README.md",
     "docs/README.md",
     "docs/product/orchestrator-prd.md",
     "docs/architecture/orchestrator-target-architecture.md",
-    "docs/architecture/next-work-selection-policy.json",
-    "docs/specs/task-contract.md",
-    "docs/specs/result-contract.md",
-    "docs/specs/planner-contract.md",
-    "docs/specs/review-contract.md",
-    "docs/specs/state-and-db.md",
-    "docs/specs/runtime-v2-kernel.md",
-    "docs/specs/config-and-worker-profiles.md",
-    "docs/specs/acceptance-and-gates.md",
-    "docs/specs/run-state-and-handoff.md",
-    "docs/specs/adaptive-orchestration.md",
     "docs/roadmap/orchestrator-roadmap.md",
     "docs/plans/orchestrator-implementation-plan.md",
     "docs/backlog/orchestrator-task-list.md",
-    "docs/runbooks/runtime-v2-cutover-operator-runbook.md",
-    "docs/migrations/hermes-compatibility-demotion.md"
+    "docs/specs/acceptance-and-gates.md",
+    "docs/specs/local-ai-runtime-0.2-v3.21-baseline-candidate.md",
+    "docs/specs/local-ai-runtime-0.2-normative-package.json",
+    "docs/plans/local-ai-runtime-0.2-work-items.json",
+    "docs/architecture/next-work-selection-policy.json"
   ],
-  "required_consistency_tokens": [
-    "Hermes -> AgentBridge -> Codex",
-    "planning-status.json",
-    "runtime/host-orchestrator",
-    ".ai/config/orchestrator.yaml",
-    ".ai/state/control-plane.db",
-    ".ai/state/control-plane-v2.db",
-    ".ai/runs-v2/<run_id>/<task_id>/<attempt_id>/",
-    ".ai/runs-v2/<run_id>/_orchestration/<decision_id>/",
-    ".ai/runs/<run_id>/<task_id>/",
-    "canonical JSON/YAML",
-    "compatibility projection",
-    "Phase 1 垂直切片",
-    "PHASE-1-VERTICAL-SLICE",
-    "双写过渡方案 A",
-    "Governance Overlay",
-    "promote_phase1_execution",
-    "mock green",
-    "live probe ready",
-    "Local AI Runtime",
-    "本地 AI 运行时",
-    "selector + change-evidence + preflight + reference governance",
-    "host_local",
-    "remote_non_gui",
-    "vm_gui",
-    "runtime_v2",
-    "runtime.active_version",
-    "experimental_v2_enabled",
-    "archive-restore-acceptance.json",
-    "runtime-v2-cutover-operator-runbook.md",
-    "archive_restore_acceptance_path",
-    "approval_timestamp",
-    "Adaptive Orchestration Overlay",
-    "observe_default",
-    "--evaluate-orchestration-manifest",
-    "--run-orchestration-manifest-v2",
-    "insufficient_evidence"
+  "doc_contracts": [
+    {
+      "path": "AGENTS.md",
+      "required_strings": [
+        "local-ai-runtime-0.2-v3.21",
+        "LOCAL-AI-RUNTIME-0.2-BASELINE-CLOSURE",
+        "close_baseline_normative_package_first"
+      ]
+    },
+    {
+      "path": "README.md",
+      "required_strings": [
+        "local-ai-runtime-0.2-v3.21",
+        "baseline_candidate",
+        "LOCAL-AI-RUNTIME-0.2-BASELINE-CLOSURE"
+      ]
+    },
+    {
+      "path": "docs/README.md",
+      "required_strings": [
+        "local-ai-runtime-0.2-v3.21",
+        "blocking_stage=baseline_approval",
+        "close_baseline_normative_package_first"
+      ]
+    },
+    {
+      "path": "docs/product/orchestrator-prd.md",
+      "required_strings": [
+        "Unified Native + Batch",
+        "baseline_candidate",
+        "minimum-operator"
+      ]
+    },
+    {
+      "path": "docs/architecture/orchestrator-target-architecture.md",
+      "required_strings": [
+        "Python Policy/Evidence Kernel",
+        "runtime/host-orchestrator",
+        "runtime/local-ai-runtime",
+        "contracts/kernel/qualification/storage/execution/recovery/git_local/operations/compat"
+      ]
+    },
+    {
+      "path": "docs/roadmap/orchestrator-roadmap.md",
+      "required_strings": [
+        "P0A",
+        "P0B",
+        "P5"
+      ]
+    },
+    {
+      "path": "docs/plans/orchestrator-implementation-plan.md",
+      "required_strings": [
+        "LAR-P0A-001",
+        "LAR-P1A-004",
+        "LAR-P1F-006",
+        "ProcessHandlePolicy",
+        "ChildHandleManifest",
+        "PROC_THREAD_ATTRIBUTE_HANDLE_LIST",
+        "STARTF_USESTDHANDLES",
+        "OrdinalIgnoreCase",
+        "BackupRestoreEligibility",
+        "BackupPostActivity",
+        "BackupRestoreIntent",
+        "QuarantineKeyEnvelope",
+        "RuntimeIntegrityKeyEnvelope",
+        "runtime_external_v1",
+        "EvidenceProjectionAcceptance",
+        "contracts/kernel/qualification/storage/execution/recovery/git_local/operations/compat",
+        "Baseline Approval",
+        "Implementation Acceptance"
+      ]
+    },
+    {
+      "path": "docs/plans/local-ai-runtime-0.2-work-items.json",
+      "required_strings": [
+        "ProcessHandlePolicy",
+        "ChildHandleManifest",
+        "PROC_THREAD_ATTRIBUTE_HANDLE_LIST",
+        "STARTF_USESTDHANDLES",
+        "OrdinalIgnoreCase",
+        "BackupRestoreEligibility",
+        "BackupPostActivity",
+        "BackupRestoreIntent",
+        "QuarantineKeyEnvelope",
+        "RuntimeIntegrityKeyEnvelope",
+        "runtime_external_v1",
+        "EvidenceProjectionAcceptance",
+        "contracts/kernel/qualification/storage/execution/recovery/git_local/operations/compat"
+      ]
+    },
+    {
+      "path": "docs/backlog/orchestrator-task-list.md",
+      "required_strings": [
+        "LAR-P0A-001",
+        "LAR-P1A-004",
+        "LAR-P1F-006",
+        "LAR-P1G-001",
+        "LAR-P5-001"
+      ]
+    },
+    {
+      "path": "docs/specs/acceptance-and-gates.md",
+      "required_strings": [
+        "Baseline Approval",
+        "Implementation Acceptance",
+        "Full Q0 / P2 Admission",
+        "ProcessHandlePolicy",
+        "ChildHandleManifest",
+        "PROC_THREAD_ATTRIBUTE_HANDLE_LIST",
+        "STARTF_USESTDHANDLES",
+        "OrdinalIgnoreCase",
+        "BackupRestoreEligibility",
+        "BackupPostActivity",
+        "BackupRestoreIntent",
+        "QuarantineKeyEnvelope",
+        "RuntimeIntegrityKeyEnvelope",
+        "runtime_external_v1",
+        "EvidenceProjectionAcceptance",
+        "contracts/kernel/qualification/storage/execution/recovery/git_local/operations/compat"
+      ]
+    }
   ],
-  "unexpected_tokens": [
-    "当前仓库的唯一主线是 **通用本地 AI Dev Orchestrator**。",
-    "`Hermes/AgentBridge 兼容线` 是 adapter，不是主协议",
-    "目标：Hermes/AgentBridge 兼容线三绿",
-    "本仓当前主产品线是 **通用本地 AI Dev Orchestrator**"
+  "forbidden_state_combinations": [
+    "approval_state.active=true while normative_package.approval_eligible=false",
+    "truth_reset.performed=true while approval_state.active=false",
+    "implementation.started=true while truth_reset.performed=false",
+    "p2_admission.admitted=true while implementation.full_q0_passed=false",
+    "legacy_runtime_posture.new_batch_claims_allowed=true while legacy_runtime_posture.legacy_guard_complete=false"
   ],
-  "rollback_ref": "git revert the strategic return docs, planning-status, selector policy, verifier, and evidence bundle as one change set"
+  "rollback_ref": "Revert only the v3.21 candidate-planning projection; keep v3.19/v3.20 archives, runtime/host-orchestrator, .ai/config and live state unchanged."
 }

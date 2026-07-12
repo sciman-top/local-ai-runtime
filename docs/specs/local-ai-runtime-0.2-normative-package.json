@@ -1,0 +1,251 @@
+{
+  "schema_version": "local_ai_runtime_normative_package_inventory.v1",
+  "record_kind": "preapproval_inventory",
+  "normative": false,
+  "package_id": "local-ai-runtime-0.2-v3.21-normative-package",
+  "baseline_id": "local-ai-runtime-0.2-v3.21",
+  "package_status": "incomplete",
+  "approval_eligible": false,
+  "blocking_stage": "baseline_approval",
+  "updated_on": "2026-07-12",
+  "candidate_source": {
+    "path": "docs/specs/local-ai-runtime-0.2-v3.21-baseline-candidate.md",
+    "byte_count": 158485,
+    "sha256": "1bfb5cd2c92c036804a6005d5b36cdd5acc6bedc4d6bf4070ccfb7a70ce063fb",
+    "status": "baseline_candidate"
+  },
+  "lineage": {
+    "canonical_predecessor": {
+      "id": "local-ai-runtime-0.2-v3.14",
+      "sha256": "b4133ff27e1facd0b2b8c48bb89d5fdc4006ad379203bfef78b4af6cdac9ddb2"
+    },
+    "withdrawn_candidates": [
+      {
+        "id": "local-ai-runtime-0.2-v3.16",
+        "sha256": "6eaf5320495247661052974333023b1131a1b12a6bfd60bd730975489bb1a9ed"
+      }
+    ],
+    "superseded_candidates": [
+      {
+        "id": "local-ai-runtime-0.2-v3.17",
+        "sha256": null,
+        "provisional_transcript_sha256": "a285f5f421a8ccd4debd8794609a2aa0eb07bb1bf651c2467a95f7cad25a5f81",
+        "provisional_byte_count": 32825,
+        "archive_status": "missing_verified_archive"
+      },
+      {
+        "id": "local-ai-runtime-0.2-v3.19",
+        "sha256": "275306d2e88baafa803170ee4ef99fb822c4e13769721b806805b834bb9d7670",
+        "byte_count": 111952,
+        "path": "docs/specs/local-ai-runtime-0.2-v3.19-baseline-candidate.md",
+        "archive_status": "present_verified_archive"
+      },
+      {
+        "id": "local-ai-runtime-0.2-v3.20",
+        "sha256": "43cb98737daa5d171a9cda2dca49c8f118fb8be92745b4076948d9178e56a130",
+        "byte_count": 130890,
+        "path": "docs/specs/local-ai-runtime-0.2-v3.20-baseline-candidate.md",
+        "archive_status": "present_verified_archive"
+      }
+    ],
+    "conflicted_candidate_ids": [
+      {
+        "id": "local-ai-runtime-0.2-v3.18",
+        "required_distinct_archives": 2,
+        "verified_archives": [],
+        "archive_status": "missing_verified_archives"
+      }
+    ],
+    "withdrawn_drafts": [
+      {
+        "id": "local-ai-runtime-0.2-v3.15",
+        "sha256": null
+      }
+    ]
+  },
+  "required_artifacts": [
+    {
+      "artifact_id": "P0A-SOURCE",
+      "kind": "candidate_spec",
+      "artifact_version": "local-ai-runtime-0.2-v3.21",
+      "path": "docs/specs/local-ai-runtime-0.2-v3.21-baseline-candidate.md",
+      "status": "present",
+      "byte_count": 158485,
+      "sha256": "1bfb5cd2c92c036804a6005d5b36cdd5acc6bedc4d6bf4070ccfb7a70ce063fb",
+      "required_for_approval": true,
+      "producer_task_id": null,
+      "verification": "byte_format_and_sha256"
+    },
+    {
+      "artifact_id": "P0A-LINEAGE",
+      "kind": "lineage_archive_and_manifest",
+      "artifact_version": "BaselineLineage.v1",
+      "path": "docs/specs/local-ai-runtime-0.2/normative/BaselineLineage.v1.json",
+      "status": "missing",
+      "required_for_approval": true,
+      "producer_task_id": "LAR-P0A-001",
+      "verification": "schema_plus_dual_hash_evidence"
+    },
+    {
+      "artifact_id": "P0A-CANONICAL",
+      "kind": "canonicalization_and_path_bundle",
+      "artifact_version": "CanonicalizationPolicy.v1",
+      "path": "docs/specs/local-ai-runtime-0.2/normative/CanonicalizationPolicy.v1.json",
+      "status": "missing",
+      "required_for_approval": true,
+      "producer_task_id": "LAR-P0A-003",
+      "verification": "schema_examples_fixtures_verifier"
+    },
+    {
+      "artifact_id": "P0A-PRODUCT",
+      "kind": "product_routing_submission_bundle",
+      "artifact_version": "ProductContract.v1",
+      "path": "docs/specs/local-ai-runtime-0.2/normative/ProductContract.v1.json",
+      "status": "missing",
+      "required_for_approval": true,
+      "producer_task_id": "LAR-P0A-004",
+      "verification": "schema_examples_catalog_verifier"
+    },
+    {
+      "artifact_id": "P0A-QUALIFICATION",
+      "kind": "qualification_environment_authorization_bundle",
+      "artifact_version": "QualificationContractSet.v1",
+      "path": "docs/specs/local-ai-runtime-0.2/normative/QualificationContractSet.v1.json",
+      "status": "missing",
+      "required_for_approval": true,
+      "producer_task_id": "LAR-P0A-005",
+      "verification": "schema_examples_catalog_verifier"
+    },
+    {
+      "artifact_id": "P0A-EXECUTION",
+      "kind": "process_job_fencing_bundle",
+      "artifact_version": "ExecutionSafetyContractSet.v1",
+      "path": "docs/specs/local-ai-runtime-0.2/normative/ExecutionSafetyContractSet.v1.json",
+      "status": "missing",
+      "required_for_approval": true,
+      "producer_task_id": "LAR-P0A-006",
+      "verification": "schema_transition_crash_fixtures"
+    },
+    {
+      "artifact_id": "P0A-EVIDENCE",
+      "kind": "events_journal_artifact_evidence_bundle",
+      "artifact_version": "EvidenceContractSet.v1",
+      "path": "docs/specs/local-ai-runtime-0.2/normative/EvidenceContractSet.v1.json",
+      "status": "missing",
+      "required_for_approval": true,
+      "producer_task_id": "LAR-P0A-007",
+      "verification": "schema_event_matrix_secret_safe_fixtures"
+    },
+    {
+      "artifact_id": "P0A-GIT",
+      "kind": "deterministic_git_bundle",
+      "artifact_version": "DeterministicGitContractSet.v1",
+      "path": "docs/specs/local-ai-runtime-0.2/normative/DeterministicGitContractSet.v1.json",
+      "status": "missing",
+      "required_for_approval": true,
+      "producer_task_id": "LAR-P0A-008",
+      "verification": "schema_action_graph_object_fixtures"
+    },
+    {
+      "artifact_id": "P0A-STATE",
+      "kind": "state_guard_operator_catalog_bundle",
+      "artifact_version": "StatePolicyCatalog.v1",
+      "path": "docs/specs/local-ai-runtime-0.2/normative/StatePolicyCatalog.v1.json",
+      "status": "missing",
+      "required_for_approval": true,
+      "producer_task_id": "LAR-P0A-009",
+      "verification": "transition_completeness_guard_acyclicity"
+    },
+    {
+      "artifact_id": "P0A-Q0",
+      "kind": "qualification_gate_limit_bundle",
+      "artifact_version": "QualificationGateCatalog.v1",
+      "path": "docs/specs/local-ai-runtime-0.2/normative/QualificationGateCatalog.v1.json",
+      "status": "missing",
+      "required_for_approval": true,
+      "producer_task_id": "LAR-P0A-010",
+      "verification": "q0_matrix_limit_boundary_fixtures"
+    },
+    {
+      "artifact_id": "P0A-MIGRATION",
+      "kind": "persistence_migration_specification_bundle",
+      "artifact_version": "PersistenceMigrationSpecification.v1",
+      "path": "docs/specs/local-ai-runtime-0.2/normative/PersistenceMigrationSpecification.v1.json",
+      "status": "missing",
+      "required_for_approval": true,
+      "producer_task_id": "LAR-P0A-011",
+      "verification": "forward_rollback_compatibility_and_crash_fixtures"
+    },
+    {
+      "artifact_id": "P0A-EXAMPLES",
+      "kind": "cross_contract_examples_and_fixtures",
+      "artifact_version": "CrossContractExampleManifest.v1",
+      "path": "docs/specs/local-ai-runtime-0.2/examples/manifest.json",
+      "status": "missing",
+      "required_for_approval": true,
+      "producer_task_id": "LAR-P0A-011",
+      "verification": "all_examples_validate_and_negative_fixtures_fail"
+    },
+    {
+      "artifact_id": "P0A-VERIFIER",
+      "kind": "normative_package_verifier",
+      "artifact_version": "LocalAIRuntimeBaselineVerifier.v1",
+      "path": "scripts/verify-local-ai-runtime-baseline.py",
+      "status": "missing",
+      "required_for_approval": true,
+      "producer_task_id": "LAR-P0A-012",
+      "verification": "self_test_response_loss_and_tamper_cases"
+    },
+    {
+      "artifact_id": "P0A-MANIFEST",
+      "kind": "baseline_manifest",
+      "artifact_version": "BaselineManifest.v1",
+      "path": "docs/specs/local-ai-runtime-0.2/normative/BaselineManifest.v1.json",
+      "status": "missing",
+      "required_for_approval": true,
+      "producer_task_id": "LAR-P0A-013",
+      "verification": "closed_manifest_hash"
+    },
+    {
+      "artifact_id": "P0A-REVIEW",
+      "kind": "review_evidence_index",
+      "artifact_version": "ReviewEvidenceIndex.v1",
+      "path": "docs/reviews/local-ai-runtime-0.2/ReviewEvidenceIndex.v1.json",
+      "status": "missing",
+      "required_for_approval": true,
+      "producer_task_id": "LAR-P0A-013",
+      "verification": "append_only_hash_chain_and_consistency_review"
+    }
+  ],
+  "missing_artifact_ids": [
+    "P0A-LINEAGE",
+    "P0A-CANONICAL",
+    "P0A-PRODUCT",
+    "P0A-QUALIFICATION",
+    "P0A-EXECUTION",
+    "P0A-EVIDENCE",
+    "P0A-GIT",
+    "P0A-STATE",
+    "P0A-Q0",
+    "P0A-MIGRATION",
+    "P0A-EXAMPLES",
+    "P0A-VERIFIER",
+    "P0A-MANIFEST",
+    "P0A-REVIEW"
+  ],
+  "approval_record": null,
+  "invariants": [
+    "An incomplete package may pass planning verification but may not be approved.",
+    "A present artifact must exist and pass its declared verifier.",
+    "Every present artifact records and matches its exact byte_count and sha256; file existence alone never closes an artifact.",
+    "A complete inventory is approval-eligible only after the checked-in standalone normative package verifier returns a matching structured pass result.",
+    "A missing artifact must not be silently treated as present; a partially materialized artifact is explicitly in_progress and remains approval-blocking.",
+    "Review evidence is non-normative and cannot change the narrative specification content hash.",
+    "A narrative specification ID maps to exactly one validated byte sequence; any narrative byte change requires a new narrative ID.",
+    "Each normative artifact has its own immutable artifact ID, schema version and content hash; a present artifact cannot be rewritten in place.",
+    "The final BaselineManifest instance is created only after every other normative artifact and the preliminary consistency review are present and green.",
+    "BaselineManifest binds the frozen package_review_head; the later manifest-closure review appends to that chain without changing manifest bytes.",
+    "BaselineApprovalRecord binds an approval_review_head that is a verified successor of package_review_head and includes the manifest-closure review.",
+    "No BaselineApprovalRecord may exist until approval_eligible is true."
+  ]
+}

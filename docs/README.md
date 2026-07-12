@@ -1,123 +1,82 @@
 # Local AI Runtime 文档索引
 
-- 中文名：**本地 AI 运行时**
-- 当前主产品线：`Hermes -> AgentBridge -> Codex`
-- 历史仓库 slug 与当前本地工作目录仍为 `local-ai-dev-orchestrator`；本文档索引只统一展示名，不宣称目录已迁移。
+本索引服务于 `local-ai-runtime-0.2-v3.21` 候选重基线。当前状态固定为 `baseline_candidate`、`blocking_stage=baseline_approval`，下一动作是 `close_baseline_normative_package_first`。
 
-当前主产品线回调为 **Hermes -> AgentBridge -> Codex** 三层闭环。当前 authoritative truth 同时保留三条 repo-side 事实：
+## 真源层级
 
-- canonical `JSON/YAML` intake / canonical JSON/YAML task contract 仍是当前内部归一化真源；`host_local` 主路径现已可直接接收合规 AgentBridge markdown task
-- `.ai/runs/<run_id>/<task_id>/result.json` 仍是正式 task-level evidence 主体
-- `.ai/runs/<run_id>/<task_id>/dispatch_state.json` 现已成为 runtime ledger companion；`AgentBridge results/*.md` 当前仍是 compatibility projection，它们都不取代 `result.json`
+发生冲突时按以下顺序处理，但任何低层文件都不能覆盖更高优先级指令：
 
-## Authoritative Truth
+1. 仓库运行事实和测试：说明当前真正存在什么。
+2. [planning-status.json](D:/CODE/local-ai-dev-orchestrator/docs/architecture/planning-status.json)：当前阶段、批准状态、队列和工作项。
+3. [v3.21 baseline candidate](D:/CODE/local-ai-dev-orchestrator/docs/specs/local-ai-runtime-0.2-v3.21-baseline-candidate.md)：目标产品与实现语义。
+4. [normative package inventory](D:/CODE/local-ai-dev-orchestrator/docs/specs/local-ai-runtime-0.2-normative-package.json)：规范闭包状态。
+5. [machine work items](D:/CODE/local-ai-dev-orchestrator/docs/plans/local-ai-runtime-0.2-work-items.json)：58 项执行分解；P1A-P1F 共 33 个单次 AI 编码切片，每次只领取 selector 返回的一项。
+6. PRD、architecture、roadmap、plan、backlog 和 acceptance：面向不同职责的投影。
 
-以下文件构成当前 authoritative docs，后续 AI 编码应先读这些文件，再动 `runtime/host-orchestrator`：
+v3.21 正文是自包含候选，不依赖 v3.14-v3.20 补语义。旧版本只进入版本谱系和评审证据，不能成为实现时的隐式要求；v3.19 和冻结 v3.20 文件保留为精确 superseded archives。本文已声明但尚未物化的规范 artifact 各自拥有独立 ID/version；首次落盘关闭 inventory 缺口，不允许原地改写正文或已 present artifact。
 
-1. [planning-status.json](D:/CODE/local-ai-dev-orchestrator/docs/architecture/planning-status.json)
-2. [orchestrator-prd.md](D:/CODE/local-ai-dev-orchestrator/docs/product/orchestrator-prd.md)
-3. [orchestrator-target-architecture.md](D:/CODE/local-ai-dev-orchestrator/docs/architecture/orchestrator-target-architecture.md)
-4. [next-work-selection-policy.json](D:/CODE/local-ai-dev-orchestrator/docs/architecture/next-work-selection-policy.json)
-5. [task-contract.md](D:/CODE/local-ai-dev-orchestrator/docs/specs/task-contract.md)
-6. [result-contract.md](D:/CODE/local-ai-dev-orchestrator/docs/specs/result-contract.md)
-7. [review-contract.md](D:/CODE/local-ai-dev-orchestrator/docs/specs/review-contract.md)
-8. [state-and-db.md](D:/CODE/local-ai-dev-orchestrator/docs/specs/state-and-db.md)
-9. [runtime-v2-kernel.md](D:/CODE/local-ai-dev-orchestrator/docs/specs/runtime-v2-kernel.md)
-10. [config-and-worker-profiles.md](D:/CODE/local-ai-dev-orchestrator/docs/specs/config-and-worker-profiles.md)
-11. [acceptance-and-gates.md](D:/CODE/local-ai-dev-orchestrator/docs/specs/acceptance-and-gates.md)
-12. [run-state-and-handoff.md](D:/CODE/local-ai-dev-orchestrator/docs/specs/run-state-and-handoff.md)
-13. [adaptive-orchestration.md](D:/CODE/local-ai-dev-orchestrator/docs/specs/adaptive-orchestration.md)
-14. [orchestrator-roadmap.md](D:/CODE/local-ai-dev-orchestrator/docs/roadmap/orchestrator-roadmap.md)
-15. [orchestrator-implementation-plan.md](D:/CODE/local-ai-dev-orchestrator/docs/plans/orchestrator-implementation-plan.md)
-16. [orchestrator-task-list.md](D:/CODE/local-ai-dev-orchestrator/docs/backlog/orchestrator-task-list.md)
-17. [hermes-compatibility-demotion.md](D:/CODE/local-ai-dev-orchestrator/docs/migrations/hermes-compatibility-demotion.md)
-18. [runtime-v2-cutover-operator-runbook.md](D:/CODE/local-ai-dev-orchestrator/docs/runbooks/runtime-v2-cutover-operator-runbook.md)
+## 当前权威文档
 
-## 当前主线口径
+| 文档 | 职责 | 不承担 |
+|---|---|---|
+| [PRD](D:/CODE/local-ai-dev-orchestrator/docs/product/orchestrator-prd.md) | 用户、产品面、工作流、目标、非目标、成功口径 | 逐字段协议 |
+| [目标架构](D:/CODE/local-ai-dev-orchestrator/docs/architecture/orchestrator-target-architecture.md) | 组件、信任边界、数据流、状态和迁移架构 | 当前实现完成声明 |
+| [路线图](D:/CODE/local-ai-dev-orchestrator/docs/roadmap/orchestrator-roadmap.md) | P0A-P5 阶段、入口和出口 | 单任务修改步骤 |
+| [实施计划](D:/CODE/local-ai-dev-orchestrator/docs/plans/orchestrator-implementation-plan.md) | AI 执行协议、阶段顺序、切片策略 | 规范正文替代品 |
+| [任务清单](D:/CODE/local-ai-dev-orchestrator/docs/backlog/orchestrator-task-list.md) | 人类可读 backlog 和状态 | 机器依赖真源 |
+| [machine work items](D:/CODE/local-ai-dev-orchestrator/docs/plans/local-ai-runtime-0.2-work-items.json) | 稳定 ID、依赖、范围、验收、命令、证据、回滚、停止条件 | Baseline Approval |
+| [验收与门禁](D:/CODE/local-ai-dev-orchestrator/docs/specs/acceptance-and-gates.md) | 三层门、开发门、Q0、cohort、硬门 | 运行证据本身 |
+| [selector policy](D:/CODE/local-ai-dev-orchestrator/docs/architecture/next-work-selection-policy.json) | 阶段选择优先级 | 状态变更 |
 
-- 三层主线是：`Hermes -> AgentBridge -> Codex`
-- 当前执行 hot path 收敛为 `Codex-first`；Hermes 保留风险编排、runtime ledger、跨执行器适配与历史基线职责，Claude 仍是可插拔 review sidecar
-- 当前代码仍在 `runtime/host-orchestrator` 上演进，不新建平行顶层包
-- `runtime/host-orchestrator` 是 `host_local` 可信运行时内核
-- `runtime/host-orchestrator/src/host_orchestrator/runtime_v2/` 已作为同仓新内核吸收进 authoritative docs；它当前是 experimental dual-track，不是默认入口，也不要求改 repo slug / 本地目录名
-- `docs/runbooks/runtime-v2-cutover-operator-runbook.md` 是 runtime_v2 默认入口切换的人工操作 runbook；它定义 cutover / approval / restore 边界，但不表示真实仓已执行 confirmed cutover
-- `.ai/state/control-plane.db` 是调度真源
-- `.ai/state/control-plane-v2.db` 是 v2 双轨控制面；`.ai/runs-v2/<run_id>/<task_id>/<attempt_id>/` 是 v2 尝试级工件面
-- `Adaptive Orchestration Overlay` 当前以 `observe_default` 为 active profile；observe 只写 run-level decision evidence，guarded 只通过显式 runtime_v2 入口运行，不改变默认 v1 或 active queue
-- `.ai/runs/<run_id>/<task_id>/` 是正式 evidence 面
-- `.ai/config/*.yaml` 是 repo-owned 运行时配置真源
-- repo-owned `host_local` task entrypoint 现已落地：`host-orchestrator --run-task` 与 `runtime/host-orchestrator/scripts/run-host-task.ps1` 当前会通过 worker factory 支持 `codex_sdk / codex_exec`；在现有 built-in profile 中，`local_maint` 直接走 `codex_sdk`，而 committed `remote_non_gui_probe / vm_gui_probe` 仍因 `runner_wired=false` 在 worker 前 handoff
-- `host_local > remote_non_gui > vm_gui` 是终态能力范围与分级晋升顺序
-- `AgentBridge-first intake` 已以安全边界接入 `host_local`；markdown task 先归一化到 repo-owned canonical 默认值，并对 execution-critical override fail closed
-- `P2-T03` 的 repo-side AgentBridge round-trip parity 已落地，但尚未自动升级为 `platform compatibility green`
-- `P4-T01` 的 live planner sidecar receipt 已落地；当前 planner-gated task 会先运行 codex-backed planner sidecar、写出 `planner_result.json`，然后仍停在 `waiting_handoff`，尚未宣称 live `Direct GPT-5.4 API` planner 已接线
-- `P4-T02` 的 repo-side review gate 已落地；低风险任务默认自动推进，medium/high/critical 风险、policy surface、以及 force-on review 会在 worker / verification 之后停在 `needs_review`；配置 `review_worker_profile = claude_glm_review` 的 host_local review path 当前可 materialize diff-aware bounded live heterogeneous review receipt，但这仍不等于 live `claude_glm` primary task execution
-- `P4-T03` 的 repo-side 谓词正反覆盖已落地；`user_forced_planner / user_forced_review` 现在是 contract 承认的 force-on override，而不是文档漂浮字段
-- `P3-T02` 的 repo-side path guard 已落地；repo-escape path claim、declared worktree root drift、declared branch drift、以及 worker 结束后落在 `allowed_paths` 外或 `forbidden_paths` 内的新改动都会 fail closed；当前 git-backed 变更审计要求 workspace 具备 `.git` admin path
-- `P3-T03` 的 repo-side 最小 worktree manager 已落地；declared isolated worktree 任务现在可从 repo root 自动 create/reuse linked worktree，并在其中执行 worker 与 verification
-- `P3-T04` 的 repo-side 最小 cleanup manager 已落地；runtime 现在只会自动 remove 自己管理、且 clean 的 linked worktree，review-pending、failed、dirty、或外部直接启动的 isolated worktree 会保留并写出 `worktree_cleanup` 事件
-- `P3-T05` 的 graded-autonomy runtime ledger 已落地；`dispatch_state.json`、`result.json`、以及 `runtime_tasks` 现在共享 `attempt / next_action / cleanup_owner / cleanup_status / status_reason / dispatch_state_ref` 一组收口字段
-- `P3-T06` 的 repo-side lifecycle ops 已落地；`task_lifecycle.py` 与 CLI 现在可显式 materialize `stale / cancelled / resumed`，`retry` 通过 `attempt + retry_rewind` 收口
-- `P4-T04` 的 repo-side structured receipts 已落地；live planner-sidecar 路径现在会写 `planner_result.json`，review-gated 路径会写 `review_result.json`，当前 runtime outcome 会写 `closeout_bundle.json`，并通过 `result.json / dispatch_state.json / evidence_index.json` 串起引用；当前 live review receipt 基于 runtime status、verification gates、changed files、bounded patch summary 与 primary worker output summary materialize
-- `P4` follow-on 的 review disposition / rework loop 已落地；`needs_review` 任务可通过 CLI 记录 `approve / revise / reject` disposition，`revise` 进入 `worker_execution` rework，`approve` 不声明 live accepted
-- `P5-T01` 的 repo-side `leases / route / quota` 收口已落地；explicit/default `worker_profile` 现在会 materialize `route_reason`，selected profile 的 `max_active_leases` 超额时会在 worker 前 handoff
-- `P5-T02` 的 deterministic multi-worker simulation 已落地；当前可复放 `retry / route / quota / review-handoff` summary，但这仍不等于 live 多 worker scheduler
-- `P5-T03` 的 `remote_non_gui` promotion evidence 已落地；repo-owned `remote_non_gui_probe` 现在可被显式选中，但 `host_local` 只会 fail closed 到 handoff，并额外留下机器可读 `handoff_receipt.json` / `handoff_receipt_ref`，不会伪装成 remote runner 已执行
-- `P5-T04` 的 `remote_non_gui` runner wiring readiness 已落地；临时测试配置必须同时设置 `runner_wired=true` 与 repo-relative、schema-valid 的 `runner_acceptance_ref` 才能调用注入 runner，候选 acceptance 可先通过 `host-orchestrator --validate-runner-acceptance <candidate.json> --worker-profile remote_non_gui_probe` 独立校验，runner 失败保持 failed dispatch 且不写成功 `result.json`，但 committed profile 仍未接真实 remote runner
-- `P6-T01` / `P6-T02` 的 repo-side Hermes parity / historical snapshot mapping verifier 已落地；`run-hermes-parity.ps1` 现在会把 certified baseline doc、current known-good / boundary anchors、snapshot contract、known-good validator、以及 env-sensitive bring-up drift 收进同一 summary，但这仍不等于 `platform compatibility green`
-- `P6-T03` 的 repo-side `vm_gui` conditional promotion evidence 已落地；默认 GUI-only 请求现在会在 `host_local` 上因 `execution_lane=vm_gui; requires_gui=true` handoff，显式 `vm_gui_probe` 也只会 fail closed 到 `runner_not_wired`
-- `worktree` 当前只代表写入隔离，不代表 memory/provider/session 隔离
-- branch deletion 仍不自动化；当前 repo-side topology promotion proof、runner wiring readiness、diff-aware review context、以及 review disposition / rework loop 已收口，next open set 收窄到真实 remote host runner acceptance
-- 当前 `host_local` task entrypoint 虽已接线真实 worker factory，且 live planner sidecar receipt 与 diff-aware bounded live heterogeneous review sidecar receipt 已能在 configured host_local path 上 materialize，但这仍不等于 live `claude_glm` primary task execution、真实 remote/vm runner、`platform compatibility green`、或 `live accepted`
-- `compatibility_projection_ref` 与 `lane` 字段名当前明确继续保留；待真实 remote/vm runner acceptance 与后续 review 稳定性都真实落地后再复评是否迁移
-- 当前 active queue 仍是 `PHASE-1-VERTICAL-SLICE`；repo-side exit gates 已闭环，但 live posture 仍停在 `live probe ready`
+## 当前运行事实
 
-## Governance Overlay
+- `runtime/host-orchestrator` 仍是唯一现行可信内核。
+- `.ai/state/control-plane.db` 和 `.ai/runs/<run_id>/<task_id>/` 继续按 legacy 合同工作。
+- `runtime/host-orchestrator/src/host_orchestrator/runtime_v2/` 是既有 experimental 迁移输入，不是 v3.21 目标包，也不自动晋升。
+- `runtime/local-ai-runtime` 尚不存在。
+- `.ai/config`、provider/auth、scheduled task、live probe、repo ownership 和默认入口均未因本次文档更新改变。
+- 当前 candidate 规划允许 P0A 规范闭包；P0B Truth Reset 及之后任务全部被 active Baseline Approval 阻断。
 
-治理增强层是当前主线的 cross-cutting overlay，不替代 `Phase 1 -> Phase 6` 产品路线图。
+## AI 执行协议
 
-- `selector + change-evidence + preflight + reference governance` 是当前 repo-side 治理增强面
+每个编码任务按以下固定顺序执行：
 
-## Operator Assets
+1. 运行 `python scripts/select-next-work.py`，只接受返回的 action 和 `current_work_item.task_id`。
+2. 从 machine work items 读取该任务的 dependencies、preconditions、scope、acceptance、verification、rollback、stop_conditions 和 prohibited_actions。
+3. 证明依赖已完成且当前门有效；不能证明时停止，不猜测完成状态。
+4. 只修改 `scope.primary_files` 及为测试/证据必要的邻近文件；范围扩大必须回写任务定义或创建后继任务。
+5. 先写失败测试或 verifier fixture，再做最小实现。
+6. 按任务列出的命令验证，并补跑项目固定顺序 `build -> test -> contract/invariant -> hotspot`。
+7. 在 `docs/change-evidence/` 写命令、退出码、关键结果、N/A、风险和只回滚本切片的方法。
+8. 只有所有 acceptance 逐项有证据时，才把任务状态改为 `completed`，并激活唯一后继任务。
 
-以下文件是 repo-owned 的操作资产，不属于 authoritative runtime truth，但可直接复用：
+不得由 AI 自行创建 `BaselineApprovalRecord`、`ImplementationAcceptanceRecord` 或 `FullQ0Record`，除非任务明确具有相应授权和全部前置证据。
 
-- 协作模式说明：[docs/主控-子代理-worktree-协作模式.md](D:/CODE/local-ai-dev-orchestrator/docs/主控-子代理-worktree-协作模式.md)
-- prompt 资产入口：[prompts/subagent-worktree/README.md](D:/CODE/local-ai-dev-orchestrator/prompts/subagent-worktree/README.md)
-- manifest 模板：[templates/agent-work-manifest.example.yaml](D:/CODE/local-ai-dev-orchestrator/templates/agent-work-manifest.example.yaml)
-- orchestration decision 模板：[templates/orchestration-decision.example.json](D:/CODE/local-ai-dev-orchestrator/templates/orchestration-decision.example.json)
-- orchestration execution 模板：[templates/orchestration-execution.example.json](D:/CODE/local-ai-dev-orchestrator/templates/orchestration-execution.example.json)
-- dispatch state 模板：[templates/dispatch-state.example.json](D:/CODE/local-ai-dev-orchestrator/templates/dispatch-state.example.json)
-- review 结果模板：[templates/review-result.example.json](D:/CODE/local-ai-dev-orchestrator/templates/review-result.example.json)
-- closeout bundle 模板：[templates/closeout-bundle.example.json](D:/CODE/local-ai-dev-orchestrator/templates/closeout-bundle.example.json)
-- closeout 清单：[templates/closeout-checklist.md](D:/CODE/local-ai-dev-orchestrator/templates/closeout-checklist.md)
-- 子代理模型策略默认按 role-aware / risk-aware / lane-aware 选择，不再固定 `gpt-5.4 + xhigh`
-- 当前 selector 预期结果仍是 `promote_phase1_execution`
-- GPT-5.4 gateway 与 `codex exec` prerequisite probes 已 ready，但 `network_proxy` 仍是 `platform_na`，所以 live execution 仍先限纯本地任务
-- `governed-ai-coding-runtime` 已被纳入正式 `governance-sidecar` companion，但它只提供治理机制参考，不定义当前主线实现真相
+## 历史与兼容资料
 
-当前治理入口：
+以下文件仍可用于理解 legacy 行为，但不是 v3.21 新实现的规范语义源：
 
-- [next-work-selection-policy.json](D:/CODE/local-ai-dev-orchestrator/docs/architecture/next-work-selection-policy.json)
-- [change-evidence/README.md](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/README.md)
-- [change-evidence/20260706-strategic-regression.md](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260706-strategic-regression.md)
-- [references/README.md](D:/CODE/local-ai-dev-orchestrator/references/README.md)
+- `docs/specs/task-contract.md`
+- `docs/specs/result-contract.md`
+- `docs/specs/state-and-db.md`
+- `docs/specs/runtime-v2-kernel.md`
+- `docs/specs/config-and-worker-profiles.md`
+- `docs/specs/run-state-and-handoff.md`
+- `docs/specs/adaptive-orchestration.md`
+- `docs/runbooks/runtime-v2-cutover-operator-runbook.md`
+- `docs/platforms/hermes/`
+- `ai_dev_orchestrator_impl_pack/`
 
-## Rule Coordination
+这些资料只能用于 P0C legacy inventory、compat 和迁移取证。若与 v3.21 目标语义冲突，必须保持 legacy 行为隔离，并由 approved contract generation 解决，不能在实现中私自折中。
 
-- [AGENTS.md](D:/CODE/local-ai-dev-orchestrator/AGENTS.md) 是本仓共同项目规则主体。
-- [CLAUDE.md](D:/CODE/local-ai-dev-orchestrator/CLAUDE.md) 是 Claude thin wrapper；首个非空行是独立 `@AGENTS.md`。
-- `D:\CODE\governed-ai-coding-runtime` 是全局规则控制仓，只负责 `Codex + Claude` global-only rule sync 与 target-project audit；本仓不负责全局规则分发。
-- 本仓项目规则差异必须通过 `audit + integration + verification` 闭环解决，不允许 blind overwrite。
+## 验证入口
 
-## 兼容与历史
+```powershell
+python scripts/verify-planning-status.py
+python scripts/select-next-work.py
+uv run --project ./runtime/host-orchestrator python -m pytest
+pwsh -NoProfile -NonInteractive -File scripts/governance/preflight.ps1 -DisableAutoCommit
+git diff --check
+```
 
-Hermes/AgentBridge 历史基线与兼容资料入口：
-
-- [docs/platforms/hermes/README.md](D:/CODE/local-ai-dev-orchestrator/docs/platforms/hermes/README.md)
-- [docs/migrations/hermes-compatibility-demotion.md](D:/CODE/local-ai-dev-orchestrator/docs/migrations/hermes-compatibility-demotion.md)
-
-参考源码策略仍保留：
-
-- [参考项目清单.md](D:/CODE/local-ai-dev-orchestrator/docs/参考项目清单.md)
-- [社区参考源码策略.md](D:/CODE/local-ai-dev-orchestrator/docs/社区参考源码策略.md)
+planning verifier 只证明规划陈述与文件事实一致。Baseline Approval、Implementation Acceptance、Full Q0 / P2 Admission 是三个独立的、不可相互替代的门。

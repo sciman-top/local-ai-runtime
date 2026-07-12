@@ -1,271 +1,218 @@
-# Local AI Runtime 目标架构
+# Local AI Runtime 0.2 目标架构
 
-## 总原则
+## 1. 状态与架构原则
 
-- 项目展示名：`Local AI Runtime`
-- 中文名：`本地 AI 运行时`
-- 当前主产品线：`Hermes -> AgentBridge -> Codex`
-- 历史仓库 slug / 当前本地目录仍为 `local-ai-dev-orchestrator`
+目标规范为 `local-ai-runtime-0.2-v3.21`，当前仍是 baseline candidate。本文描述批准后的目标，不宣称组件已经实现。
 
-- 产品主线回调为 `Hermes -> AgentBridge -> Codex`
-- 执行 hot path 当前收敛为 `Codex-first`
-- `runtime/host-orchestrator` 是 `host_local` 可信运行时内核
-- 不新建平行顶层 `orchestrator/` 包
-- `.ai/state/control-plane.db` 是调度真源
-- `.ai/runs/<run_id>/<task_id>/` 是正式 evidence 面
-- `private-local/` 只保留密钥、探针、非正式 smoke
+核心原则：
 
-## 当前 repo truth 与迁移窗口
+- 自由判断留在 Human-controlled Native；无人值守 Batch 只执行已批准、封闭、可复算的任务。
+- Python Policy/Evidence Kernel 是可信控制面，Codex writer 是不可信、一次性的受限计算进程。
+- 全局 capacity=1；writer at-most-once；controller side effects 用 fence、CAS、immutable intent/result 收口。
+- Git commit/ref 是唯一交付，evidence 外置；不 merge/push。
+- 当前 `runtime/host-orchestrator` 与目标 `runtime/local-ai-runtime` 之间只共享 ownership wire contract，不共享数据库或实现模块。
+- 不以“最终一致”掩盖不可解释的进程、对象、ref、worktree 或 evidence 状态。
 
-当前仓还没有完成协议反转；以下事实必须显式保留：
+## 2. 当前态与目标态
 
-- 当前 intake 主路径支持 canonical `task.json` / `task.yaml`，并在 `host_local` 边界接收合规 AgentBridge markdown task
-- markdown intake 已接线，但只把受支持字段归一化到 repo-owned canonical 默认值；execution-critical override 与 gate 命令输入保持 fail-closed
-- repo-owned `host_local` task entrypoint 现已通过 `host-orchestrator --run-task` 与 `runtime/host-orchestrator/scripts/run-host-task.ps1` 落地，并通过 worker factory 支持 `codex_sdk / codex_exec`
-- `.ai/runs/<run_id>/<task_id>/result.json` 仍是正式结果主面
-- `AgentBridge results/*.md` 当前仍是 compatibility projection
-- `runtime/host-orchestrator/src/host_orchestrator/runtime_v2/` 已作为同仓新内核落地；当前只服务 dual-track migration，不切默认入口，也不要求改仓库/目录名
-- `Adaptive Orchestration Overlay` 已作为同仓 cross-cutting 能力落地；当前 active profile 是 `observe_default`，显式 guarded execution 只进入 experimental `runtime_v2`
-- `remote_non_gui` 当前已具备 repo-owned probe profile、promotion evidence、runner wiring readiness contract 与 acceptance schema guard，但 committed `remote_non_gui_probe` 仍保持 `runner_wired=false`，尚未完成真实 remote host runner acceptance；`vm_gui` 当前只有 conditional promotion / handoff proof，尚未完成真实 vm runner 或 GUI-only workload acceptance
-- `compatibility_projection_ref` 与 `lane` 字段名当前仍保持代码层 truth；当前已明确决定不在 repo-side parity / topology closeout 中改名，待真实 remote/vm runner acceptance 与后续 review 稳定性都真实落地后再复评
+| 维度 | 当前态 | 目标态 |
+|---|---|---|
+| 运行内核 | `runtime/host-orchestrator` | `runtime/local-ai-runtime/src/local_ai_runtime/` |
+| 状态 | `.ai/state/control-plane.db`，另有 experimental runtime_v2 | `%LOCALAPPDATA%/LocalAIRuntime/state` 独立 DB |
+| 运行证据 | legacy `.ai/runs/...` | 外置 `evidence`、journal、receipt、artifact index |
+| 所有权 | 尚无 v3.21 shared guard | versioned ownership wire + repo mutex + generation |
+| 执行 | legacy host-local paths | isolated Job-bound writer/gate/Git adapters |
+| 迁移 | 未开始 | guard legacy -> implement isolated -> per-repo cutover -> read-only compat |
 
-## Kernel V2 Dual-Track
+批准前禁止创建目标包；P0C Legacy Ownership Guard 绿色前禁止目标 runtime claim repo。
 
-当前吸收的终态重构方式固定为：
+目标源码的首级子包边界固定为 `contracts/kernel/qualification/storage/execution/recovery/git_local/operations/compat`。Artifact/evidence 持久化归 `storage`，Batch/doctor 等命令编排归 `operations`；不得在实现期增生平行的 `evidence`、`commands` 或其他未批准首级子包。
 
-- 不新建新 repo
-- 不新建平行顶层 `orchestrator/` 包
-- v2 新代码统一落在 `runtime/host-orchestrator/src/host_orchestrator/runtime_v2/`
-- 双轨期状态与工件固定分面：`.ai/state/control-plane-v2.db` + `.ai/runs-v2/<run_id>/<task_id>/<attempt_id>/`
-- cutover 之前，`--run-task` 的默认入口保持 v1；只有 `runtime.active_version = v2` 后才把默认入口切到 v2
+## 3. 逻辑架构
 
-## 三层职责
+```mermaid
+flowchart LR
+    U["Operator / Scheduler"] --> CLI["Stable CLI + JSON"]
+    U --> N["Managed Native Launcher"]
+    CLI --> K["Python Policy/Evidence Kernel"]
+    K --> Q["Qualification + Authorization"]
+    K --> S["State / Guard / Storage"]
+    K --> E["Execution + Job + Recovery"]
+    K --> G["Deterministic Git Adapter"]
+    K --> V["Evidence / Artifact / Backup"]
+    E --> W["One Codex Writer"]
+    E --> T["Offline Gate Processes"]
+    G --> R["Registered Local Repo"]
+    V --> X["External Evidence Root"]
+    L["Legacy host-orchestrator"] -. "ownership wire only" .-> K
+    N --> R
+```
 
-### 1. Hermes
+### 3.1 模块化单体
 
-职责：
+目标包边界固定为：
 
-- 风险编排 / runtime ledger / 跨执行器适配 / 历史安全边界
-- 为三层主线提供隔离与历史 baseline
-- 在 parity 阶段承接 container lifecycle 与历史映射验证
-- 当前 repo-owned `runtime/host-orchestrator/scripts/run-hermes-parity.ps1` 已把 certified baseline doc、current known-good / boundary anchor、snapshot contract、known-good validator、以及 env-sensitive bring-up drift 收进同一 summary
-- 当前 repo-owned `runtime/host-orchestrator/scripts/run-vm-gui-promotion.ps1` 已把 default GUI-only handoff 与 explicit `vm_gui_probe` fail-closed handoff 收进同一 summary
+- `contracts`：approved schema、catalog、canonical envelope、typed object。
+- `kernel`：state/guard、policy evaluation、reason codes、capacity。
+- `qualification`：repo/template/toolchain/environment/model/profile/Q0。
+- `storage`：SQLite、migrations、CAS、leases、outbox、backup metadata。
+- `execution`：process env、named object、Job、marker、pipe、journal、gate。
+- `recovery`：takeover、adoption、continuation、reconcile、cleanup。
+- `git_local`：Git audit、index/object/commit/ref/finalize/remove。
+- `compat`：ownership wire 和最终只读 legacy projection。
 
-边界：
+新包不得 import、调用或双写 `host_orchestrator`。共享行为必须通过批准的 wire schema 和 cross-conformance fixture 实现。
 
-- 当前 repo truth 不把 Hermes 写成“只剩兼容残留”
-- 也不把 Hermes 当前就写成已接管 host runtime 的日常双核心执行入口
-- 不重复接管 Codex 已有的 native thread / worktree / review / approval 能力
+## 4. 信任和权限边界
 
-### 2. AgentBridge
+可信：hash-pinned controller、当前 SID、OS keyring、宿主 OS 与批准的 immutable artifacts。
 
-职责：
+不可信或需验证：repo 内容、project config、AGENTS/skills、Codex output、working tree、Git config、environment drift、named object、reparse/hardlink、external Native edits。
 
-- AgentBridge 是跨层主契约
-- Hermes 与 Codex 之间的唯一文件交换面
-- 终态承接 markdown task / result / review round-trip
-- 未来若要对齐 MCP Tasks / app-server structured surface，也通过 AgentBridge 与 canonical contract 对齐
+明确不防御：已攻陷的同 SID controller、内核、pagefile、物理主机。安全结论只能说“已声明与已检测敏感信息零泄漏”。
 
-边界：
+Writer profile 固定 `approval_policy=never`、no history、no login shell、empty inherited env、keyring-only、task-side network denied，并无条件生成 `projects.<canonical-worktree>.trust_level=untrusted`。该配置不替代 AGENTS、skills、attributes、hooks 和 repo content 审计。
 
-- 当前 task intake 仍不是 markdown-first
-- 当前 result markdown 仍是 compatibility projection
+## 5. 运行根与隔离
 
-### 3. Codex
+生产根为 `%LOCALAPPDATA%/LocalAIRuntime`：
 
-职责：
+```text
+versions/                 immutable installed versions
+policies/ schemas/        content-addressed read-only policy
+codex-home/config/        immutable shared Codex config
+codex-home/.sandbox/      managed mutable sandbox state
+codex-home/.sandbox-secrets/ broker-only secret state
+state/ ownership/         controller-managed mutable state
+evidence/ backups/        durable controller evidence
+quarantine/               ACL-restricted sealed material
+reserve/                  allocated controller-only emergency reserve
+environments/<hash>/      immutable qualified dependencies
+runs/<attempt>/
+  profile/ xdg-config/ codex-sqlite/
+  tmp/ cache/ spool/ worktree/ empty/
+```
 
-- 当前执行层主入口与 hot path
-- 通过 `runtime/host-orchestrator` 消费 canonical task
-- 产出 `result.json`、`dispatch_state.json`、`verification_summary.json`、`cost_summary.json` 与 `evidence_index.json`
-- 低风险路径默认自动推进；medium/high/critical 风险、policy surface、force-on review、或能力不匹配路径再转入 review/handoff
+每 attempt 独占所有可写 HOME、USERPROFILE、APPDATA、LOCALAPPDATA、XDG_CONFIG_HOME、CODEX_SQLITE_HOME、TEMP/TMP、cache 和 spool。Codex sandbox 自身的受管可写状态由 `CodexSandboxStateBinding.v1` 绑定 setup generation、ACL、owner、identity 和日志轮换；`.sandbox-secrets` 仅 broker/helper 可读，永不进入 manifest/evidence/backup/hash。`sandbox.log` 是 opaque diagnostic，不解析字段、不持久化正文/hash；交互导出必须先创建 OperatorWorkSession 并通过 secret scan。每次 spawn 前后复核 writable roots 及祖先的 final path、volume/file identity、owner/DACL、reparse 和 hardlink count。
 
-边界：
+只支持经 crash probe 证明的本地固定 NTFS；不要求全局关闭 8.3。Qualification 枚举可观测 long/short aliases，并以 no-follow handle、volume identity、FILE_ID_128、root ancestry、owner/DACL、reparse/hardlink 和 alias-bypass probe 作最终判定。卷策略不可查询时记录 `policy_query_denied` 并由非提权行为 probe 补足；只有身份冲突、alias 绕过或无法建立安全证明才 incompatible。不宣称通用 Windows parent-directory fsync。
 
-- 当前只落地 `host_local`
-- `remote_non_gui` 次级推进
-- `vm_gui` 仅条件晋升
-- `worktree` 只提供写入隔离，不等于 memory/provider/session 隔离
+## 6. 数据与身份
 
-## Governance Overlay
+### 6.1 Canonical object
 
-这层是当前主线的 cross-cutting overlay，不是新的产品 phase：
+所有可复算对象使用 domain-separated canonical JSON envelope。Parser 拒绝重复 key、float、non-NFC string 和 schema 越界。数组默认保序；只有 schema 声明 `set_semantics` 时按唯一 key 排序，重复 key 拒绝。
 
-- `docs/architecture/planning-status.json`：唯一状态真源
-- `docs/architecture/next-work-selection-policy.json`：selector policy 真源
-- `scripts/select-next-work.py`：下一步动作选择入口
-- `scripts/governance/preflight.ps1`：release-style closeout 入口
-- `docs/change-evidence/README.md`：repo-level governance evidence index
-- `references/README.md`：formal reference governance companion 入口
+Git path 保留原始 UTF-8 拼写，只验证不改写。Windows collision key 单独计算，不能替代 Git path。
 
-边界：
+### 6.2 主要数据聚合
 
-- repo-level governance evidence 只落在 `docs/change-evidence/`
-- 它不替代 `.ai/runs/<run_id>/<task_id>/evidence_index.json`
-- `governed-ai-coding-runtime` 只作为 `governance-sidecar` companion 参与治理借鉴，不定义当前主线运行时协议
+- Baseline/activation/toolchain/environment/profile generations。
+- Repo/template qualification 与 `QualificationSensitiveInputSet`。
+- SubmissionFamily、BatchTask、Attempt、Authorization、Continuation、AuthorizationExecutionGrant、SafetyOnlyExecutionRecord。
+- JobIdentity、WriterLaunchRecord、StageLaunchRecord、writer marker、WriteAccountingSnapshot、EmergencyDiskReserveRecord、optional HardWriteQuotaReservation、journal segment、event chain、receipt。
+- FencedAction Intent/Adoption/Head/Result。
+- ObjectSetManifest、artifact/outbox、evidence/closeout、backup。
+- Platform/repo/template/autonomy/operator state policy。
 
-## Adaptive Orchestration Overlay
+SQLite 使用 `journal_mode=DELETE`、`foreign_keys=ON`、`synchronous=FULL`、短 `BEGIN IMMEDIATE` 事务。Journal append+flush 在 DB cursor 前，DB 只能落后。
 
-这层拥有动态执行策略，但不拥有 canonical task truth：
+## 7. 状态域
 
-- input：versioned agent-work manifest + repo policy + worker/lease/worktree state
-- decision：dependency DAG、read/write conflict graph、role/model/capability routes 与 bounded waves
-- observe：只写 `.ai/runs-v2/<run_id>/_orchestration/<decision_id>/orchestration-decision.json`
-- guarded：显式 CLI 先把 manifest 归一化为 canonical v2 tasks，再执行安全波次并写 `orchestration-execution.json`
-- evaluation：复用 runtime_v2 regression fixtures，按 hard constraints + Pareto improvement 生成 manual promotion eligibility
+状态不做单一笛卡尔积，而按独立 policy 拆分：
 
-它不得：
+- `SubmissionFamilyStatePolicy`
+- `BatchTaskStatePolicy`
+- `AttemptStatePolicy`
+- `PlatformOperationalStatePolicy`
+- `RepoCutoverMaintenancePolicy`
+- `TemplateLifecyclePolicy`
+- `AutonomyPolicy`
+- `OperatorActionCatalog`
 
-- 让 authored `mode_preference=multi_agent` 绕过 conflict、lease、worktree 或 policy guard
-- 自动安装第三方 workflow/skill
-- 自动把 observe profile 晋升为 guarded
-- 改 `runtime.active_version`、active queue 或 live acceptance
+跨域条件只通过 versioned `GuardCatalog`。每个 transition row 必须含 source、operation/event、guards、allowed effects、target、exit code、capacity disposition、scheduler priority 和 retry policy。未知组合 exit 2。
 
-## 规则协同边界
+Guard precedence：baseline approval -> implementation acceptance -> P2 Q0 -> platform incompatible -> manual drain/suspend -> needs_auth -> platform unavailable/qualification -> disk_pressure -> repo ownership/maintenance -> template/Authorization -> task/base/environment -> recovery -> capacity。
 
-- global rules：`D:\CODE\governed-ai-coding-runtime` 中的 `Codex + Claude` 全局规则源。
-- project rules：本仓根 `AGENTS.md`，负责 repo truth、gate、evidence、rollback。
-- wrappers：本仓根 `CLAUDE.md`，只写 Claude 差异，不复制共同项目正文。
-- enforcement：`.codex`、`.claude/settings.json`、`.claude/rules/`、hooks、CI；它们是确定性限制面，不由 prose 规则副本代替。
-- 目标仓与控制仓之间只允许 `audit + integration + verification` 协同；不恢复 blind target-repo rule distribution。
+## 8. Writer launch 与恢复
 
-## 正交维度
+合法链：
 
-| 维度 | 当前含义 | 当前口径 |
-| --- | --- | --- |
-| `execution_lane` | topology | contract 层定义 `host_local / remote_non_gui / vm_gui` |
-| `worker_kind` | executor adapter | `codex_sdk / codex_exec / scripted / gpt54_direct / claude_glm` |
-| `worker_profile` | repo-owned 具名配置档 | `.ai/config/workers.yaml` |
-| `model_policy` | role-aware / risk-aware / lane-aware 调度建议 | 由 runtime 写入 `dispatch_state.json` |
-| `orchestration_profile` | observe/guarded 策略能力与预算 | `.ai/config/policies.yaml` |
-| `orchestration_decision` | 派生模式、波次、冲突、模型与能力证据 | `.ai/runs-v2/<run_id>/_orchestration/` |
+```text
+launch_intent
+  -> durable_marker
+  -> spawned_suspended
+     -> terminated_before_execution_commit
+     -> writer_execution_committed
+        -> resume_observed | resume_outcome_unknown
+        -> process_exited
+```
 
-补充说明：
+Spawn 使用 `CREATE_SUSPENDED + PROC_THREAD_ATTRIBUTE_JOB_LIST` 原子加入预建 Job。PID/creation time 持久化后才是 `spawned_suspended`；writer 使用 `WriterLaunchRecord`，gate/Git/probe/recovery helper 使用 `StageLaunchRecord`，两者都在 resume 前绑定恰好一个 execution authority 和对应 execution-commit barrier。Writer/正常 gate 使用 active-Authorization grant；可收养 controller action 的 Git/helper child process 使用绑定 parent action grant、current fenced head 与 exact StageJob 的 inherited grant；封闭 safety helper 使用 `SafetyOnlyExecutionRecord`。Revoke 与 root grant 由同一 repo-lock/`BEGIN IMMEDIATE` 顺序线性化。
 
-- 当前 result surface 中代码字段名仍是 `lane`
-- 这不否认 contract 层的 `execution_lane` 定义
-- 命名统一是后置迁移决策，不在本轮 truth reset 中提前执行
+一旦 execution committed，该 task generation 永久禁止再启动 writer，零 tool/零 mutation 也不能证明未执行。合法重做只能由原子 resubmission 创建新 task generation。
 
-## 组件边界
+同名 Job 即使零进程也不能复用。检查、关闭检查 handle、重新 CreateJobObject 全程持 attempt mutex；`ERROR_ALREADY_EXISTS` 继续 park，不能换名绕过。
 
-### Intake / Normalization
+## 9. Fenced side effects
 
-职责：
+四表分离：immutable `FencedActionIntent`、append-only `FencedActionAdoption`、mutable CAS `FencedActionHead`、immutable terminal `FencedActionResult`。
 
-- 当前读取 canonical `task.json` / `task.yaml`，并在 `host_local` 主路径接受合规 AgentBridge markdown task 后归一化到 canonical payload
-- 校验 schema
-- 校验 markdown front matter contract，并拒绝 execution-critical override / gate command injection
-- repo-side parity 当前已验证到 `result.json`、`evidence_index.json`、以及 `AgentBridge/results/*.md` projection 闭环
-- 派生 `planner_required` / `review_required` / `touches_policy_surface`
-- 当前 repo-side 已把 canonical task 的 explicit/default `worker_profile` 选择接到真正的 route 决策，并把 `route_reason` materialize 到 `result.json`、`dispatch_state.json`、以及 `route_decisions`
-- 当前 repo-side 已把 `planner_required` 的 risk/dependency/force-on 触发接到 live planner sidecar receipt 边界：planner-gated task 会先写 `planner_result.json`，然后继续停在 `waiting_handoff`；worker-profile 不满足 `execution_lane / requires_network / requires_gui`、selected lane 当前没有 wired runner、或超出 `max_active_leases` 的任务仍会在 worker 前 fail closed 到 handoff
-- 当前 repo-side 已把 review gate 收敛为 graded autonomy：低风险任务默认自动推进；medium/high/critical 风险、policy surface、以及 force-on review 接到 `needs_review` handoff 路径；`write_access=true` 当前只作为附加 reason，而不是单独触发 review 的充分条件
-- 当前 repo-side path guard、worktree manager、cleanup manager、以及 runtime dispatch ledger 已落地：repo-escape path claim、declared worktree root drift、declared branch drift、以及 worker 结束后落在 `allowed_paths` 外或 `forbidden_paths` 内的新改动都会 fail closed；declared isolated worktree 任务在 repo-root 启动时也可由 runtime create/reuse linked worktree；runtime-managed clean linked worktree 会在成功且无需 handoff 的路径上自动 remove，其他路径则保留 worktree 并写出 `worktree_cleanup` 事件；`dispatch_state.json` 与 `runtime_tasks` 会同步 `attempt / status / status_reason / next_action / cleanup_*`
-- 盖章运行时字段
+第一次 adoption 的 prior head 是 intent hash；后续指向 prior adoption hash。插入 adoption 与更新 head 在同一事务，`UNIQUE(action_id, prior_head_hash)` 防分叉。Writer 永不可 adoption。
 
-依赖契约：
+可 adoption 的 controller action 仅限结果完全确定的 worktree、object、artifact、finalize、task-ref、remove 和绑定完整 JobIdentity 的 terminate_job。正常 action 的 adoption 继承同一 root Authorization grant；`terminate_job` 继承同一 safety-only authority，不得因 Authorization 已撤销而失去终止能力。Process record 本身不可 adoption，前一 process 结果未知时只能终止或只读 reconcile，不能另起替代 process。
 
-- `docs/specs/task-contract.md`
-- `docs/specs/config-and-worker-profiles.md`
+## 10. Git publication
 
-### Config Resolution
+所有 Git 调用使用绝对 executable/argv、清空继承 `GIT_*`、固定 config allowlist，并在 sandbox/Job/overlay 内运行。第一次调用先 no-follow 解析 `.git`/common-dir，再执行受管 `rev-parse`。
 
-职责：
+```mermaid
+flowchart LR
+    A["Original repo audit"] --> B["Worktree + writer"]
+    B --> C["Secret scan + offline gates"]
+    C --> D["Attempt-local blobs/trees/commit"]
+    D --> E["Seal ObjectSetManifest"]
+    E --> F["Promote objects"]
+    F --> G["Common-store reachability"]
+    G --> H["Finalize index"]
+    H --> I["Finalize detached HEAD"]
+    I --> J["Create task ref"]
+    J --> K["External evidence"]
+    K --> L["Remove worktree"]
+```
 
-- 读取 `.ai/config/orchestrator.yaml`
-- 读取 `.ai/config/workers.yaml`
-- 读取 `.ai/config/policies.yaml`
-- 把 repo-owned abstraction 映射到实际执行参数
-- 对缺失/错误配置给出 deterministic contract error
+Existing objects 通过 canonical type+size+payload/OID 验证，不能比较 loose zlib bytes。Claim CAS 只生成一次 UTC 秒并绑定 attempt/Git manifest；commit 固定唯一 parent、header order、identity 和 message grammar。Worktree `logs/HEAD` 必须由 create action收口，HEAD/task-ref使用 `--no-create-reflog` 并前后证明log不存在。Finalize 不使用 `reset --hard`。
 
-### Worker Adapters
+## 11. Native、Batch 与 ownership
 
-职责：
+正常 Native maintenance 不杀当前 attempt：先 durable drain，等自然 terminal，再取得 global capacity 和 repo mutex。Qualification 失败只暂停目标 repo/template，其他 repo 可恢复调度。
 
-- `codex_sdk`
-- `codex_exec`
-- `gpt54_direct`
-- `claude_glm`
+Ownership record 绑定 canonical common-dir identity、owner、status、generation、registry generation 和 checksum；首次 no-replace，更新 expected generation/checksum + atomic replace。Legacy/new 使用相同 SID/repo identity canonicalization 和 named mutex SDDL。
 
-约束：
+迁移期间：
 
-- `worker_kind` 描述 adapter 路径
-- `worker_profile` 描述 `.ai/config/workers.yaml` 中的具名配置档
-- `model_policy` 由 runtime 根据风险、policy surface、lane 与任务角色写入，不再把所有子代理固定到同一模型与同一 reasoning 档
-- 当前 repo-owned live task execution 会直接消费 `local_maint` 的 `codex_sdk` 路径；built-in `codex_exec` profiles 仍保持 non-host-local handoff 边界；`scripted / gpt54_direct / claude_glm` 继续 fail-closed，直到对应 live lane 真正接线
+1. 所有 repo 初始 legacy-owned。
+2. Legacy 每个副作用入口先消费 ownership guard。
+3. 新 runtime 未通过 cross-conformance 前禁止 claim。
+4. 每 repo 在零 active、rollback drill 绿色时 CAS cutover。
+5. 全部 cutover 后 legacy DB 只读；30 天零调用后移除 legacy writer。
 
-### Verification Runner
+## 12. 资源核账与磁盘保护
 
-职责：
+0.2 的 mandatory 模式是 `accounting_kill_audit`，不是虚构的目录级内核 quota：
 
-- 按固定顺序执行 `build -> [lint -> typecheck] -> test -> contract -> hotspot`
-- 产出 `verification_summary.json`
-- 当前真实 gate 仍待后续 Phase C 接线
+1. Claim 和每次 spawn 前固定 writable-root identity，记录 logical/allocated bytes、entry count、free floor、reserve generation 和 high-water marks。
+2. Task roots 使用 `ReadDirectoryChangesW` 触发重算，并由不超过 500 ms 的 monotonic fallback 兜底；watcher overflow、scan gap、identity drift 和 arithmetic overflow 都按 limit+1 处理。
+3. Limit+1 的顺序固定为 durable intent -> terminate Job -> drain EOF -> seal -> full no-follow audit；未知或越界结果不得进入 object/ref/evidence/cleanup。
+4. Runtime volume 维持 task 不可访问、实际分配的 1 GiB emergency reserve。仅 safety recovery 可释放；释放后必须保持 platform suspended，直到 maintenance 重建并 CAS generation。
+5. `HardWriteQuotaCapability` 仅在独立 Full Q0 证明真实 per-root/per-sandbox-user primitive 后启用。未启用时 receipt 明确记录 accounting mode，并承认终止前可能瞬时 overrun。
 
-### Evidence Writer
+## 13. Qualification、门与演进
 
-职责：
+- Baseline Approval 只批准规范 artifact。
+- Implementation Acceptance 只批准代码和 offline evidence。
+- Full Q0 绑定真实 Codex/Git/Windows/sandbox/adapter/model/profile/toolchain。
+- Quick preflight 每 attempt；daily canary 持续验证行为。
+- binary、model、profile、permission、feature、Git/state/canonicalization policy、adapter、probe、environment 或 schema 变化都创建新 generation，并触发 Full Q0、requalification 和 Authorization。
 
-- 落盘 `result.json`
-- 落盘 `dispatch_state.json`
-- 落盘 `stdout.log` / `stderr.log`
-- 落盘 `verification_summary.json`
-- 落盘 `cost_summary.json`
-- 落盘 `evidence_index.json`
-- 落盘 `compatibility_projection_ref`
-
-依赖契约：
-
-- `docs/specs/result-contract.md`
-- `docs/specs/run-state-and-handoff.md`
-
-## 存储拆分
-
-### AgentBridge 文件面
-
-- 跨层契约正文
-- 终态由 Hermes 与 Codex 共享
-- 当前 task intake 尚未切到此主路径
-
-### 调度真源
-
-- `.ai/state/control-plane.db`
-- 保存 runtime task state、leases、workers、route decisions、events
-- 当前 `runtime_tasks` 已索引 `run_id / attempt / state_reason / next_action / cleanup_status / cleanup_owner / dispatch_state_path`
-
-### 正式 evidence
-
-- `.ai/runs/<run_id>/<task_id>/`
-- 保存每任务正式工件与索引
-
-### repo-level governance evidence
-
-- `docs/change-evidence/README.md`
-- 保存 selector / preflight / reference governance 这类 repo-side 治理证据
-- 不替代 task-level `evidence_index.json`
-
-## 当前代码落点
-
-后续实现一律从以下现有路径开始，而不是新建 parallel package：
-
-- `runtime/host-orchestrator/src/host_orchestrator/cli.py`
-- `runtime/host-orchestrator/src/host_orchestrator/paths.py`
-- `runtime/host-orchestrator/src/host_orchestrator/config_runtime.py`
-- `runtime/host-orchestrator/src/host_orchestrator/canonical_task.py`
-- `runtime/host-orchestrator/src/host_orchestrator/canonical_result.py`
-- `runtime/host-orchestrator/src/host_orchestrator/host_local.py`
-- `runtime/host-orchestrator/src/host_orchestrator/agentbridge.py`
-- `runtime/host-orchestrator/src/host_orchestrator/db.py`
-- `runtime/host-orchestrator/src/host_orchestrator/worker.py`
-- `runtime/host-orchestrator/src/host_orchestrator/exec_fallback.py`
-
-## 历史基线位置
-
-Hermes/AgentBridge 历史与兼容资料位于：
-
-- `docs/platforms/hermes/`
-- `snapshots/agentbridge-20260628/`
-
-当前主线只引用它们作为 `certified_baseline` 与边界证据，不再把它们当作当前 active queue 的直接运行时 truth。
-
-当前 repo-owned `run-hermes-parity.ps1` 只证明这些历史面与当前 truth boundary 保持一致，而 `run-vm-gui-promotion.ps1` 只证明 GUI-only 条件晋升 / fail-closed handoff；它们都不自动升级为 remote/vm runner、`platform compatibility green`、或 `live accepted`。
+当前架构执行入口由 [machine work items](D:/CODE/local-ai-dev-orchestrator/docs/plans/local-ai-runtime-0.2-work-items.json) 控制；不能从本图直接跳到代码实现。

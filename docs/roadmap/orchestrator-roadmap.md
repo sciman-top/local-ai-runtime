@@ -1,192 +1,139 @@
-# Local AI Runtime 路线图
+# Local AI Runtime 0.2 路线图
 
-项目展示名是 `Local AI Runtime`，中文名是 `本地 AI 运行时`。当前主产品线是 `Hermes -> AgentBridge -> Codex`；历史仓库 slug / 当前本地目录仍为 `local-ai-dev-orchestrator`。
+## 状态
 
-## 当前主线
+当前 baseline `local-ai-runtime-0.2-v3.21` 未批准。路线图从规范闭包开始，不把历史 `PHASE-1-VERTICAL-SLICE`、experimental runtime_v2 或 legacy probe 当作新实现完成证据。
 
-当前主产品线回调为 **Hermes -> AgentBridge -> Codex**。
+## 总依赖链
 
-当前 repo truth 同时保留：
+```text
+P0A Normative Package Closure
+ -> Baseline Approval
+ -> P0B Truth Reset
+ -> P0C Legacy Ownership Guard
+ -> P0D Isolated Package/Harness
+ -> P1 Implementation
+ -> Implementation Acceptance
+ -> Full Q0
+ -> P2 One Pilot
+ -> P3 Five Scheduled Self-host Tasks
+ -> P4 Two Repos + 30-task Cohort
+ -> P5 Per-repo Cutover + Legacy Retirement
+```
 
-- canonical `JSON/YAML` intake 仍是当前主路径
-- `.ai/runs/<run_id>/<task_id>/result.json` 仍是正式 evidence 主体
-- `AgentBridge results/*.md` 当前仍是 compatibility projection
-- 当前 active queue 仍是 `PHASE-1-VERTICAL-SLICE`
+每个箭头是硬门，不能以文档、fixture、simulation、legacy evidence 或人工口头判断替代。
 
-当前 selector 预期结果仍是 `promote_phase1_execution`。
+Baseline Approval 由独立人工治理工作项 `LAR-GOV-001` 执行；它不与 P0A review 或 P0B Truth Reset 合并。
 
-## Governance Overlay
+## P0A：规范包闭包
 
-这层横切产品推进过程，但不替代既有产品 phase。
+目标：把完整 prose candidate 变成可以批准和实现的机械 contract package。
 
-- 目标：把 `selector + change-evidence + preflight + reference governance` 落成统一治理增强面
-- 当前 companion：`governed-ai-coding-runtime`，定位为 `governance-sidecar`
-- 当前规则：Governance Overlay 为绿之后，才允许继续推进当前 active queue
+工作项：`LAR-P0A-001` 至 `LAR-P0A-013`。
 
-治理任务包状态：
+交付：
 
-- `GOV-T01` formalize governed reference companion：已完成
-- `GOV-T02` split selector from verifier：已完成
-- `GOV-T03` add repo-level change-evidence index：已完成
-- `GOV-T04` add release-style preflight entrypoint：已完成
-- `GOV-T05` wire docs, AGENTS, and proof routing：已完成
-- `GOV-T08` absorb control-repo global-only rule governance：已完成
-- `GOV-T09` add target-project `AGENTS.md + CLAUDE.md` coordination pilot：已完成
-- `GOV-T10` align docs, wrapper boundary, and repo-level evidence for the pilot：已完成
+- 版本谱系、v3.17 exact-byte archive、两份 conflicted v3.18、精确 v3.19 和冻结 v3.20 archive；
+- narrative/artifact/package 三层版本语义、manifest schema/byte verifier，以及 P0A-013 冻结 `package_review_head` 后一次性生成的最终 BaselineManifest；
+- canonicalization/path/alias、永久 submission replay、qualification/auth、execution-authority/fencing、opaque sandbox diagnostic、event/evidence、Git、state/guard、Q0/gate/write-accounting/optional-quota bundles；
+- 所有 schema、catalog、transition row、positive/negative examples、crash/limit fixtures；
+- standalone baseline verifier；
+- append-only ReviewEvidenceIndex、preliminary consistency review、manifest-closure review 与 `approval_review_head` 后继证明。
 
-## Adaptive Orchestration Overlay
+出口：package inventory 零 missing，verifier 绿色，P0/P1 规范 finding 为零，`approval_eligible=true`。Baseline Approval 仍需独立授权记录。
 
-这组能力是 cross-cutting runtime overlay，不改变当前 active queue 或默认 v1。
+## P0B：Truth Reset
 
-- `AO-T01` constrained manifest + derived decision contract：已完成
-- `AO-T02` deterministic observe engine + decision evidence + CLI：已完成
-- `AO-T03` role/risk/intent model and capability routing：已完成
-- `AO-T04` explicit guarded runtime_v2 manifest execution：已完成（repo-side experimental）
-- `AO-T05` regression metrics + Pareto/manual-promotion evaluation：已完成（机制）
-- `AO-T06` representative repeated baseline/candidate corpus：待真实任务证据；未声明策略已全局最优
+工作项：`LAR-P0B-001`。
 
-晋升顺序固定为 `observe -> guarded -> evaluated promotion`。active profile 当前仍是 `observe_default`，任何 promotion 都需要代表性重复证据与人工 review。
+入口：active、未撤销、hash 匹配的 BaselineApprovalRecord。
 
-## Kernel V2 双轨迁移
+动作：原子同步 AGENTS、README、PRD、architecture、roadmap、plan、backlog、acceptance、planning status、selector/verifier 和 evidence index。队列切为 `MINIMUM-OPERATOR-COMMIT-ONLY-TRANSITION`，selector 切为 `implement_legacy_guard_first`。
 
-这组工作包已吸收到最新路线图，但当前默认入口未切换，active queue 也不因此改写。
+出口：所有 authoritative surfaces 指向同一 approved generation；现有 runtime 仍是当前可执行真值，新包仍未 claim。
 
-- `WP1` Legacy 冻结与双轨骨架：进行中
-  - `runtime_v2/` 包、实验 CLI、`runtime.*` 配置字段已经落盘
-- `WP2` V2 契约、状态机与存储真源：进行中
-  - v2 canonical task、6 表存储、`.ai/runs-v2/` 工件骨架已落盘
-- `WP3` 调度 / admission / 自动继续内核：进行中
-  - `dependency_refs`、原子 slot admission、`resume_point / retry_rewind` 的 v2 一等字段已落第一批实现
-  - dependency-blocked task 现在会持久化 repo-relative `tasks.task_path`，并可在依赖完成后通过 `--run-ready-blocked-v2` 批量续跑
-- `WP4` 执行 / gate / 隔离 / sidecar 收口：进行中
-  - review receipt、bounded review sidecar hook、pre-worker policy guard 已落第一批实现；真实 remote/vm primary runner acceptance 仍未完成
-- `WP5` trace / eval / 证据闭环：进行中
-  - completed / reviewing / gate-retryable final-result、dependency-blocked、admission-paused、pre-worker policy-guard blocked、worker-failure retryable / failed、retry queued 路径已写出 attempt-level `regression_fixture.json`
-  - 最小 `--eval-regression-fixtures-v2` 已可重跑并写出 repo-side regression fixture summary
-- `WP6` cutover / archive / 真相面切换：进行中
-  - 第一批 `--cutover-drill-v2`、`--cutover-v2` fail-closed guard、cutover review / manual approval gate、`--cutover-rollback-drill-v2` 非破坏恢复路径检查、archive restore acceptance、`--confirm-cutover-v2` 人工确认闸门、`--cutover-approval-ref` operator approval evidence gate、`--cutover-approval-template-v2` 默认未批准模板入口、approval hash / sanitized audit 留痕、approval 对 `archive_restore_acceptance_path` 的强引用校验、`approved_at` UTC `Z` 时间戳校验、以及 `docs/runbooks/runtime-v2-cutover-operator-runbook.md` 人工操作 runbook 已落地；真实 `local_maint` v2 live coding probe 已 completed，当前 drill ready 但默认 `--cutover-v2` 仍返回 `manual_approval_required / cutover_performed=false`，缺少 v1 DB / v1 runs 恢复源、缺少/未批准 approval evidence、approval 未引用当前 archive restore acceptance 或 `approved_at` 非 UTC `Z` 时间戳的 confirmed cutover 仍 fail-closed，默认入口仍未切换
+## P0C：Legacy Ownership Guard
 
-## 战略回调 Overlay（A-F）
+工作项：`LAR-P0C-001` 至 `LAR-P0C-003`。
 
-这组阶段是对现有产品路线图的重新解释顺序，不替代 `Phase 1 -> Phase 6` 编号。
+目标：在新 runtime 出现前，先关闭 legacy/new 双 writer 风险。
 
-### Phase A — Truth Reset
+- 定义共享 ownership wire、SID/repo identity 和 mutex/SDDL。
+- 枚举并守卫 legacy claim、lease、worktree、executor、writer、repo mutation、Git、commit、closeout、cleanup。
+- 注册现有 repo 为 legacy owner。
+- 完成 cross-runtime conformance、crash/takeover、cutover/rollback drill。
 
-- 目标：同步 authoritative docs、planning-status、policy、verifier 与 evidence note
-- 当前状态：已落 repo-side
-- 边界：保留 canonical internal normalization / `result.json` / compatibility projection 当前事实，不提前宣称 parity、execution-critical override live support、或字段改名已完成
+出口：不存在未守卫副作用入口；新 claim 仍关闭。
 
-### Phase B — Host_local Robustness
+## P0D：独立包和验收 harness
 
-- 目标：`host_local` 正确性修复、异常收口、lease 基础函数
-- 当前状态：已完成（repo-side）
+工作项：`LAR-P0D-001`。
 
-### Phase C — Verification Runner
+目标：创建 `runtime/local-ai-runtime` 的 Python 3.11+ 模块化单体、offline lock/build/test/contracts/ruff/pyright 门；禁止 import `host_orchestrator`，禁止执行 Batch。
 
-- 目标：最小真实 gate executor 取代硬编码 verification 口径
-- 当前状态：已完成（repo-side）
+出口：纯 scaffold 和 approved contracts 可离线验证。
 
-### Phase D — AgentBridge-first Intake Upgrade
+## P1：实现
 
-- 目标：合规 markdown task 安全接入主路径，并归一化到 repo-owned canonical 默认值
-- 当前状态：已完成（repo-side，safe intake boundary）
+机器图总计 58 项；下表 P1A-P1F 合计 33 个单次 AI 编码切片，必须按依赖顺序逐项闭环，不把阶段范围当作单个任务。
 
-### Phase E — Hermes Parity + Container Lifecycle
+| 阶段 | 工作项 | 交付 | 关键出口 |
+|---|---|---|---|
+| P1A | `LAR-P1A-001` 至 `LAR-P1A-004` | canonical/path primitives、typed schemas、state/guard、cross-contract verifier | fixtures 全闭合、未知组合 exit 2 |
+| P1B | `LAR-P1B-001` 至 `LAR-P1B-005` | SQLite/migration、submission、lease/fence、journal/outbox、storage crash replay | migration/rollback、CAS、response-loss 绿色 |
+| P1C | `LAR-P1C-001` 至 `LAR-P1C-006` | install/activation、toolchain/env、repo/Auth、sandbox、write accounting/reserve、offline Q0 | isolated-root/resource/qualification probes 绿色 |
+| P1D | `LAR-P1D-001` 至 `LAR-P1D-006` | named Job、writer launch、StageJob authority、stream/journal、recovery、gate runner | at-most-once、handle/EOF、revoke/safety、crash matrix 绿色 |
+| P1E | `LAR-P1E-001` 至 `LAR-P1E-006` | Git audit、worktree/mutation、objects、finalize/ref、artifact/evidence、cleanup/backup | deterministic closeout 与 anti-rollback restore 绿色 |
+| P1F | `LAR-P1F-001` 至 `LAR-P1F-006` | CLI、Batch commands、scheduler、managed Native、operator/runbooks、compat/eval | stable JSON/exit/reason，所有 dry-run 零 live 副作用 |
+| P1G | `LAR-P1G-001` | Implementation Acceptance | 全 offline gate 和 drill 绿色；P2 仍阻断 |
 
-- 目标：Hermes parity、container lifecycle、历史 baseline mapping、后置控制面扩展
-- 当前状态：
-  - repo-side 已完成
-  - 当前明确决定继续保留 `compatibility_projection_ref` 与 `lane` 现名，不在当前 repo-side parity / topology closeout 中做字段改名
-  - 是否需要 schema rename，待 bounded live heterogeneous review receipt、真实 remote/vm runner acceptance、以及后续 review 稳定性都真实落地后再复评
+## Q0：真实平台资格化与 P2 Admission
 
-### Phase F — Topology Expansion
+工作项：`LAR-Q0-001`。
 
-- 目标：`remote_non_gui` 再到条件晋升的 `vm_gui`
-- 当前状态：进行中
-  - `remote_non_gui` runner wiring readiness contract、acceptance-ref guard、最小 schema 与候选 acceptance CLI 校验入口已落 repo-side：committed profile 保持 `runner_wired=false` fail-closed；临时测试配置必须同时提供 `runner_wired=true` 与 repo-relative、schema-valid 的 `runner_acceptance_ref`，runtime 才会调用注入 runner，并在 runner 失败时保持 failed dispatch；候选 acceptance 可先通过 `host-orchestrator --validate-runner-acceptance` 对照 repo-owned profile 校验
-  - 真实 remote host runner acceptance、真实 GUI-only workload evidence、以及 `live accepted` 仍未开始
+入口：Implementation Acceptance active。只运行真实 install/Codex/Git/Windows/sandbox/adapter/model/profile/keyring/network/filesystem probes；禁止 writer。Full Q0 与 P2 Admission 作为同一 generation 激活。
 
-## 产品阶段总表
+出口：FullQ0Record 可验证、P2 admitted、仍无 writer/task ref。
 
-### Phase 1 垂直切片
+## P2：单个 pilot
 
-- 目标：canonical task -> 真实 SDK -> `result.json` -> markdown projection
-- 当前状态：
-  - repo-side canonical runtime 与 evidence integrity 已闭环
-  - repo-owned `host_local` task entrypoint 与 worker factory 已落地：`host-orchestrator --run-task` / `run-host-task.ps1` 当前已直接消费 `local_maint` 的 `codex_sdk` 路径，并在结构上支持 `codex_exec`
-  - prerequisite probes 已 ready
-  - `network_proxy` 仍为 `platform_na`
-  - `live accepted` 仍未达成
-- 已完成：
-  - 默认 layout 迁移
-  - canonical task intake
-  - canonical result writer
-  - compatibility projection
-  - repo-owned config / worker-profile contract
-  - GPT-5.4 gateway probe
-  - `codex exec` minimum probe
-  - 一次非 mock 的 `Codex SDK` real vertical slice
-  - `evidence_index.json` sha256 独立校验脚本
+工作项：`LAR-P2-001`。
 
-### Phase 2 契约与 intake parity
+入口：Full Q0/P2 Admission active + repo/template qualification + Authorization。
 
-- 目标：task/result/review/run-state/acceptance contract 固化，并在安全 intake 接线后推进 AgentBridge round-trip parity
-- 当前状态：
-  - config / acceptance / run-state foundation docs 已落盘
-  - repo-side projection parity 已落地
-  - 尚未自动升级为 `platform compatibility green`
-- 出口门禁：schema tests + projection parity 全绿
+范围：一个 low-risk self-host task，人工显式启动，B1，commit-only，不 scheduled、不 merge/push。
 
-### Phase 3 执行与验证
+出口：commit-ready、evidence verify、所有安全硬门为零、无悬挂恢复状态。
 
-- 目标：verification runner、path guard、worktree manager、cleanup manager
-- 当前状态：
-  - `P3-T01` verification runner fixed gate order 已完成；当前真实执行仍只覆盖 `test / contract`，其余 gate 继续按 `gate_na / not_configured` 留痕
-  - `P3-T02` path guard 已升级到 git-backed fail-closed write-boundary enforcement
-  - `P3-T03` worktree manager 与 `P3-T04` cleanup manager 已完成
-  - `P3-T05` graded-autonomy runtime ledger 已完成：`dispatch_state.json`、`result.json`、以及 `runtime_tasks` 已共享 `attempt / next_action / cleanup_* / status_reason / dispatch_state_ref`
-  - `P3-T06` lifecycle ops 已完成：repo-side 现在可显式 materialize `stale / cancelled / resumed`，`retry` 通过 `attempt + retry_rewind` 收口
-  - `P5-T01` 的 repo-side `leases / route / quota` 收口已完成：explicit/default `worker_profile` 现在会 materialize `route_reason`，worker-profile `max_active_leases` 超额时会在 worker 前 handoff
-  - `P5-T02` 的 deterministic multi-worker simulation 已完成：当前可复放 `retry / route / quota / review-handoff` summary，并输出 JSON evidence
-  - `P5-T03` 的 `remote_non_gui` promotion evidence 已完成：当前可复放 baseline remote-lane handoff 与 explicit remote-profile fail-closed handoff summary，输出 JSON evidence，并在 pre-worker handoff 路径写出机器可读 `handoff_receipt.json`
-  - `P5-T04` 的 `remote_non_gui` runner wiring readiness contract 已完成：`runner_wired=false` 继续 fail-closed handoff，临时 `runner_wired=true` 测试配置必须绑定 repo-relative、schema-valid 的 `runner_acceptance_ref` 后才会调用注入 runner，候选 acceptance 可先通过 `host-orchestrator --validate-runner-acceptance` 对照 repo-owned profile 校验，runner 失败保持 failed dispatch 且不写成功 result；当前 committed profile 仍未接真实 remote runner
-  - `P6-T01` / `P6-T02` 的 repo-side Hermes parity / historical snapshot mapping verifier 已完成：当前可复放 baseline doc、current known-good / boundary anchor、snapshot contract、known-good validator、以及 env-sensitive bring-up drift summary
-  - `P6-T03` 的 `vm_gui` conditional promotion evidence 已完成：当前可复放 baseline GUI-only handoff 与 explicit `vm_gui_probe` fail-closed handoff summary，并输出 JSON evidence
-  - repo-owned `host_local` task entrypoint 与 worker factory 已完成：`host-orchestrator --run-task` / `run-host-task.ps1` 当前已直接消费 `local_maint` 的 `codex_sdk` 路径，并在结构上支持 `codex_exec`；built-in `codex_exec` profiles 仍保持 non-host-local handoff，而 `scripted / gpt54_direct / claude_glm` 继续 live task execution fail-closed
-  - next repo-side open set 收窄到真实 remote host runner acceptance
-- 出口门禁：`build -> [lint -> typecheck] -> test -> contract -> hotspot` 统一跑通
+## P3：五个 scheduled self-host
 
-### Phase 4 Planner / Review
+工作项：`LAR-P3-001`。
 
-- 目标：`Direct GPT-5.4 API` planner + `Claude Code + GLM-5.2` review adapter
-- 当前状态：
-  - `P4-T01` 的 live planner sidecar receipt 已落地；planner-gated task 当前会先运行 codex-backed planner sidecar、写出 `planner_result.json`，然后仍停在 `waiting_handoff`
-  - `P4-T02` 的 repo-side review gate 已落地；低风险任务默认自动推进，medium/high/critical 风险、policy surface、以及 force-on review 命中时当前会在 worker / verification 之后停在 `needs_review`
-  - `P4-T03` 的 repo-side 正反谓词测试已落地；`user_forced_planner / user_forced_review` 现已作为 force-on override 被 contract 与测试承接
-  - `P4-T04` 的 repo-side structured receipts 已落地；live planner-sidecar 路径现在会写 `planner_result.json`，review-gated 路径会写 `review_result.json`，当前 planner/review/completed outcome 都会写 `closeout_bundle.json`
-  - bounded live `Claude Code + GLM-5.2` review receipt path 已接线，且 host_local review prompt 现在可携带 changed files 与 bounded patch summary；但这仍不等于 live `Claude Code + GLM-5.2` primary task execution、真实 remote/vm runner、`platform compatibility green`、或 `live accepted`
-  - review disposition / rework loop 已接线：`needs_review` 任务可记录 `approve / revise / reject` disposition，`revise` 会进入 `worker_execution` rework；`approve` 只关闭 repo-side review hold，不等于 live accepted
-- 出口门禁：planner/review 谓词正反分支全绿
+范围：一个 promoted template，B2，全局单 writer，5 个 scheduled observations。
 
-### Phase 5 多仓多 worker
+出口：5 个 commit-ready、零 unresolved state、完整 OperatorWorkSession 计量。
 
-- 目标：`remote_non_gui` 推进前的控制面整固
-- 出口门禁：`multi-worker simulation green`
+## P4：真实 repo cohort
 
-### Phase 6 Hermes parity / topology closeout
+工作项：`LAR-P4-001`。
 
-- 目标：Hermes parity、container lifecycle、historical snapshot mapping，以及远端拓扑 closeout
-- 当前状态：
-  - `P6-T01` 的 repo-side Hermes parity closeout 已完成：`run-hermes-parity.ps1` 当前会把 certified baseline doc、current known-good / boundary anchors、snapshot contract、known-good validator、以及 historical container lifecycle boundary 收进同一 summary
-  - `P6-T02` 的 repo-side historical snapshot mapping 已完成：current anchor 固定到 `known-good-20260628-225738-431.json` 与 `verify-hermes-boundary-20260628-225841-414.json`
-  - `P6-T03` 的 repo-side `vm_gui` conditional promotion evidence 已完成：`run-vm-gui-promotion.ps1` 当前会把 default GUI-only handoff 与 explicit `vm_gui_probe` fail-closed handoff 收进同一 summary
-  - 当前 shell 中 Hermes bring-up gate 只剩 `independent_key / independent_base_url` 两个 env-sensitive blocker；这仍不自动升级为 `platform compatibility green` 或 `live accepted`
-  - next repo-side open set 收窄到真实 remote host runner acceptance
-- 出口门禁：
-  - parity green
-  - historical snapshot mapping green
-  - lane promotion evidence green
+范围：至少两个 target repo、self-host，总计 30 个 observation；最多 5 probe-only、至少 25 commit-ready；另做至少 12 个严格配对效率 case。
 
-## Promotion Rule
+出口：安全硬门零；无人值守 >=80%；人工介入 <=20%；mandatory gates/evidence/backup/recovery=100%；净人工分钟/成功下降 >=50%；无 unresolved state。
 
-只有当 Governance Overlay 与当前 phase 的出口门禁都为绿时，才允许推进 `planning-status.json` 的 `current_active_queue`。
+## P5：逐仓切换和退休
+
+工作项：`LAR-P5-001`。
+
+每 repo：maintenance/drain -> zero active -> backup -> rollback drill -> ownership generation CAS -> verify -> observe。失败只回滚该 repo。
+
+全部 repo cutover 且 legacy zero active/closing 后，legacy DB 只读。连续 30 天零 legacy 调用后移除写面；compat reader、历史 evidence 和 task refs 永久保留。
+
+## 升级规则
+
+- B0：contracts/doctor/prepare。
+- B1：单个人工启动 pilot。
+- B2：promoted template 的单项 scheduled drain。
+- B3：多个 qualified repo portfolio。
+
+升级不扩大 Batch 禁止边界，必须由静态 generation、qualification、Authorization 和阶段验收激活。任何安全/gate失败、新失败类型、新人工介入或 profile 归因成功率下降立即停止新 claim。
