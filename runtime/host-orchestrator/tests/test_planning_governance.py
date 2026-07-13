@@ -341,7 +341,7 @@ def test_planning_verifier_accepts_truthful_candidate_state() -> None:
     assert payload["baseline_id"] == "local-ai-runtime-0.2-v3.23"
     assert payload["approval_active"] is False
     assert payload["missing_artifact_count"] == 13
-    assert payload["current_work_item_id"] == "LAR-P0A-002"
+    assert payload["current_work_item_id"] == "LAR-P0A-003"
     work_items = json.loads(WORK_ITEMS_PATH.read_text(encoding="utf-8"))["work_items"]
     task_ids = {item["task_id"] for item in work_items}
     assert payload["work_item_count"] == len(work_items) == 65
@@ -364,7 +364,7 @@ def test_planning_selector_returns_baseline_closure_without_preflight() -> None:
     assert completed.returncode == 0, completed.stderr
     payload = json.loads(completed.stdout)
     assert payload["next_action"] == "close_baseline_normative_package_first"
-    assert payload["current_work_item_id"] == "LAR-P0A-002"
+    assert payload["current_work_item_id"] == "LAR-P0A-003"
     assert payload["side_effects_performed"] is False
     assert payload["preflight_run"] is False
 
@@ -376,10 +376,10 @@ def test_native_thin_path_evaluation_preserves_v323_and_seals_artifacts() -> Non
     assert evaluation["status"] == "preserve_v3_23_semantics"
     assert evaluation["decision"] == "preserve_v3_23_semantics"
     assert status["current_work_item"] == {
-        "task_id": "LAR-P0A-002",
+        "task_id": "LAR-P0A-003",
         "selector_action": "close_baseline_normative_package_first",
         "status": "ready",
-        "reason": "LAR-P0A-EVAL-002 preserved v3.23 semantics and did not promote either evaluated high-effort profile. Revalidate the existing BaselineManifest schema, fixtures and verifier skeleton against v3.23 while keeping the final manifest absent.",
+        "reason": "LAR-P0A-002 revalidated the BaselineManifest contract against the frozen v3.23 source and BaselineLineage.v2 while keeping the final manifest absent. Close CanonicalizationPolicy.v1 and Git/Windows path identity contracts without advancing approval.",
     }
     assert evaluation["result_ref"].endswith("native-thin-path-capability-results.v1.json")
     assert evaluation["decision_ref"].endswith("native-thin-path-capability-decision.v1.json")
@@ -968,9 +968,11 @@ def test_baseline_manifest_component_self_test_is_green_without_final_manifest()
     assert completed.returncode == 0, completed.stderr
     payload = json.loads(completed.stdout)
     assert payload == {
+        "bound_artifact_count": 2,
         "byte_negative_fixture_count": 8,
         "component": "manifest",
         "final_manifest_exists": False,
+        "narrative_specification_id": "local-ai-runtime-0.2-v3.23",
         "positive_fixture_count": 1,
         "schema_version": "BaselineManifest.v1",
         "status": "pass",
@@ -981,6 +983,39 @@ def test_baseline_manifest_component_self_test_is_green_without_final_manifest()
     assert not (
         BASELINE_MANIFEST_SCHEMA_PATH.parent / "BaselineManifest.v1.json"
     ).exists()
+
+
+def test_baseline_manifest_fixture_binding_rejects_identity_or_byte_drift(
+    tmp_path: Path,
+) -> None:
+    namespace = runpy.run_path(str(BASELINE_PACKAGE_VERIFIER_PATH))
+    verify_bindings = namespace["_verify_fixture_bindings"]
+    failure_type = namespace["ValidationFailure"]
+    fixture = json.loads(BASELINE_MANIFEST_FIXTURE_PATH.read_text(encoding="utf-8"))
+    valid_manifest = fixture["valid_manifest"]
+
+    for entry in valid_manifest["payload"]["artifacts"]:
+        source = REPO_ROOT / entry["path"]
+        target = tmp_path / entry["path"]
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes(source.read_bytes())
+    verify_bindings(valid_manifest, tmp_path)
+
+    stale_manifest = json.loads(json.dumps(valid_manifest))
+    stale_manifest["payload"]["narrative_specification_id"] = (
+        "local-ai-runtime-0.2-v3.22"
+    )
+    with pytest.raises(failure_type) as stale_failure:
+        verify_bindings(stale_manifest, tmp_path)
+    assert stale_failure.value.reason == "fixture_binding_mismatch"
+
+    source_entry = valid_manifest["payload"]["artifacts"][0]
+    source_path = tmp_path / source_entry["path"]
+    raw = source_path.read_bytes()
+    source_path.write_bytes(raw[:-1] + b"x\n")
+    with pytest.raises(failure_type) as byte_failure:
+        verify_bindings(valid_manifest, tmp_path)
+    assert byte_failure.value.reason == "bound_artifact_identity_mismatch"
 
 
 def test_baseline_verifier_skeleton_fails_closed_for_full_package() -> None:
@@ -1049,8 +1084,8 @@ def test_stable_baseline_entry_is_non_normative_and_targets_frozen_candidate() -
         "target_sha256": baseline["sha256"],
         "approval_input": False,
         "maximum_byte_count": 4096,
-        "byte_count": 2736,
-        "sha256": "6607470b7bea37a59eecc5753b6db8e83750c483009b16ffae7336c93d26d2a8",
+        "byte_count": 2873,
+        "sha256": "843ce546d252a37f9622b330b51370968cb5a0b2339d94d90c2e836b1c187963",
     }
     assert len(raw) <= entry["maximum_byte_count"]
     assert len(raw) == entry["byte_count"]
@@ -1065,7 +1100,7 @@ def test_stable_baseline_entry_is_non_normative_and_targets_frozen_candidate() -
         "BaselineManifest.v1",
         "BaselineApprovalRecord",
         "preserve_v3_23_semantics",
-        "LAR-P0A-002",
+        "LAR-P0A-003",
         "close_baseline_normative_package_first",
     ):
         assert marker in rendered

@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import argparse
 import copy
+import hashlib
 import json
 from pathlib import Path
 import re
@@ -29,6 +30,30 @@ MANIFEST_FIXTURE_RELATIVE = Path(
 FINAL_MANIFEST_RELATIVE = Path(
     "docs/specs/local-ai-runtime-0.2/normative/BaselineManifest.v1.json"
 )
+BASELINE_SPECIFICATION_ID = "local-ai-runtime-0.2-v3.23"
+BASELINE_FIXTURE_MANIFEST_ID = f"{BASELINE_SPECIFICATION_ID}-fixture"
+BOUND_ARTIFACTS = {
+    "P0A-SOURCE": {
+        "artifact_id": "P0A-SOURCE",
+        "artifact_version": BASELINE_SPECIFICATION_ID,
+        "artifact_role": "narrative_specification",
+        "path": "docs/specs/local-ai-runtime-0.2-v3.23-baseline-candidate.md",
+        "byte_count": 188325,
+        "sha256": "80562322ebc744eda2a87a17c45f73a11982f4947c9d10e8628bb6f73ee9d5c6",
+        "schema_version": "narrative.v1",
+        "verifier_id": "SpecificationBytePolicy.v1",
+    },
+    "P0A-LINEAGE": {
+        "artifact_id": "P0A-LINEAGE",
+        "artifact_version": "BaselineLineage.v2",
+        "artifact_role": "lineage",
+        "path": "docs/specs/local-ai-runtime-0.2/normative/BaselineLineage.v2.json",
+        "byte_count": 3495,
+        "sha256": "49141a69c9aed6065ba063714fb2349750e500199ed8dfaf64fa6e2b198b9043",
+        "schema_version": "BaselineLineage.v2",
+        "verifier_id": "LocalAIRuntimeBaselineVerifier.v1",
+    },
+}
 FORBIDDEN_ARTIFACT_IDS = {
     "P0A-MANIFEST",
     "P0A-REVIEW",
@@ -254,6 +279,45 @@ def _verify_schema_contract(schema: dict[str, Any]) -> None:
         raise ValidationFailure("schema_contract_drift", "schema embeds manifest self-hash")
 
 
+def _verify_fixture_bindings(valid_manifest: dict[str, Any], repo_root: Path) -> None:
+    payload = valid_manifest["payload"]
+    if payload["manifest_id"] != BASELINE_FIXTURE_MANIFEST_ID:
+        raise ValidationFailure("fixture_binding_mismatch", "manifest_id is not v3.23-bound")
+    if payload["narrative_specification_id"] != BASELINE_SPECIFICATION_ID:
+        raise ValidationFailure(
+            "fixture_binding_mismatch", "narrative_specification_id is not v3.23-bound"
+        )
+
+    artifacts = {entry["artifact_id"]: entry for entry in payload["artifacts"]}
+    if set(artifacts) != set(BOUND_ARTIFACTS):
+        raise ValidationFailure(
+            "fixture_binding_mismatch",
+            f"bound artifact IDs mismatch: {sorted(artifacts)}",
+        )
+    for artifact_id, expected in BOUND_ARTIFACTS.items():
+        entry = artifacts[artifact_id]
+        if entry != expected:
+            raise ValidationFailure(
+                "fixture_binding_mismatch", f"{artifact_id} fixture identity mismatch"
+            )
+        artifact_path = repo_root / expected["path"]
+        try:
+            raw = artifact_path.read_bytes()
+        except OSError as exc:
+            raise ValidationFailure(
+                "unreadable_file", f"cannot read bound artifact {artifact_path}: {exc}"
+            ) from exc
+        validate_normative_bytes(raw, str(artifact_path))
+        if (
+            len(raw) != expected["byte_count"]
+            or hashlib.sha256(raw).hexdigest() != expected["sha256"]
+        ):
+            raise ValidationFailure(
+                "bound_artifact_identity_mismatch",
+                f"{artifact_id} bytes do not match the frozen v3.23 identity",
+            )
+
+
 def _structural_mutations() -> dict[str, Callable[[dict[str, Any]], None]]:
     def duplicate_id(value: dict[str, Any]) -> None:
         entry = copy.deepcopy(value["payload"]["artifacts"][0])
@@ -308,6 +372,7 @@ def verify_manifest_component(repo_root: Path) -> dict[str, Any]:
     _verify_schema_contract(schema)
     valid_manifest = fixture.get("valid_manifest")
     validate_manifest(valid_manifest)
+    _verify_fixture_bindings(valid_manifest, repo_root)
 
     structural_count = 0
     mutations = _structural_mutations()
@@ -352,6 +417,8 @@ def verify_manifest_component(repo_root: Path) -> dict[str, Any]:
         "status": "pass",
         "component": "manifest",
         "schema_version": MANIFEST_VERSION,
+        "narrative_specification_id": BASELINE_SPECIFICATION_ID,
+        "bound_artifact_count": len(BOUND_ARTIFACTS),
         "positive_fixture_count": 1,
         "structural_negative_fixture_count": structural_count,
         "byte_negative_fixture_count": byte_count,

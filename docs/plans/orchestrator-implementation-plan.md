@@ -47,9 +47,9 @@
 
 `grill-with-docs` 可用于低频、高不确定、不可逆设计决策的人类术语/ADR 对齐；不作为日常自动执行、Batch admission 或本仓控制面的前门。
 
-### 后续：`LAR-P0A-002` Manifest
+### 已完成：`LAR-P0A-002` Manifest
 
-固定规范字节、domain envelope、artifact path/hash/schema/verifier closure。Validator 只拒绝，不改写。Narrative ID 只绑定本文精确 bytes；每个 schema/catalog/transition/verifier 使用自己的 artifact ID/version/hash；preapproval inventory 可更新但非规范。本任务只创建 `BaselineManifest.v1` schema、非最终 fixtures 和 verifier skeleton，禁止创建最终 `BaselineManifest.v1.json`，`P0A-MANIFEST` 保持 missing。已 present artifact 禁止原地覆盖，语义修正必须新 artifact version，和 narrative 不一致时同时新建 candidate。
+已固定规范字节、domain envelope、artifact path/hash/schema/verifier closure。Validator 只拒绝，不改写。Positive fixture 和 self-test 已绑定冻结 v3.23 source 与 `BaselineLineage.v2` 的精确 bytes/hash；每个 schema/catalog/transition/verifier 继续使用自己的 artifact ID/version/hash；preapproval inventory 可更新但非规范。本任务只重验 `BaselineManifest.v1` schema、非最终 fixtures 和 verifier skeleton，未创建最终 `BaselineManifest.v1.json`，`P0A-MANIFEST` 保持 missing。已 present artifact 禁止原地覆盖，语义修正必须新 artifact version，和 narrative 不一致时同时新建 candidate。
 
 ### `LAR-P0A-003` 至 `010` Contract bundles
 
@@ -238,4 +238,4 @@ Network deny、secret scan、unknown path、reparse/hardlink、Git config、prot
 
 ## 10. 当前下一步
 
-当前 action 是 `close_baseline_normative_package_first`，task 是 `LAR-P0A-002`。Native thin-path 结果、决定和证据已交叉绑定；下一步只重验 manifest schema/fixtures/verifier skeleton 与 v3.23 的一致性，最终 `BaselineManifest.v1.json` 仍不得创建。不得运行 live Batch、创建批准记录、Truth Reset、`runtime/local-ai-runtime`、remote push/CI retrieval，或修改 `.ai/config`。
+当前 action 是 `close_baseline_normative_package_first`，task 是 `LAR-P0A-003`。Native thin-path 结果、决定和证据已交叉绑定，v3.23 manifest contract 重验也已闭合；下一步只物化 `CanonicalizationPolicy.v1` 及其 Canonical JSON、Git path、Windows identity/collision 和 alias-aware 8.3 fixtures/probes。最终 `BaselineManifest.v1.json` 仍不得创建。不得运行 live Batch、创建批准记录、Truth Reset、`runtime/local-ai-runtime`、remote push/CI retrieval，或修改 `.ai/config`。

@@ -31,8 +31,10 @@ thirteen required artifacts are still missing. The historical v3.17 and both
 conflicted v3.18 source bodies, plus the exact superseded v3.21 identity, are
 bound by `BaselineLineage.v2`. The sealed evaluation recorded an immutable
 `preserve_v3_23_semantics` decision without promoting either evaluated
-high-effort profile. The unique ready work item is now `LAR-P0A-002`, selected
-as `close_baseline_normative_package_first`. Baseline Approval remains
+high-effort profile. `LAR-P0A-002` revalidated the non-final manifest fixture
+and verifier skeleton against the frozen v3.23 source and `BaselineLineage.v2`.
+The unique ready work item is now `LAR-P0A-003`, selected as
+`close_baseline_normative_package_first`. Baseline Approval remains
 inactive; any later semantic change still requires a v3.24 successor instead
 of rewriting this frozen target.
 

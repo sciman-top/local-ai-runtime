@@ -6,28 +6,28 @@
     "domain": "local-ai-runtime/BaselineManifest/v1",
     "schema_version": 1,
     "payload": {
-      "manifest_id": "local-ai-runtime-0.2-v3.22-fixture",
+      "manifest_id": "local-ai-runtime-0.2-v3.23-fixture",
       "manifest_version": "BaselineManifest.v1",
-      "narrative_specification_id": "local-ai-runtime-0.2-v3.22",
+      "narrative_specification_id": "local-ai-runtime-0.2-v3.23",
       "artifacts": [
         {
           "artifact_id": "P0A-SOURCE",
-          "artifact_version": "local-ai-runtime-0.2-v3.22",
+          "artifact_version": "local-ai-runtime-0.2-v3.23",
           "artifact_role": "narrative_specification",
-          "path": "docs/specs/local-ai-runtime-0.2-v3.22-baseline-candidate.md",
-          "byte_count": 178330,
-          "sha256": "8338a9dcf4bbbb40ca28f4f2ec6dca37587ee94fbfbbc6e3a0063c4de379569c",
+          "path": "docs/specs/local-ai-runtime-0.2-v3.23-baseline-candidate.md",
+          "byte_count": 188325,
+          "sha256": "80562322ebc744eda2a87a17c45f73a11982f4947c9d10e8628bb6f73ee9d5c6",
           "schema_version": "narrative.v1",
           "verifier_id": "SpecificationBytePolicy.v1"
         },
         {
           "artifact_id": "P0A-LINEAGE",
-          "artifact_version": "BaselineLineage.v1",
+          "artifact_version": "BaselineLineage.v2",
           "artifact_role": "lineage",
-          "path": "docs/specs/local-ai-runtime-0.2/normative/BaselineLineage.v1.json",
-          "byte_count": 3134,
-          "sha256": "8bb29e0fbc4990749424e07368e5b1c0f09cf378e78d1ada38b8fe998fb97b35",
-          "schema_version": "BaselineLineage.v1",
+          "path": "docs/specs/local-ai-runtime-0.2/normative/BaselineLineage.v2.json",
+          "byte_count": 3495,
+          "sha256": "49141a69c9aed6065ba063714fb2349750e500199ed8dfaf64fa6e2b198b9043",
+          "schema_version": "BaselineLineage.v2",
           "verifier_id": "LocalAIRuntimeBaselineVerifier.v1"
         }
       ],

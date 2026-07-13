@@ -616,7 +616,7 @@
       "task_id": "LAR-P0A-002",
       "phase": "P0A",
       "priority": 0,
-      "status": "ready",
+      "status": "completed",
       "title": "Revalidate BaselineManifest and normative package closure rules for v3.23",
       "goal": "Revalidate the retained manifest schema, byte/version rules, fixtures and verifier skeleton against the v3.23 candidate after the comparative evaluation preserves semantics; do not inherit a v3.22 task result by task ID alone or create the final BaselineManifest instance before the package review head is frozen.",
       "depends_on": [
@@ -678,7 +678,7 @@
       "task_id": "LAR-P0A-003",
       "phase": "P0A",
       "priority": 0,
-      "status": "pending",
+      "status": "ready",
       "title": "Close canonical JSON, Git path and Windows identity contracts",
       "goal": "Materialize CanonicalizationPolicy.v1 and its positive/negative fixtures, including duplicate-key rejection, ordered-array semantics, declared set semantics and independent NTFS collision keys.",
       "depends_on": [

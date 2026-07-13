@@ -1,5 +1,6 @@
 # Change Evidence Index
 
+- [20260714 LAR-P0A-002 v3.23 Manifest Revalidation](20260714-lar-p0a-002-manifest-revalidation.md): v3.23/Lineage.v2-bound positive fixture, exact on-disk artifact identity checks, red-green regression and the unchanged no-final-manifest/non-approval boundary.
 - [20260713 LAR-P0A-EVAL-002 Comparative Results](20260713-lar-p0a-eval-002-comparative-results.md): 18 frozen core trials, conditional harness dispositions, normalized metrics, capability surface states and the non-normative `preserve_v3_23_semantics` decision.
 - [20260713 Official Surface And Harness Research](20260713-lar-p0a-eval-002-official-surface-and-harness-research.md): official OpenAI surface boundaries and primary-source Superpowers/Trellis/Hermes/Grill applicability findings.
 - [20260712 LAR-P0A-002 BaselineManifest contract](20260712-lar-p0a-002-manifest.md): manifest schema, byte and structural fixtures, fail-closed verifier skeleton, regression tests and the precise no-final-manifest boundary.
@@ -17,16 +18,17 @@
 - task-level `result.json`、`verification_summary.json`、`cost_summary.json`、`evidence_index.json` 仍属于 `.ai/runs/<run_id>/<task_id>/`
 - 这里的索引只回答“当前仓的治理增强面何时、为何、如何被刷新”
 
-## 2026-07-13 当前规划真值
+## 2026-07-14 当前规划真值
 
 - v3.23 是 `baseline_candidate`，不是 approved baseline；v3.17、两份 conflicted v3.18、v3.19-v3.22 只作为精确历史/被替代身份保留。
 - 当前队列是 `LOCAL-AI-RUNTIME-0.2-BASELINE-CLOSURE`。
-- Native thin-path comparison 已记录 `preserve_v3_23_semantics`；当前 selector 是 `close_baseline_normative_package_first`，唯一 selectable task 是 `LAR-P0A-002`。规范包仍为 15 required / 2 present / 13 missing，`P0A-VERIFIER` 为 in_progress；baseline 仍未批准。
+- Native thin-path comparison 已记录 `preserve_v3_23_semantics`；`LAR-P0A-002` 已完成 v3.23 manifest contract 重验，当前 selector 是 `close_baseline_normative_package_first`，唯一 selectable task 是 `LAR-P0A-003`。规范包仍为 15 required / 2 present / 13 missing，`P0A-VERIFIER` 为 in_progress；baseline 仍未批准。
 - `runtime/host-orchestrator` 仍是现行内核；没有 Truth Reset、新 Batch、Implementation Acceptance、Full Q0 或 P2 admission。
 - 下方 2026-07-06 至 2026-07-10 的 Phase 1/runtime_v2 selector 结论是历史 evidence，不再是 next-work truth。
 
 当前入口：
 
+- [20260714 LAR-P0A-002 v3.23 Manifest Revalidation](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260714-lar-p0a-002-manifest-revalidation.md) - 当前 manifest contract 重验真值；positive fixture/self-test 绑定冻结 v3.23 与 `BaselineLineage.v2`，最终 manifest 仍不存在
 - [20260712 Local AI Runtime v3.23 Native Thin-Path Rebaseline](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260712-local-ai-runtime-v3.23-native-thin-path-rebaseline.md) - 当前候选规划真值；冻结 v3.23 与 `BaselineLineage.v2`、65 项 v3 DAG/35 个 P1 编码切片、Native thin-path 前置评测和三种 decision 的 fail-closed 路由
 - [20260712 LAR-P0A-002 BaselineManifest Contract](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260712-lar-p0a-002-manifest.md) - v3.22-bound historical manifest slice；其 artifacts 在 v3.23 preserve decision 后才可由 `LAR-P0A-002` 重验，最终 manifest 未创建
 - [20260712 Local AI Runtime v3.22 Candidate Rebaseline](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260712-local-ai-runtime-v3.22-candidate-rebaseline.md) - v3.22 候选重基线的冻结历史证据；`baseline_candidate`、62 项 v3 deterministic DAG/35 个 P1 编码切片和 11 项闭合投影均为 superseded input
