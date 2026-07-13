@@ -340,8 +340,8 @@ def test_planning_verifier_accepts_truthful_candidate_state() -> None:
     assert payload["status"] == "pass"
     assert payload["baseline_id"] == "local-ai-runtime-0.2-v3.23"
     assert payload["approval_active"] is False
-    assert payload["missing_artifact_count"] == 11
-    assert payload["current_work_item_id"] == "LAR-P0A-005"
+    assert payload["missing_artifact_count"] == 10
+    assert payload["current_work_item_id"] == "LAR-P0A-006"
     work_items = json.loads(WORK_ITEMS_PATH.read_text(encoding="utf-8"))["work_items"]
     task_ids = {item["task_id"] for item in work_items}
     assert payload["work_item_count"] == len(work_items) == 65
@@ -364,7 +364,7 @@ def test_planning_selector_returns_baseline_closure_without_preflight() -> None:
     assert completed.returncode == 0, completed.stderr
     payload = json.loads(completed.stdout)
     assert payload["next_action"] == "close_baseline_normative_package_first"
-    assert payload["current_work_item_id"] == "LAR-P0A-005"
+    assert payload["current_work_item_id"] == "LAR-P0A-006"
     assert payload["side_effects_performed"] is False
     assert payload["preflight_run"] is False
 
@@ -376,10 +376,10 @@ def test_native_thin_path_evaluation_preserves_v323_and_seals_artifacts() -> Non
     assert evaluation["status"] == "preserve_v3_23_semantics"
     assert evaluation["decision"] == "preserve_v3_23_semantics"
     assert status["current_work_item"] == {
-        "task_id": "LAR-P0A-005",
+        "task_id": "LAR-P0A-006",
         "selector_action": "close_baseline_normative_package_first",
         "status": "ready",
-        "reason": "LAR-P0A-004 materialized and verified ProductContract.v1, work-class-only routing, closed TaskTemplate and BatchSubmission schemas, permanent root replay and atomic resubmission while keeping approval inactive. Close qualification, environment, sandbox-state and reusable Authorization contracts.",
+        "reason": "LAR-P0A-005 materialized and verified QualificationContractSet.v1, exhaustive sensitive input discovery, immutable environment/sandbox bindings, keyring-only auth, reusable Authorization, exact effect grants and continuation without touching live auth or sandbox state. Close execution, fencing, suspended process, handle and adoption contracts.",
     }
     assert evaluation["result_ref"].endswith("native-thin-path-capability-results.v1.json")
     assert evaluation["decision_ref"].endswith("native-thin-path-capability-decision.v1.json")
@@ -1031,6 +1031,7 @@ def test_baseline_verifier_skeleton_fails_closed_for_full_package() -> None:
         "manifest_self_test",
         "canonicalization",
         "product_submission",
+        "qualification",
     ]
 
 
@@ -1090,8 +1091,8 @@ def test_stable_baseline_entry_is_non_normative_and_targets_frozen_candidate() -
         "target_sha256": baseline["sha256"],
         "approval_input": False,
         "maximum_byte_count": 4096,
-        "byte_count": 3201,
-        "sha256": "80c30300131d95694d630fea0d97d4e7657fa18dcd8865f3c1dc519804bffe57",
+        "byte_count": 3490,
+        "sha256": "246dc972db92b883584172bd273e4df01b6ed9b8e881a8e2111b95401b6ff53d",
     }
     assert len(raw) <= entry["maximum_byte_count"]
     assert len(raw) == entry["byte_count"]

@@ -922,7 +922,7 @@
       "task_id": "LAR-P0A-005",
       "phase": "P0A",
       "priority": 0,
-      "status": "ready",
+      "status": "completed",
       "title": "Close qualification, environment and Authorization contracts",
       "goal": "Define reproducible qualification input closure, immutable environment bindings, keyring-only auth and reusable Authorization with continuation rules.",
       "depends_on": [
@@ -1003,7 +1003,7 @@
       ],
       "phase": "P0A",
       "priority": 0,
-      "status": "pending",
+      "status": "ready",
       "title": "Close process, Job, marker, fencing and adoption contracts",
       "goal": "Define atomic Job join, exact stdio-only handle inheritance, launch-state irreversibility, same-name Job fail-closed behavior and append-only fenced adoption with a mutable CAS head.",
       "depends_on": [

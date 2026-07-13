@@ -1,0 +1,171 @@
+{
+  "fixture_id": "QualificationContractSet.v1.contract-fixtures",
+  "schema_version": 1,
+  "policy_path": "docs/specs/local-ai-runtime-0.2/normative/QualificationContractSet.v1.json",
+  "sensitive_input_set_schema_path": "docs/specs/local-ai-runtime-0.2/schemas/QualificationSensitiveInputSet.v1.schema.json",
+  "authorization_schema_path": "docs/specs/local-ai-runtime-0.2/schemas/Authorization.v1.schema.json",
+  "sensitive_input_set_positive": {
+    "schema_version": 1,
+    "repo_id": "sample-repo",
+    "local_base_ref": "refs/heads/main",
+    "resolver_catalog_id": "resolver-v1",
+    "resolver_catalog_sha256": "1111111111111111111111111111111111111111111111111111111111111111",
+    "collision_alias_policy_generation": "canonical-v1",
+    "negative_discovery_result": "closed_no_unknowns",
+    "entries": [
+      {
+        "entry_kind": "absent",
+        "subject": ".env.local",
+        "candidate_path": ".env.local",
+        "absence_result": "absent_at_observed_base",
+        "rule_id": "env-discovery",
+        "discovery_source": "controller",
+        "sensitivity_class": "secret-config"
+      },
+      {
+        "entry_kind": "expanded",
+        "subject": "config/*.json",
+        "directory_or_glob": "config/*.json",
+        "child_entry_hashes": [
+          "2222222222222222222222222222222222222222222222222222222222222222"
+        ],
+        "rule_id": "config-expansion",
+        "discovery_source": "repo_profile",
+        "sensitivity_class": "runtime-config"
+      },
+      {
+        "entry_kind": "present",
+        "subject": "uv.lock",
+        "repo_path": "uv.lock",
+        "windows_collision_key": "UV.LOCK",
+        "object_type": "blob",
+        "mode": "100644",
+        "git_oid_sha1": "3333333333333333333333333333333333333333",
+        "rule_id": "lockfile",
+        "discovery_source": "controller",
+        "sensitivity_class": "dependency-lock"
+      }
+    ]
+  },
+  "blocked_entry_case": {
+    "entry_kind": "blocked",
+    "subject": "../external.toml",
+    "blocked_class": "reference",
+    "reason_code": "repo_external_reference",
+    "rule_id": "dynamic-config",
+    "discovery_source": "controller",
+    "expected_result": "qualification_failed"
+  },
+  "environment_binding_positive": {
+    "schema_version": 1,
+    "binding_id": "4444444444444444444444444444444444444444444444444444444444444444",
+    "qualification_generation": 7,
+    "lock_hashes": [
+      "5555555555555555555555555555555555555555555555555555555555555555"
+    ],
+    "bundle_identity_sha256": "6666666666666666666666666666666666666666666666666666666666666666",
+    "volume_file_identity_sha256": "7777777777777777777777777777777777777777777777777777777777777777",
+    "owner_dacl_sha256": "8888888888888888888888888888888888888888888888888888888888888888",
+    "reparse_hardlink_audit_sha256": "9999999999999999999999999999999999999999999999999999999999999999",
+    "alias_policy_observation_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "dependency_tree_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "readonly_roots_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+    "gate_catalog_sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+    "offline_qualification_evidence_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+    "attempt_local_writable_cache": true,
+    "controller_actions": ["verify", "attach"],
+    "batch_setup_actions": []
+  },
+  "sandbox_binding_positive": {
+    "schema_version": 1,
+    "binding_id": "sandbox-binding-v1",
+    "codex_generation": "codex-0.144.1",
+    "platform_setup_generation": "setup-v1",
+    "sandbox_principal_id": "dedicated-low-privilege-principal",
+    "config_projection_sha256": "1111111111111111111111111111111111111111111111111111111111111111",
+    "config_root_identity_sha256": "2222222222222222222222222222222222222222222222222222222222222222",
+    "sandbox_root_identity_sha256": "3333333333333333333333333333333333333333333333333333333333333333",
+    "sandbox_acl_attestation_id": "opaque-attestation-v1",
+    "allowed_profiles": ["batch-writer", "batch-gate", "batch-git"],
+    "sandbox_log_policy": {
+      "opaque": true,
+      "file_max_bytes": 8388608,
+      "aggregate_max_bytes": 33554432,
+      "retention": 4,
+      "rotation_procedure_id": "sandbox-log-rotate-v1",
+      "task_process_read": "deny",
+      "ordinary_evidence_projection": "none"
+    },
+    "q0_probe_ids": ["sandbox-principal-isolation", "sandbox-secret-deny-read", "sandbox-log-rotation"]
+  },
+  "authorization_positive": {
+    "schema_version": 1,
+    "authorization_id": "a166aedb3c65e4bcf3d0e2cde0d798f6d646b44df50b2d5cd45386841d84b1eb",
+    "generation": 9,
+    "active_map_generation": 12,
+    "revoke_head_sha256": "1111111111111111111111111111111111111111111111111111111111111111",
+    "revoke_head_version": 4,
+    "issued_at_utc": "2026-07-14T00:00:00.000000Z",
+    "expires_at_utc": "2026-08-13T00:00:00.000000Z",
+    "active_runtime_identity_sha256": "2222222222222222222222222222222222222222222222222222222222222222",
+    "operator_sid_sha256": "3333333333333333333333333333333333333333333333333333333333333333",
+    "repo_id": "sample-repo",
+    "template_id": "maintain-repo-v1",
+    "execution_profile_id": "sol-high-v1",
+    "parameter_schema_sha256": "4444444444444444444444444444444444444444444444444444444444444444",
+    "risk_class": "low",
+    "sensitive_set_sha256": "5555555555555555555555555555555555555555555555555555555555555555",
+    "instruction_inventory_sha256": "6666666666666666666666666666666666666666666666666666666666666666",
+    "skill_inventory_sha256": "7777777777777777777777777777777777777777777777777777777777777777",
+    "qualification_generation": 7,
+    "environment_binding_sha256": "8888888888888888888888888888888888888888888888888888888888888888",
+    "toolchain_generation": "toolchain-v1",
+    "model": "gpt-5.6-sol",
+    "reasoning_effort": "high",
+    "permission_config_feature_tool_inventory_sha256": "9999999999999999999999999999999999999999999999999999999999999999",
+    "gate_policy_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "git_policy_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "evidence_mode": "standard",
+    "resource_limits_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+  },
+  "observation_refresh_cases": [
+    {"case_id": "identical_bindings_new_base", "binding_hashes_equal": true, "alias_evidence_equal": true, "fresh_observation": true, "expected_result": "cas_refresh_without_generation_increment"},
+    {"case_id": "safety_binding_changed", "binding_hashes_equal": false, "alias_evidence_equal": true, "fresh_observation": true, "expected_result": "new_generation_required"},
+    {"case_id": "alias_evidence_changed", "binding_hashes_equal": true, "alias_evidence_equal": false, "fresh_observation": true, "expected_result": "scope_requalification_required"},
+    {"case_id": "observation_stale", "binding_hashes_equal": true, "alias_evidence_equal": true, "fresh_observation": false, "expected_result": "stale_observation_rejected"}
+  ],
+  "working_tree_cases": [
+    {"case_id": "clean_relevant_paths", "sensitive_or_ancestor_dirty": false, "protected_or_approved_path_dirty": false, "unrelated_dirty_count": 0, "expected_result": "qualification_allowed"},
+    {"case_id": "sensitive_dirty", "sensitive_or_ancestor_dirty": true, "protected_or_approved_path_dirty": false, "unrelated_dirty_count": 0, "expected_result": "qualification_blocked"},
+    {"case_id": "approved_path_dirty", "sensitive_or_ancestor_dirty": false, "protected_or_approved_path_dirty": true, "unrelated_dirty_count": 0, "expected_result": "qualification_blocked"},
+    {"case_id": "unrelated_dirty_aggregate_only", "sensitive_or_ancestor_dirty": false, "protected_or_approved_path_dirty": false, "unrelated_dirty_count": 3, "expected_result": "qualification_allowed_aggregate_only"}
+  ],
+  "auth_store_cases": [
+    {"case_id": "keyring_available", "store": "keyring", "keyring_available": true, "expected_result": "auth_qualified"},
+    {"case_id": "file_forbidden", "store": "file", "keyring_available": true, "expected_result": "file_fallback_forbidden"},
+    {"case_id": "auto_forbidden", "store": "auto", "keyring_available": true, "expected_result": "auto_fallback_forbidden"},
+    {"case_id": "keyring_unavailable", "store": "keyring", "keyring_available": false, "expected_result": "keyring_unavailable_q0_failure"}
+  ],
+  "sandbox_projection_cases": [
+    {"case_id": "valid_public_binding", "secret_metadata_exported": false, "sandbox_log_content_or_hash_exported": false, "task_process_protected_read": false, "whole_code_home_immutable": false, "rotation_over_limit": false, "expected_result": "binding_accepted"},
+    {"case_id": "secret_metadata_exported", "secret_metadata_exported": true, "sandbox_log_content_or_hash_exported": false, "task_process_protected_read": false, "whole_code_home_immutable": false, "rotation_over_limit": false, "expected_result": "secret_metadata_projection_rejected"},
+    {"case_id": "sandbox_log_hash_exported", "secret_metadata_exported": false, "sandbox_log_content_or_hash_exported": true, "task_process_protected_read": false, "whole_code_home_immutable": false, "rotation_over_limit": false, "expected_result": "diagnostic_projection_rejected"},
+    {"case_id": "task_read_boundary_bypassed", "secret_metadata_exported": false, "sandbox_log_content_or_hash_exported": false, "task_process_protected_read": true, "whole_code_home_immutable": false, "rotation_over_limit": false, "expected_result": "platform_incompatible"},
+    {"case_id": "whole_code_home_marked_immutable", "secret_metadata_exported": false, "sandbox_log_content_or_hash_exported": false, "task_process_protected_read": false, "whole_code_home_immutable": true, "rotation_over_limit": false, "expected_result": "whole_root_immutability_rejected"},
+    {"case_id": "sandbox_log_over_limit", "secret_metadata_exported": false, "sandbox_log_content_or_hash_exported": false, "task_process_protected_read": false, "whole_code_home_immutable": false, "rotation_over_limit": true, "expected_result": "stop_new_claim_and_operator_action"}
+  ],
+  "grant_revoke_cases": [
+    {"case_id": "grant_then_later_revoke", "grant_exists": true, "basis_kind": "active_authorization", "action_kind": "writer", "grant_effect_identity": "writer-effect-1", "action_effect_identity": "writer-effect-1", "grant_committed_before_revoke": true, "revoke_committed_before_grant": false, "resume_count": 1, "expected_result": "complete_exact_effect"},
+    {"case_id": "revoke_before_grant", "grant_exists": false, "basis_kind": "active_authorization", "action_kind": "writer", "grant_effect_identity": "writer-effect-2", "action_effect_identity": "writer-effect-2", "grant_committed_before_revoke": false, "revoke_committed_before_grant": true, "resume_count": 0, "expected_result": "block_new_effect"},
+    {"case_id": "effect_identity_mismatch", "grant_exists": true, "basis_kind": "active_authorization", "action_kind": "gate", "grant_effect_identity": "gate-effect-1", "action_effect_identity": "gate-effect-2", "grant_committed_before_revoke": true, "revoke_committed_before_grant": false, "resume_count": 1, "expected_result": "effect_identity_mismatch"},
+    {"case_id": "duplicate_resume", "grant_exists": true, "basis_kind": "active_authorization", "action_kind": "writer", "grant_effect_identity": "writer-effect-3", "action_effect_identity": "writer-effect-3", "grant_committed_before_revoke": true, "revoke_committed_before_grant": false, "resume_count": 2, "expected_result": "duplicate_process_effect_blocked"},
+    {"case_id": "inherited_writer_forbidden", "grant_exists": true, "basis_kind": "inherited_fenced_action", "action_kind": "writer", "grant_effect_identity": "writer-effect-4", "action_effect_identity": "writer-effect-4", "grant_committed_before_revoke": true, "revoke_committed_before_grant": false, "resume_count": 1, "expected_result": "inherited_basis_forbidden"}
+  ],
+  "continuation_cases": [
+    {"case_id": "valid_closeout_continuation", "allowed_stages": ["gate_verify", "object_plan", "object_promote", "finalize_index", "finalize_head", "create_task_ref", "evidence_publish", "worktree_remove"], "expands_contract": false, "prior_head_unique": true, "terminal_stage_reopened": false, "expected_result": "append_continuation"},
+    {"case_id": "writer_restart_forbidden", "allowed_stages": ["writer", "gate_verify"], "expands_contract": false, "prior_head_unique": true, "terminal_stage_reopened": false, "expected_result": "writer_restart_forbidden"},
+    {"case_id": "contract_expansion_forbidden", "allowed_stages": ["gate_verify"], "expands_contract": true, "prior_head_unique": true, "terminal_stage_reopened": false, "expected_result": "contract_expansion_forbidden"},
+    {"case_id": "prior_head_conflict", "allowed_stages": ["gate_verify"], "expands_contract": false, "prior_head_unique": false, "terminal_stage_reopened": false, "expected_result": "prior_head_conflict"},
+    {"case_id": "terminal_stage_reopen", "allowed_stages": ["finalize_head"], "expands_contract": false, "prior_head_unique": true, "terminal_stage_reopened": true, "expected_result": "terminal_stage_reopen_forbidden"}
+  ]
+}

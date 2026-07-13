@@ -146,7 +146,9 @@
       "kind": "qualification_environment_authorization_bundle",
       "artifact_version": "QualificationContractSet.v1",
       "path": "docs/specs/local-ai-runtime-0.2/normative/QualificationContractSet.v1.json",
-      "status": "missing",
+      "status": "present",
+      "byte_count": 7336,
+      "sha256": "089a60664188fdc86c0de56496c493339246c5b423ddc3271450fb01e4fd6a80",
       "required_for_approval": true,
       "producer_task_id": "LAR-P0A-005",
       "verification": "schema_examples_catalog_verifier"
@@ -253,7 +255,6 @@
     }
   ],
   "missing_artifact_ids": [
-    "P0A-QUALIFICATION",
     "P0A-EXECUTION",
     "P0A-EVIDENCE",
     "P0A-GIT",

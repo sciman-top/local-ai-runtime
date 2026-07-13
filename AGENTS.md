@@ -7,7 +7,7 @@
 ## 1. 当前落点与目标归宿
 - 当前落点：`runtime/host-orchestrator`、`.ai/state/control-plane.db` 与既有 evidence 仍是唯一现行运行事实；`local-ai-runtime-0.2-v3.23` 只是 `baseline_candidate`，尚未批准、Truth Reset 或实现。
 - 目标归宿：Baseline Approval 后按 v3.23 在 `runtime/local-ai-runtime` 实现面向 Windows 本机、单操作者信任域的通用受控 AI 开发执行平台；产品目标是低人工、可预测、可恢复的开发吞吐。Epoch 1/v0.2 为 Unified Native + 全局 capacity=1 的 deterministic commit-only Batch，Native 快路径追求低交互延迟，Batch 不承诺高速并发；legacy Hermes/AgentBridge/host-orchestrator 最终只读兼容。
-- 下一最小里程碑：队列 `LOCAL-AI-RUNTIME-0.2-BASELINE-CLOSURE` 的 `close_baseline_normative_package_first / LAR-P0A-005`。`LAR-P0A-004` 已闭合 `ProductContract.v1`、work-class routing 与 submission/resubmission identity；规范包 `4/15 present, 11 missing`，最终 manifest 仍不存在。
+- 下一最小里程碑：队列 `LOCAL-AI-RUNTIME-0.2-BASELINE-CLOSURE` 的 `close_baseline_normative_package_first / LAR-P0A-006`。`LAR-P0A-005` 已闭合 `QualificationContractSet.v1`、base-independent sensitive set、immutable environment/sandbox binding、keyring-only auth 与 reusable Authorization；规范包 `5/15 present, 10 missing`，最终 manifest 仍不存在。
 - `LAR-P0A-EVAL-002` Native thin-path / capability comparative evaluation 已记录非规范 `preserve_v3_23_semantics` 决定。18 个 core trial 因外部 host 漂移跨 3 个分别 Q0-admitted generation，合并指标不得用作 profile promotion；CLI execution interface 仅对当前最终 generation 通过 capability/Q0 证据。App Server、SDK、managed Worktree 仍 inconclusive，Automations 对本 corpus not_applicable。任何后续语义变更仍必须冻结 v3.23 并创建后继 candidate，不能原地改写。
 - 本次规则更新只是预批准 planning control-plane 对齐，不是 v3.23 的 P0B Truth Reset；不得据此创建 approval、新 runtime、Batch claim 或 live evidence。
 

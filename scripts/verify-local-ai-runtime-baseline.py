@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import argparse
 import copy
+from datetime import datetime
 import hashlib
 import json
 from pathlib import Path
@@ -50,6 +51,18 @@ BATCH_SUBMISSION_SCHEMA_RELATIVE = Path(
 )
 PRODUCT_FIXTURE_RELATIVE = Path(
     "docs/specs/local-ai-runtime-0.2/fixtures/submission/manifest.json"
+)
+QUALIFICATION_POLICY_RELATIVE = Path(
+    "docs/specs/local-ai-runtime-0.2/normative/QualificationContractSet.v1.json"
+)
+SENSITIVE_INPUT_SCHEMA_RELATIVE = Path(
+    "docs/specs/local-ai-runtime-0.2/schemas/QualificationSensitiveInputSet.v1.schema.json"
+)
+AUTHORIZATION_SCHEMA_RELATIVE = Path(
+    "docs/specs/local-ai-runtime-0.2/schemas/Authorization.v1.schema.json"
+)
+QUALIFICATION_FIXTURE_RELATIVE = Path(
+    "docs/specs/local-ai-runtime-0.2/fixtures/qualification/manifest.json"
 )
 BASELINE_SPECIFICATION_ID = "local-ai-runtime-0.2-v3.23"
 BASELINE_FIXTURE_MANIFEST_ID = f"{BASELINE_SPECIFICATION_ID}-fixture"
@@ -248,6 +261,24 @@ EXPECTED_PRODUCT_IDENTITIES = {
     "fixture": {
         "byte_count": 7411,
         "sha256": "cd9787660be95db2e1ce8ff8b303eee8e819f8567582cbc5f406e32cce715cf1",
+    },
+}
+EXPECTED_QUALIFICATION_IDENTITIES = {
+    "policy": {
+        "byte_count": 7336,
+        "sha256": "089a60664188fdc86c0de56496c493339246c5b423ddc3271450fb01e4fd6a80",
+    },
+    "sensitive_input_schema": {
+        "byte_count": 5043,
+        "sha256": "e3a85cdec3ef2f1b2ed079366bbc12e490fa3d0015a2b18ca205fe6f724ba063",
+    },
+    "authorization_schema": {
+        "byte_count": 3165,
+        "sha256": "c911db9d05009c892bce01f4b241fd6cad2bb043a77279d7c73f2026407f8558",
+    },
+    "fixture": {
+        "byte_count": 13387,
+        "sha256": "8074b2fa4a529190d2bb9bc8cc0b5c8020adc878b899e6a2676824468d046b68",
     },
 }
 FORBIDDEN_PARAMETER_IDS = {
@@ -2219,13 +2250,921 @@ def verify_product_submission_component(repo_root: Path) -> dict[str, Any]:
     }
 
 
+def _verify_qualification_identity(
+    raw: bytes, identity_key: str, reason: str, label: str
+) -> None:
+    identity = EXPECTED_QUALIFICATION_IDENTITIES[identity_key]
+    if (
+        len(raw) != identity["byte_count"]
+        or hashlib.sha256(raw).hexdigest() != identity["sha256"]
+    ):
+        raise ValidationFailure(reason, f"{label} identity mismatch")
+
+
+def _verify_qualification_policy(policy: dict[str, Any], raw: bytes) -> dict[str, Any]:
+    try:
+        canonical = (
+            json.dumps(policy, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+            + "\n"
+        ).encode("utf-8")
+    except (RecursionError, TypeError, UnicodeEncodeError) as exc:
+        raise ValidationFailure(
+            "qualification_policy_bytes",
+            "QualificationContractSet is not canonical UTF-8 JSON",
+        ) from exc
+    _verify_qualification_identity(
+        raw, "policy", "qualification_policy_identity", "qualification policy"
+    )
+    if raw != canonical:
+        raise ValidationFailure(
+            "qualification_policy_identity", "qualification policy is not canonical"
+        )
+    envelope = _require_exact_fields(
+        policy, {"domain", "payload", "schema_version"}, "qualification policy"
+    )
+    if (
+        envelope["domain"] != "local-ai-runtime/QualificationContractSet/v1"
+        or type(envelope["schema_version"]) is not int
+        or envelope["schema_version"] != 1
+    ):
+        raise ValidationFailure("qualification_policy_drift", "policy envelope mismatch")
+    payload = _require_exact_fields(
+        envelope["payload"],
+        {
+            "artifact_id",
+            "artifact_version",
+            "attempt_authorization_continuation",
+            "auth_state",
+            "authorization",
+            "authorization_execution_grant",
+            "baseline_id",
+            "codex_sandbox_state_binding",
+            "qualified_environment_binding",
+            "qualification_sensitive_input_set",
+            "repo_template_qualification",
+        },
+        "qualification policy payload",
+        reason="qualification_policy_drift",
+    )
+    sensitive = _require_object(
+        payload["qualification_sensitive_input_set"],
+        "qualification sensitive input policy",
+        reason="qualification_policy_drift",
+    )
+    qualification = _require_object(
+        payload["repo_template_qualification"],
+        "repo template qualification policy",
+        reason="qualification_policy_drift",
+    )
+    environment = _require_object(
+        payload["qualified_environment_binding"],
+        "qualified environment policy",
+        reason="qualification_policy_drift",
+    )
+    auth = _require_object(
+        payload["auth_state"], "auth state policy", reason="qualification_policy_drift"
+    )
+    authorization = _require_object(
+        payload["authorization"],
+        "authorization policy",
+        reason="qualification_policy_drift",
+    )
+    grant = _require_object(
+        payload["authorization_execution_grant"],
+        "authorization grant policy",
+        reason="qualification_policy_drift",
+    )
+    continuation = _require_object(
+        payload["attempt_authorization_continuation"],
+        "authorization continuation policy",
+        reason="qualification_policy_drift",
+    )
+    sandbox = _require_object(
+        payload["codex_sandbox_state_binding"],
+        "sandbox binding policy",
+        reason="qualification_policy_drift",
+    )
+    sandbox_log = _require_object(
+        sandbox.get("sandbox_log"),
+        "sandbox log policy",
+        reason="qualification_policy_drift",
+    )
+    if (
+        payload["artifact_id"] != "P0A-QUALIFICATION"
+        or payload["artifact_version"] != "QualificationContractSet.v1"
+        or payload["baseline_id"] != BASELINE_SPECIFICATION_ID
+        or sensitive.get("canonical_entry_kinds")
+        != ["present", "absent", "expanded", "blocked"]
+        or sensitive.get("working_tree_hash_in_authorization") is not False
+        or qualification.get("generation_change")
+        != "only_safety_relevant_binding_hash_change"
+        or environment.get("controller_actions") != ["verify", "attach"]
+        or auth.get("allowed_store") != "keyring"
+        or auth.get("forbidden_stores") != ["file", "auto"]
+        or authorization.get("excluded_fields")
+        != [
+            "task_id",
+            "submission_id",
+            "expected_base_commit",
+            "derived_commit",
+            "git_ref",
+            "evidence_id",
+        ]
+        or grant.get("root_basis") != "active_authorization"
+        or continuation.get("writer_restart_allowed") is not False
+        or sandbox.get("official_contract_boundary")
+        != "sandbox_log_field_schema_not_assumed"
+        or sandbox_log.get("field_schema") != "opaque_uncommitted"
+        or sandbox_log.get("content_hash_in_ordinary_state") is not False
+        or sandbox_log.get("task_process_read") != "deny"
+    ):
+        raise ValidationFailure(
+            "qualification_policy_drift", "qualification boundary mismatch"
+        )
+    return payload
+
+
+def _validate_local_base_ref(value: Any) -> None:
+    if not isinstance(value, str):
+        raise ValidationFailure("sensitive_set_schema", "local_base_ref must be a string")
+    try:
+        raw = value.encode("utf-8")
+    except UnicodeEncodeError as exc:
+        raise ValidationFailure("sensitive_set_schema", "local_base_ref is not UTF-8") from exc
+    prefix = "refs/heads/"
+    components = value.removeprefix(prefix).split("/")
+    if (
+        not value.startswith(prefix)
+        or not 11 <= len(raw) <= 255
+        or any(
+            not component
+            or component in {".", ".."}
+            or component.startswith(".")
+            or component.endswith((".", ".lock"))
+            for component in components
+        )
+        or any(ord(character) < 32 or ord(character) == 127 for character in value)
+        or any(character in value for character in "~^:?*[")
+        or ".." in value
+        or any(token in value for token in ("\\", "@{", "//"))
+        or value.startswith("refs/heads/codex/batch/")
+    ):
+        raise ValidationFailure("sensitive_set_schema", "local_base_ref is invalid")
+
+
+def _validate_qualification_path(value: Any, label: str) -> None:
+    if not isinstance(value, str):
+        raise ValidationFailure("sensitive_set_schema", f"{label} must be a string")
+    try:
+        raw = value.encode("utf-8")
+    except UnicodeEncodeError as exc:
+        raise ValidationFailure("sensitive_set_schema", f"{label} is not UTF-8") from exc
+    components = value.split("/")
+    if (
+        not raw
+        or len(raw) > 4096
+        or value.startswith(("/", "\\"))
+        or "\\" in value
+        or any(component in {"", ".", ".."} for component in components)
+    ):
+        raise ValidationFailure("sensitive_set_schema", f"{label} is not repo-relative")
+
+
+def _validate_qualification_entry(entry: Any) -> dict[str, Any]:
+    entry = _require_object(entry, "qualification entry", reason="sensitive_set_schema")
+    kind = entry.get("entry_kind")
+    common = {"entry_kind", "subject", "rule_id", "discovery_source"}
+    if kind == "present":
+        required = common | {
+            "repo_path",
+            "windows_collision_key",
+            "object_type",
+            "mode",
+            "git_oid_sha1",
+            "sensitivity_class",
+        }
+    elif kind == "absent":
+        required = common | {"candidate_path", "absence_result", "sensitivity_class"}
+    elif kind == "expanded":
+        required = common | {"directory_or_glob", "child_entry_hashes", "sensitivity_class"}
+    elif kind == "blocked":
+        required = common | {"blocked_class", "reason_code"}
+    else:
+        raise ValidationFailure("sensitive_entry_kind", f"unknown entry kind: {kind!r}")
+    entry = _require_exact_fields(
+        entry, required, f"{kind} qualification entry", reason="sensitive_set_schema"
+    )
+    for field in ("rule_id", "discovery_source"):
+        value = entry[field]
+        if not isinstance(value, str) or PUBLIC_ID_PATTERN.fullmatch(value) is None:
+            raise ValidationFailure("sensitive_set_schema", f"{field} is invalid")
+    if entry["discovery_source"] not in {"controller", "repo_profile", "task_template"}:
+        raise ValidationFailure("sensitive_set_schema", "discovery source is not allowed")
+    if kind == "blocked":
+        subject = entry["subject"]
+        if not isinstance(subject, str) or not subject or len(subject) > 4096:
+            raise ValidationFailure("sensitive_set_schema", "blocked subject is invalid")
+    else:
+        _validate_qualification_path(entry["subject"], "entry subject")
+    if kind == "present":
+        _validate_qualification_path(entry["repo_path"], "present repo_path")
+        if entry["subject"] != entry["repo_path"]:
+            raise ValidationFailure("sensitive_set_schema", "present subject mismatch")
+        if (
+            not isinstance(entry["windows_collision_key"], str)
+            or not isinstance(entry["git_oid_sha1"], str)
+            or SHA1_PATTERN.fullmatch(entry["git_oid_sha1"]) is None
+            or entry["object_type"] not in {"blob", "tree"}
+            or entry["mode"] not in {"100644", "100755", "040000"}
+            or (entry["object_type"] == "tree") != (entry["mode"] == "040000")
+        ):
+            raise ValidationFailure("sensitive_set_schema", "present entry identity mismatch")
+    elif kind == "absent":
+        _validate_qualification_path(entry["candidate_path"], "absent candidate_path")
+        if (
+            entry["subject"] != entry["candidate_path"]
+            or entry["absence_result"] != "absent_at_observed_base"
+        ):
+            raise ValidationFailure("sensitive_set_schema", "absence proof mismatch")
+    elif kind == "expanded":
+        _validate_qualification_path(entry["directory_or_glob"], "expanded path")
+        hashes = _require_string_array(
+            entry["child_entry_hashes"], "child entry hashes", reason="sensitive_set_schema"
+        )
+        if (
+            entry["subject"] != entry["directory_or_glob"]
+            or len(hashes) > 10000
+            or hashes != sorted(set(hashes))
+            or any(not _is_sha256(value) for value in hashes)
+        ):
+            raise ValidationFailure("sensitive_set_schema", "expanded entry mismatch")
+    else:
+        if entry["blocked_class"] not in {
+            "path",
+            "reference",
+            "object",
+            "dynamic_loading",
+            "collision",
+        } or not isinstance(entry["reason_code"], str):
+            raise ValidationFailure("sensitive_set_schema", "blocked entry mismatch")
+    if kind != "blocked":
+        sensitivity = entry["sensitivity_class"]
+        if not isinstance(sensitivity, str) or PUBLIC_ID_PATTERN.fullmatch(sensitivity) is None:
+            raise ValidationFailure("sensitive_set_schema", "sensitivity class is invalid")
+    return entry
+
+
+def _validate_sensitive_input_set(value: Any) -> str:
+    value = _require_exact_fields(
+        value,
+        {
+            "schema_version",
+            "repo_id",
+            "local_base_ref",
+            "resolver_catalog_id",
+            "resolver_catalog_sha256",
+            "collision_alias_policy_generation",
+            "negative_discovery_result",
+            "entries",
+        },
+        "QualificationSensitiveInputSet",
+        reason="sensitive_set_schema",
+    )
+    if type(value["schema_version"]) is not int or value["schema_version"] != 1:
+        raise ValidationFailure("sensitive_set_schema", "sensitive set version mismatch")
+    for field in ("repo_id", "resolver_catalog_id", "collision_alias_policy_generation"):
+        item = value[field]
+        if not isinstance(item, str) or PUBLIC_ID_PATTERN.fullmatch(item) is None:
+            raise ValidationFailure("sensitive_set_schema", f"{field} is invalid")
+    _validate_local_base_ref(value["local_base_ref"])
+    if not _is_sha256(value["resolver_catalog_sha256"]):
+        raise ValidationFailure("sensitive_set_schema", "resolver catalog hash is invalid")
+    entries = _require_array(value["entries"], "sensitive entries", reason="sensitive_set_schema")
+    if len(entries) > 10000:
+        raise ValidationFailure("sensitive_set_schema", "too many sensitive entries")
+    validated = [_validate_qualification_entry(entry) for entry in entries]
+    order = [(entry["entry_kind"], entry["subject"], entry["rule_id"]) for entry in validated]
+    if order != sorted(order) or len(order) != len(set(order)):
+        raise ValidationFailure("sensitive_set_order", "sensitive entries are not ordered/unique")
+    negative_result = value["negative_discovery_result"]
+    if negative_result not in {
+        "closed_no_unknowns",
+        "blocked_unknown_dynamic_loading",
+        "blocked_external_reference",
+        "blocked_incomplete_recursion",
+    }:
+        raise ValidationFailure("sensitive_set_schema", "negative discovery result is invalid")
+    if negative_result != "closed_no_unknowns" or any(
+        entry["entry_kind"] == "blocked" for entry in validated
+    ):
+        return "qualification_failed"
+    return "qualification_eligible"
+
+
+def _validate_environment_binding(value: Any) -> None:
+    hash_fields = {
+        "binding_id",
+        "bundle_identity_sha256",
+        "volume_file_identity_sha256",
+        "owner_dacl_sha256",
+        "reparse_hardlink_audit_sha256",
+        "alias_policy_observation_sha256",
+        "dependency_tree_sha256",
+        "readonly_roots_sha256",
+        "gate_catalog_sha256",
+        "offline_qualification_evidence_sha256",
+    }
+    value = _require_exact_fields(
+        value,
+        {
+            "schema_version",
+            "qualification_generation",
+            "lock_hashes",
+            "attempt_local_writable_cache",
+            "controller_actions",
+            "batch_setup_actions",
+        }
+        | hash_fields,
+        "QualifiedEnvironmentBinding",
+        reason="environment_binding_schema",
+    )
+    locks = _require_string_array(
+        value["lock_hashes"], "environment lock hashes", reason="environment_binding_schema"
+    )
+    if (
+        type(value["schema_version"]) is not int
+        or value["schema_version"] != 1
+        or type(value["qualification_generation"]) is not int
+        or value["qualification_generation"] < 1
+        or any(not _is_sha256(value[field]) for field in hash_fields)
+        or not locks
+        or locks != sorted(set(locks))
+        or any(not _is_sha256(item) for item in locks)
+        or value["attempt_local_writable_cache"] is not True
+        or value["controller_actions"] != ["verify", "attach"]
+        or value["batch_setup_actions"] != []
+    ):
+        raise ValidationFailure("environment_binding_schema", "environment binding mismatch")
+
+
+def _validate_sandbox_binding(value: Any) -> None:
+    value = _require_exact_fields(
+        value,
+        {
+            "schema_version",
+            "binding_id",
+            "codex_generation",
+            "platform_setup_generation",
+            "sandbox_principal_id",
+            "config_projection_sha256",
+            "config_root_identity_sha256",
+            "sandbox_root_identity_sha256",
+            "sandbox_acl_attestation_id",
+            "allowed_profiles",
+            "sandbox_log_policy",
+            "q0_probe_ids",
+        },
+        "CodexSandboxStateBinding",
+        reason="sandbox_binding_schema",
+    )
+    for field in (
+        "binding_id",
+        "codex_generation",
+        "platform_setup_generation",
+        "sandbox_principal_id",
+        "sandbox_acl_attestation_id",
+    ):
+        item = value[field]
+        if not isinstance(item, str) or PUBLIC_ID_PATTERN.fullmatch(item) is None:
+            raise ValidationFailure("sandbox_binding_schema", f"{field} is invalid")
+    for field in (
+        "config_projection_sha256",
+        "config_root_identity_sha256",
+        "sandbox_root_identity_sha256",
+    ):
+        if not _is_sha256(value[field]):
+            raise ValidationFailure("sandbox_binding_schema", f"{field} is invalid")
+    profiles = _require_string_array(
+        value["allowed_profiles"], "allowed sandbox profiles", reason="sandbox_binding_schema"
+    )
+    probes = _require_string_array(
+        value["q0_probe_ids"], "sandbox Q0 probes", reason="sandbox_binding_schema"
+    )
+    log_policy = _require_exact_fields(
+        value["sandbox_log_policy"],
+        {
+            "opaque",
+            "file_max_bytes",
+            "aggregate_max_bytes",
+            "retention",
+            "rotation_procedure_id",
+            "task_process_read",
+            "ordinary_evidence_projection",
+        },
+        "sandbox log policy",
+        reason="sandbox_binding_schema",
+    )
+    if (
+        profiles != ["batch-writer", "batch-gate", "batch-git"]
+        or probes
+        != [
+            "sandbox-principal-isolation",
+            "sandbox-secret-deny-read",
+            "sandbox-log-rotation",
+        ]
+        or log_policy
+        != {
+            "opaque": True,
+            "file_max_bytes": 8388608,
+            "aggregate_max_bytes": 33554432,
+            "retention": 4,
+            "rotation_procedure_id": "sandbox-log-rotate-v1",
+            "task_process_read": "deny",
+            "ordinary_evidence_projection": "none",
+        }
+    ):
+        raise ValidationFailure("sandbox_binding_schema", "sandbox boundary mismatch")
+
+
+AUTHORIZATION_FIELDS = {
+    "schema_version",
+    "authorization_id",
+    "generation",
+    "active_map_generation",
+    "revoke_head_sha256",
+    "revoke_head_version",
+    "issued_at_utc",
+    "expires_at_utc",
+    "active_runtime_identity_sha256",
+    "operator_sid_sha256",
+    "repo_id",
+    "template_id",
+    "execution_profile_id",
+    "parameter_schema_sha256",
+    "risk_class",
+    "sensitive_set_sha256",
+    "instruction_inventory_sha256",
+    "skill_inventory_sha256",
+    "qualification_generation",
+    "environment_binding_sha256",
+    "toolchain_generation",
+    "model",
+    "reasoning_effort",
+    "permission_config_feature_tool_inventory_sha256",
+    "gate_policy_sha256",
+    "git_policy_sha256",
+    "evidence_mode",
+    "resource_limits_sha256",
+}
+
+
+def _validate_authorization(value: Any) -> str:
+    value = _require_exact_fields(
+        value, AUTHORIZATION_FIELDS, "Authorization", reason="authorization_schema"
+    )
+    hash_fields = {
+        field
+        for field in AUTHORIZATION_FIELDS
+        if field.endswith("_sha256") or field == "authorization_id"
+    }
+    id_fields = {"repo_id", "template_id", "execution_profile_id", "toolchain_generation"}
+    timestamp_pattern = re.compile(
+        r"^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}\.[0-9]{6}Z$"
+    )
+    timestamp_fields = ("issued_at_utc", "expires_at_utc")
+    if any(
+        not isinstance(value[field], str)
+        or timestamp_pattern.fullmatch(value[field]) is None
+        for field in timestamp_fields
+    ):
+        raise ValidationFailure("authorization_schema", "Authorization timestamp mismatch")
+    try:
+        issued_at = datetime.strptime(value["issued_at_utc"], "%Y-%m-%dT%H:%M:%S.%fZ")
+        expires_at = datetime.strptime(value["expires_at_utc"], "%Y-%m-%dT%H:%M:%S.%fZ")
+    except ValueError as exc:
+        raise ValidationFailure("authorization_schema", "Authorization timestamp is invalid") from exc
+    if (
+        type(value["schema_version"]) is not int
+        or value["schema_version"] != 1
+        or any(type(value[field]) is not int or value[field] < 1 for field in (
+            "generation",
+            "active_map_generation",
+            "qualification_generation",
+        ))
+        or type(value["revoke_head_version"]) is not int
+        or value["revoke_head_version"] < 0
+        or any(not _is_sha256(value[field]) for field in hash_fields)
+        or any(
+            not isinstance(value[field], str)
+            or PUBLIC_ID_PATTERN.fullmatch(value[field]) is None
+            for field in id_fields
+        )
+        or value["risk_class"] != "low"
+        or value["reasoning_effort"] not in {"low", "medium", "high", "xhigh"}
+        or value["evidence_mode"] not in {"standard", "restricted"}
+        or not isinstance(value["model"], str)
+        or PUBLIC_VALUE_PATTERN.fullmatch(value["model"]) is None
+        or issued_at >= expires_at
+    ):
+        raise ValidationFailure("authorization_schema", "Authorization field mismatch")
+    payload = dict(value)
+    authorization_id = payload.pop("authorization_id")
+    envelope = {
+        "domain": "local-ai-runtime/Authorization/v1",
+        "payload": payload,
+        "schema_version": 1,
+    }
+    raw = (
+        json.dumps(envelope, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+        + "\n"
+    ).encode("utf-8")
+    expected = hashlib.sha256(raw).hexdigest()
+    if authorization_id != expected:
+        raise ValidationFailure("authorization_fingerprint", "Authorization ID mismatch")
+    return expected
+
+
+def _evaluate_observation_refresh(case: dict[str, Any]) -> str:
+    case = _require_exact_fields(
+        case,
+        {
+            "case_id",
+            "binding_hashes_equal",
+            "alias_evidence_equal",
+            "fresh_observation",
+            "expected_result",
+        },
+        "observation refresh case",
+        reason="qualification_fixture_schema",
+    )
+    if not all(
+        isinstance(case[field], bool)
+        for field in ("binding_hashes_equal", "alias_evidence_equal", "fresh_observation")
+    ):
+        raise ValidationFailure("qualification_fixture_schema", "observation flags must be bool")
+    if not case["fresh_observation"]:
+        return "stale_observation_rejected"
+    if not case["alias_evidence_equal"]:
+        return "scope_requalification_required"
+    if not case["binding_hashes_equal"]:
+        return "new_generation_required"
+    return "cas_refresh_without_generation_increment"
+
+
+def _evaluate_working_tree(case: dict[str, Any]) -> str:
+    case = _require_exact_fields(
+        case,
+        {
+            "case_id",
+            "sensitive_or_ancestor_dirty",
+            "protected_or_approved_path_dirty",
+            "unrelated_dirty_count",
+            "expected_result",
+        },
+        "working tree case",
+        reason="qualification_fixture_schema",
+    )
+    if (
+        not isinstance(case["sensitive_or_ancestor_dirty"], bool)
+        or not isinstance(case["protected_or_approved_path_dirty"], bool)
+        or type(case["unrelated_dirty_count"]) is not int
+        or case["unrelated_dirty_count"] < 0
+    ):
+        raise ValidationFailure("qualification_fixture_schema", "working tree case mismatch")
+    if case["sensitive_or_ancestor_dirty"] or case["protected_or_approved_path_dirty"]:
+        return "qualification_blocked"
+    if case["unrelated_dirty_count"]:
+        return "qualification_allowed_aggregate_only"
+    return "qualification_allowed"
+
+
+def _evaluate_auth_store(case: dict[str, Any]) -> str:
+    case = _require_exact_fields(
+        case,
+        {"case_id", "store", "keyring_available", "expected_result"},
+        "auth store case",
+        reason="qualification_fixture_schema",
+    )
+    if not isinstance(case["store"], str) or not isinstance(case["keyring_available"], bool):
+        raise ValidationFailure("qualification_fixture_schema", "auth store case mismatch")
+    if case["store"] == "file":
+        return "file_fallback_forbidden"
+    if case["store"] == "auto":
+        return "auto_fallback_forbidden"
+    if case["store"] != "keyring":
+        return "unknown_store_rejected"
+    if not case["keyring_available"]:
+        return "keyring_unavailable_q0_failure"
+    return "auth_qualified"
+
+
+def _evaluate_sandbox_projection(case: dict[str, Any]) -> str:
+    case = _require_exact_fields(
+        case,
+        {
+            "case_id",
+            "secret_metadata_exported",
+            "sandbox_log_content_or_hash_exported",
+            "task_process_protected_read",
+            "whole_code_home_immutable",
+            "rotation_over_limit",
+            "expected_result",
+        },
+        "sandbox projection case",
+        reason="qualification_fixture_schema",
+    )
+    fields = (
+        "secret_metadata_exported",
+        "sandbox_log_content_or_hash_exported",
+        "task_process_protected_read",
+        "whole_code_home_immutable",
+        "rotation_over_limit",
+    )
+    if not all(isinstance(case[field], bool) for field in fields):
+        raise ValidationFailure("qualification_fixture_schema", "sandbox flags must be bool")
+    if case["secret_metadata_exported"]:
+        return "secret_metadata_projection_rejected"
+    if case["sandbox_log_content_or_hash_exported"]:
+        return "diagnostic_projection_rejected"
+    if case["task_process_protected_read"]:
+        return "platform_incompatible"
+    if case["whole_code_home_immutable"]:
+        return "whole_root_immutability_rejected"
+    if case["rotation_over_limit"]:
+        return "stop_new_claim_and_operator_action"
+    return "binding_accepted"
+
+
+def _evaluate_grant_revoke(case: dict[str, Any]) -> str:
+    case = _require_exact_fields(
+        case,
+        {
+            "case_id",
+            "grant_exists",
+            "basis_kind",
+            "action_kind",
+            "grant_effect_identity",
+            "action_effect_identity",
+            "grant_committed_before_revoke",
+            "revoke_committed_before_grant",
+            "resume_count",
+            "expected_result",
+        },
+        "grant/revoke case",
+        reason="qualification_fixture_schema",
+    )
+    if (
+        not isinstance(case["grant_exists"], bool)
+        or not isinstance(case["grant_committed_before_revoke"], bool)
+        or not isinstance(case["revoke_committed_before_grant"], bool)
+        or type(case["resume_count"]) is not int
+        or case["resume_count"] < 0
+    ):
+        raise ValidationFailure("qualification_fixture_schema", "grant/revoke flags mismatch")
+    if case["revoke_committed_before_grant"] or not case["grant_exists"]:
+        return "block_new_effect"
+    if case["grant_effect_identity"] != case["action_effect_identity"]:
+        return "effect_identity_mismatch"
+    if case["resume_count"] > 1:
+        return "duplicate_process_effect_blocked"
+    if case["basis_kind"] == "inherited_fenced_action" and case["action_kind"] in {
+        "writer",
+        "gate_run",
+        "model_decision",
+        "qualification",
+        "auth_refresh",
+        "arbitrary_command",
+    }:
+        return "inherited_basis_forbidden"
+    if case["basis_kind"] != "active_authorization":
+        raise ValidationFailure("qualification_fixture_schema", "unsupported grant basis")
+    if not case["grant_committed_before_revoke"]:
+        raise ValidationFailure("qualification_fixture_schema", "grant has no linearization")
+    return "complete_exact_effect"
+
+
+def _evaluate_continuation(case: dict[str, Any]) -> str:
+    case = _require_exact_fields(
+        case,
+        {
+            "case_id",
+            "allowed_stages",
+            "expands_contract",
+            "prior_head_unique",
+            "terminal_stage_reopened",
+            "expected_result",
+        },
+        "continuation case",
+        reason="qualification_fixture_schema",
+    )
+    stages = _require_string_array(
+        case["allowed_stages"], "continuation stages", reason="qualification_fixture_schema"
+    )
+    if not all(
+        isinstance(case[field], bool)
+        for field in ("expands_contract", "prior_head_unique", "terminal_stage_reopened")
+    ):
+        raise ValidationFailure("qualification_fixture_schema", "continuation flags must be bool")
+    if "writer" in stages:
+        return "writer_restart_forbidden"
+    if case["expands_contract"]:
+        return "contract_expansion_forbidden"
+    if not case["prior_head_unique"]:
+        return "prior_head_conflict"
+    if case["terminal_stage_reopened"]:
+        return "terminal_stage_reopen_forbidden"
+    allowed = {
+        "gate_verify",
+        "object_plan",
+        "object_promote",
+        "finalize_index",
+        "finalize_head",
+        "create_task_ref",
+        "evidence_publish",
+        "worktree_remove",
+    }
+    if not stages or not set(stages).issubset(allowed) or len(stages) != len(set(stages)):
+        raise ValidationFailure("qualification_fixture_schema", "continuation stages mismatch")
+    return "append_continuation"
+
+
+def _verify_qualification_case_matrix(
+    fixture: dict[str, Any],
+    field: str,
+    expected_ids: set[str],
+    evaluator: Callable[[dict[str, Any]], str],
+) -> int:
+    cases = _fixture_cases(fixture, field, expected_ids)
+    for case in cases:
+        actual = evaluator(case)
+        if actual != case.get("expected_result"):
+            raise ValidationFailure("fixture_result_mismatch", str(case.get("case_id")))
+    return len(cases)
+
+
+def verify_qualification_component(repo_root: Path) -> dict[str, Any]:
+    policy, policy_raw = _load_json_object(repo_root / QUALIFICATION_POLICY_RELATIVE)
+    _, sensitive_schema_raw = _load_json_object(repo_root / SENSITIVE_INPUT_SCHEMA_RELATIVE)
+    _, authorization_schema_raw = _load_json_object(repo_root / AUTHORIZATION_SCHEMA_RELATIVE)
+    fixture, fixture_raw = _load_json_object(repo_root / QUALIFICATION_FIXTURE_RELATIVE)
+    _verify_qualification_policy(policy, policy_raw)
+    _verify_qualification_identity(
+        sensitive_schema_raw,
+        "sensitive_input_schema",
+        "qualification_schema_drift",
+        "sensitive input schema",
+    )
+    _verify_qualification_identity(
+        authorization_schema_raw,
+        "authorization_schema",
+        "qualification_schema_drift",
+        "Authorization schema",
+    )
+    _verify_qualification_identity(
+        fixture_raw, "fixture", "qualification_fixture_drift", "qualification fixture"
+    )
+    fixture = _require_exact_fields(
+        fixture,
+        {
+            "fixture_id",
+            "schema_version",
+            "policy_path",
+            "sensitive_input_set_schema_path",
+            "authorization_schema_path",
+            "sensitive_input_set_positive",
+            "blocked_entry_case",
+            "environment_binding_positive",
+            "sandbox_binding_positive",
+            "authorization_positive",
+            "observation_refresh_cases",
+            "working_tree_cases",
+            "auth_store_cases",
+            "sandbox_projection_cases",
+            "grant_revoke_cases",
+            "continuation_cases",
+        },
+        "qualification fixture",
+        reason="qualification_fixture_schema",
+    )
+    if (
+        fixture["fixture_id"] != "QualificationContractSet.v1.contract-fixtures"
+        or type(fixture["schema_version"]) is not int
+        or fixture["schema_version"] != 1
+        or fixture["policy_path"] != str(QUALIFICATION_POLICY_RELATIVE).replace("\\", "/")
+        or fixture["sensitive_input_set_schema_path"]
+        != str(SENSITIVE_INPUT_SCHEMA_RELATIVE).replace("\\", "/")
+        or fixture["authorization_schema_path"]
+        != str(AUTHORIZATION_SCHEMA_RELATIVE).replace("\\", "/")
+    ):
+        raise ValidationFailure("qualification_fixture_schema", "fixture identity mismatch")
+    if _validate_sensitive_input_set(fixture["sensitive_input_set_positive"]) != "qualification_eligible":
+        raise ValidationFailure("sensitive_set_result", "positive sensitive set is not eligible")
+    blocked = dict(
+        _require_object(
+            fixture["blocked_entry_case"],
+            "blocked entry case",
+            reason="qualification_fixture_schema",
+        )
+    )
+    expected_blocked_result = blocked.pop("expected_result", None)
+    _validate_qualification_entry(blocked)
+    if expected_blocked_result != "qualification_failed":
+        raise ValidationFailure("sensitive_set_result", "blocked entry must fail qualification")
+    _validate_environment_binding(fixture["environment_binding_positive"])
+    _validate_sandbox_binding(fixture["sandbox_binding_positive"])
+    authorization_id = _validate_authorization(fixture["authorization_positive"])
+    counts = {
+        "observation_refresh": _verify_qualification_case_matrix(
+            fixture,
+            "observation_refresh_cases",
+            {
+                "identical_bindings_new_base",
+                "safety_binding_changed",
+                "alias_evidence_changed",
+                "observation_stale",
+            },
+            _evaluate_observation_refresh,
+        ),
+        "working_tree": _verify_qualification_case_matrix(
+            fixture,
+            "working_tree_cases",
+            {
+                "clean_relevant_paths",
+                "sensitive_dirty",
+                "approved_path_dirty",
+                "unrelated_dirty_aggregate_only",
+            },
+            _evaluate_working_tree,
+        ),
+        "auth_store": _verify_qualification_case_matrix(
+            fixture,
+            "auth_store_cases",
+            {"keyring_available", "file_forbidden", "auto_forbidden", "keyring_unavailable"},
+            _evaluate_auth_store,
+        ),
+        "sandbox_projection": _verify_qualification_case_matrix(
+            fixture,
+            "sandbox_projection_cases",
+            {
+                "valid_public_binding",
+                "secret_metadata_exported",
+                "sandbox_log_hash_exported",
+                "task_read_boundary_bypassed",
+                "whole_code_home_marked_immutable",
+                "sandbox_log_over_limit",
+            },
+            _evaluate_sandbox_projection,
+        ),
+        "grant_revoke": _verify_qualification_case_matrix(
+            fixture,
+            "grant_revoke_cases",
+            {
+                "grant_then_later_revoke",
+                "revoke_before_grant",
+                "effect_identity_mismatch",
+                "duplicate_resume",
+                "inherited_writer_forbidden",
+            },
+            _evaluate_grant_revoke,
+        ),
+        "continuation": _verify_qualification_case_matrix(
+            fixture,
+            "continuation_cases",
+            {
+                "valid_closeout_continuation",
+                "writer_restart_forbidden",
+                "contract_expansion_forbidden",
+                "prior_head_conflict",
+                "terminal_stage_reopen",
+            },
+            _evaluate_continuation,
+        ),
+    }
+    return {
+        "status": "pass",
+        "component": "qualification",
+        "artifact_version": "QualificationContractSet.v1",
+        "artifact_byte_count": len(policy_raw),
+        "artifact_sha256": hashlib.sha256(policy_raw).hexdigest(),
+        "authorization_fingerprint": authorization_id,
+        "sensitive_entry_kind_count": 4,
+        "fixture_counts": counts,
+    }
+
+
 def _parse_args(argv: list[str]) -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", type=Path, default=Path(__file__).resolve().parents[1])
     parser.add_argument("--inventory-path", type=Path)
     parser.add_argument(
         "--component",
-        choices=["manifest", "canonicalization", "product-submission", "package"],
+        choices=[
+            "manifest",
+            "canonicalization",
+            "product-submission",
+            "qualification",
+            "package",
+        ],
     )
     parser.add_argument("--self-test", action="store_true")
     parser.add_argument("--json", action="store_true")
@@ -2245,6 +3184,9 @@ def main(argv: list[str] | None = None) -> int:
         elif args.component == "product-submission":
             payload = verify_product_submission_component(root)
             exit_code = 0
+        elif args.component == "qualification":
+            payload = verify_qualification_component(root)
+            exit_code = 0
         else:
             payload = {
                 "status": "incomplete",
@@ -2253,6 +3195,7 @@ def main(argv: list[str] | None = None) -> int:
                     "manifest_self_test",
                     "canonicalization",
                     "product_submission",
+                    "qualification",
                 ],
                 "requested_component": args.component or "package",
             }

@@ -1,0 +1,131 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local-ai-runtime.invalid/schemas/QualificationSensitiveInputSet.v1.schema.json",
+  "title": "QualificationSensitiveInputSet.v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "repo_id",
+    "local_base_ref",
+    "resolver_catalog_id",
+    "resolver_catalog_sha256",
+    "collision_alias_policy_generation",
+    "negative_discovery_result",
+    "entries"
+  ],
+  "properties": {
+    "schema_version": {"const": 1},
+    "repo_id": {"$ref": "#/$defs/public_id"},
+    "local_base_ref": {
+      "type": "string",
+      "minLength": 11,
+      "maxLength": 255,
+      "pattern": "^refs/heads/[A-Za-z0-9][A-Za-z0-9._/-]*$",
+      "x-local-ai-runtime-maxUtf8Bytes": 255,
+      "x-local-ai-runtime-git-ref-policy": "pinned_git_check_ref_format_plus_checked_in_equivalent_verifier"
+    },
+    "resolver_catalog_id": {"$ref": "#/$defs/public_id"},
+    "resolver_catalog_sha256": {"$ref": "#/$defs/sha256"},
+    "collision_alias_policy_generation": {"$ref": "#/$defs/public_id"},
+    "negative_discovery_result": {
+      "enum": ["closed_no_unknowns", "blocked_unknown_dynamic_loading", "blocked_external_reference", "blocked_incomplete_recursion"]
+    },
+    "entries": {
+      "type": "array",
+      "maxItems": 10000,
+      "x-local-ai-runtime-set-semantics": {"sort_keys": ["entry_kind", "subject", "rule_id"]},
+      "items": {"$ref": "#/$defs/entry"}
+    }
+  },
+  "$defs": {
+    "public_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9._-]{0,62}$"
+    },
+    "sha1": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "repo_path": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 4096,
+      "pattern": "^[^\\\\/][^\\\\]*$",
+      "x-local-ai-runtime-maxUtf8Bytes": 4096
+    },
+    "source": {
+      "enum": ["controller", "repo_profile", "task_template"]
+    },
+    "entry": {
+      "oneOf": [
+        {"$ref": "#/$defs/present_entry"},
+        {"$ref": "#/$defs/absent_entry"},
+        {"$ref": "#/$defs/expanded_entry"},
+        {"$ref": "#/$defs/blocked_entry"}
+      ]
+    },
+    "present_entry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["entry_kind", "subject", "repo_path", "windows_collision_key", "object_type", "mode", "git_oid_sha1", "rule_id", "discovery_source", "sensitivity_class"],
+      "properties": {
+        "entry_kind": {"const": "present"},
+        "subject": {"$ref": "#/$defs/repo_path"},
+        "repo_path": {"$ref": "#/$defs/repo_path"},
+        "windows_collision_key": {"type": "string", "minLength": 1, "maxLength": 4096},
+        "object_type": {"enum": ["blob", "tree"]},
+        "mode": {"enum": ["100644", "100755", "040000"]},
+        "git_oid_sha1": {"$ref": "#/$defs/sha1"},
+        "rule_id": {"$ref": "#/$defs/public_id"},
+        "discovery_source": {"$ref": "#/$defs/source"},
+        "sensitivity_class": {"$ref": "#/$defs/public_id"}
+      }
+    },
+    "absent_entry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["entry_kind", "subject", "candidate_path", "absence_result", "rule_id", "discovery_source", "sensitivity_class"],
+      "properties": {
+        "entry_kind": {"const": "absent"},
+        "subject": {"$ref": "#/$defs/repo_path"},
+        "candidate_path": {"$ref": "#/$defs/repo_path"},
+        "absence_result": {"const": "absent_at_observed_base"},
+        "rule_id": {"$ref": "#/$defs/public_id"},
+        "discovery_source": {"$ref": "#/$defs/source"},
+        "sensitivity_class": {"$ref": "#/$defs/public_id"}
+      }
+    },
+    "expanded_entry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["entry_kind", "subject", "directory_or_glob", "child_entry_hashes", "rule_id", "discovery_source", "sensitivity_class"],
+      "properties": {
+        "entry_kind": {"const": "expanded"},
+        "subject": {"$ref": "#/$defs/repo_path"},
+        "directory_or_glob": {"$ref": "#/$defs/repo_path"},
+        "child_entry_hashes": {"type": "array", "maxItems": 10000, "uniqueItems": true, "items": {"$ref": "#/$defs/sha256"}},
+        "rule_id": {"$ref": "#/$defs/public_id"},
+        "discovery_source": {"$ref": "#/$defs/source"},
+        "sensitivity_class": {"$ref": "#/$defs/public_id"}
+      }
+    },
+    "blocked_entry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["entry_kind", "subject", "blocked_class", "reason_code", "rule_id", "discovery_source"],
+      "properties": {
+        "entry_kind": {"const": "blocked"},
+        "subject": {"type": "string", "minLength": 1, "maxLength": 4096},
+        "blocked_class": {"enum": ["path", "reference", "object", "dynamic_loading", "collision"]},
+        "reason_code": {"$ref": "#/$defs/public_id"},
+        "rule_id": {"$ref": "#/$defs/public_id"},
+        "discovery_source": {"$ref": "#/$defs/source"}
+      }
+    }
+  }
+}
