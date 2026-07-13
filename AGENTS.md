@@ -21,7 +21,7 @@
 
 ## B. 执行与风险边界
 - P0A 默认落点仅限 `docs/specs/local-ai-runtime-0.2*`、`docs/plans/`、planning docs、verifier/tests 和 repo-level evidence；不得修改 `.ai/config`、live state 或 legacy runtime 行为。
-- 后续每次只执行 `docs/plans/local-ai-runtime-0.2-work-items.json` 中 selector 指向的唯一 selectable 任务；依赖、批准、停止条件或授权不可证明时阻断。
+- 每个原子 closeout 只执行 `docs/plans/local-ai-runtime-0.2-work-items.json` 中 selector 指向的唯一 selectable 任务；该项验收、验证、evidence、状态同步、本地提交和 clean-worktree 均闭合后，同一 session 才可重新运行 selector 并顺序继续。`planning_optimization_policy` 默认每次 bounded run 最多闭合 3 项或运行 180 分钟，任一失败、预算耗尽、阶段/批准边界、v3.23 successor、live/auth/provider/remote/破坏性边界立即停止。
 - BaselineApprovalRecord、ImplementationAcceptanceRecord 和 FullQ0Record 只能在对应工作项、全部前置证据与明确授权下创建；AI 不得自签或用 fixture/simulation 代替。
 - live probe、auth/provider、本机凭据和历史兼容运行态属于中高风险；先 dry-run、说明影响与回滚。
 - README/docs/PRD/roadmap/plan/backlog 与 planning status 不一致时先阻断并收口事实。

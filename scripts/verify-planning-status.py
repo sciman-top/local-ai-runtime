@@ -142,6 +142,9 @@ EXPECTED_NEW_RUNTIME_VERIFICATION = [
     "python scripts/select-next-work.py",
     "git diff --check",
 ]
+EXPECTED_PLANNING_OPTIMIZATION_SHA256 = (
+    "01da1dab80b59df8d4dfd50e6c4bcf637e5ec3493bd4db0b347ff78e3dcf7d9f"
+)
 EXPECTED_GRAPH_ROOTS = ["LAR-P0A-001"]
 EXPECTED_SUPERSEDED_PLAN = {
     "plan_id": "local-ai-runtime-0.2-v3.22-implementation-work-items",
@@ -377,6 +380,7 @@ def verify(*, repo_root: Path, status_path: Path) -> dict[str, object]:
             "native_thin_path_evaluation",
             "current_active_queue",
             "current_work_item",
+            "planning_optimization",
             "legacy_runtime_posture",
             "truth_reset",
             "implementation",
@@ -405,6 +409,9 @@ def verify(*, repo_root: Path, status_path: Path) -> dict[str, object]:
     )
     queue = _as_dict(status.get("current_active_queue"), "current_active_queue", failures)
     current_work = _as_dict(status.get("current_work_item"), "current_work_item", failures)
+    planning_optimization = _as_dict(
+        status.get("planning_optimization"), "planning_optimization", failures
+    )
     legacy = _as_dict(status.get("legacy_runtime_posture"), "legacy_runtime_posture", failures)
     truth_reset = _as_dict(status.get("truth_reset"), "truth_reset", failures)
     implementation = _as_dict(status.get("implementation"), "implementation", failures)
@@ -455,6 +462,20 @@ def verify(*, repo_root: Path, status_path: Path) -> dict[str, object]:
             baseline,
             queue,
             current_work,
+            failures,
+        )
+        _verify_planning_optimization_projection(
+            planning_optimization,
+            work_items_payload.get("planning_optimization_policy"),
+            work_items_ref,
+            failures,
+        )
+        _verify_planning_complexity_budget(
+            root,
+            work_items_path,
+            work_items_payload,
+            status,
+            inventory,
             failures,
         )
         _verify_runtime_source_tree(
@@ -1459,6 +1480,120 @@ def _verify_standalone_package(
     return True
 
 
+def _verify_planning_optimization_policy(value: Any, failures: list[str]) -> None:
+    if not isinstance(value, dict):
+        failures.append("planning_optimization_policy must be an object")
+        return
+    canonical = json.dumps(
+        value, ensure_ascii=False, sort_keys=True, separators=(",", ":")
+    ).encode("utf-8")
+    if hashlib.sha256(canonical).hexdigest() != EXPECTED_PLANNING_OPTIMIZATION_SHA256:
+        failures.append(
+            "planning_optimization_policy canonical contract drifted: continuation "
+            "budget, complexity hard_caps, model fallback or outcome metrics changed"
+        )
+
+
+def _verify_planning_complexity_budget(
+    root: Path,
+    work_items_path: Path,
+    work_items_payload: dict[str, Any],
+    status: dict[str, Any],
+    inventory: dict[str, Any],
+    failures: list[str],
+) -> None:
+    policy = work_items_payload.get("planning_optimization_policy")
+    if not isinstance(policy, dict):
+        return
+    complexity = policy.get("complexity")
+    if not isinstance(complexity, dict):
+        return
+    hard_caps = complexity.get("hard_caps")
+    if not isinstance(hard_caps, dict):
+        return
+    projection_policy = work_items_payload.get("contract_projection_policy")
+    projections = (
+        projection_policy.get("projections", [])
+        if isinstance(projection_policy, dict)
+        else []
+    )
+    artifacts = inventory.get("required_artifacts", []) if inventory else []
+    planning_test_path = (
+        root
+        / "runtime"
+        / "host-orchestrator"
+        / "tests"
+        / "test_planning_governance.py"
+    )
+    try:
+        measurements = {
+            "authoritative_docs": len(status.get("authoritative_docs", [])),
+            "work_items": len(work_items_payload.get("work_items", [])),
+            "contract_projections": len(projections),
+            "normative_artifacts": len(artifacts),
+            "root_agents_bytes": (root / "AGENTS.md").stat().st_size,
+            "machine_plan_bytes": work_items_path.stat().st_size,
+            "planning_verifier_lines": len(
+                (root / "scripts" / "verify-planning-status.py")
+                .read_text(encoding="utf-8")
+                .splitlines()
+            ),
+            "planning_governance_test_lines": len(
+                planning_test_path.read_text(encoding="utf-8").splitlines()
+            ),
+        }
+    except OSError as exc:
+        failures.append(f"planning complexity measurement failed: {exc}")
+        return
+    if set(hard_caps) != set(measurements):
+        failures.append(
+            "planning complexity hard_caps keys must match measured dimensions"
+        )
+        return
+    for dimension, actual in measurements.items():
+        cap = hard_caps[dimension]
+        if type(cap) is not int or cap < 0:
+            failures.append(
+                f"planning complexity hard cap must be a non-negative integer: {dimension}"
+            )
+            continue
+        if actual > cap:
+            failures.append(
+                f"planning complexity hard cap exceeded for {dimension}: "
+                f"actual={actual}, cap={cap}"
+            )
+
+
+def _verify_planning_optimization_projection(
+    projection: dict[str, Any], policy_value: Any, policy_ref: Any, failures: list[str]
+) -> None:
+    expected_keys = {
+        "status",
+        "policy_ref",
+        "policy_kind",
+        "complexity_health",
+        "frozen_v323_semantics_changed",
+        "active_profile_change",
+    }
+    if set(projection) != expected_keys:
+        failures.append("planning_optimization status projection keys must match policy")
+    policy = policy_value if isinstance(policy_value, dict) else {}
+    routing = policy.get("model_routing")
+    routing = routing if isinstance(routing, dict) else {}
+    if projection.get("status") != "active":
+        failures.append("planning_optimization status must be active")
+    if projection.get("policy_ref") != policy_ref:
+        failures.append("planning_optimization policy_ref must match queue source_work_items")
+    if projection.get("policy_kind") != policy.get("kind"):
+        failures.append("planning_optimization policy_kind must match machine policy")
+    if projection.get("complexity_health") != "warning_all_dimensions":
+        failures.append("planning_optimization complexity_health must expose current warning state")
+    if projection.get("frozen_v323_semantics_changed") is not False:
+        failures.append("planning optimization must not claim frozen v3.23 semantic change")
+    if projection.get("active_profile_change") != routing.get("active_profile_change"):
+        failures.append("planning_optimization active_profile_change must match routing policy")
+
+
 def _verify_work_items(
     payload: dict[str, Any],
     baseline: dict[str, Any],
@@ -1475,6 +1610,7 @@ def _verify_work_items(
             "supersedes_plan",
             "task_identity",
             "graph_policy",
+            "planning_optimization_policy",
             "contract_projection_policy",
             "baseline_status",
             "blocking_stage",
@@ -1506,6 +1642,9 @@ def _verify_work_items(
         failures.append("work-item task_identity must be plan_id_plus_task_id")
     if not isinstance(payload.get("updated_on"), str) or not payload["updated_on"].strip():
         failures.append("work-item updated_on must be a non-empty string")
+    _verify_planning_optimization_policy(
+        payload.get("planning_optimization_policy"), failures
+    )
     global_constraints = payload.get("global_constraints")
     if (
         not isinstance(global_constraints, list)

@@ -18,11 +18,11 @@
 
 ## 3. AI 执行算法
 
-每次只执行一个 machine work item：
+每个原子 closeout 只执行一个 machine work item（`one_selector_selected_work_item`）：
 
 1. 运行 `python scripts/verify-planning-status.py`。非零先修规划，不做产品任务。
 2. 运行 `python scripts/select-next-work.py`，确认 `next_action` 和 `current_work_item.task_id`。
-3. 读取 JSON 中该项全部字段及顶层 `runtime_source_layout`、`graph_policy`、`contract_projection_policy`。任务身份是 `plan_id + task_id`；superseded v3.22 plan 的同名结果不能关闭 v3.23 任务。依赖、前置条件、projection role、停止条件、授权或目标源码路径不能证明时停止。
+3. 读取 JSON 中该项全部字段及顶层 `runtime_source_layout`、`graph_policy`、`contract_projection_policy`、`planning_optimization_policy`。任务身份是 `plan_id + task_id`；superseded v3.22 plan 的同名结果不能关闭 v3.23 任务。依赖、前置条件、projection role、停止条件、授权或目标源码路径不能证明时停止。
 4. 在 evidence note 先记录目标归宿、当前落点、计划修改文件、回滚和验证命令。
 5. 对 contract 任务先写 negative fixture/verifier；对实现任务先写 failing test。
 6. 只做满足 acceptance 的最小切片，不顺手实现后继 phase。
@@ -30,6 +30,12 @@
 8. 逐条把 acceptance 映射到命令和证据；不能映射即未完成。
 9. 把该项改为 completed；按 `priority_ascending + task_id_utf8_ascending` 从依赖完全满足的 ready set 选择唯一 current task，DAG 中未选中的可运行兄弟保持 pending/blocked。
 10. 更新 planning-status 的 current work item、package counts/flags 和 evidence ref；重新运行 selector。
+
+work item 是 acceptance/evidence/commit/rollback 的原子边界，不是 AI 会话边界。第 10 步后若 worktree clean、fresh selector 唯一且没有硬停止条件，同一 run 可从第 1 步继续下一个 work item；默认预算为最多 3 个 completed work items 或 180 分钟，并在任一 closeout 失败后停止。预算耗尽、gate/selector 非绿、依赖/授权缺失、阶段或批准转换、v3.23 successor、live/auth/provider/remote/破坏性/外部写边界和非当前 worktree diff 都停止，`cross_phase_continuation=false`。
+
+planning 控制面不得继续增重：authoritative docs/work items/contract projections/normative artifacts 硬上限分别为 `14/65/11/15`，根 AGENTS、machine plan、planning verifier、planning governance tests 上限分别为 `8192 bytes / 230000 bytes / 4200 lines / 2600 lines`。任一维度达到 80% 后，增长必须在同一切片删除至少等量复杂度；新权威面必须替换旧面或进入 successor baseline，新增机制必须先有 reproduced failure 和现有 machine enforcement gap。
+
+planning model routing 只定义角色候选，不改变 active profile：复杂/高风险 controller 或 writer 使用 flagship candidate，独立 reviewer 使用 high-reasoning candidate，read-heavy explorer 使用 fast-efficient candidate，封闭重复转换使用 high-volume candidate。promotion 必须在固定 role/task family/surface/profile generation/cohort 上做代表性配对评测，守住质量/安全/证据硬门，并记录 success/downstream outcome、人工分钟、P50/P95、token/cost/rework 与 qualification。缺失值为 `unknown_or_unavailable_never_zero`；fallback 固定 `fail_closed_no_silent_dynamic_model_effort_or_provider_fallback`。
 
 状态不能一次批量“全部完成”。工作项响应丢失时先读当前文件事实和既有 evidence，幂等补齐同一结果。
 
@@ -56,7 +62,7 @@
 按依赖顺序完成：
 
 1. `LAR-P0A-003` canonicalization/path：preserved arrays、set duplicate rejection、Git spelling 与 Windows collision key分离、alias-aware 8.3 handle identity、`policy_query_denied` 行为 probe。
-2. `LAR-P0A-004` product/submission：`WorkDefinition`、`TaskFamily`、封闭参数；bounded parse -> canonicalize -> volatile lookup -> authorized replay -> absent-only secret/admission -> transaction recheck；ordinary submit 永久返回 root；原子 successor。
+2. `LAR-P0A-004` product/submission：`WorkDefinition`、`TaskFamily`、封闭参数；`WorkRoutingPolicy` 只路由 work class，model/effort 仍由已资格化 ExecutionProfile/profile generation 选择，不新增第二 planner 或 runtime model router；bounded parse -> canonicalize -> volatile lookup -> authorized replay -> absent-only secret/admission -> transaction recheck；ordinary submit 永久返回 root；原子 successor。
 3. `LAR-P0A-005` qualification/auth/sandbox：完整 sensitive-input union、base-independent reusable set、base-bound observation refresh、opaque `sandbox.log`、Authorization continuation、root effect grant 与 revoke 线性化。
 4. `LAR-P0A-006` execution/fencing：`EffectPlan`、稳定 `writer_effect_id` 与 attempt-scoped `writer_launch_id`、Writer/StageJob suspended launch、`ProcessHandlePolicy`、`PROC_THREAD_ATTRIBUTE_JOB_LIST + PROC_THREAD_ATTRIBUTE_HANDLE_LIST`、`STARTF_USESTDHANDLES` 精确 stdio、`ChildHandleManifest`/parent-end close/EOF、execution-commit barrier、Authorization/SafetyOnly authority union、controller-action child process grant、same-name Job、连续 adoption。
 5. `LAR-P0A-007` evidence：append-only event matrix、pre-scan secret-safe projection、journal/segment/receipt、artifact/quarantine、`runtime_external_v1`、`EvidenceProjectionAcceptance`、purpose-separated `QuarantineKeyEnvelope`/`RuntimeIntegrityKeyEnvelope`，以及 `BackupRestoreEligibility`/`BackupPostActivity`/`BackupRestoreIntent` anti-rollback 协议。
@@ -106,7 +112,7 @@ P0C 的顺序固定：
 
 ### 开发顺序
 
-机器图总计 65 项。P1A-P1F 共 35 个编码切片，数量为 `4 + 5 + 7 + 6 + 7 + 6`；依赖图是确定性 DAG，不再伪装成单链。独立 fixture/adapter 分支可并行准备，但当前任务未 completed 时不得顺手关闭后继任务；每次 AI 会话只执行 selector 返回的一项，其精确文件、projection role、验收和命令以 machine work item 为准。真实 writer 仍须位于 Implementation Acceptance + Full Q0 之后。
+机器图总计 65 项。P1A-P1F 共 35 个编码切片，数量为 `4 + 5 + 7 + 6 + 7 + 6`；依赖图是确定性 DAG，不再伪装成单链。独立 fixture/adapter 分支可并行准备，但当前任务未 completed 时不得顺手关闭后继任务；每个原子 closeout 只执行 selector 返回的一项，完整提交并重新 selector 后同一 bounded run 可继续，其精确文件、projection role、验收和命令以 machine work item 为准。真实 writer 仍须位于 Implementation Acceptance + Full Q0 之后。
 
 #### P1A Contracts/kernel
 

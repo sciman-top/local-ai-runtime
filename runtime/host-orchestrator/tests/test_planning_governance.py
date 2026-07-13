@@ -1656,6 +1656,208 @@ def test_machine_work_items_are_a_deterministic_v323_dag() -> None:
             assert "python -m pytest tests/" not in "\n".join(item["verification"])
 
 
+def test_planning_optimization_policy_is_bounded_and_qualification_driven() -> None:
+    payload = json.loads(WORK_ITEMS_PATH.read_text(encoding="utf-8"))
+    policy = payload["planning_optimization_policy"]
+
+    assert policy["kind"] == "bounded_minimum_operator_planning_v1"
+    assert set(policy) == {
+        "kind",
+        "execution",
+        "complexity",
+        "model_routing",
+        "outcome_metrics",
+    }
+
+    execution = policy["execution"]
+    assert execution["atomic_closeout_unit"] == "one_selector_selected_work_item"
+    assert execution["selector_cardinality"] == 1
+    assert execution["continuation_mode"] == (
+        "same_run_reselect_after_verified_atomic_closeout"
+    )
+    assert execution["default_budget"] == {
+        "max_completed_work_items": 3,
+        "max_elapsed_minutes": 180,
+        "stop_after_failed_closeout": True,
+    }
+    assert execution["cross_phase_continuation"] is False
+    assert {
+        "budget_exhausted",
+        "selector_not_unique_or_gate_red",
+        "approval_or_phase_transition_boundary",
+        "baseline_successor_or_frozen_semantic_change_required",
+        "live_auth_provider_remote_destructive_or_external_write_boundary",
+    }.issubset(execution["hard_stop_conditions"])
+
+    complexity = policy["complexity"]
+    assert complexity["warning_ratio"] == 0.8
+    assert complexity["hard_caps"] == {
+        "authoritative_docs": 14,
+        "work_items": 65,
+        "contract_projections": 11,
+        "normative_artifacts": 15,
+        "root_agents_bytes": 8192,
+        "machine_plan_bytes": 230000,
+        "planning_verifier_lines": 4200,
+        "planning_governance_test_lines": 2600,
+    }
+    assert complexity["new_surface_rule"] == (
+        "replace_an_existing_surface_or_create_a_successor_baseline"
+    )
+
+    routing = policy["model_routing"]
+    assert routing["scope"] == "repo_agent_work_not_v323_runtime_authority"
+    assert routing["active_profile_change"] == "none"
+    assert routing["fallback_policy"] == (
+        "fail_closed_no_silent_dynamic_model_effort_or_provider_fallback"
+    )
+    assert routing["candidate_roles"] == {
+        "controller_high_risk_writer": "flagship_capability_candidate",
+        "independent_reviewer": "high_reasoning_candidate",
+        "read_heavy_explorer": "fast_efficient_candidate",
+        "closed_repeatable_transform": "high_volume_candidate",
+    }
+    assert {
+        "representative_paired_cohort",
+        "quality_security_evidence_hard_floors",
+        "task_success_and_downstream_outcome",
+        "human_minutes_p50_p95_tokens_cost_and_rework",
+        "surface_and_generation_qualification",
+    } == set(routing["promotion_requirements"])
+
+    metrics = policy["outcome_metrics"]
+    assert metrics["missing_value_rule"] == "unknown_or_unavailable_never_zero"
+    assert metrics["optimality_scope"] == (
+        "declared_role_task_family_surface_profile_generation_and_cohort_only"
+    )
+    assert set(metrics["required_metrics"]) == {
+        "completed_work_items_per_operator_kickoff",
+        "unattended_verified_closeout_rate",
+        "net_operator_minutes_per_success",
+        "native_latency_p50_p95",
+        "batch_verified_cycle_time_p50_p95",
+        "task_success_and_downstream_outcome_rate",
+        "token_cost_and_rework_per_success",
+        "recovery_and_rollback_success_rate",
+    }
+
+    by_id = {item["task_id"]: item for item in payload["work_items"]}
+    p0a004 = json.dumps(by_id["LAR-P0A-004"], ensure_ascii=False, sort_keys=True)
+    assert "WorkRoutingPolicy routes work class only" in p0a004
+    assert "no second planner or runtime model-router service" in p0a004
+
+
+def test_planning_optimization_verifiers_reject_policy_drift() -> None:
+    namespace = runpy.run_path(str(VERIFIER_PATH))
+    verify_work_items = namespace["_verify_work_items"]
+    verify_complexity_budget = namespace["_verify_planning_complexity_budget"]
+    status = json.loads(STATUS_PATH.read_text(encoding="utf-8"))
+
+    mutations = [
+        (
+            lambda policy: policy["execution"]["default_budget"].__setitem__(
+                "max_completed_work_items", 0
+            ),
+            "planning_optimization_policy canonical contract",
+        ),
+        (
+            lambda policy: policy["complexity"]["hard_caps"].__setitem__(
+                "authoritative_docs", 15
+            ),
+            "planning_optimization_policy canonical contract",
+        ),
+        (
+            lambda policy: policy["model_routing"].__setitem__(
+                "fallback_policy", "best_effort_dynamic_fallback"
+            ),
+            "planning_optimization_policy canonical contract",
+        ),
+        (
+            lambda policy: policy["outcome_metrics"].__setitem__(
+                "missing_value_rule", "missing_is_zero"
+            ),
+            "planning_optimization_policy canonical contract",
+        ),
+    ]
+
+    for mutate, expected_failure in mutations:
+        payload = json.loads(WORK_ITEMS_PATH.read_text(encoding="utf-8"))
+        mutate(payload["planning_optimization_policy"])
+        failures: list[str] = []
+        verify_work_items(
+            payload,
+            status["baseline_candidate"],
+            status["current_active_queue"],
+            status["current_work_item"],
+            failures,
+        )
+        assert any(expected_failure in failure for failure in failures), failures
+
+    payload = json.loads(WORK_ITEMS_PATH.read_text(encoding="utf-8"))
+    payload["planning_optimization_policy"]["complexity"]["hard_caps"].pop(
+        "work_items"
+    )
+    failures = []
+    verify_complexity_budget(
+        REPO_ROOT,
+        WORK_ITEMS_PATH,
+        payload,
+        status,
+        json.loads(INVENTORY_PATH.read_text(encoding="utf-8")),
+        failures,
+    )
+    assert failures == [
+        "planning complexity hard_caps keys must match measured dimensions"
+    ]
+
+
+def test_planning_optimization_status_and_doc_projections_are_closed() -> None:
+    status = json.loads(STATUS_PATH.read_text(encoding="utf-8"))
+    assert status["planning_optimization"] == {
+        "status": "active",
+        "policy_ref": "docs/plans/local-ai-runtime-0.2-work-items.json",
+        "policy_kind": "bounded_minimum_operator_planning_v1",
+        "complexity_health": "warning_all_dimensions",
+        "frozen_v323_semantics_changed": False,
+        "active_profile_change": "none",
+    }
+
+    expected_tokens = {
+        "AGENTS.md": {"planning_optimization_policy", "同一 session"},
+        "README.md": {"planning_optimization_policy", "最多 3 个"},
+        "docs/README.md": {"planning_optimization_policy", "最多 3 个"},
+        "docs/product/orchestrator-prd.md": {
+            "completed_work_items_per_operator_kickoff",
+            "declared role/task family/surface/profile generation/cohort",
+        },
+        "docs/architecture/orchestrator-target-architecture.md": {
+            "planning_optimization_policy",
+            "第二个 planner/router",
+        },
+        "docs/roadmap/orchestrator-roadmap.md": {
+            "same_run_reselect_after_verified_atomic_closeout"
+        },
+        "docs/plans/orchestrator-implementation-plan.md": {
+            "one_selector_selected_work_item",
+            "unknown_or_unavailable_never_zero",
+            "fail_closed_no_silent_dynamic_model_effort_or_provider_fallback",
+        },
+        "docs/backlog/orchestrator-task-list.md": {"bounded continuation"},
+        "docs/specs/acceptance-and-gates.md": {
+            "unknown_or_unavailable_never_zero",
+            "declared role/task family/surface/profile generation/cohort",
+        },
+    }
+    doc_contracts = {
+        item["path"]: set(item["required_strings"])
+        for item in status["doc_contracts"]
+    }
+    for relative_path, tokens in expected_tokens.items():
+        assert tokens.issubset(doc_contracts[relative_path]), relative_path
+        text = (REPO_ROOT / relative_path).read_text(encoding="utf-8")
+        assert all(token in text for token in tokens), relative_path
+
+
 def test_human_readable_roadmap_projects_machine_work_item_count() -> None:
     work_items = json.loads(WORK_ITEMS_PATH.read_text(encoding="utf-8"))["work_items"]
     expected_projection = f"机器图总计 {len(work_items)} 项"

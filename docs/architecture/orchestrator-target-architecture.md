@@ -15,6 +15,8 @@
 - 不以“最终一致”掩盖不可解释的进程、对象、ref、worktree 或 evidence 状态。
 - 长期产品范围是受控本地开发工作流，不预建跨平台、多租户、分布式或第二 agent runtime 空壳；未实现 protocol 的能力始终 unsupported。
 
+repo planning 是实现期薄控制面，不是目标 runtime 的第二套编排架构。唯一 `planning_optimization_policy` 在现有 machine work items 中定义 work-item 原子 closeout、bounded continuation、复杂度硬上限、planning model 候选资格化和结果指标；selector、planning-status 与 verifier 继续复用。不得新增第二个 planner/router、平行 task 真源或 runtime model-router service。该 planning policy 不进入冻结 v3.23 runtime authority，也不改变 capacity=1、effect protocol、Q0 或事实来源。
+
 ## 2. 当前态与目标态
 
 | 维度 | 当前态 | 目标态 |

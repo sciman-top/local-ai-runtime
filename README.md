@@ -19,6 +19,10 @@ Local AI Runtime 是面向 Windows 本机、单操作者信任域的通用受控
 
 机器真值在 [planning-status.json](D:/CODE/local-ai-dev-orchestrator/docs/architecture/planning-status.json)。`python scripts/verify-planning-status.py` 通过只表示上述陈述内部一致，不表示 baseline 已批准或 runtime 已实现。
 
+AI 实施采用 machine work items 顶层 `planning_optimization_policy`：一个 work item 仍是唯一原子 evidence/commit/rollback 单元，但完整 closeout 后可在同一 run 重新 selector，默认最多 3 个 work item 或运行 180 分钟。失败、预算耗尽、阶段/批准、successor、live/auth/provider/remote/破坏性边界均停止。该策略没有 promotion 新 model/profile，也没有改变 v3.23 的单 writer 或 runtime authority。
+
+当前 planning complexity health 是 `warning_all_dimensions`，不是“已变轻”：14 份权威文档、65 个 work items、11 个 projections 和 15 个 normative artifacts 已在数量硬上限，AGENTS/machine plan/verifier/tests 也都超过 80% warning 线。后续扩展这些面必须在同一切片先合并或删除等量复杂度。
+
 ## 阅读顺序
 
 1. [planning-status.json](D:/CODE/local-ai-dev-orchestrator/docs/architecture/planning-status.json)：当前阶段、门和唯一工作项。

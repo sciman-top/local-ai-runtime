@@ -142,6 +142,14 @@
     "status": "ready",
     "reason": "LAR-P0A-002 revalidated the BaselineManifest contract against the frozen v3.23 source and BaselineLineage.v2 while keeping the final manifest absent. Close CanonicalizationPolicy.v1 and Git/Windows path identity contracts without advancing approval."
   },
+  "planning_optimization": {
+    "status": "active",
+    "policy_ref": "docs/plans/local-ai-runtime-0.2-work-items.json",
+    "policy_kind": "bounded_minimum_operator_planning_v1",
+    "complexity_health": "warning_all_dimensions",
+    "frozen_v323_semantics_changed": false,
+    "active_profile_change": "none"
+  },
   "legacy_runtime_posture": {
     "current_kernel": "runtime/host-orchestrator",
     "current_control_plane": ".ai/state/control-plane.db",
@@ -178,7 +186,7 @@
     "p5_cutover_complete": false,
     "legacy_writer_retired": false
   },
-  "current_evidence_ref": "docs/change-evidence/20260714-lar-p0a-002-manifest-revalidation.md",
+  "current_evidence_ref": "docs/change-evidence/20260714-planning-optimization-rebaseline.md",
   "authoritative_docs": [
     "AGENTS.md",
     "README.md",
@@ -202,7 +210,9 @@
         "local-ai-runtime-0.2-v3.23",
         "LOCAL-AI-RUNTIME-0.2-BASELINE-CLOSURE",
         "LAR-P0A-EVAL-002",
-        "LAR-P0A-003"
+        "LAR-P0A-003",
+        "planning_optimization_policy",
+        "同一 session"
       ]
     },
     {
@@ -212,7 +222,9 @@
         "baseline_candidate",
         "LOCAL-AI-RUNTIME-0.2-BASELINE-CLOSURE",
         "LAR-P0A-EVAL-002",
-        "LAR-P0A-003"
+        "LAR-P0A-003",
+        "planning_optimization_policy",
+        "最多 3 个"
       ]
     },
     {
@@ -221,7 +233,9 @@
         "local-ai-runtime-0.2-v3.23",
         "blocking_stage=baseline_approval",
         "LAR-P0A-EVAL-002",
-        "LAR-P0A-003"
+        "LAR-P0A-003",
+        "planning_optimization_policy",
+        "最多 3 个"
       ]
     },
     {
@@ -237,6 +251,8 @@
         "architecture epoch",
         "Native thin-path",
         "DownstreamOutcomeRecord",
+        "completed_work_items_per_operator_kickoff",
+        "declared role/task family/surface/profile generation/cohort",
         "approved_root_files",
         "approved_subpackages",
         "required_source_owners"
@@ -249,6 +265,8 @@
         "runtime/host-orchestrator",
         "runtime/local-ai-runtime",
         "contracts/kernel/qualification/storage/execution/recovery/git_local/operations/compat",
+        "planning_optimization_policy",
+        "第二个 planner/router",
         "approved_root_files",
         "approved_subpackages",
         "required_source_owners"
@@ -263,6 +281,7 @@
         "LAR-P4-002",
         "B2/per-repo",
         "机器图总计 65 项",
+        "same_run_reselect_after_verified_atomic_closeout",
         "approved_root_files",
         "approved_subpackages",
         "required_source_owners"
@@ -290,6 +309,9 @@
         "RuntimeIntegrityKeyEnvelope",
         "runtime_external_v1",
         "EvidenceProjectionAcceptance",
+        "one_selector_selected_work_item",
+        "unknown_or_unavailable_never_zero",
+        "fail_closed_no_silent_dynamic_model_effort_or_provider_fallback",
         "contracts/kernel/qualification/storage/execution/recovery/git_local/operations/compat",
         "approved_root_files",
         "approved_subpackages",
@@ -338,6 +360,7 @@
         "LAR-P1F-006",
         "LAR-P1G-001",
         "LAR-P5-001",
+        "bounded continuation",
         "approved_root_files",
         "approved_subpackages",
         "required_source_owners"
@@ -378,6 +401,8 @@
         "ActiveRuntimeIdentity",
         "Native thin-path",
         "DownstreamOutcomeRecord",
+        "unknown_or_unavailable_never_zero",
+        "declared role/task family/surface/profile generation/cohort",
         "uv lock --check --offline",
         "uv run --locked --offline",
         "contracts/kernel/qualification/storage/execution/recovery/git_local/operations/compat",

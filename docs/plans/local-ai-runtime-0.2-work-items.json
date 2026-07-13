@@ -25,6 +25,111 @@
       "LAR-Q0-001"
     ]
   },
+  "planning_optimization_policy": {
+    "kind": "bounded_minimum_operator_planning_v1",
+    "execution": {
+      "atomic_closeout_unit": "one_selector_selected_work_item",
+      "selector_cardinality": 1,
+      "continuation_mode": "same_run_reselect_after_verified_atomic_closeout",
+      "default_budget": {
+        "max_completed_work_items": 3,
+        "max_elapsed_minutes": 180,
+        "stop_after_failed_closeout": true
+      },
+      "closeout_requirements": [
+        "task_acceptance_and_declared_verification_green",
+        "repo_evidence_and_planning_status_synchronized",
+        "one_rollbackable_local_commit_for_the_work_item",
+        "clean_worktree_after_commit",
+        "fresh_selector_returns_exactly_one_next_work_item"
+      ],
+      "hard_stop_conditions": [
+        "budget_exhausted",
+        "selector_not_unique_or_gate_red",
+        "dependency_or_required_authorization_missing",
+        "approval_or_phase_transition_boundary",
+        "baseline_successor_or_frozen_semantic_change_required",
+        "live_auth_provider_remote_destructive_or_external_write_boundary",
+        "unresolved_failure_or_non_current_worktree_diff"
+      ],
+      "cross_phase_continuation": false
+    },
+    "complexity": {
+      "measurement_basis": "repository_bytes_and_line_counts_v1",
+      "warning_ratio": 0.8,
+      "hard_caps": {
+        "authoritative_docs": 14,
+        "work_items": 65,
+        "contract_projections": 11,
+        "normative_artifacts": 15,
+        "root_agents_bytes": 8192,
+        "machine_plan_bytes": 230000,
+        "planning_verifier_lines": 4200,
+        "planning_governance_test_lines": 2600
+      },
+      "growth_rule": "at_or_above_warning_ratio_requires_equal_or_greater_removal_in_the_same_slice",
+      "new_surface_rule": "replace_an_existing_surface_or_create_a_successor_baseline",
+      "mechanism_rule": "require_a_reproduced_failure_and_an_existing_machine_enforcement_gap",
+      "preferred_reductions": [
+        "delete_duplicate_prose_before_adding_verifier_branches",
+        "reuse_current_authoritative_surfaces",
+        "keep_selector_policy_coarse_and_deterministic"
+      ]
+    },
+    "model_routing": {
+      "scope": "repo_agent_work_not_v323_runtime_authority",
+      "routing_key": [
+        "role",
+        "risk_tier",
+        "task_family",
+        "execution_surface",
+        "profile_generation"
+      ],
+      "active_profile_change": "none",
+      "candidate_roles": {
+        "controller_high_risk_writer": "flagship_capability_candidate",
+        "independent_reviewer": "high_reasoning_candidate",
+        "read_heavy_explorer": "fast_efficient_candidate",
+        "closed_repeatable_transform": "high_volume_candidate"
+      },
+      "qualification_rule": "candidate_guidance_never_becomes_an_active_route_without_declared_paired_evaluation_and_generation_qualification",
+      "promotion_requirements": [
+        "representative_paired_cohort",
+        "quality_security_evidence_hard_floors",
+        "task_success_and_downstream_outcome",
+        "human_minutes_p50_p95_tokens_cost_and_rework",
+        "surface_and_generation_qualification"
+      ],
+      "fallback_policy": "fail_closed_no_silent_dynamic_model_effort_or_provider_fallback",
+      "official_candidate_guidance": [
+        "gpt-5.6-sol_for_complex_open_ended_high_value_work",
+        "gpt-5.6-terra_for_everyday_or_read_heavy_speed_cost_work",
+        "gpt-5.6-luna_for_clear_repeatable_high_volume_work"
+      ]
+    },
+    "outcome_metrics": {
+      "goal_order": [
+        "safety_effect_correctness_and_evidence_hard_floors",
+        "minimize_net_operator_minutes",
+        "increase_unattended_verified_closeout_rate",
+        "reduce_native_latency_and_batch_cycle_time",
+        "reduce_attributable_token_cost_and_rework"
+      ],
+      "required_metrics": [
+        "completed_work_items_per_operator_kickoff",
+        "unattended_verified_closeout_rate",
+        "net_operator_minutes_per_success",
+        "native_latency_p50_p95",
+        "batch_verified_cycle_time_p50_p95",
+        "task_success_and_downstream_outcome_rate",
+        "token_cost_and_rework_per_success",
+        "recovery_and_rollback_success_rate"
+      ],
+      "missing_value_rule": "unknown_or_unavailable_never_zero",
+      "generation_rule": "cross_generation_results_must_be_stratified_and_cannot_promote_a_profile",
+      "optimality_scope": "declared_role_task_family_surface_profile_generation_and_cohort_only"
+    }
+  },
   "contract_projection_policy": {
     "kind": "closed_contract_projection_v1",
     "projection_identity": "plan_id_plus_projection_id",
@@ -203,7 +308,7 @@
   },
   "baseline_status": "baseline_candidate",
   "blocking_stage": "baseline_approval",
-  "updated_on": "2026-07-13",
+  "updated_on": "2026-07-14",
   "status_catalog": [
     "completed",
     "contract_pending",
@@ -751,8 +856,8 @@
       "phase": "P0A",
       "priority": 0,
       "status": "pending",
-      "title": "Close product, routing, template, submission and resubmission contracts",
-      "goal": "Define Unified Native/Batch routing, closed template parameters, permanent submission identity and the atomic TaskResubmission relation.",
+      "title": "Close product, work routing, template, submission and resubmission contracts",
+      "goal": "Define Unified Native/Batch work-class routing, closed template parameters, permanent submission identity and the atomic TaskResubmission relation while keeping model selection in qualified profile generation.",
       "depends_on": [
         "LAR-P0A-003"
       ],
@@ -763,6 +868,7 @@
         "in": [
           "ProductContract",
           "WorkRoutingPolicy",
+          "WorkRoutingPolicy versus qualified ExecutionProfile selection boundary",
           "TaskTemplate",
           "BatchSubmission",
           "SubmissionFamily and TaskResubmission"
@@ -770,6 +876,7 @@
         "out": [
           "Free-prompt Batch",
           "ResubmissionPermit",
+          "Runtime model router or dynamic model, effort or provider fallback",
           "Runtime execution"
         ],
         "primary_files": [
@@ -787,6 +894,8 @@
         "Existing-family replay remains stable after template catalog, secret scanner, qualification or Authorization generations change",
         "Rejected submissions create no family and retain no parameters, ordinary digest or stable oracle",
         "Parameters cannot control executable, argv, env, permissions, gates, refs, model, provider or sandbox",
+        "WorkRoutingPolicy routes work class only; model and effort remain a separately qualified ExecutionProfile and profile-generation concern",
+        "Product and submission closure adds no second planner or runtime model-router service",
         "Historical task-ref success permanently blocks resubmission"
       ],
       "verification": [
@@ -802,6 +911,7 @@
       ],
       "prohibited_actions": [
         "Do not add free-text parameters",
+        "Do not add a second planner or dynamic model router",
         "Do not add a two-stage permit without a new approved requirement"
       ],
       "next_task_ids": [

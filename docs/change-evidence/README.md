@@ -1,5 +1,7 @@
 # Change Evidence Index
 
+- [20260714 Planning Optimization Rebaseline](20260714-planning-optimization-rebaseline.md): decouples atomic work-item closeout from AI sessions, adds bounded same-run continuation, machine planning-complexity caps, qualification-only role model routing, measurable autonomy/speed/efficiency semantics and explicit `warning_all_dimensions` truth without changing frozen v3.23/runtime authority.
+
 - [20260714 LAR-P0A-002 v3.23 Manifest Revalidation](20260714-lar-p0a-002-manifest-revalidation.md): v3.23/Lineage.v2-bound positive fixture, exact on-disk artifact identity checks, red-green regression and the unchanged no-final-manifest/non-approval boundary.
 - [20260713 LAR-P0A-EVAL-002 Comparative Results](20260713-lar-p0a-eval-002-comparative-results.md): 18 frozen core trials, conditional harness dispositions, normalized metrics, capability surface states and the non-normative `preserve_v3_23_semantics` decision.
 - [20260713 Official Surface And Harness Research](20260713-lar-p0a-eval-002-official-surface-and-harness-research.md): official OpenAI surface boundaries and primary-source Superpowers/Trellis/Hermes/Grill applicability findings.

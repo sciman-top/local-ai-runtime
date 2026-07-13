@@ -82,6 +82,12 @@ CLI 与 SDK 只构成 execution-interface candidates；App Server 是 client-pro
 
 当前实测决定为 `preserve_v3_23_semantics`。精简 Native 在固定 corpus 为 `4/9`，Native + agent-side mandatory gate prompt 为 `1/9`，TF-003 的直接 loader 语义要求两组均 `0/3`；18 个 core trial 因外部 host 漂移跨 3 个分别 Q0-admitted CLI generation，合并结果不是同 generation profile promotion 证据。因此不 promotion 任一 `gpt-5.6-sol/high` execution profile，也不把重复全门禁 prompt 设为默认。独立 policy/evaluator gates、evidence、generation/Q0 和 recovery/rollback 继续作为产品硬边界；Superpowers 条件 lane 因 sealed VCS identity 漂移为 inconclusive，Trellis/Hermes 对本 corpus not_applicable，不能据此作普遍替代或退休结论。
 
+### 4.7 Planning execution、模型路由与可测目标
+
+repo 实施控制面只保留一个 `planning_optimization_policy`，不建设第二套 task/spec 目录或新的 planner service。work item 是唯一原子 acceptance/evidence/commit/rollback 单元，不是 AI 会话单元；一次 operator kickoff 可在每项完整 closeout 后重新 selector，按 3 项/180 分钟默认预算顺序继续，失败或阶段、批准、successor、live/auth/provider/remote/破坏性边界立即停止。
+
+planning model routing 只产生待资格化角色候选：复杂、高风险 controller/writer 偏向旗舰能力，独立 reviewer 偏向高推理配置，read-heavy explorer 偏向快速高效配置，封闭重复转换偏向高吞吐配置。候选必须在 declared role/task family/surface/profile generation/cohort 内通过配对评测、质量/安全/证据硬门、成功与 downstream outcome、人工分钟、P50/P95、token/cost/rework 和 generation qualification，才能成为静态 profile；当前 `active_profile_change=none`，禁止静默 dynamic model/effort/provider fallback。
+
 ## 5. 路由规则
 
 | 任务特征 | 路由 |
@@ -192,6 +198,8 @@ Batch 0.2 的 `batch_commit_only_v1` 禁止多 writer、subagent、task Approval
 ## 10. 成功指标
 
 安全硬门始终为零：未授权写入、已声明/已检测敏感信息泄漏、重复 writer、冲突 object/commit/ref、错误 cleanup、未记账 Git 副作用和 successful unauthorized egress。
+
+“高度自主”以 `completed_work_items_per_operator_kickoff`、`unattended_verified_closeout_rate` 和 `net_operator_minutes_per_success` 衡量；“高速”分别报告 Native `latency_p50_p95` 与单 writer Batch `verified_cycle_time_p50_p95`；“高效”还必须报告成功/downstream outcome、token/cost/rework 和 recovery/rollback。任何 unknown/unavailable 保留原值，不能记为 0；“最优”只允许在 declared role/task family/surface/profile generation/cohort 内陈述。
 
 30-task cohort：
 
