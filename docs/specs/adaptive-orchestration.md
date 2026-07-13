@@ -1,16 +1,18 @@
 # Adaptive Orchestration Overlay Spec
 
-## Status And Boundary
+> **Legacy / experimental / non-authoritative.** 本文只记录现有 `runtime/host-orchestrator` 与 `runtime_v2` 的历史 overlay 输入，不能定义当前产品主线、active queue、Baseline Approval 前置或 v3.23 runtime 语义。当前真源依次是 [planning-status.json](../architecture/planning-status.json)、[v3.23 baseline candidate](local-ai-runtime-0.2-v3.23-baseline-candidate.md)、[machine work items](../plans/local-ai-runtime-0.2-work-items.json) 和 [selector](../../scripts/select-next-work.py)。不得根据本文的 `PHASE-1-VERTICAL-SLICE`、`Hermes -> AgentBridge -> Codex` 或旧 profile 文字启动新任务。
 
-`Adaptive Orchestration Overlay` 是 `Local AI Runtime` 的 cross-cutting 产品能力，不替代 `Phase 1 -> Phase 6` 路线图，也不改变 `Hermes -> AgentBridge -> Codex` 主线。
+## Historical Status And Boundary
 
-当前状态：
+`Adaptive Orchestration Overlay` 是已存在运行面的 cross-cutting experimental capability；它不替代当前 v3.23 `Unified Native + Batch` 路线图，也不改变既有 legacy compatibility 事实。
+
+历史状态：
 
 - `observe` 已作为 repo-side 正式能力落地
 - `guarded` 已作为显式 `runtime_v2` 实验入口落地
 - `.ai/config/policies.yaml` 的 active profile 仍是 `observe_default`
 - `runtime.active_version` 仍是 `v1`
-- `current_active_queue` 仍是 `PHASE-1-VERTICAL-SLICE`
+- 历史记录曾使用 `PHASE-1-VERTICAL-SLICE` 作为 queue 名称；该名称现已不是 current planning truth
 - 当前不声明 `live accepted`
 
 本能力不依赖 Trellis、Grill 或 Superpowers。外部 skill 只能作为可替换 adapter；核心控制流、预算、冲突、证据和晋升判断由本仓拥有。

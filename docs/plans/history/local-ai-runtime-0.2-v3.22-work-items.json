@@ -1,13 +1,13 @@
 {
   "schema_version": "local_ai_runtime_work_items.v3",
-  "plan_id": "local-ai-runtime-0.2-v3.23-implementation-work-items",
-  "baseline_id": "local-ai-runtime-0.2-v3.23",
+  "plan_id": "local-ai-runtime-0.2-v3.22-implementation-work-items",
+  "baseline_id": "local-ai-runtime-0.2-v3.22",
   "supersedes_plan": {
-    "plan_id": "local-ai-runtime-0.2-v3.22-implementation-work-items",
+    "plan_id": "local-ai-runtime-0.2-v3.21-implementation-work-items",
     "terminal_status": "superseded",
-    "last_commit": "6fd6cd54037f17e44192bc272306b137def7f8a4",
-    "byte_count": 202002,
-    "sha256": "acabe34f188d73015536a141a8990c333ce6643dc28347671c2523adcaf7d2cc"
+    "last_commit": "0405140eabea71037b0d3bf72bfc7d765c415b23",
+    "byte_count": 170102,
+    "sha256": "8737c9e68d95ff10f18dfd42df16ca5a2f908ff16c7021c309dacd44ed4d844b"
   },
   "task_identity": "plan_id_plus_task_id",
   "graph_policy": {
@@ -31,7 +31,7 @@
     "rules": [
       "Every projection has exactly one P0A normative producer and at least one implementation or acceptance consumer.",
       "Every referenced task exists in this plan generation and mechanically contains every required contract token.",
-      "A superseded-plan task result cannot satisfy a v3.23 projection.",
+      "A superseded-plan task result cannot satisfy a v3.22 projection.",
       "Profile generation can select only capabilities jointly admitted by one RuntimeActivationBundle; unsupported capability or architecture changes cannot be enabled by configuration."
     ],
     "projections": [
@@ -205,16 +205,11 @@
   "blocking_stage": "baseline_approval",
   "updated_on": "2026-07-12",
   "status_catalog": [
-    "completed",
-    "contract_pending",
-    "execution_pending",
-    "preserve_v3_23_semantics",
-    "narrow_profile_or_adapter_candidate",
-    "supersede_required",
     "ready",
     "pending",
     "blocked",
     "in_progress",
+    "completed",
     "cancelled",
     "superseded"
   ],
@@ -223,10 +218,7 @@
     "Do not change runtime/host-orchestrator behavior during P0A planning or normative closure tasks.",
     "Do not create runtime/local-ai-runtime before Baseline Approval and the P0B Truth Reset.",
     "Do not claim Implementation Acceptance, Full Q0, P2 admission, live acceptance, or cutover without their durable records.",
-    "Treat every work-item result as identified by plan_id plus task_id; a result from a superseded plan cannot close a v3.23 task.",
-    "Before P0A closure, Native thin-path / capability comparative evaluation must remain on a fixed snapshot with fixed task families, model/effort, tool inventory, sandbox, gates and human-intervention definition.",
-    "CLI, App Server, SDK, managed Worktree and Automations are independent capability surfaces; qualification never transfers across surfaces.",
-    "Only preserve_v3_23_semantics releases P0A closure. narrow_profile_or_adapter_candidate or supersede_required freezes v3.23 and requires a successor candidate instead of in-place semantic edits.",
+    "Treat every work-item result as identified by plan_id plus task_id; a result from a superseded plan cannot close a v3.22 task.",
     "Profile generation may only select jointly admitted capabilities; capability generation and architecture epoch changes require their declared acceptance and Q0 paths.",
     "Epoch 1 global capacity remains exactly one; no work item may enable a second writer or same-effect-domain concurrency.",
     "Keep each implementation slice reviewable; five primary files is a target, not a mechanical failure gate.",
@@ -413,202 +405,6 @@
         "Do not create approval, implementation, Q0, Batch or live evidence"
       ],
       "next_task_ids": [
-        "LAR-P0A-REBASELINE-V323"
-      ]
-    },
-    {
-      "task_id": "LAR-P0A-REBASELINE-V323",
-      "phase": "P0A",
-      "priority": 0,
-      "status": "completed",
-      "title": "Create and mechanically project the superseding v3.23 candidate",
-      "goal": "Freeze the v3.23 narrative as a successor to v3.22, preserve v3.22 exact bytes and v3.22-bound planning artifacts as superseded inputs, and project the v3.23 identity plus the required pre-approval Native thin-path evaluation gate into every planning truth surface without approving or implementing it.",
-      "depends_on": [
-        "LAR-P0A-REBASELINE-V322"
-      ],
-      "preconditions": [
-        "The v3.22 candidate remains 178330 bytes with SHA-256 8338a9dcf4bbbb40ca28f4f2ec6dca37587ee94fbfbbc6e3a0063c4de379569c",
-        "The v3.22 work-item plan and normative inventory are archived as exact superseded inputs",
-        "No active BaselineApprovalRecord exists"
-      ],
-      "scope": {
-        "in": [
-          "v3.23 narrative bytes and BaselineLineage.v2",
-          "Native thin-path / capability comparative evaluation gate",
-          "PRD, architecture, roadmap, implementation plan, backlog, acceptance, stable entry, inventory, planning status, selector, verifier, tests and evidence projections"
-        ],
-        "out": [
-          "Baseline Approval or any operator approval record",
-          "Truth Reset, runtime/local-ai-runtime creation or legacy runtime behavior changes",
-          "Full Q0, live Batch claims, provider execution or live acceptance"
-        ],
-        "primary_files": [
-          "docs/specs/local-ai-runtime-0.2-v3.23-baseline-candidate.md",
-          "docs/specs/local-ai-runtime-0.2/normative/BaselineLineage.v2.json",
-          "docs/specs/local-ai-runtime-0.2-baseline-candidate.md",
-          "docs/specs/local-ai-runtime-0.2-normative-package.json",
-          "docs/plans/local-ai-runtime-0.2-work-items.json",
-          "docs/architecture/planning-status.json",
-          "scripts/verify-planning-status.py",
-          "scripts/select-next-work.py",
-          "runtime/host-orchestrator/tests/test_planning_governance.py",
-          "docs/change-evidence/<date>-local-ai-runtime-v3.23-native-thin-path-rebaseline.md"
-        ]
-      },
-      "acceptance": [
-        "The v3.23 candidate is byte-valid, self-contained and has an independently recomputed exact byte count and SHA-256",
-        "BaselineLineage.v2 preserves the frozen v3.22 narrative as a verified superseded candidate",
-        "The active work-item identity is plan_id plus task_id; the v3.22 plan is terminally superseded before v3.23 tasks reuse local IDs",
-        "Verifier, selector, planning status and all human-readable projections agree that Native thin-path evaluation is the first Baseline Approval predecessor",
-        "The package remains incomplete and approval_active, truth_reset, implementation_started and p2_admitted all remain false"
-      ],
-      "verification": [
-        "uv run --project ./runtime/host-orchestrator python -m pytest runtime/host-orchestrator/tests/test_planning_governance.py",
-        "python scripts/verify-planning-status.py",
-        "python scripts/select-next-work.py",
-        "pwsh -NoProfile -NonInteractive -File scripts/governance/preflight.ps1 -DisableAutoCommit",
-        "git diff --check"
-      ],
-      "evidence_path": "docs/change-evidence/<date>-local-ai-runtime-v3.23-native-thin-path-rebaseline.md",
-      "rollback": "Revert only the v3.23 candidate-planning projection; retain the exact v3.22 candidate, v3.22 lineage, v3.22 inventory and v3.22 work-item plan archives.",
-      "stop_conditions": [
-        "Any v3.22 archive or v3.23 candidate identity differs from its independently verified bytes",
-        "The evaluation gate can select approval, implementation or live execution before a machine-readable decision",
-        "Any projection treats a capability probe as Batch authorization"
-      ],
-      "prohibited_actions": [
-        "Do not edit any frozen v3.17-v3.22 candidate or archived v3.22 planning artifact",
-        "Do not create approval, implementation, Q0, Batch or live evidence",
-        "Do not convert a third-party harness comparison into a second control plane"
-      ],
-      "next_task_ids": [
-        "LAR-P0A-EVAL-001"
-      ]
-    },
-    {
-      "task_id": "LAR-P0A-EVAL-001",
-      "phase": "EVAL",
-      "priority": 0,
-      "status": "completed",
-      "title": "Freeze the Native thin-path and capability comparative evaluation contract",
-      "goal": "Create a machine-readable evaluation contract that fixes the repo snapshot, task families, model/effort, tool inventory, sandbox, gates, repetitions, human-intervention definition, stop rules and evidence schema before any comparative execution begins.",
-      "depends_on": [
-        "LAR-P0A-REBASELINE-V323"
-      ],
-      "preconditions": [
-        "v3.23 narrative and BaselineLineage.v2 exact identities verify",
-        "No active BaselineApprovalRecord exists",
-        "The evaluation uses only read-only or disposable-repo variants and cannot create a Batch task, runtime activation or external delivery"
-      ],
-      "scope": {
-        "in": [
-          "NativeThinPathCapabilityEvaluation.v1 contract and fixtures",
-          "Fixed task-family and success-oracle definitions",
-          "Thin Codex Native, Native plus key gates and conditionally applicable Superpowers/Trellis/Hermes comparison lanes",
-          "Independent CLI, App Server, SDK, managed Worktree and Automations probe definitions",
-          "Quality, safety, evidence, net-human-minutes, P50/P95 wall-time, token/cost, conflict/rework, recovery/rollback and sampled downstream-outcome metrics"
-        ],
-        "out": [
-          "Changing v3.23 normative semantics",
-          "Running a live Batch task, merge/push, remote CI read, provider/auth change or host-local Codex restart",
-          "Treating grill-me or grill-with-docs output as an authoritative product decision"
-        ],
-        "primary_files": [
-          "docs/evaluations/local-ai-runtime-0.2/native-thin-path-capability-evaluation.v1.json",
-          "docs/evaluations/local-ai-runtime-0.2/native-thin-path-task-family-manifest.v1.json",
-          "docs/evaluations/local-ai-runtime-0.2/native-thin-path-evidence-schema.v1.json",
-          "docs/change-evidence/<date>-lar-eval-001-evaluation-contract.md"
-        ]
-      },
-      "acceptance": [
-        "The contract fixes one immutable repo snapshot, task inputs, success oracles, variants, model/effort, tool inventory, sandbox, gates, repetitions and counterbalancing before execution",
-        "Every human intervention category and active minute boundary is defined; waiting and unknown observations remain visible rather than excluded",
-        "CLI/SDK execution interface, App Server client protocol, managed Worktree isolation and Automations scheduling each have independent probe scope and no cross-surface inheritance",
-        "Any quality, security or evidence regression, unowned external effect, or unreproducible recovery/rollback is an immediate stop condition that invalidates efficiency gains",
-        "The only permitted later decision values are preserve_v3_23_semantics, narrow_profile_or_adapter_candidate and supersede_required"
-      ],
-      "verification": [
-        "python -m json.tool docs/evaluations/local-ai-runtime-0.2/native-thin-path-capability-evaluation.v1.json",
-        "python scripts/verify-planning-status.py",
-        "python scripts/select-next-work.py",
-        "git diff --check"
-      ],
-      "evidence_path": "docs/change-evidence/<date>-lar-eval-001-evaluation-contract.md",
-      "rollback": "Revert only evaluation-contract files and evidence; do not alter v3.23 narrative bytes, approval state, runtime state or legacy behavior.",
-      "stop_conditions": [
-        "A task family lacks a success oracle or comparable human-intervention definition",
-        "A variant would alter the repo snapshot, gates, model/effort, tool inventory or sandbox after results are observed",
-        "A proposed comparison needs live provider credentials, remote side effects or a second control plane"
-      ],
-      "prohibited_actions": [
-        "Do not self-approve Baseline Approval",
-        "Do not create runtime/local-ai-runtime or a Batch claim",
-        "Do not assume an App, SDK, Worktree or Automation surface is qualified from CLI behavior"
-      ],
-      "next_task_ids": [
-        "LAR-P0A-EVAL-002"
-      ]
-    },
-    {
-      "task_id": "LAR-P0A-EVAL-002",
-      "phase": "EVAL",
-      "priority": 0,
-      "status": "execution_pending",
-      "title": "Execute the Native thin-path and capability comparative evaluation",
-      "goal": "Run the frozen comparative evaluation and produce one machine-readable decision without changing v3.23 semantics, unless the evidence requires an explicit v3.24 successor candidate.",
-      "depends_on": [
-        "LAR-P0A-EVAL-001"
-      ],
-      "preconditions": [
-        "The evaluation contract, task-family manifest and evidence schema are immutable and verify",
-        "All variants use the fixed snapshot, model/effort, gates, tool inventory and sandbox",
-        "No active BaselineApprovalRecord exists"
-      ],
-      "scope": {
-        "in": [
-          "Repeated comparative runs and normalized evidence",
-          "Per-surface capability probe outcomes",
-          "Decision record and non-normative evaluation evidence",
-          "Sampled downstream review disposition, merge/reject/rework, later CI, revert and defect outcome attachments"
-        ],
-        "out": [
-          "In-place editing of v3.23 narrative or present normative artifacts",
-          "Runtime implementation, Batch authorization, remote push or automated remote-CI retrieval",
-          "Promoting a third-party harness as repository control-plane truth"
-        ],
-        "primary_files": [
-          "docs/evaluations/local-ai-runtime-0.2/native-thin-path-capability-results.v1.json",
-          "docs/evaluations/local-ai-runtime-0.2/native-thin-path-capability-decision.v1.json",
-          "docs/change-evidence/<date>-lar-eval-002-comparative-results.md"
-        ]
-      },
-      "acceptance": [
-        "Every declared task and repetition remains in the denominator, including failures, censored downstream outcomes, conflicts, rework and recovery attempts",
-        "The report includes task success, missed defect/regression, safety/gate/evidence completeness, net human minutes, P50/P95 wall time, token/cost, conflict/rework, recovery/rollback and sampled downstream acceptance",
-        "No quality, security or evidence hard floor declines; otherwise efficiency gains are reported but invalid for promotion",
-        "Each capability surface has an explicit qualified, unqualified, not_applicable or inconclusive result with evidence locator",
-        "preserve_v3_23_semantics records a non-normative decision and releases LAR-P0A-003; narrow_profile_or_adapter_candidate or supersede_required freezes v3.23 and requires a v3.24 candidate, lineage, inventory, DAG, selector and verifier before P0A continues"
-      ],
-      "verification": [
-        "python -m json.tool docs/evaluations/local-ai-runtime-0.2/native-thin-path-capability-results.v1.json",
-        "python -m json.tool docs/evaluations/local-ai-runtime-0.2/native-thin-path-capability-decision.v1.json",
-        "python scripts/verify-planning-status.py",
-        "python scripts/select-next-work.py",
-        "git diff --check"
-      ],
-      "evidence_path": "docs/change-evidence/<date>-lar-eval-002-comparative-results.md",
-      "rollback": "Preserve immutable result evidence; if semantics change, append a supersession decision and create v3.24 instead of rewriting v3.23. If semantics do not change, revert only non-normative evaluation projections that were not sealed.",
-      "stop_conditions": [
-        "Any quality, security or evidence hard floor declines",
-        "A capability surface has an unowned external effect or cannot demonstrate recovery/rollback",
-        "Results require changing Batch prohibition, authority, concurrency, Q0 trigger, quality promotion or truth source"
-      ],
-      "prohibited_actions": [
-        "Do not rewrite v3.23 narrative bytes after evidence exists",
-        "Do not activate Batch, merge/push or read remote CI automatically",
-        "Do not conceal unknown or censored downstream outcomes"
-      ],
-      "next_task_ids": [
         "LAR-P0A-002"
       ]
     },
@@ -616,16 +412,15 @@
       "task_id": "LAR-P0A-002",
       "phase": "P0A",
       "priority": 0,
-      "status": "pending",
-      "title": "Revalidate BaselineManifest and normative package closure rules for v3.23",
-      "goal": "Revalidate the retained manifest schema, byte/version rules, fixtures and verifier skeleton against the v3.23 candidate after the comparative evaluation preserves semantics; do not inherit a v3.22 task result by task ID alone or create the final BaselineManifest instance before the package review head is frozen.",
+      "status": "completed",
+      "title": "Define BaselineManifest and normative package closure rules",
+      "goal": "Create the manifest schema, byte/version rules, fixtures and verifier skeleton without creating the final BaselineManifest instance before the package review head is frozen.",
       "depends_on": [
-        "LAR-P0A-EVAL-002"
+        "LAR-P0A-REBASELINE-V322"
       ],
       "preconditions": [
-        "BaselineLineage.v2 is present",
-        "v3.23 candidate hash remains unchanged",
-        "Native thin-path evaluation decision is preserve_v3_23_semantics"
+        "BaselineLineage.v1 is present",
+        "v3.22 candidate hash remains unchanged"
       ],
       "scope": {
         "in": [
@@ -662,7 +457,7 @@
       "evidence_path": "docs/change-evidence/<date>-lar-p0a-002-manifest.md",
       "rollback": "Revert only manifest schema/fixtures/verifier-skeleton and inventory references.",
       "stop_conditions": [
-        "Canonical byte rules contradict v3.23",
+        "Canonical byte rules contradict v3.22",
         "A manifest cycle cannot be removed without changing the baseline"
       ],
       "prohibited_actions": [
@@ -678,7 +473,7 @@
       "task_id": "LAR-P0A-003",
       "phase": "P0A",
       "priority": 0,
-      "status": "pending",
+      "status": "ready",
       "title": "Close canonical JSON, Git path and Windows identity contracts",
       "goal": "Materialize CanonicalizationPolicy.v1 and its positive/negative fixtures, including duplicate-key rejection, ordered-array semantics, declared set semantics and independent NTFS collision keys.",
       "depends_on": [
@@ -1465,8 +1260,8 @@
       "phase": "Governance",
       "priority": 0,
       "status": "blocked",
-      "title": "Authorize or reject the v3.23 baseline through the controlled approval entrypoint",
-      "goal": "After package closure and a preserve_v3_23_semantics evaluation decision, require an explicitly authorized interactive operator to invoke the hash-pinned approval command, validate authority and anti-replay inputs, and create one immutable BaselineApprovalRecord or rejection result without changing normative bytes.",
+      "title": "Authorize or reject the v3.22 baseline through the controlled approval entrypoint",
+      "goal": "After package closure, require an explicitly authorized interactive operator to invoke the hash-pinned approval command, validate authority and anti-replay inputs, and create one immutable BaselineApprovalRecord or rejection result without changing normative bytes.",
       "depends_on": [
         "LAR-P0A-013"
       ],
@@ -1537,7 +1332,7 @@
       "priority": 0,
       "status": "blocked",
       "title": "Perform the approved Truth Reset",
-      "goal": "After active Baseline Approval, atomically make the approved v3.23 package identity the implementation source of truth across root rules, docs, planning status, selector and verifier.",
+      "goal": "After active Baseline Approval, atomically make the approved v3.22 package identity the implementation source of truth across root rules, docs, planning status, selector and verifier.",
       "depends_on": [
         "LAR-GOV-001"
       ],

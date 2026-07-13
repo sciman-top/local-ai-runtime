@@ -1,0 +1,186 @@
+{
+  "schema_version": "NativeThinPathTaskFamilyManifest.v1",
+  "contract_set_id": "local-ai-runtime-0.2-v3.23-native-thin-path-evaluation-v1",
+  "baseline_id": "local-ai-runtime-0.2-v3.23",
+  "contract_task_id": "LAR-P0A-EVAL-001",
+  "execution_task_id": "LAR-P0A-EVAL-002",
+  "snapshot": {
+    "commit": "6fd6cd54037f17e44192bc272306b137def7f8a4",
+    "tree": "11c8ab770769b3aeff5c111063a316e712fa7241"
+  },
+  "contract_refs": {
+    "evaluation_contract": "docs/evaluations/local-ai-runtime-0.2/native-thin-path-capability-evaluation.v1.json",
+    "task_family_manifest": "docs/evaluations/local-ai-runtime-0.2/native-thin-path-task-family-manifest.v1.json",
+    "evidence_schema": "docs/evaluations/local-ai-runtime-0.2/native-thin-path-evidence-schema.v1.json"
+  },
+  "corpus_policy": {
+    "source": "Task shapes may use runtime/host-orchestrator/fixtures/wave1-smokes only as historical shape references. Their fake-worker outputs and Hermes-era metadata are not comparative results, live Codex acceptance, or success-oracle evidence for this evaluation.",
+    "execution_workspace": "Every write trial starts from a newly created disposable detached worktree at the declared commit. The primary worktree is never a trial workspace.",
+    "task_input_mutability": "Task inputs, oracle text, eligible variants, repeat count, and counterbalancing order are sealed before the first trial."
+  },
+  "task_families": [
+    {
+      "task_family_id": "NTPE-TF-001",
+      "name": "read_only_repository_truth_audit",
+      "difficulty_tier": "low",
+      "risk_class": "read_only",
+      "repeat_count": 3,
+      "eligible_variants": [
+        "thin_codex_native",
+        "native_plus_key_gates",
+        "superpowers_when_applicable",
+        "trellis_when_applicable"
+      ],
+      "task_input": {
+        "prompt": "In a detached worktree at the declared snapshot, report the exact HEAD and tree, identify the current baseline candidate ID from planning-status.json, identify the current selected work item, and state whether runtime/local-ai-runtime exists. Do not edit files, change configuration, or contact a remote service.",
+        "required_inputs": [
+          "git rev-parse HEAD",
+          "git rev-parse HEAD^{tree}",
+          "docs/architecture/planning-status.json",
+          "runtime/local-ai-runtime filesystem check"
+        ],
+        "allowed_paths": [],
+        "forbidden_paths": [
+          ".ai",
+          "private-local",
+          ".codex",
+          "runtime/local-ai-runtime"
+        ]
+      },
+      "success_oracle": {
+        "required_facts": [
+          "HEAD equals 6fd6cd54037f17e44192bc272306b137def7f8a4",
+          "tree equals 11c8ab770769b3aeff5c111063a316e712fa7241",
+          "the report distinguishes the historical snapshot state from the v3.23 evaluation contract state",
+          "runtime/local-ai-runtime is not created"
+        ],
+        "required_commands": [
+          "python scripts/verify-planning-status.py",
+          "git diff --check"
+        ],
+        "write_rule": "git diff --exit-code must succeed before cleanup."
+      },
+      "recovery_and_rollback": {
+        "required": false,
+        "success_condition": "No mutable trial effect exists."
+      }
+    },
+    {
+      "task_family_id": "NTPE-TF-002",
+      "name": "bounded_cli_parser_regression_test",
+      "difficulty_tier": "medium",
+      "risk_class": "local_test_only",
+      "repeat_count": 3,
+      "eligible_variants": [
+        "thin_codex_native",
+        "native_plus_key_gates",
+        "superpowers_when_applicable",
+        "trellis_when_applicable"
+      ],
+      "task_input": {
+        "prompt": "Add one focused test under runtime/host-orchestrator/tests/test_cli_entrypoint.py that constructs the existing CLI parser and proves the existing --print-layout and --run-wave1-smokes flags are discoverable. Do not change production code, runtime configuration, or any other test file.",
+        "required_inputs": [
+          "runtime/host-orchestrator/src/host_orchestrator/cli.py",
+          "runtime/host-orchestrator/tests/test_cli_entrypoint.py"
+        ],
+        "allowed_paths": [
+          "runtime/host-orchestrator/tests/test_cli_entrypoint.py"
+        ],
+        "forbidden_paths": [
+          ".ai",
+          "private-local",
+          ".codex",
+          "runtime/host-orchestrator/src",
+          "runtime/local-ai-runtime"
+        ]
+      },
+      "success_oracle": {
+        "required_facts": [
+          "exactly one declared test file is modified",
+          "the new test exercises build_parser rather than a hand-written flag list",
+          "the test asserts both existing flags"
+        ],
+        "required_commands": [
+          "uv run --project ./runtime/host-orchestrator python -m pytest",
+          "python scripts/verify-planning-status.py",
+          "git diff --check"
+        ],
+        "write_rule": "The disposable worktree is either clean after rollback or has a recorded patch digest before disposal."
+      },
+      "recovery_and_rollback": {
+        "required": true,
+        "success_condition": "git restore --source=HEAD -- runtime/host-orchestrator/tests/test_cli_entrypoint.py followed by git diff --exit-code succeeds in the disposable worktree."
+      }
+    },
+    {
+      "task_family_id": "NTPE-TF-003",
+      "name": "planning_verifier_duplicate_key_regression_test",
+      "difficulty_tier": "medium",
+      "risk_class": "local_test_only",
+      "repeat_count": 3,
+      "eligible_variants": [
+        "thin_codex_native",
+        "native_plus_key_gates",
+        "superpowers_when_applicable",
+        "trellis_when_applicable"
+      ],
+      "task_input": {
+        "prompt": "Add one focused test in runtime/host-orchestrator/tests/test_planning_governance.py that invokes the planning verifier JSON-object loader with a literal duplicate-key object and asserts that duplicate keys are rejected. Do not alter verifier production code or planning-state files.",
+        "required_inputs": [
+          "scripts/verify-planning-status.py",
+          "runtime/host-orchestrator/tests/test_planning_governance.py"
+        ],
+        "allowed_paths": [
+          "runtime/host-orchestrator/tests/test_planning_governance.py"
+        ],
+        "forbidden_paths": [
+          "docs/architecture/planning-status.json",
+          "docs/plans/local-ai-runtime-0.2-work-items.json",
+          ".ai",
+          "private-local",
+          ".codex",
+          "scripts/verify-planning-status.py",
+          "runtime/local-ai-runtime"
+        ]
+      },
+      "success_oracle": {
+        "required_facts": [
+          "the test uses a literal JSON duplicate key rather than a Python mapping",
+          "the test asserts the duplicate-key error path",
+          "no planning control-plane file or verifier production source is modified"
+        ],
+        "required_commands": [
+          "uv run --project ./runtime/host-orchestrator python -m pytest",
+          "python scripts/verify-planning-status.py",
+          "git diff --check"
+        ],
+        "write_rule": "The disposable worktree is either clean after rollback or has a recorded patch digest before disposal."
+      },
+      "recovery_and_rollback": {
+        "required": true,
+        "success_condition": "git restore --source=HEAD -- runtime/host-orchestrator/tests/test_planning_governance.py followed by git diff --exit-code succeeds in the disposable worktree."
+      }
+    }
+  ],
+  "counterbalancing": {
+    "method": "balanced_latin_square_v1",
+    "core_variant_order": [
+      "thin_codex_native",
+      "native_plus_key_gates"
+    ],
+    "conditional_variant_order": [
+      "superpowers_when_applicable",
+      "trellis_when_applicable",
+      "hermes_when_applicable"
+    ],
+    "rule": "For every task family and repeat index, rotate the sealed eligible-variant order by counterbalance block. Record skipped conditional variants as predeclared not_applicable with the reason; do not replace them after observing a result.",
+    "block_count": 3,
+    "carryover_rule": "No worktree, conversation, patch, tool session, or recovery result may carry from one variant or repeat into another."
+  },
+  "denominator_rules": {
+    "core_comparison": "Every declared applicable thin_codex_native and native_plus_key_gates trial is in the denominator, including failures, stops, conflicts, rework, recovery attempts, and inconclusive outcomes.",
+    "conditional_harness_comparison": "Report eligible, attempted, not_applicable, and excluded-by-stop counts separately for each conditional harness. Predeclared not_applicable is not a failure and is not silently counted as a successful replacement claim.",
+    "downstream_outcome": "Every sampled downstream observation remains in the denominator. censored and unknown are distinct visible values and are not passes.",
+    "recovery_rollback": "Every declared recovery or rollback attempt is in the recovery denominator; inability to reproduce a required rollback stops the evaluation."
+  }
+}

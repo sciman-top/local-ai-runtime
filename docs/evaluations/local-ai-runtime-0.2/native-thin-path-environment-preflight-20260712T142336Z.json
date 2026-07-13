@@ -1,0 +1,172 @@
+{
+  "schema_version": "NativeThinPathCapabilityEnvironmentPreflight.v1",
+  "record_id": "lar-p0a-eval-002-environment-preflight-20260712t142336z",
+  "captured_at": "2026-07-12T14:23:36Z",
+  "completed_at": "2026-07-12T14:34:25Z",
+  "contract_identity": {
+    "contract_set_id": "local-ai-runtime-0.2-v3.23-native-thin-path-evaluation-v1",
+    "baseline_id": "local-ai-runtime-0.2-v3.23",
+    "contract_task_id": "LAR-P0A-EVAL-001",
+    "execution_task_id": "LAR-P0A-EVAL-002",
+    "snapshot": {
+      "commit": "6fd6cd54037f17e44192bc272306b137def7f8a4",
+      "tree": "11c8ab770769b3aeff5c111063a316e712fa7241"
+    },
+    "contracts": [
+      {
+        "path": "docs/evaluations/local-ai-runtime-0.2/native-thin-path-capability-evaluation.v1.json",
+        "byte_count": 13775,
+        "sha256": "e4129a743a976e2e286c43e6ebcb9c3a1d634079d3188e18292a147c06499b39"
+      },
+      {
+        "path": "docs/evaluations/local-ai-runtime-0.2/native-thin-path-task-family-manifest.v1.json",
+        "byte_count": 8996,
+        "sha256": "27965825d8ba79ae008d876992ea70a380b213578fc8ed14fc3af8a0016bc6b0"
+      },
+      {
+        "path": "docs/evaluations/local-ai-runtime-0.2/native-thin-path-evidence-schema.v1.json",
+        "byte_count": 6827,
+        "sha256": "a82b869eae6b64aed51e847cb5835a69e98e91095fdf832fb5391beaea501721"
+      }
+    ]
+  },
+  "scope": {
+    "kind": "non_terminal_environment_preflight",
+    "evaluation_status_after_preflight": "execution_pending",
+    "comparative_trials_executed": 0,
+    "terminal_decision_created": false,
+    "baseline_or_runtime_state_changed": false,
+    "provider_or_auth_changed": false,
+    "preexisting_host_codex_process_changed": false,
+    "ephemeral_sdk_app_server_process_created_and_closed": true,
+    "external_effects": "known_noncontract_network_package_resolution_observed; SDK initialization host-state persistence was not qualified"
+  },
+  "fixed_execution_request": {
+    "model": "gpt-5.6-sol",
+    "reasoning_effort": "high",
+    "sandbox": "workspace-write",
+    "approval_mode": "never",
+    "network_access_intent": "disabled",
+    "network_access_observation": "not enforceable in the SDK preflight: uv created a disposable virtual environment and downloaded pydantic-core before SDK initialization",
+    "dynamic_fallback": false
+  },
+  "disposable_worktree": {
+    "path": "D:/CODE/local-ai-runtime-eval-p0a-20260712-001",
+    "created_from_commit": "6fd6cd54037f17e44192bc272306b137def7f8a4",
+    "created_from_tree": "11c8ab770769b3aeff5c111063a316e712fa7241",
+    "head_observed": "6fd6cd54037f17e44192bc272306b137def7f8a4",
+    "tree_observed": "11c8ab770769b3aeff5c111063a316e712fa7241",
+    "detached_head": true,
+    "tracked_diff_after_probes": "clean",
+    "generated_paths_removed": [
+      ".eval-output",
+      "runtime/host-orchestrator/.venv"
+    ],
+    "cleanup_completed": true,
+    "cleanup_receipt": "git worktree list returned only the primary worktree after removal"
+  },
+  "tool_inventory": {
+    "cli": {
+      "path": "C:/Users/sciman/AppData/Roaming/npm/node_modules/@openai/codex/node_modules/@openai/codex-win32-x64/vendor/x86_64-pc-windows-msvc/bin/codex.exe",
+      "version": "0.144.1",
+      "sha256": "cbacbb9726262ef558b4af0438a1b2a5bba9076132401d947b5b4d2bf92ab0e4",
+      "supported_entrypoints_observed": [
+        "exec",
+        "app-server",
+        "app",
+        "features",
+        "doctor"
+      ],
+      "configuration_observation": {
+        "model": "gpt-5.6-sol",
+        "model_reasoning_effort": "medium",
+        "sandbox_mode": "workspace-write",
+        "approval_policy": "never",
+        "model_provider": "codex_local_access"
+      }
+    },
+    "sdk": {
+      "package": "openai-codex",
+      "version": "0.1.0b2",
+      "bundled_cli_version": "0.132.0",
+      "bundled_cli_sha256": "6fdd1f4e37b8b0949751819d727d4bc6e156e42f8f86ca6ad3e7413d1ae514f7",
+      "observed_public_controls": [
+        "thread_start.model",
+        "thread_start.sandbox=workspace-write",
+        "thread_start.approval_mode=deny_all",
+        "thread_start.config.model_reasoning_effort"
+      ]
+    },
+    "app_server_schema": {
+      "generation_command": "codex app-server generate-json-schema --experimental --out .eval-output/app-server-schema",
+      "file_count": 337,
+      "total_bytes": 3159797,
+      "protocol_schema_sha256": "85ea836927d6cfdd3c68a9bda17dba48d2573bbc282ab2d5775a5005e40bc9c3",
+      "protocol_v2_schema_sha256": "3375ff22290291a2baecf93505ee55a3081f4eab128fd0ac1a27455e04b31224",
+      "schema_only": true
+    }
+  },
+  "surface_preflight": [
+    {
+      "surface_id": "codex_cli_execution_interface",
+      "state": "unqualified",
+      "reason": "The exact fixed gpt-5.6-sol/high, workspace-write, deny-all, network-disabled zero-write probe exited before model execution with Error: Model provider `codex_local_access` not found.",
+      "command": "codex -m gpt-5.6-sol -c 'model_reasoning_effort = \"high\"' -s workspace-write -a never exec --ephemeral <zero-write prompt>",
+      "exit_code": 1,
+      "effect_boundary": "No agent turn, file change, remote call, configuration mutation, credential mutation, or host process restart was observed.",
+      "recovery_or_rollback": "Not applicable: the process failed before a mutable trial effect. The disposable worktree remained clean and was removed.",
+      "requalification_trigger": "A separately authorized repair of the invalid provider configuration followed by a fresh generation/Q0 path and the sealed evaluation rerun."
+    },
+    {
+      "surface_id": "codex_app_server_client_protocol",
+      "state": "inconclusive",
+      "reason": "CLI help and a generated experimental protocol schema prove a discoverable client protocol, but no gpt-5.6-sol/high thread lifecycle, sandbox behavior, effect boundary, or recovery path was exercised.",
+      "command": "codex app-server generate-json-schema --experimental --out .eval-output/app-server-schema",
+      "exit_code": 0,
+      "effect_boundary": "Schema generation wrote only disposable-worktree output and the output was removed before worktree disposal.",
+      "recovery_or_rollback": "Generated schema directory removed; disposable worktree removed.",
+      "requalification_trigger": "A fixed-model App Server client lifecycle trial with the sealed corpus and recovery receipt."
+    },
+    {
+      "surface_id": "codex_sdk_execution_interface",
+      "state": "inconclusive",
+      "reason": "The pinned openai-codex SDK initialized a local app-server protocol client, but the SDK bundles Codex CLI 0.132.0 and no target-model turn, usage projection, sandbox effect, or recovery was exercised.",
+      "command": "CodexClient(CodexConfig(cwd=<disposable worktree>)).start(); initialize()",
+      "exit_code": 0,
+      "effect_boundary": "Initialization returned local platform metadata only; no thread or turn was started. It did start and close a new local App Server child process; no pre-existing Codex process was changed. Persistence outside the disposable worktree was not qualified.",
+      "recovery_or_rollback": "Client close completed and the generated virtual environment was removed with the disposable worktree. Its package-cache/network resolution side effect cannot count as a network-disabled evaluation observation, and SDK initialization was not used to claim a host-state recovery result.",
+      "requalification_trigger": "A fixed-model SDK thread/turn trial with sealed task, usage/error observation, and recovery receipt."
+    },
+    {
+      "surface_id": "codex_managed_worktree_isolation",
+      "state": "inconclusive",
+      "reason": "A Git detached disposable worktree demonstrated trial isolation, but this is not evidence of Codex-managed worktree creation, lifecycle cleanup, conflict behavior, or effect boundary.",
+      "command": "git worktree add --detach D:/CODE/local-ai-runtime-eval-p0a-20260712-001 6fd6cd54037f17e44192bc272306b137def7f8a4",
+      "exit_code": 0,
+      "effect_boundary": "The primary worktree was never a trial workspace; the isolated worktree had no tracked diff after probes.",
+      "recovery_or_rollback": "Generated paths removed and git worktree remove --force completed after a clean status check.",
+      "requalification_trigger": "A Codex-managed worktree trial that records creation identity, write isolation, lifecycle cleanup, conflict/recovery behavior, and effect boundary."
+    },
+    {
+      "surface_id": "codex_automations_scheduling",
+      "state": "inconclusive",
+      "reason": "The current CLI exposes codex app but no distinct automation command surface; app help is not a schedule lifecycle, unattended sandbox, cancellation, or evidence projection probe.",
+      "command": "codex app automations --help",
+      "exit_code": 0,
+      "effect_boundary": "No scheduled task was created, changed, run, or cancelled.",
+      "recovery_or_rollback": "Not applicable: no automation side effect occurred.",
+      "requalification_trigger": "A manually authorized scheduled-task lifecycle probe with fixed sandbox, isolated worktree, cancellation/recovery, and evidence receipt."
+    }
+  ],
+  "conditional_harnesses": {
+    "superpowers_when_applicable": "not_run: no sealed harness identity and fixed-model CLI prerequisite failed",
+    "trellis_when_applicable": "not_run: no sealed harness identity and fixed-model CLI prerequisite failed",
+    "hermes_when_applicable": "not_applicable: the sealed corpus declares no remote, VPS, cron, or message-gateway task family"
+  },
+  "stop_condition": {
+    "triggered": true,
+    "code": "fixed_execution_environment_unqualified_and_network_intent_drift",
+    "reason": "The requested model/effort cannot be executed through the declared CLI because the configured provider is unknown. Separately, the SDK preflight used uv dependency resolution that downloaded pydantic-core before initialization, so this environment cannot prove the contract's network-disabled intent. Running comparative task families would violate the fixed tool-inventory/model/sandbox contract.",
+    "required_next_action": "Keep LAR-P0A-EVAL-002 execution_pending. Repair or requalify the environment only under separately authorized host-local work, then begin a fresh capability generation/Q0 and rerun the sealed comparison."
+  }
+}

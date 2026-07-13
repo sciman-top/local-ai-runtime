@@ -14,11 +14,11 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_STATUS_PATH = ROOT / "docs" / "architecture" / "planning-status.json"
 POLICY_PATH = Path("docs/architecture/next-work-selection-policy.json")
-CURRENT_BASELINE_ID = "local-ai-runtime-0.2-v3.22"
-CURRENT_BASELINE_PATH = "docs/specs/local-ai-runtime-0.2-v3.22-baseline-candidate.md"
+CURRENT_BASELINE_ID = "local-ai-runtime-0.2-v3.23"
+CURRENT_BASELINE_PATH = "docs/specs/local-ai-runtime-0.2-v3.23-baseline-candidate.md"
 CURRENT_BASELINE_ENTRY_PATH = "docs/specs/local-ai-runtime-0.2-baseline-candidate.md"
 CURRENT_LINEAGE_PATH = (
-    "docs/specs/local-ai-runtime-0.2/normative/BaselineLineage.v1.json"
+    "docs/specs/local-ai-runtime-0.2/normative/BaselineLineage.v2.json"
 )
 HISTORICAL_SOURCE_RECORD_PATH = (
     "docs/specs/local-ai-runtime-0.2/history/HistoricalSourceArchive.v1.json"
@@ -37,6 +37,11 @@ EXPECTED_SELECTOR_ENTRYPOINTS = [
 ]
 EXPECTED_SELECTOR_STEPS = [
     ("planning_integrity_red", "repair_gate_first"),
+    (
+        "native_thin_path_semantic_change_requires_successor",
+        "create_successor_candidate_first",
+    ),
+    ("native_thin_path_evaluation_pending", "run_native_thin_path_evaluation_first"),
     ("baseline_review_closure_pending", "run_baseline_consistency_review"),
     ("normative_package_incomplete", "close_baseline_normative_package_first"),
     ("approval_eligible_without_active_approval", "record_baseline_approval_first"),
@@ -53,7 +58,7 @@ EXPECTED_SELECTOR_STEPS = [
     ("p5_complete", "operate_approved_runtime"),
 ]
 EXPECTED_SELECTOR_ACTIONS = [action for _, action in EXPECTED_SELECTOR_STEPS]
-CURRENT_WORK_ITEM_COUNT = 62
+CURRENT_WORK_ITEM_COUNT = 65
 EXPECTED_ARTIFACT_IDS = [
     "P0A-SOURCE",
     "P0A-LINEAGE",
@@ -112,11 +117,16 @@ EXPECTED_RUNTIME_SOURCE_OWNERS = {
 IGNORED_RUNTIME_SOURCE_TREE_ENTRIES = frozenset({"__pycache__"})
 WORK_ITEM_SCHEMA_VERSION = "local_ai_runtime_work_items.v3"
 EXPECTED_WORK_ITEM_STATUSES = [
+    "completed",
+    "contract_pending",
+    "execution_pending",
+    "preserve_v3_23_semantics",
+    "narrow_profile_or_adapter_candidate",
+    "supersede_required",
     "ready",
     "pending",
     "blocked",
     "in_progress",
-    "completed",
     "cancelled",
     "superseded",
 ]
@@ -134,16 +144,85 @@ EXPECTED_NEW_RUNTIME_VERIFICATION = [
 ]
 EXPECTED_GRAPH_ROOTS = ["LAR-P0A-001"]
 EXPECTED_SUPERSEDED_PLAN = {
-    "plan_id": "local-ai-runtime-0.2-v3.21-implementation-work-items",
+    "plan_id": "local-ai-runtime-0.2-v3.22-implementation-work-items",
     "terminal_status": "superseded",
-    "last_commit": "0405140eabea71037b0d3bf72bfc7d765c415b23",
-    "byte_count": 170102,
-    "sha256": "8737c9e68d95ff10f18dfd42df16ca5a2f908ff16c7021c309dacd44ed4d844b",
+    "last_commit": "6fd6cd54037f17e44192bc272306b137def7f8a4",
+    "byte_count": 202002,
+    "sha256": "acabe34f188d73015536a141a8990c333ce6643dc28347671c2523adcaf7d2cc",
 }
-CURRENT_LINEAGE_BYTE_COUNT = 3134
+CURRENT_LINEAGE_BYTE_COUNT = 3495
 CURRENT_LINEAGE_SHA256 = (
-    "8bb29e0fbc4990749424e07368e5b1c0f09cf378e78d1ada38b8fe998fb97b35"
+    "49141a69c9aed6065ba063714fb2349750e500199ed8dfaf64fa6e2b198b9043"
 )
+NATIVE_THIN_PATH_EVALUATION_ROOT = Path("docs/evaluations/local-ai-runtime-0.2")
+NATIVE_THIN_PATH_EVALUATION_CONTRACT_SET_ID = (
+    "local-ai-runtime-0.2-v3.23-native-thin-path-evaluation-v1"
+)
+NATIVE_THIN_PATH_EVALUATION_SNAPSHOT = {
+    "commit": "6fd6cd54037f17e44192bc272306b137def7f8a4",
+    "tree": "11c8ab770769b3aeff5c111063a316e712fa7241",
+}
+NATIVE_THIN_PATH_EVALUATION_CONTRACTS = (
+    (
+        "docs/evaluations/local-ai-runtime-0.2/"
+        "native-thin-path-capability-evaluation.v1.json",
+        "NativeThinPathCapabilityEvaluation.v1",
+    ),
+    (
+        "docs/evaluations/local-ai-runtime-0.2/"
+        "native-thin-path-task-family-manifest.v1.json",
+        "NativeThinPathTaskFamilyManifest.v1",
+    ),
+    (
+        "docs/evaluations/local-ai-runtime-0.2/"
+        "native-thin-path-evidence-schema.v1.json",
+        "NativeThinPathEvidenceSchema.v1",
+    ),
+)
+NATIVE_THIN_PATH_EVALUATION_CONTRACT_REFS = {
+    "evaluation_contract": NATIVE_THIN_PATH_EVALUATION_CONTRACTS[0][0],
+    "task_family_manifest": NATIVE_THIN_PATH_EVALUATION_CONTRACTS[1][0],
+    "evidence_schema": NATIVE_THIN_PATH_EVALUATION_CONTRACTS[2][0],
+}
+NATIVE_THIN_PATH_EVALUATION_VARIANTS = [
+    "thin_codex_native",
+    "native_plus_key_gates",
+    "superpowers_when_applicable",
+    "trellis_when_applicable",
+    "hermes_when_applicable",
+]
+NATIVE_THIN_PATH_EVALUATION_SURFACES = [
+    "codex_cli_execution_interface",
+    "codex_app_server_client_protocol",
+    "codex_sdk_execution_interface",
+    "codex_managed_worktree_isolation",
+    "codex_automations_scheduling",
+]
+NATIVE_THIN_PATH_EVALUATION_METRICS = [
+    "task_success_rate",
+    "missed_defect_or_regression_rate",
+    "safety_gate_evidence_completeness",
+    "net_human_minutes",
+    "wall_time_p50_p95",
+    "token_and_cost",
+    "conflict_and_rework",
+    "recovery_and_rollback_success_rate",
+    "sampled_downstream_outcome",
+]
+NATIVE_THIN_PATH_EVALUATION_HARD_RULES = [
+    "quality_security_or_evidence_regression_invalidates_efficiency_gain",
+    "unknown_or_unowned_external_effect_stops_evaluation",
+    "unreproducible_recovery_or_rollback_stops_evaluation",
+    "censored_or_unknown_downstream_outcome_remains_in_denominator",
+]
+NATIVE_THIN_PATH_EVALUATION_DECISIONS = [
+    "preserve_v3_23_semantics",
+    "narrow_profile_or_adapter_candidate",
+    "supersede_required",
+]
+NATIVE_THIN_PATH_RESULTS_SCHEMA = "NativeThinPathCapabilityResults.v1"
+NATIVE_THIN_PATH_DECISION_SCHEMA = "NativeThinPathCapabilityDecision.v1"
+NATIVE_THIN_PATH_EVIDENCE_SCHEMA = "NativeThinPathCapabilityEvidence.v1"
 BASELINE_MANIFEST_SCHEMA_PATH = Path(
     "docs/specs/local-ai-runtime-0.2/normative/BaselineManifest.v1.schema.json"
 )
@@ -295,6 +374,7 @@ def verify(*, repo_root: Path, status_path: Path) -> dict[str, object]:
             "baseline_entry",
             "approval_state",
             "normative_package",
+            "native_thin_path_evaluation",
             "current_active_queue",
             "current_work_item",
             "legacy_runtime_posture",
@@ -318,6 +398,11 @@ def verify(*, repo_root: Path, status_path: Path) -> dict[str, object]:
     baseline_entry = _as_dict(status.get("baseline_entry"), "baseline_entry", failures)
     approval = _as_dict(status.get("approval_state"), "approval_state", failures)
     package_state = _as_dict(status.get("normative_package"), "normative_package", failures)
+    evaluation = _as_dict(
+        status.get("native_thin_path_evaluation"),
+        "native_thin_path_evaluation",
+        failures,
+    )
     queue = _as_dict(status.get("current_active_queue"), "current_active_queue", failures)
     current_work = _as_dict(status.get("current_work_item"), "current_work_item", failures)
     legacy = _as_dict(status.get("legacy_runtime_posture"), "legacy_runtime_posture", failures)
@@ -403,6 +488,7 @@ def verify(*, repo_root: Path, status_path: Path) -> dict[str, object]:
         package_state=package_state,
         queue=queue,
         current_work=current_work,
+        evaluation=evaluation,
         legacy=legacy,
         truth_reset=truth_reset,
         implementation=implementation,
@@ -437,6 +523,8 @@ def verify(*, repo_root: Path, status_path: Path) -> dict[str, object]:
         "baseline_sha256": baseline["sha256"],
         "blocking_stage": baseline["blocking_stage"],
         "approval_active": approval["active"],
+        "native_thin_path_evaluation_status": evaluation["status"],
+        "native_thin_path_evaluation_decision": evaluation["decision"],
         "normative_package_status": package_state["status"],
         "missing_artifact_count": len(package_state["missing_artifact_ids"]),
         "current_queue": queue["queue_id"],
@@ -1010,12 +1098,12 @@ def _verify_current_lineage(
         None,
     )
     expected_artifact = {
-        "artifact_version": "BaselineLineage.v1",
+        "artifact_version": "BaselineLineage.v2",
         "path": CURRENT_LINEAGE_PATH,
         "status": "present",
         "byte_count": CURRENT_LINEAGE_BYTE_COUNT,
         "sha256": CURRENT_LINEAGE_SHA256,
-        "producer_task_id": "LAR-P0A-REBASELINE-V322",
+        "producer_task_id": "LAR-P0A-REBASELINE-V323",
     }
     if lineage_artifact is None:
         failures.append("inventory must contain the P0A-LINEAGE artifact")
@@ -1025,22 +1113,22 @@ def _verify_current_lineage(
             failures.append(f"P0A-LINEAGE.{field} must equal {expected!r}")
 
     try:
-        lineage_path = _resolve_repo_path(root, CURRENT_LINEAGE_PATH, "BaselineLineage.v1")
+        lineage_path = _resolve_repo_path(root, CURRENT_LINEAGE_PATH, "BaselineLineage.v2")
         raw = lineage_path.read_bytes()
         lineage = _loads_json_object(raw.decode("utf-8"), CURRENT_LINEAGE_PATH)
     except (OSError, UnicodeDecodeError, ValueError) as exc:
-        failures.append(f"BaselineLineage.v1 is unreadable: {exc}")
+        failures.append(f"BaselineLineage.v2 is unreadable: {exc}")
         return
-    _verify_normative_bytes(raw, "BaselineLineage.v1", failures)
+    _verify_normative_bytes(raw, "BaselineLineage.v2", failures)
     if len(raw) != CURRENT_LINEAGE_BYTE_COUNT:
-        failures.append("BaselineLineage.v1 byte count mismatch")
+        failures.append("BaselineLineage.v2 byte count mismatch")
     if hashlib.sha256(raw).hexdigest() != CURRENT_LINEAGE_SHA256:
-        failures.append("BaselineLineage.v1 SHA-256 mismatch")
-    if lineage.get("domain") != "local-ai-runtime/BaselineLineage/v1":
-        failures.append("BaselineLineage.v1 domain mismatch")
-    if lineage.get("schema_version") != 1:
-        failures.append("BaselineLineage.v1 schema_version must be 1")
-    payload = _as_dict(lineage.get("payload"), "BaselineLineage.v1.payload", failures)
+        failures.append("BaselineLineage.v2 SHA-256 mismatch")
+    if lineage.get("domain") != "local-ai-runtime/BaselineLineage/v2":
+        failures.append("BaselineLineage.v2 domain mismatch")
+    if lineage.get("schema_version") != 2:
+        failures.append("BaselineLineage.v2 schema_version must be 2")
+    payload = _as_dict(lineage.get("payload"), "BaselineLineage.v2.payload", failures)
     expected_candidate = {
         "byte_count": baseline.get("byte_count"),
         "id": baseline.get("id"),
@@ -1049,34 +1137,34 @@ def _verify_current_lineage(
         "sha256": baseline.get("sha256"),
     }
     if payload.get("candidate") != expected_candidate:
-        failures.append("BaselineLineage.v1 candidate must bind the current v3.22 identity")
+        failures.append("BaselineLineage.v2 candidate must bind the current v3.23 identity")
 
     entries_value = payload.get("entries")
     if not isinstance(entries_value, list):
-        failures.append("BaselineLineage.v1 entries must be an array")
+        failures.append("BaselineLineage.v2 entries must be an array")
         return
     entries = {
         entry.get("id"): entry for entry in entries_value if isinstance(entry, dict)
     }
-    expected_v321 = {
-        "byte_count": 158485,
-        "id": "local-ai-runtime-0.2-v3.21",
-        "path": "docs/specs/local-ai-runtime-0.2-v3.21-baseline-candidate.md",
+    expected_v322 = {
+        "byte_count": 178330,
+        "id": "local-ai-runtime-0.2-v3.22",
+        "path": "docs/specs/local-ai-runtime-0.2-v3.22-baseline-candidate.md",
         "role": "superseded_candidate",
-        "sha256": "1bfb5cd2c92c036804a6005d5b36cdd5acc6bedc4d6bf4070ccfb7a70ce063fb",
+        "sha256": "8338a9dcf4bbbb40ca28f4f2ec6dca37587ee94fbfbbc6e3a0063c4de379569c",
     }
-    if entries.get("local-ai-runtime-0.2-v3.21") != expected_v321:
-        failures.append("BaselineLineage.v1 must bind the exact superseded v3.21 identity")
+    if entries.get("local-ai-runtime-0.2-v3.22") != expected_v322:
+        failures.append("BaselineLineage.v2 must bind the exact superseded v3.22 identity")
     if len(entries) != len(entries_value):
-        failures.append("BaselineLineage.v1 entry IDs must be unique")
+        failures.append("BaselineLineage.v2 entry IDs must be unique")
 
     projected_inventory_lineage = _project_inventory_lineage(entries_value, failures)
     if inventory.get("lineage") != projected_inventory_lineage:
-        failures.append("inventory lineage must exactly project BaselineLineage.v1")
+        failures.append("inventory lineage must exactly project BaselineLineage.v2")
 
     historical = _as_dict(
         payload.get("historical_source_archive"),
-        "BaselineLineage.v1.historical_source_archive",
+        "BaselineLineage.v2.historical_source_archive",
         failures,
     )
     historical_path = historical.get("path")
@@ -1131,7 +1219,7 @@ def _verify_inventory(
     if inventory.get("baseline_id") != baseline.get("id"):
         failures.append("inventory baseline_id must match planning baseline id")
     if inventory.get("package_id") != f"{CURRENT_BASELINE_ID}-normative-package":
-        failures.append("inventory package_id must match the v3.22 package identity")
+        failures.append("inventory package_id must match the v3.23 package identity")
     if inventory.get("blocking_stage") != baseline.get("blocking_stage"):
         failures.append("inventory blocking_stage must match planning baseline")
 
@@ -1149,7 +1237,7 @@ def _verify_inventory(
     artifact_ids = [item.get("artifact_id") for item in artifacts if isinstance(item, dict)]
     if artifact_ids != EXPECTED_ARTIFACT_IDS:
         failures.append(
-            "inventory artifact IDs/order must match the v3.22 closure sequence"
+            "inventory artifact IDs/order must match the v3.23 closure sequence"
         )
 
     seen_ids: set[str] = set()
@@ -1405,7 +1493,7 @@ def _verify_work_items(
             f"work-item schema_version must be {WORK_ITEM_SCHEMA_VERSION}"
         )
     if payload.get("plan_id") != f"{CURRENT_BASELINE_ID}-implementation-work-items":
-        failures.append("work-item plan_id must match the v3.22 implementation graph")
+        failures.append("work-item plan_id must match the v3.23 implementation graph")
     if payload.get("baseline_id") != baseline.get("id"):
         failures.append("work-item baseline_id must match planning baseline")
     if payload.get("baseline_status") != baseline.get("status"):
@@ -1413,7 +1501,7 @@ def _verify_work_items(
     if payload.get("blocking_stage") != baseline.get("blocking_stage"):
         failures.append("work-item blocking_stage must match planning baseline")
     if payload.get("supersedes_plan") != EXPECTED_SUPERSEDED_PLAN:
-        failures.append("work-item supersedes_plan must match the frozen v3.21 plan identity")
+        failures.append("work-item supersedes_plan must match the frozen v3.22 plan identity")
     if payload.get("task_identity") != "plan_id_plus_task_id":
         failures.append("work-item task_identity must be plan_id_plus_task_id")
     if not isinstance(payload.get("updated_on"), str) or not payload["updated_on"].strip():
@@ -1508,7 +1596,7 @@ def _verify_work_items(
         failures.append("work-item status_catalog must be a unique array")
         status_catalog = []
     elif status_catalog != EXPECTED_WORK_ITEM_STATUSES:
-        failures.append("work-item status_catalog must match the v3.22 state set and order")
+        failures.append("work-item status_catalog must match the v3.23 state set and order")
 
     required = [
         "task_id",
@@ -1547,8 +1635,10 @@ def _verify_work_items(
         order.append(task_id)
         phase = item.get("phase")
         task_id_parts = task_id.split("-")
-        if task_id == "LAR-P0A-REBASELINE-V322":
+        if task_id in {"LAR-P0A-REBASELINE-V322", "LAR-P0A-REBASELINE-V323"}:
             expected_phase = "P0A"
+        elif task_id in {"LAR-P0A-EVAL-001", "LAR-P0A-EVAL-002"}:
+            expected_phase = "EVAL"
         elif (
             len(task_id_parts) != 3
             or task_id_parts[0] != "LAR"
@@ -1800,11 +1890,28 @@ def _verify_work_items(
                 f"{relative_path}: expected={expected_owner}, actual={actual_owners}"
             )
 
-    ready = [task_id for task_id, item in items.items() if item.get("status") == "ready"]
+    selectable_statuses = {
+        "contract_pending",
+        "execution_pending",
+        "narrow_profile_or_adapter_candidate",
+        "supersede_required",
+        "ready",
+    }
+    selectable = [
+        task_id
+        for task_id, item in items.items()
+        if item.get("status") in selectable_statuses
+        and all(
+            items.get(dependency, {}).get("status") == "completed"
+            for dependency in _work_item_list(item, "depends_on")
+            if isinstance(dependency, str)
+        )
+    ]
     current_id = current_work.get("task_id")
-    if ready != [current_id]:
+    if selectable != [current_id]:
         failures.append(
-            f"exactly the current work item must be ready: current={current_id!r}, ready={ready!r}"
+            "exactly the current work item must be selectable: "
+            f"current={current_id!r}, selectable={selectable!r}"
         )
     current_item = items.get(str(current_id))
     if current_item is None:
@@ -1817,7 +1924,7 @@ def _verify_work_items(
                 continue
             if items.get(dependency, {}).get("status") != "completed":
                 failures.append(
-                    f"ready current work item has incomplete dependency: {dependency}"
+                    f"selectable current work item has incomplete dependency: {dependency}"
                 )
     return items
 
@@ -1997,7 +2104,7 @@ def _verify_selector_policy(
         failures.append("selector allowed_next_actions must be a unique array")
         allowed = []
     if allowed != EXPECTED_SELECTOR_ACTIONS:
-        failures.append("selector allowed_next_actions must match the v3.22 action catalog")
+        failures.append("selector allowed_next_actions must match the v3.23 action catalog")
     if current_work.get("selector_action") not in allowed:
         failures.append("current selector action is not allowed by selector policy")
     completed_history_actions = {
@@ -2016,7 +2123,7 @@ def _verify_selector_policy(
     review_sets = policy.get("baseline_review_missing_artifact_sets")
     if review_sets != EXPECTED_REVIEW_MISSING_ARTIFACT_SETS:
         failures.append(
-            "selector baseline_review_missing_artifact_sets must match the v3.22 manifest/review closure"
+            "selector baseline_review_missing_artifact_sets must match the v3.23 manifest/review closure"
         )
     missing = package_state.get("missing_artifact_ids")
     review_phase = (
@@ -2071,7 +2178,7 @@ def _verify_selector_policy(
         ]
         if actual_steps != EXPECTED_SELECTOR_STEPS:
             failures.append(
-                "selector condition/action order must match the v3.22 stage graph"
+                "selector condition/action order must match the v3.23 stage graph"
             )
 
     required_entrypoints = policy.get("required_entrypoints")
@@ -2109,6 +2216,7 @@ def _verify_approval_and_stages(
     package_state: dict[str, Any],
     queue: dict[str, Any],
     current_work: dict[str, Any],
+    evaluation: dict[str, Any],
     legacy: dict[str, Any],
     truth_reset: dict[str, Any],
     implementation: dict[str, Any],
@@ -2227,14 +2335,758 @@ def _verify_approval_and_stages(
         if not current_kernel.is_dir():
             failures.append("declared current kernel directory does not exist")
 
+    _verify_native_thin_path_evaluation(
+        root=root,
+        evaluation=evaluation,
+        package_state=package_state,
+        current_work=current_work,
+        failures=failures,
+    )
+
     if package_state.get("status") == "incomplete":
         if queue.get("queue_id") != "LOCAL-AI-RUNTIME-0.2-BASELINE-CLOSURE":
             failures.append("incomplete package requires baseline-closure queue")
         if current_work.get("selector_action") not in {
+            "create_successor_candidate_first",
+            "run_native_thin_path_evaluation_first",
             "close_baseline_normative_package_first",
             "run_baseline_consistency_review",
         }:
             failures.append("incomplete package requires a normative-closure selector action")
+
+
+def _verify_native_thin_path_evaluation(
+    *,
+    root: Path,
+    evaluation: dict[str, Any],
+    package_state: dict[str, Any],
+    current_work: dict[str, Any],
+    failures: list[str],
+) -> None:
+    _require_fields(
+        evaluation,
+        [
+            "status",
+            "decision",
+            "contract_task_id",
+            "execution_task_id",
+            "contract_output_refs",
+            "contract_identity",
+            "result_ref",
+            "decision_ref",
+            "evidence_ref",
+            "comparison_variants",
+            "independent_capability_surfaces",
+            "required_metrics",
+            "hard_promotion_rules",
+            "successor_baseline_id",
+        ],
+        "native_thin_path_evaluation",
+        failures,
+    )
+    status = evaluation.get("status")
+    decision = evaluation.get("decision")
+    expected_contract_task = "LAR-P0A-EVAL-001"
+    expected_execution_task = "LAR-P0A-EVAL-002"
+    if evaluation.get("contract_task_id") != expected_contract_task:
+        failures.append(
+            "native_thin_path_evaluation.contract_task_id must be LAR-P0A-EVAL-001"
+        )
+    if evaluation.get("execution_task_id") != expected_execution_task:
+        failures.append(
+            "native_thin_path_evaluation.execution_task_id must be LAR-P0A-EVAL-002"
+        )
+    if evaluation.get("successor_baseline_id") != "local-ai-runtime-0.2-v3.24":
+        failures.append(
+            "native_thin_path_evaluation.successor_baseline_id must be local-ai-runtime-0.2-v3.24"
+        )
+
+    for field, expected in (
+        ("comparison_variants", NATIVE_THIN_PATH_EVALUATION_VARIANTS),
+        ("independent_capability_surfaces", NATIVE_THIN_PATH_EVALUATION_SURFACES),
+        ("required_metrics", NATIVE_THIN_PATH_EVALUATION_METRICS),
+        ("hard_promotion_rules", NATIVE_THIN_PATH_EVALUATION_HARD_RULES),
+    ):
+        if evaluation.get(field) != expected:
+            failures.append(
+                f"native_thin_path_evaluation.{field} must match the frozen v3.23 evaluation contract"
+            )
+
+    refs = evaluation.get("contract_output_refs")
+    if (
+        not isinstance(refs, list)
+        or len(refs) != 3
+        or not all(isinstance(reference, str) and reference for reference in refs)
+        or len(refs) != len(set(refs))
+    ):
+        failures.append(
+            "native_thin_path_evaluation.contract_output_refs must be three unique non-empty paths"
+        )
+    elif any(not reference.startswith("docs/evaluations/local-ai-runtime-0.2/") for reference in refs):
+        failures.append(
+            "native_thin_path_evaluation.contract_output_refs must remain under the evaluation evidence root"
+        )
+
+    terminal_decisions = set(NATIVE_THIN_PATH_EVALUATION_DECISIONS)
+    state_rules = {
+        "contract_pending": {
+            "current_task": expected_contract_task,
+            "allowed_decisions": {None},
+            "sealed_refs": False,
+        },
+        "execution_pending": {
+            "current_task": expected_execution_task,
+            "allowed_decisions": {None},
+            "sealed_refs": False,
+        },
+        "preserve_v3_23_semantics": {
+            "current_task": None,
+            "allowed_decisions": {"preserve_v3_23_semantics"},
+            "sealed_refs": True,
+        },
+        "narrow_profile_or_adapter_candidate": {
+            "current_task": expected_execution_task,
+            "allowed_decisions": {"narrow_profile_or_adapter_candidate"},
+            "sealed_refs": True,
+        },
+        "supersede_required": {
+            "current_task": expected_execution_task,
+            "allowed_decisions": {"supersede_required"},
+            "sealed_refs": True,
+        },
+    }
+    rule = state_rules.get(status)
+    if rule is None:
+        failures.append(
+            "native_thin_path_evaluation.status must be contract_pending, execution_pending or a terminal decision state"
+        )
+        return
+    if decision not in rule["allowed_decisions"]:
+        failures.append(
+            "native_thin_path_evaluation.decision must match its lifecycle status"
+        )
+    current_task = current_work.get("task_id")
+    expected_current = rule["current_task"]
+    if expected_current is not None and current_task != expected_current:
+        failures.append(
+            "native_thin_path_evaluation pending status must select its matching evaluation work item"
+        )
+    if expected_current is None and current_task in {
+        expected_contract_task,
+        expected_execution_task,
+    }:
+        failures.append(
+            "terminal native_thin_path_evaluation cannot keep an evaluation work item selected"
+        )
+
+    contract_identity = evaluation.get("contract_identity")
+    identity_required = status != "contract_pending"
+    if not identity_required:
+        if contract_identity is not None:
+            failures.append(
+                "contract_pending native_thin_path_evaluation.contract_identity must remain null"
+            )
+    elif not isinstance(contract_identity, dict):
+        failures.append(
+            "execution or terminal native_thin_path_evaluation requires contract_identity"
+        )
+    else:
+        _verify_native_thin_path_evaluation_contract_identity(
+            root=root,
+            identity=contract_identity,
+            evaluation=evaluation,
+            failures=failures,
+        )
+
+    sealed_refs = rule["sealed_refs"]
+    for field in ("result_ref", "decision_ref", "evidence_ref"):
+        value = evaluation.get(field)
+        if sealed_refs:
+            if not isinstance(value, str) or not value.startswith(
+                "docs/evaluations/local-ai-runtime-0.2/"
+            ):
+                failures.append(
+                    f"terminal native_thin_path_evaluation requires an evaluation-root {field}"
+                )
+        elif value is not None:
+            failures.append(
+                f"pending native_thin_path_evaluation.{field} must remain null"
+            )
+
+    if sealed_refs:
+        _verify_terminal_native_thin_path_evaluation_artifacts(
+            root=root,
+            evaluation=evaluation,
+            contract_identity=contract_identity,
+            status=status,
+            decision=decision,
+            failures=failures,
+        )
+
+    if decision in terminal_decisions and status != decision:
+        failures.append(
+            "native_thin_path_evaluation terminal decision must equal its terminal status"
+        )
+    if decision == "preserve_v3_23_semantics":
+        if package_state.get("status") == "incomplete" and current_task == expected_execution_task:
+            failures.append(
+                "preserve_v3_23_semantics must release the evaluation task before normative closure continues"
+            )
+    elif decision in {
+        "narrow_profile_or_adapter_candidate",
+        "supersede_required",
+    }:
+        if package_state.get("approval_eligible"):
+            failures.append(
+                "a semantic-change evaluation decision must keep v3.23 approval-ineligible"
+            )
+        if current_work.get("selector_action") != "create_successor_candidate_first":
+            failures.append(
+                "a semantic-change evaluation decision must select create_successor_candidate_first"
+            )
+
+
+def _verify_native_thin_path_evaluation_contract_identity(
+    *,
+    root: Path,
+    identity: dict[str, Any],
+    evaluation: dict[str, Any],
+    failures: list[str],
+) -> None:
+    """Fail closed unless the pending/terminal state binds exact sealed contract bytes."""
+
+    _require_fields(
+        identity,
+        [
+            "contract_set_id",
+            "baseline_id",
+            "contract_task_id",
+            "execution_task_id",
+            "snapshot",
+            "contracts",
+        ],
+        "native_thin_path_evaluation.contract_identity",
+        failures,
+    )
+    if identity.get("contract_set_id") != NATIVE_THIN_PATH_EVALUATION_CONTRACT_SET_ID:
+        failures.append(
+            "native_thin_path_evaluation.contract_identity must bind the v3.23 evaluation contract set"
+        )
+    for field, expected in (
+        ("baseline_id", CURRENT_BASELINE_ID),
+        ("contract_task_id", "LAR-P0A-EVAL-001"),
+        ("execution_task_id", "LAR-P0A-EVAL-002"),
+    ):
+        if identity.get(field) != expected:
+            failures.append(
+                "native_thin_path_evaluation.contract_identity."
+                f"{field} must match the frozen evaluation contract"
+            )
+    if identity.get("snapshot") != NATIVE_THIN_PATH_EVALUATION_SNAPSHOT:
+        failures.append(
+            "native_thin_path_evaluation.contract_identity.snapshot must match the frozen evaluation snapshot"
+        )
+
+    contracts = identity.get("contracts")
+    if not isinstance(contracts, list) or len(contracts) != len(
+        NATIVE_THIN_PATH_EVALUATION_CONTRACTS
+    ):
+        failures.append(
+            "native_thin_path_evaluation.contract_identity.contracts must contain every sealed contract"
+        )
+        return
+
+    expected_paths = [path for path, _ in NATIVE_THIN_PATH_EVALUATION_CONTRACTS]
+    actual_paths = [entry.get("path") for entry in contracts if isinstance(entry, dict)]
+    if actual_paths != expected_paths:
+        failures.append(
+            "native_thin_path_evaluation.contract_identity.contracts must use the frozen contract path order"
+        )
+        return
+    if evaluation.get("contract_output_refs") != expected_paths:
+        failures.append(
+            "native_thin_path_evaluation.contract_output_refs must match the sealed contract path order"
+        )
+
+    expected_by_path = dict(NATIVE_THIN_PATH_EVALUATION_CONTRACTS)
+    loaded_contracts: dict[str, tuple[dict[str, Any], bytes]] = {}
+    for entry in contracts:
+        if not isinstance(entry, dict):
+            failures.append(
+                "native_thin_path_evaluation.contract_identity.contracts entries must be objects"
+            )
+            continue
+        _require_fields(
+            entry,
+            ["path", "byte_count", "sha256"],
+            "native_thin_path_evaluation.contract_identity.contracts entry",
+            failures,
+        )
+        path_value = entry.get("path")
+        if path_value not in expected_by_path:
+            continue
+        if (
+            not isinstance(entry.get("byte_count"), int)
+            or isinstance(entry.get("byte_count"), bool)
+            or entry["byte_count"] < 1
+        ):
+            failures.append(
+                "native_thin_path_evaluation.contract_identity contract byte_count must be a positive integer"
+            )
+        if not _is_sha256(entry.get("sha256")):
+            failures.append(
+                "native_thin_path_evaluation.contract_identity contract sha256 must be lowercase SHA-256"
+            )
+        try:
+            path = _resolve_repo_path(root, path_value, "evaluation contract")
+        except ValueError as exc:
+            failures.append(str(exc))
+            continue
+        if not path.is_file():
+            failures.append(
+                f"native_thin_path_evaluation sealed contract does not exist: {path_value}"
+            )
+            continue
+        try:
+            payload, raw = _load_json_with_bytes(path)
+        except ValueError as exc:
+            failures.append(
+                f"native_thin_path_evaluation sealed contract must be a readable JSON object: {path_value}: {exc}"
+            )
+            continue
+        loaded_contracts[path_value] = (payload, raw)
+        if entry.get("byte_count") != len(raw):
+            failures.append(
+                "native_thin_path_evaluation.contract_identity contract byte_count must match file bytes"
+            )
+        if entry.get("sha256") != hashlib.sha256(raw).hexdigest():
+            failures.append(
+                "native_thin_path_evaluation.contract_identity contract sha256 must match file bytes"
+            )
+        expected_schema = expected_by_path[path_value]
+        if payload.get("schema_version") != expected_schema:
+            failures.append(
+                f"native_thin_path_evaluation sealed contract has unexpected schema_version: {path_value}"
+            )
+        for field, expected in (
+            ("contract_set_id", NATIVE_THIN_PATH_EVALUATION_CONTRACT_SET_ID),
+            ("baseline_id", CURRENT_BASELINE_ID),
+            ("contract_task_id", "LAR-P0A-EVAL-001"),
+            ("execution_task_id", "LAR-P0A-EVAL-002"),
+            ("snapshot", NATIVE_THIN_PATH_EVALUATION_SNAPSHOT),
+            ("contract_refs", NATIVE_THIN_PATH_EVALUATION_CONTRACT_REFS),
+        ):
+            if payload.get(field) != expected:
+                failures.append(
+                    "native_thin_path_evaluation sealed contract must preserve "
+                    f"{field}: {path_value}"
+                )
+
+    if set(loaded_contracts) != set(expected_paths):
+        return
+
+    evaluation_contract = loaded_contracts[expected_paths[0]][0]
+    task_manifest = loaded_contracts[expected_paths[1]][0]
+    evidence_schema = loaded_contracts[expected_paths[2]][0]
+    _verify_native_thin_path_evaluation_contract_content(
+        evaluation_contract=evaluation_contract,
+        task_manifest=task_manifest,
+        evidence_schema=evidence_schema,
+        failures=failures,
+    )
+
+
+def _verify_native_thin_path_evaluation_contract_content(
+    *,
+    evaluation_contract: dict[str, Any],
+    task_manifest: dict[str, Any],
+    evidence_schema: dict[str, Any],
+    failures: list[str],
+) -> None:
+    variants = evaluation_contract.get("variants")
+    if not isinstance(variants, list) or [
+        variant.get("variant_id") for variant in variants if isinstance(variant, dict)
+    ] != NATIVE_THIN_PATH_EVALUATION_VARIANTS:
+        failures.append("native thin-path evaluation contract must preserve the five comparison variants")
+    surfaces = evaluation_contract.get("capability_probes")
+    if not isinstance(surfaces, list) or [
+        surface.get("surface_id") for surface in surfaces if isinstance(surface, dict)
+    ] != NATIVE_THIN_PATH_EVALUATION_SURFACES:
+        failures.append("native thin-path evaluation contract must preserve the five independent capability surfaces")
+    metrics = evaluation_contract.get("metrics")
+    if not isinstance(metrics, list) or [
+        metric.get("metric_id") for metric in metrics if isinstance(metric, dict)
+    ] != NATIVE_THIN_PATH_EVALUATION_METRICS:
+        failures.append("native thin-path evaluation contract must preserve every required metric")
+    hard_floors = evaluation_contract.get("hard_floors")
+    if not isinstance(hard_floors, list) or [
+        rule.get("rule_id") for rule in hard_floors if isinstance(rule, dict)
+    ] != NATIVE_THIN_PATH_EVALUATION_HARD_RULES:
+        failures.append("native thin-path evaluation contract must preserve every hard floor")
+    decision_contract = evaluation_contract.get("decision_contract")
+    if not isinstance(decision_contract, dict) or decision_contract.get(
+        "allowed_decisions"
+    ) != NATIVE_THIN_PATH_EVALUATION_DECISIONS:
+        failures.append("native thin-path evaluation contract must preserve the three decision values")
+    execution_controls = evaluation_contract.get("execution_controls")
+    if not isinstance(execution_controls, dict):
+        failures.append("native thin-path evaluation contract must declare execution controls")
+    else:
+        model = execution_controls.get("model")
+        worktree = execution_controls.get("worktree")
+        if not isinstance(model, dict) or model.get("model_id") != "gpt-5.6-sol" or model.get(
+            "reasoning_effort"
+        ) != "high":
+            failures.append("native thin-path evaluation contract must fix gpt-5.6-sol/high")
+        if not isinstance(worktree, dict) or worktree.get(
+            "base_commit"
+        ) != NATIVE_THIN_PATH_EVALUATION_SNAPSHOT["commit"] or worktree.get(
+            "base_tree"
+        ) != NATIVE_THIN_PATH_EVALUATION_SNAPSHOT["tree"] or not worktree.get(
+            "primary_worktree_may_not_execute_trials"
+        ):
+            failures.append("native thin-path evaluation contract must require a detached disposable worktree")
+        requested_environment = execution_controls.get("requested_environment")
+        if not isinstance(requested_environment, dict) or requested_environment != {
+            "sandbox_intent": "workspace_write",
+            "network_access": "disabled",
+            "approval_mode": "deny_all",
+            "credential_mutation": "prohibited",
+        }:
+            failures.append(
+                "native thin-path evaluation contract must preserve the fixed sandbox and permission intent"
+            )
+    human_intervention = evaluation_contract.get("human_intervention")
+    if not isinstance(human_intervention, dict) or any(
+        not isinstance(human_intervention.get(field), str)
+        or not human_intervention[field].strip()
+        for field in (
+            "active_minute_rule",
+            "passive_wait_rule",
+            "unknown_observation_rule",
+        )
+    ):
+        failures.append(
+            "native thin-path evaluation contract must define active, passive, and unknown observation rules"
+        )
+    generation_rules = evaluation_contract.get("generation_and_q0_rules")
+    expected_generation_triggers = {
+        "model_change",
+        "reasoning_effort_change",
+        "tool_inventory_change",
+        "sandbox_or_permission_change",
+        "sdk_or_app_server_behavior_change",
+        "managed_worktree_behavior_change",
+        "automation_or_external_effect_change",
+    }
+    if (
+        not isinstance(generation_rules, dict)
+        or set(generation_rules.get("new_generation_triggers", []))
+        != expected_generation_triggers
+        or "Q0" not in str(generation_rules.get("required_followup"))
+    ):
+        failures.append(
+            "native thin-path evaluation contract must preserve capability-generation triggers and Q0 followup"
+        )
+    task_families = task_manifest.get("task_families")
+    if not isinstance(task_families, list) or len(task_families) < 3:
+        failures.append("native thin-path task-family manifest must contain at least three task families")
+    else:
+        ids = [family.get("task_family_id") for family in task_families if isinstance(family, dict)]
+        if len(ids) != len(task_families) or len(ids) != len(set(ids)):
+            failures.append("native thin-path task-family manifest task IDs must be unique")
+        for family in task_families:
+            if not isinstance(family, dict):
+                failures.append("native thin-path task-family manifest entries must be objects")
+                continue
+            if not isinstance(family.get("task_input"), dict) or not isinstance(
+                family.get("success_oracle"), dict
+            ):
+                failures.append("native thin-path task family must define task_input and success_oracle")
+            else:
+                task_input = family["task_input"]
+                oracle = family["success_oracle"]
+                if not isinstance(task_input.get("prompt"), str) or not task_input[
+                    "prompt"
+                ].strip():
+                    failures.append("native thin-path task family task_input.prompt must be non-empty")
+                for field in ("required_facts", "required_commands"):
+                    value = oracle.get(field)
+                    if (
+                        not isinstance(value, list)
+                        or not value
+                        or not all(isinstance(item, str) and item for item in value)
+                    ):
+                        failures.append(
+                            "native thin-path task family success_oracle must define non-empty "
+                            f"{field}"
+                        )
+            if not isinstance(family.get("repeat_count"), int) or family["repeat_count"] < 1:
+                failures.append("native thin-path task family repeat_count must be positive")
+            eligible_variants = family.get("eligible_variants")
+            if not isinstance(eligible_variants, list) or not eligible_variants or not set(eligible_variants).issubset(
+                set(NATIVE_THIN_PATH_EVALUATION_VARIANTS)
+            ):
+                failures.append("native thin-path task family may only reference declared variants")
+    counterbalancing = task_manifest.get("counterbalancing")
+    if not isinstance(counterbalancing, dict) or counterbalancing.get(
+        "method"
+    ) != "balanced_latin_square_v1":
+        failures.append("native thin-path task-family manifest must define counterbalancing")
+    elif (
+        counterbalancing.get("core_variant_order")
+        != NATIVE_THIN_PATH_EVALUATION_VARIANTS[:2]
+        or counterbalancing.get("conditional_variant_order")
+        != NATIVE_THIN_PATH_EVALUATION_VARIANTS[2:]
+        or counterbalancing.get("block_count") != 3
+    ):
+        failures.append(
+            "native thin-path task-family manifest must preserve the fixed variant counterbalancing"
+        )
+    denominator_rules = task_manifest.get("denominator_rules")
+    expected_denominator_keys = {
+        "core_comparison",
+        "conditional_harness_comparison",
+        "downstream_outcome",
+        "recovery_rollback",
+    }
+    if (
+        not isinstance(denominator_rules, dict)
+        or set(denominator_rules) != expected_denominator_keys
+        or any(
+            not isinstance(value, str) or not value.strip()
+            for value in denominator_rules.values()
+        )
+    ):
+        failures.append(
+            "native thin-path task-family manifest must preserve every denominator rule"
+        )
+    record_types = evidence_schema.get("record_types")
+    if not isinstance(record_types, dict) or set(record_types) != {
+        "environment_capture",
+        "trial_record",
+        "capability_probe_record",
+        "recovery_rollback_record",
+        "downstream_outcome_record",
+        "results_artifact",
+        "decision_artifact",
+        "evidence_artifact",
+    }:
+        failures.append("native thin-path evidence schema must define every required record type")
+    identity_requirement = evidence_schema.get("contract_identity_requirement")
+    if not isinstance(identity_requirement, dict) or identity_requirement.get(
+        "identity_field"
+    ) != "contract_identity":
+        failures.append("native thin-path evidence schema must require complete contract_identity")
+    elif set(identity_requirement.get("required_in", [])) != {
+        "environment_capture",
+        "trial_record",
+        "capability_probe_record",
+        "recovery_rollback_record",
+        "downstream_outcome_record",
+        "results_artifact",
+        "decision_artifact",
+        "evidence_artifact",
+    }:
+        failures.append(
+            "native thin-path evidence schema must require contract_identity in every evidence record"
+        )
+
+
+def _verify_terminal_native_thin_path_evaluation_artifacts(
+    *,
+    root: Path,
+    evaluation: dict[str, Any],
+    contract_identity: Any,
+    status: Any,
+    decision: Any,
+    failures: list[str],
+) -> None:
+    """Bind a terminal evaluation decision to real, cross-referenced JSON evidence."""
+
+    if not isinstance(status, str) or not isinstance(decision, str):
+        return
+
+    artifacts: dict[str, tuple[dict[str, Any], bytes]] = {}
+    for field in ("result_ref", "decision_ref", "evidence_ref"):
+        artifact = _load_native_thin_path_evaluation_artifact(
+            root=root,
+            value=evaluation.get(field),
+            field=field,
+            failures=failures,
+        )
+        if artifact is not None:
+            artifacts[field] = artifact
+
+    if set(artifacts) != {"result_ref", "decision_ref", "evidence_ref"}:
+        return
+
+    result, result_raw = artifacts["result_ref"]
+    decision_record, decision_raw = artifacts["decision_ref"]
+    evidence, _ = artifacts["evidence_ref"]
+    contract_refs = evaluation.get("contract_output_refs")
+
+    _require_fields(
+        result,
+        [
+            "schema_version",
+            "baseline_id",
+            "status",
+            "decision",
+            "contract_output_refs",
+            "contract_identity",
+            "decision_ref",
+            "evidence_ref",
+        ],
+        "terminal native thin-path results artifact",
+        failures,
+    )
+    if result.get("schema_version") != NATIVE_THIN_PATH_RESULTS_SCHEMA:
+        failures.append(
+            "terminal native thin-path results artifact has an unexpected schema_version"
+        )
+    if result.get("baseline_id") != CURRENT_BASELINE_ID:
+        failures.append(
+            "terminal native thin-path results artifact must bind the current baseline"
+        )
+    if result.get("status") != status or result.get("decision") != decision:
+        failures.append(
+            "terminal native thin-path results artifact must match planning status and decision"
+        )
+    if result.get("contract_output_refs") != contract_refs:
+        failures.append(
+            "terminal native thin-path results artifact must bind the frozen contract output refs"
+        )
+    if result.get("contract_identity") != contract_identity:
+        failures.append(
+            "terminal native thin-path results artifact must bind the exact contract_identity"
+        )
+    if (
+        result.get("decision_ref") != evaluation.get("decision_ref")
+        or result.get("evidence_ref") != evaluation.get("evidence_ref")
+    ):
+        failures.append(
+            "terminal native thin-path results artifact must bind the declared decision and evidence refs"
+        )
+
+    _require_fields(
+        decision_record,
+        [
+            "schema_version",
+            "baseline_id",
+            "status",
+            "decision",
+            "contract_identity",
+            "result_ref",
+            "evidence_ref",
+        ],
+        "terminal native thin-path decision artifact",
+        failures,
+    )
+    if decision_record.get("schema_version") != NATIVE_THIN_PATH_DECISION_SCHEMA:
+        failures.append(
+            "terminal native thin-path decision artifact has an unexpected schema_version"
+        )
+    if decision_record.get("baseline_id") != CURRENT_BASELINE_ID:
+        failures.append(
+            "terminal native thin-path decision artifact must bind the current baseline"
+        )
+    if (
+        decision_record.get("status") != status
+        or decision_record.get("decision") != decision
+    ):
+        failures.append(
+            "terminal native thin-path decision artifact must match planning status and decision"
+        )
+    if (
+        decision_record.get("result_ref") != evaluation.get("result_ref")
+        or decision_record.get("evidence_ref") != evaluation.get("evidence_ref")
+    ):
+        failures.append(
+            "terminal native thin-path decision artifact must bind the declared result and evidence refs"
+        )
+    if decision_record.get("contract_identity") != contract_identity:
+        failures.append(
+            "terminal native thin-path decision artifact must bind the exact contract_identity"
+        )
+
+    _require_fields(
+        evidence,
+        [
+            "schema_version",
+            "baseline_id",
+            "status",
+            "decision",
+            "contract_identity",
+            "result_ref",
+            "decision_ref",
+            "result_sha256",
+            "decision_sha256",
+        ],
+        "terminal native thin-path evidence artifact",
+        failures,
+    )
+    if evidence.get("schema_version") != NATIVE_THIN_PATH_EVIDENCE_SCHEMA:
+        failures.append(
+            "terminal native thin-path evidence artifact has an unexpected schema_version"
+        )
+    if evidence.get("baseline_id") != CURRENT_BASELINE_ID:
+        failures.append(
+            "terminal native thin-path evidence artifact must bind the current baseline"
+        )
+    if evidence.get("status") != status or evidence.get("decision") != decision:
+        failures.append(
+            "terminal native thin-path evidence artifact must match planning status and decision"
+        )
+    if (
+        evidence.get("result_ref") != evaluation.get("result_ref")
+        or evidence.get("decision_ref") != evaluation.get("decision_ref")
+    ):
+        failures.append(
+            "terminal native thin-path evidence artifact must bind the declared result and decision refs"
+        )
+    if evidence.get("contract_identity") != contract_identity:
+        failures.append(
+            "terminal native thin-path evidence artifact must bind the exact contract_identity"
+        )
+    if evidence.get("result_sha256") != hashlib.sha256(result_raw).hexdigest():
+        failures.append(
+            "terminal native thin-path evidence artifact result_sha256 must match result bytes"
+        )
+    if evidence.get("decision_sha256") != hashlib.sha256(decision_raw).hexdigest():
+        failures.append(
+            "terminal native thin-path evidence artifact decision_sha256 must match decision bytes"
+        )
+
+
+def _load_native_thin_path_evaluation_artifact(
+    *,
+    root: Path,
+    value: Any,
+    field: str,
+    failures: list[str],
+) -> tuple[dict[str, Any], bytes] | None:
+    label = f"terminal native_thin_path_evaluation.{field}"
+    try:
+        path = _resolve_repo_path(root, value, label)
+    except ValueError as exc:
+        failures.append(str(exc))
+        return None
+
+    evaluation_root = (root / NATIVE_THIN_PATH_EVALUATION_ROOT).resolve(strict=False)
+    try:
+        path.relative_to(evaluation_root)
+    except ValueError:
+        failures.append(f"{label} must remain under the evaluation evidence root")
+        return None
+    if not path.is_file():
+        failures.append(f"{label} artifact does not exist")
+        return None
+    try:
+        return _load_json_with_bytes(path)
+    except ValueError as exc:
+        failures.append(f"{label} must be a readable JSON object: {exc}")
+        return None
 
 
 def _verify_authoritative_docs(
@@ -2445,7 +3297,7 @@ def _verify_graph_policy(
         "real_writer_requires": ["LAR-P1G-001", "LAR-Q0-001"],
     }
     if policy != expected:
-        failures.append("work-item graph_policy must match the deterministic v3.22 DAG policy")
+        failures.append("work-item graph_policy must match the deterministic v3.23 DAG policy")
 
     for root in EXPECTED_GRAPH_ROOTS:
         if root not in items:
@@ -2476,17 +3328,33 @@ def _verify_graph_policy(
             f"{unreachable}"
         )
 
-    ready = [
+    selectable = [
         (item.get("priority"), task_id)
         for task_id, item in items.items()
-        if item.get("status") == "ready"
+        if item.get("status")
+        in {
+            "contract_pending",
+            "execution_pending",
+            "narrow_profile_or_adapter_candidate",
+            "supersede_required",
+            "ready",
+        }
         and isinstance(item.get("priority"), int)
         and not isinstance(item.get("priority"), bool)
+        and all(
+            items.get(dependency, {}).get("status") == "completed"
+            for dependency in _work_item_list(item, "depends_on")
+            if isinstance(dependency, str)
+        )
     ]
-    selected = min(ready, default=(None, None), key=lambda entry: (entry[0], entry[1]))
+    selected = min(
+        selectable,
+        default=(None, None),
+        key=lambda entry: (entry[0], entry[1]),
+    )
     if selected[1] != current_work.get("task_id"):
         failures.append(
-            "current work item must match deterministic priority/task-id ready selection"
+            "current work item must match deterministic priority/task-id selectable selection"
         )
 
 
@@ -2514,7 +3382,7 @@ def _verify_contract_projection_policy(
         failures.append("work-item projection rules must be unique non-empty strings")
     if policy.get("projections") != EXPECTED_CONTRACT_PROJECTIONS:
         failures.append(
-            "work-item contract projections must match the frozen v3.22 projection catalog"
+            "work-item contract projections must match the frozen v3.23 projection catalog"
         )
 
     expected_by_task: dict[str, dict[str, list[str]]] = {}

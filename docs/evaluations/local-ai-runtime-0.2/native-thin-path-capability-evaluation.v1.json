@@ -1,0 +1,351 @@
+{
+  "schema_version": "NativeThinPathCapabilityEvaluation.v1",
+  "contract_set_id": "local-ai-runtime-0.2-v3.23-native-thin-path-evaluation-v1",
+  "baseline_id": "local-ai-runtime-0.2-v3.23",
+  "contract_task_id": "LAR-P0A-EVAL-001",
+  "execution_task_id": "LAR-P0A-EVAL-002",
+  "snapshot": {
+    "commit": "6fd6cd54037f17e44192bc272306b137def7f8a4",
+    "tree": "11c8ab770769b3aeff5c111063a316e712fa7241"
+  },
+  "snapshot_reference": "The frozen commit is the only task-under-test source tree. This contract is read from the governing worktree and is not copied into that source tree as a semantic input.",
+  "contract_refs": {
+    "evaluation_contract": "docs/evaluations/local-ai-runtime-0.2/native-thin-path-capability-evaluation.v1.json",
+    "task_family_manifest": "docs/evaluations/local-ai-runtime-0.2/native-thin-path-task-family-manifest.v1.json",
+    "evidence_schema": "docs/evaluations/local-ai-runtime-0.2/native-thin-path-evidence-schema.v1.json"
+  },
+  "evaluation_scope": {
+    "purpose": "Compare a minimal Codex Native path, that path plus key gates, and conditionally comparable harness lanes before Baseline Approval without granting any platform qualification.",
+    "allowed_execution_modes": [
+      "read_only_probe",
+      "disposable_detached_worktree"
+    ],
+    "primary_worktree_prohibited": true,
+    "requires_disposable_detached_worktree_for_write_trials": true,
+    "forbidden_effects": [
+      "baseline_approval",
+      "runtime_activation",
+      "batch_task_claim",
+      "provider_or_auth_change",
+      "host_codex_restart",
+      "remote_push",
+      "remote_ci_retrieval",
+      "external_delivery"
+    ]
+  },
+  "variants": [
+    {
+      "variant_id": "thin_codex_native",
+      "comparison_class": "core",
+      "description": "Fixed task brief and snapshot guidance only; no third-party harness, no added planner interview, and no gate wrapper beyond the task's required oracle.",
+      "applicability": "all_declared_task_families",
+      "added_controls": []
+    },
+    {
+      "variant_id": "native_plus_key_gates",
+      "comparison_class": "core",
+      "description": "The same fixed Native path with the declared build/test/contract/hotspot gate order and evidence receipt requirements.",
+      "applicability": "all_declared_task_families",
+      "added_controls": [
+        "declared_gate_set",
+        "evidence_receipt",
+        "recovery_rollback_receipt"
+      ]
+    },
+    {
+      "variant_id": "superpowers_when_applicable",
+      "comparison_class": "conditional_harness",
+      "description": "A sealed local Superpowers installation may be compared only when its invoked workflow does not require an additional human decision, an unpinned model, or a non-disposable side effect.",
+      "applicability": "declared_by_task_family_and_environment_preflight",
+      "added_controls": [
+        "sealed_harness_identity",
+        "workflow_trace"
+      ]
+    },
+    {
+      "variant_id": "trellis_when_applicable",
+      "comparison_class": "conditional_harness",
+      "description": "A sealed local Trellis installation may be compared only as a task-local workflow aid; its state, queue, journal, or authority may not become a second repository control plane.",
+      "applicability": "declared_by_task_family_and_environment_preflight",
+      "added_controls": [
+        "sealed_harness_identity",
+        "second_control_plane_prohibited"
+      ]
+    },
+    {
+      "variant_id": "hermes_when_applicable",
+      "comparison_class": "conditional_harness",
+      "description": "Hermes is evaluated only for a corpus with an explicitly comparable remote, VPS, cron, or message-gateway requirement. A local corpus without that requirement records not_applicable; it does not prove replacement.",
+      "applicability": "remote_vps_cron_or_gateway_task_family_only",
+      "added_controls": [
+        "sealed_harness_identity",
+        "remote_effect_owner"
+      ]
+    }
+  ],
+  "execution_controls": {
+    "model": {
+      "model_id": "gpt-5.6-sol",
+      "reasoning_effort": "high",
+      "allow_dynamic_fallback": false,
+      "allow_per_trial_model_change": false
+    },
+    "requested_environment": {
+      "sandbox_intent": "workspace_write",
+      "network_access": "disabled",
+      "approval_mode": "deny_all",
+      "credential_mutation": "prohibited"
+    },
+    "tool_inventory": {
+      "collection_method": "capture executable path, version, help or schema digest, feature inventory, sandbox declaration, and invocation argv before each surface or harness trial",
+      "missing_tool_outcome": "unqualified_or_inconclusive_with_evidence",
+      "no_capability_inference_from_name_or_shared_installation": true
+    },
+    "worktree": {
+      "mode": "disposable_detached_worktree",
+      "base_commit": "6fd6cd54037f17e44192bc272306b137def7f8a4",
+      "base_tree": "11c8ab770769b3aeff5c111063a316e712fa7241",
+      "reuse_between_trials": false,
+      "primary_worktree_may_not_execute_trials": true,
+      "cleanup_requires_receipt": true
+    },
+    "drift_stop_rules": [
+      "snapshot_commit_or_tree_mismatch",
+      "model_or_reasoning_effort_mismatch",
+      "tool_inventory_or_sandbox_drift_after_first_trial",
+      "gate_set_or_human_intervention_definition_change_after_observation",
+      "unowned_or_unknown_external_effect"
+    ]
+  },
+  "gates": [
+    {
+      "gate_id": "build",
+      "status": "gate_na",
+      "reason": "The frozen snapshot has no runtime/local-ai-runtime package. The comparison must not create that package.",
+      "alternative_verification": "host-orchestrator pytest plus planning verifier"
+    },
+    {
+      "gate_id": "test",
+      "status": "required",
+      "command": "uv run --project ./runtime/host-orchestrator python -m pytest"
+    },
+    {
+      "gate_id": "contract_invariant",
+      "status": "required",
+      "command": "python scripts/verify-planning-status.py"
+    },
+    {
+      "gate_id": "hotspot",
+      "status": "required",
+      "command": "git diff --check"
+    }
+  ],
+  "human_intervention": {
+    "active_categories": [
+      "task_clarification",
+      "permission_or_effect_decision",
+      "manual_conflict_resolution",
+      "manual_rework_direction",
+      "recovery_or_rollback_direction",
+      "evidence_attachment"
+    ],
+    "active_minute_rule": "Count wall-clock minutes in which an operator supplies information, chooses an effect, resolves a conflict, directs rework, performs recovery, or attaches downstream evidence. Do not count passive model, command, queue, or reviewer wait as active human time.",
+    "passive_wait_rule": "Record passive wait separately for model generation, command execution, queued execution, and later external review. Passive wait remains visible in wall-time metrics.",
+    "unknown_observation_rule": "Unknown human-minute, token, cost, or downstream observations are recorded as unknown and are never silently removed from their declared denominator."
+  },
+  "metrics": [
+    {
+      "metric_id": "task_success_rate",
+      "unit": "fraction",
+      "definition": "Success-oracle passes divided by every declared applicable trial, including failed, stopped, inconclusive, conflict, rework, and recovery attempts."
+    },
+    {
+      "metric_id": "missed_defect_or_regression_rate",
+      "unit": "fraction",
+      "definition": "Later detected task-caused defect or regression divided by all declared applicable trials."
+    },
+    {
+      "metric_id": "safety_gate_evidence_completeness",
+      "unit": "fraction",
+      "definition": "Required safety, gate, and evidence fields present and internally consistent divided by all required fields across applicable trials."
+    },
+    {
+      "metric_id": "net_human_minutes",
+      "unit": "minutes",
+      "definition": "Active human minutes only; passive wait is reported separately."
+    },
+    {
+      "metric_id": "wall_time_p50_p95",
+      "unit": "minutes",
+      "definition": "End-to-end elapsed time from trial start through required cleanup or stop receipt, reported with P50 and P95."
+    },
+    {
+      "metric_id": "token_and_cost",
+      "unit": "tokens_and_currency",
+      "definition": "Capture available token usage and cost source; unavailable values remain unavailable rather than estimated as zero."
+    },
+    {
+      "metric_id": "conflict_and_rework",
+      "unit": "count_and_fraction",
+      "definition": "Count merge, patch, policy, or review conflicts and every rework loop per applicable trial."
+    },
+    {
+      "metric_id": "recovery_and_rollback_success_rate",
+      "unit": "fraction",
+      "definition": "Reproducible recovery or rollback successes divided by all declared recovery or rollback attempts."
+    },
+    {
+      "metric_id": "sampled_downstream_outcome",
+      "unit": "categorical_fraction",
+      "definition": "Sampled human review disposition, merge/reject/rework, later CI, revert, or defect outcome. censored and unknown remain in the denominator."
+    }
+  ],
+  "hard_floors": [
+    {
+      "rule_id": "quality_security_or_evidence_regression_invalidates_efficiency_gain",
+      "action": "report_efficiency_but_disallow_promotion"
+    },
+    {
+      "rule_id": "unknown_or_unowned_external_effect_stops_evaluation",
+      "action": "stop_and_record_inconclusive"
+    },
+    {
+      "rule_id": "unreproducible_recovery_or_rollback_stops_evaluation",
+      "action": "stop_and_record_inconclusive"
+    },
+    {
+      "rule_id": "censored_or_unknown_downstream_outcome_remains_in_denominator",
+      "action": "retain_in_downstream_denominator"
+    }
+  ],
+  "capability_probes": [
+    {
+      "surface_id": "codex_cli_execution_interface",
+      "qualification_states": [
+        "qualified",
+        "unqualified",
+        "not_applicable",
+        "inconclusive"
+      ],
+      "required_observations": [
+        "binary_version_and_help",
+        "sandbox_and_permission_behavior",
+        "tool_inventory",
+        "trial_effect_boundary",
+        "recovery_or_rollback"
+      ],
+      "no_cross_surface_inheritance": true
+    },
+    {
+      "surface_id": "codex_app_server_client_protocol",
+      "qualification_states": [
+        "qualified",
+        "unqualified",
+        "not_applicable",
+        "inconclusive"
+      ],
+      "required_observations": [
+        "protocol_or_schema_identity",
+        "client_job_lifecycle",
+        "sandbox_and_permission_behavior",
+        "effect_boundary",
+        "recovery_or_rollback"
+      ],
+      "no_cross_surface_inheritance": true
+    },
+    {
+      "surface_id": "codex_sdk_execution_interface",
+      "qualification_states": [
+        "qualified",
+        "unqualified",
+        "not_applicable",
+        "inconclusive"
+      ],
+      "required_observations": [
+        "sdk_package_and_api_identity",
+        "request_response_lifecycle",
+        "sandbox_and_permission_behavior",
+        "usage_and_error_projection",
+        "recovery_or_rollback"
+      ],
+      "no_cross_surface_inheritance": true
+    },
+    {
+      "surface_id": "codex_managed_worktree_isolation",
+      "qualification_states": [
+        "qualified",
+        "unqualified",
+        "not_applicable",
+        "inconclusive"
+      ],
+      "required_observations": [
+        "worktree_creation_and_identity",
+        "write_isolation",
+        "lifecycle_cleanup",
+        "conflict_and_recovery_behavior",
+        "effect_boundary"
+      ],
+      "no_cross_surface_inheritance": true
+    },
+    {
+      "surface_id": "codex_automations_scheduling",
+      "qualification_states": [
+        "qualified",
+        "unqualified",
+        "not_applicable",
+        "inconclusive"
+      ],
+      "required_observations": [
+        "schedule_interface_identity",
+        "unattended_sandbox_and_worktree_behavior",
+        "trigger_and_effect_boundary",
+        "cancellation_or_recovery",
+        "evidence_projection"
+      ],
+      "no_cross_surface_inheritance": true
+    }
+  ],
+  "generation_and_q0_rules": {
+    "new_generation_triggers": [
+      "model_change",
+      "reasoning_effort_change",
+      "tool_inventory_change",
+      "sandbox_or_permission_change",
+      "sdk_or_app_server_behavior_change",
+      "managed_worktree_behavior_change",
+      "automation_or_external_effect_change"
+    ],
+    "required_followup": "A new trigger creates a new capability generation and requires the declared Q0 path before it can be selected by a profile. It is not a hot configuration switch."
+  },
+  "decision_contract": {
+    "allowed_decisions": [
+      "preserve_v3_23_semantics",
+      "narrow_profile_or_adapter_candidate",
+      "supersede_required"
+    ],
+    "preserve_rule": "Only a non-normative preserve_v3_23_semantics decision releases P0A closure.",
+    "successor_rule": "A decision that changes Batch prohibition, adapter, authority, concurrency, Q0 trigger, quality promotion, or truth source freezes v3.23 and requires a v3.24 successor candidate."
+  },
+  "reference_basis": [
+    {
+      "source_type": "official",
+      "url": "https://developers.openai.com/api/docs/guides/latest-model.md",
+      "use": "Compare representative task quality, evidence, latency, tokens, and cost rather than assuming the highest effort is optimal."
+    },
+    {
+      "source_type": "official",
+      "url": "https://learn.chatgpt.com/docs/app-server",
+      "use": "Treat App Server client integration as a distinct surface."
+    },
+    {
+      "source_type": "official",
+      "url": "https://learn.chatgpt.com/docs/environments/git-worktrees",
+      "use": "Treat managed worktree isolation and lifecycle as a distinct surface."
+    },
+    {
+      "source_type": "official",
+      "url": "https://learn.chatgpt.com/docs/automations",
+      "use": "Treat unattended scheduling, sandbox, worktree, and effect behavior as a distinct surface."
+    }
+  ]
+}

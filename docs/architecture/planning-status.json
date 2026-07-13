@@ -3,11 +3,11 @@
   "status_id": "local-ai-runtime-0.2-rebaseline-status",
   "updated_on": "2026-07-12",
   "baseline_candidate": {
-    "id": "local-ai-runtime-0.2-v3.22",
-    "title": "Local AI Runtime 0.2 v3.22 Windows-Local Governed AI Development Execution Baseline Candidate",
-    "path": "docs/specs/local-ai-runtime-0.2-v3.22-baseline-candidate.md",
-    "byte_count": 178330,
-    "sha256": "8338a9dcf4bbbb40ca28f4f2ec6dca37587ee94fbfbbc6e3a0063c4de379569c",
+    "id": "local-ai-runtime-0.2-v3.23",
+    "title": "Local AI Runtime 0.2 v3.23 Windows-Local Governed AI Development Execution Baseline Candidate",
+    "path": "docs/specs/local-ai-runtime-0.2-v3.23-baseline-candidate.md",
+    "byte_count": 188325,
+    "sha256": "80562322ebc744eda2a87a17c45f73a11982f4947c9d10e8628bb6f73ee9d5c6",
     "status": "baseline_candidate",
     "decision": "request_changes_until_normative_package_closure",
     "blocking_stage": "baseline_approval"
@@ -15,14 +15,14 @@
   "baseline_entry": {
     "path": "docs/specs/local-ai-runtime-0.2-baseline-candidate.md",
     "role": "non_normative_navigation",
-    "target_baseline_id": "local-ai-runtime-0.2-v3.22",
-    "target_path": "docs/specs/local-ai-runtime-0.2-v3.22-baseline-candidate.md",
-    "target_byte_count": 178330,
-    "target_sha256": "8338a9dcf4bbbb40ca28f4f2ec6dca37587ee94fbfbbc6e3a0063c4de379569c",
+    "target_baseline_id": "local-ai-runtime-0.2-v3.23",
+    "target_path": "docs/specs/local-ai-runtime-0.2-v3.23-baseline-candidate.md",
+    "target_byte_count": 188325,
+    "target_sha256": "80562322ebc744eda2a87a17c45f73a11982f4947c9d10e8628bb6f73ee9d5c6",
     "approval_input": false,
     "maximum_byte_count": 4096,
-    "byte_count": 2454,
-    "sha256": "077e3d028dce30712633abcc6000aab7fc00d40dc98ad5098c3af0033d723f67"
+    "byte_count": 2691,
+    "sha256": "d38c041e863d4618e053b11671a5d3dd76a26c5b96a5b430124c955e38e2a4bd"
   },
   "approval_state": {
     "active": false,
@@ -53,21 +53,94 @@
       "P0A-REVIEW"
     ]
   },
+  "native_thin_path_evaluation": {
+    "status": "execution_pending",
+    "decision": null,
+    "contract_task_id": "LAR-P0A-EVAL-001",
+    "execution_task_id": "LAR-P0A-EVAL-002",
+    "contract_output_refs": [
+      "docs/evaluations/local-ai-runtime-0.2/native-thin-path-capability-evaluation.v1.json",
+      "docs/evaluations/local-ai-runtime-0.2/native-thin-path-task-family-manifest.v1.json",
+      "docs/evaluations/local-ai-runtime-0.2/native-thin-path-evidence-schema.v1.json"
+    ],
+    "contract_identity": {
+      "contract_set_id": "local-ai-runtime-0.2-v3.23-native-thin-path-evaluation-v1",
+      "baseline_id": "local-ai-runtime-0.2-v3.23",
+      "contract_task_id": "LAR-P0A-EVAL-001",
+      "execution_task_id": "LAR-P0A-EVAL-002",
+      "snapshot": {
+        "commit": "6fd6cd54037f17e44192bc272306b137def7f8a4",
+        "tree": "11c8ab770769b3aeff5c111063a316e712fa7241"
+      },
+      "contracts": [
+        {
+          "path": "docs/evaluations/local-ai-runtime-0.2/native-thin-path-capability-evaluation.v1.json",
+          "byte_count": 13775,
+          "sha256": "e4129a743a976e2e286c43e6ebcb9c3a1d634079d3188e18292a147c06499b39"
+        },
+        {
+          "path": "docs/evaluations/local-ai-runtime-0.2/native-thin-path-task-family-manifest.v1.json",
+          "byte_count": 8996,
+          "sha256": "27965825d8ba79ae008d876992ea70a380b213578fc8ed14fc3af8a0016bc6b0"
+        },
+        {
+          "path": "docs/evaluations/local-ai-runtime-0.2/native-thin-path-evidence-schema.v1.json",
+          "byte_count": 6827,
+          "sha256": "a82b869eae6b64aed51e847cb5835a69e98e91095fdf832fb5391beaea501721"
+        }
+      ]
+    },
+    "result_ref": null,
+    "decision_ref": null,
+    "evidence_ref": null,
+    "comparison_variants": [
+      "thin_codex_native",
+      "native_plus_key_gates",
+      "superpowers_when_applicable",
+      "trellis_when_applicable",
+      "hermes_when_applicable"
+    ],
+    "independent_capability_surfaces": [
+      "codex_cli_execution_interface",
+      "codex_app_server_client_protocol",
+      "codex_sdk_execution_interface",
+      "codex_managed_worktree_isolation",
+      "codex_automations_scheduling"
+    ],
+    "required_metrics": [
+      "task_success_rate",
+      "missed_defect_or_regression_rate",
+      "safety_gate_evidence_completeness",
+      "net_human_minutes",
+      "wall_time_p50_p95",
+      "token_and_cost",
+      "conflict_and_rework",
+      "recovery_and_rollback_success_rate",
+      "sampled_downstream_outcome"
+    ],
+    "hard_promotion_rules": [
+      "quality_security_or_evidence_regression_invalidates_efficiency_gain",
+      "unknown_or_unowned_external_effect_stops_evaluation",
+      "unreproducible_recovery_or_rollback_stops_evaluation",
+      "censored_or_unknown_downstream_outcome_remains_in_denominator"
+    ],
+    "successor_baseline_id": "local-ai-runtime-0.2-v3.24"
+  },
   "current_active_queue": {
     "queue_id": "LOCAL-AI-RUNTIME-0.2-BASELINE-CLOSURE",
-    "label": "Close the frozen v3.22 normative package before Baseline Approval",
+    "label": "Run the frozen Native thin-path evaluation before closing the v3.23 normative package",
     "status": "in_progress",
     "source_plan": "docs/plans/orchestrator-implementation-plan.md",
     "source_work_items": "docs/plans/local-ai-runtime-0.2-work-items.json",
-    "source_plan_id": "local-ai-runtime-0.2-v3.22-implementation-work-items",
-    "work_item_count": 62,
-    "why_now": "The v3.22 narrative and v3.22-bound lineage are frozen and verified, but thirteen required normative artifacts remain missing and Baseline Approval is inactive."
+    "source_plan_id": "local-ai-runtime-0.2-v3.23-implementation-work-items",
+    "work_item_count": 65,
+    "why_now": "The v3.23 narrative and v3.23-bound lineage are frozen and verified, but Baseline Approval is additionally blocked by the mandatory Native thin-path / capability comparative evaluation before the thirteen missing normative artifacts may be closed."
   },
   "current_work_item": {
-    "task_id": "LAR-P0A-003",
-    "selector_action": "close_baseline_normative_package_first",
-    "status": "ready",
-    "reason": "The BaselineManifest schema, byte fixtures and fail-closed verifier skeleton are complete without a final manifest; the next legal action is to close canonical JSON, Git path and Windows identity contracts."
+    "task_id": "LAR-P0A-EVAL-002",
+    "selector_action": "run_native_thin_path_evaluation_first",
+    "status": "execution_pending",
+    "reason": "The evaluation contract, task-family manifest, evidence schema and their exact identity are sealed. Run only the fixed snapshot comparison in disposable detached worktrees; no surface is qualified and no decision exists yet."
   },
   "legacy_runtime_posture": {
     "current_kernel": "runtime/host-orchestrator",
@@ -77,7 +150,7 @@
     "new_package_exists": false,
     "legacy_guard_complete": false,
     "new_batch_claims_allowed": false,
-    "notes": "Existing host-orchestrator and runtime_v2 behavior remain unchanged during candidate closure. They are migration inputs, not the v3.22 target implementation."
+    "notes": "Existing host-orchestrator and runtime_v2 behavior remain unchanged during candidate closure. They are migration inputs, not the v3.23 target implementation."
   },
   "truth_reset": {
     "performed": false,
@@ -105,7 +178,7 @@
     "p5_cutover_complete": false,
     "legacy_writer_retired": false
   },
-  "current_evidence_ref": "docs/change-evidence/20260712-lar-p0a-002-manifest.md",
+  "current_evidence_ref": "docs/change-evidence/20260712-lar-p0a-eval-001-evaluation-contract.md",
   "authoritative_docs": [
     "AGENTS.md",
     "README.md",
@@ -117,7 +190,7 @@
     "docs/backlog/orchestrator-task-list.md",
     "docs/specs/acceptance-and-gates.md",
     "docs/specs/local-ai-runtime-0.2-baseline-candidate.md",
-    "docs/specs/local-ai-runtime-0.2-v3.22-baseline-candidate.md",
+    "docs/specs/local-ai-runtime-0.2-v3.23-baseline-candidate.md",
     "docs/specs/local-ai-runtime-0.2-normative-package.json",
     "docs/plans/local-ai-runtime-0.2-work-items.json",
     "docs/architecture/next-work-selection-policy.json"
@@ -126,26 +199,26 @@
     {
       "path": "AGENTS.md",
       "required_strings": [
-        "local-ai-runtime-0.2-v3.22",
+        "local-ai-runtime-0.2-v3.23",
         "LOCAL-AI-RUNTIME-0.2-BASELINE-CLOSURE",
-        "close_baseline_normative_package_first"
+        "LAR-P0A-EVAL-002"
       ]
     },
     {
       "path": "README.md",
       "required_strings": [
-        "local-ai-runtime-0.2-v3.22",
+        "local-ai-runtime-0.2-v3.23",
         "baseline_candidate",
         "LOCAL-AI-RUNTIME-0.2-BASELINE-CLOSURE",
-        "LAR-P0A-003"
+        "LAR-P0A-EVAL-002"
       ]
     },
     {
       "path": "docs/README.md",
       "required_strings": [
-        "local-ai-runtime-0.2-v3.22",
+        "local-ai-runtime-0.2-v3.23",
         "blocking_stage=baseline_approval",
-        "close_baseline_normative_package_first"
+        "LAR-P0A-EVAL-002"
       ]
     },
     {
@@ -159,6 +232,8 @@
         "profile generation",
         "capability generation",
         "architecture epoch",
+        "Native thin-path",
+        "DownstreamOutcomeRecord",
         "approved_root_files",
         "approved_subpackages",
         "required_source_owners"
@@ -194,6 +269,8 @@
       "required_strings": [
         "LAR-P0A-001",
         "LAR-P0A-002",
+        "LAR-P0A-EVAL-001",
+        "LAR-P0A-EVAL-002",
         "LAR-P0A-003",
         "LAR-P1A-004",
         "LAR-P1F-006",
@@ -252,6 +329,7 @@
       "required_strings": [
         "LAR-P0A-001",
         "LAR-P0A-002",
+        "LAR-P0A-EVAL-001",
         "LAR-P1A-004",
         "LAR-P1F-006",
         "LAR-P1G-001",
@@ -266,11 +344,11 @@
       "required_strings": [
         "role=non_normative_navigation",
         "approval_input=false",
-        "local-ai-runtime-0.2-v3.22",
-        "docs/specs/local-ai-runtime-0.2-v3.22-baseline-candidate.md",
-        "8338a9dcf4bbbb40ca28f4f2ec6dca37587ee94fbfbbc6e3a0063c4de379569c",
+        "local-ai-runtime-0.2-v3.23",
+        "docs/specs/local-ai-runtime-0.2-v3.23-baseline-candidate.md",
+        "80562322ebc744eda2a87a17c45f73a11982f4947c9d10e8628bb6f73ee9d5c6",
         "BaselineManifest.v1",
-        "close_baseline_normative_package_first"
+        "LAR-P0A-EVAL-002"
       ]
     },
     {
@@ -294,6 +372,8 @@
         "RuntimeCompositionManifest",
         "SelectedRuntimeIdentity",
         "ActiveRuntimeIdentity",
+        "Native thin-path",
+        "DownstreamOutcomeRecord",
         "uv lock --check --offline",
         "uv run --locked --offline",
         "contracts/kernel/qualification/storage/execution/recovery/git_local/operations/compat",
@@ -310,5 +390,5 @@
     "p2_admission.admitted=true while implementation.full_q0_passed=false",
     "legacy_runtime_posture.new_batch_claims_allowed=true while legacy_runtime_posture.legacy_guard_complete=false"
   ],
-  "rollback_ref": "Revert only the v3.22 candidate-planning projection; keep frozen v3.17-v3.22 bytes, runtime/host-orchestrator, .ai/config and live state unchanged."
+  "rollback_ref": "Revert only the v3.23 candidate-planning projection; keep frozen v3.17-v3.22 bytes, runtime/host-orchestrator, .ai/config and live state unchanged."
 }

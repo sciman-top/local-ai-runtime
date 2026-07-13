@@ -2,7 +2,7 @@
 
 ## 1. Goal
 
-依据 `local-ai-runtime-0.2-v3.22`，从当前 legacy `runtime/host-orchestrator` 迁移到 Windows-local single-operator general-purpose governed AI development execution platform，同时保持副作用可归属、writer zero-or-one execution commit、Git publication deterministic、证据 secret-safe、迁移可逐仓回滚。
+依据 `local-ai-runtime-0.2-v3.23`，从当前 legacy `runtime/host-orchestrator` 迁移到 Windows-local single-operator general-purpose governed AI development execution platform，同时保持副作用可归属、writer zero-or-one execution commit、Git publication deterministic、证据 secret-safe、迁移可逐仓回滚。产品目标是低人工、可预测、可恢复的开发吞吐；Native 快路径追求低交互延迟，Epoch 1 全局 capacity=1 的 Batch 不承诺高速并发。
 
 当前只执行 P0A normative closure。机器任务真源是 [local-ai-runtime-0.2-work-items.json](D:/CODE/local-ai-dev-orchestrator/docs/plans/local-ai-runtime-0.2-work-items.json)；本文解释如何执行，不复制每个字段。
 
@@ -22,7 +22,7 @@
 
 1. 运行 `python scripts/verify-planning-status.py`。非零先修规划，不做产品任务。
 2. 运行 `python scripts/select-next-work.py`，确认 `next_action` 和 `current_work_item.task_id`。
-3. 读取 JSON 中该项全部字段及顶层 `runtime_source_layout`、`graph_policy`、`contract_projection_policy`。任务身份是 `plan_id + task_id`；superseded v3.21 plan 的同名结果不能关闭 v3.22 任务。依赖、前置条件、projection role、停止条件、授权或目标源码路径不能证明时停止。
+3. 读取 JSON 中该项全部字段及顶层 `runtime_source_layout`、`graph_policy`、`contract_projection_policy`。任务身份是 `plan_id + task_id`；superseded v3.22 plan 的同名结果不能关闭 v3.23 任务。依赖、前置条件、projection role、停止条件、授权或目标源码路径不能证明时停止。
 4. 在 evidence note 先记录目标归宿、当前落点、计划修改文件、回滚和验证命令。
 5. 对 contract 任务先写 negative fixture/verifier；对实现任务先写 failing test。
 6. 只做满足 acceptance 的最小切片，不顺手实现后继 phase。
@@ -35,11 +35,19 @@
 
 ## 4. P0A 规范闭包计划
 
-### 已完成：`LAR-P0A-001` 与 `LAR-P0A-REBASELINE-V322`
+### 已完成：`LAR-P0A-001`、`LAR-P0A-REBASELINE-V322` 与 `LAR-P0A-REBASELINE-V323`
 
-原始 session 中 v3.17 与两份 conflicted v3.18 已按唯一 message/content 边界归档并双路径复算；v3.21 精确 `158485 / 1bfb5cd2...63fb` 已作为 superseded candidate，v3.22 精确 `178330 / 8338a9dc...569c` 与 `BaselineLineage.v1` 已冻结。它们只作为 completed DAG history，不再是 selector 可选分支。
+原始 session 中 v3.17 与两份 conflicted v3.18 已按唯一 message/content 边界归档并双路径复算；v3.21 精确 `158485 / 1bfb5cd2...63fb` 与 v3.22 精确 `178330 / 8338a9dc...569c` 均作为 superseded candidate 保留。v3.23 精确 `188325 / 80562322...d5c6` 与 `BaselineLineage.v2` 已冻结。它们只作为 completed DAG history，不再是 selector 可选分支。
 
-### 已完成：`LAR-P0A-002` Manifest
+### 当前：`LAR-P0A-EVAL-002` Native thin-path / capability comparative evaluation
+
+`LAR-P0A-EVAL-001` 已冻结 evaluation contract、TaskFamily manifest 和 evidence schema 的 exact byte/hash/snapshot identity。`LAR-P0A-EVAL-002` 才执行比较：contract 固定 repo snapshot、TaskFamily、模型/effort、tool inventory、sandbox、gates、成功 oracle、重复/交叉顺序和人工介入定义；比较精简 Codex Native、Native + key gates，以及只在可比场景下的 Superpowers/Trellis/Hermes。所有 write trial 必须从固定 commit 建立 disposable detached worktree，当前 primary worktree 不得作为 trial workspace。CLI、App Server、SDK、managed Worktree、Automations 各自独立 probe，不能由同安装、名称或单一 surface 的结果推定资格化。
+
+硬指标：任务成功、漏检/回归、安全/gate/evidence 完整率、净人工分钟、P50/P95 wall time、token/成本、冲突/返工、recovery/rollback 成功率和抽样 `DownstreamOutcomeRecord`。质量、安全、证据任一 hard floor 下降、unknown/unowned external effect 或不可复现 recovery/rollback，都使效率收益无效并停止评测。只有 `preserve_v3_23_semantics` 才释放 P0A；`narrow_profile_or_adapter_candidate` 或 `supersede_required` 必须冻结 v3.23 并创建 v3.24 candidate、lineage、inventory、DAG、selector 和 verifier，不能原地改写。
+
+`grill-with-docs` 可用于低频、高不确定、不可逆设计决策的人类术语/ADR 对齐；不作为日常自动执行、Batch admission 或本仓控制面的前门。
+
+### 后续：`LAR-P0A-002` Manifest
 
 固定规范字节、domain envelope、artifact path/hash/schema/verifier closure。Validator 只拒绝，不改写。Narrative ID 只绑定本文精确 bytes；每个 schema/catalog/transition/verifier 使用自己的 artifact ID/version/hash；preapproval inventory 可更新但非规范。本任务只创建 `BaselineManifest.v1` schema、非最终 fixtures 和 verifier skeleton，禁止创建最终 `BaselineManifest.v1.json`，`P0A-MANIFEST` 保持 missing。已 present artifact 禁止原地覆盖，语义修正必须新 artifact version，和 narrative 不一致时同时新建 candidate。
 
@@ -98,7 +106,7 @@ P0C 的顺序固定：
 
 ### 开发顺序
 
-机器图总计 62 项。P1A-P1F 共 35 个编码切片，数量为 `4 + 5 + 7 + 6 + 7 + 6`；依赖图是确定性 DAG，不再伪装成单链。独立 fixture/adapter 分支可并行准备，但当前任务未 completed 时不得顺手关闭后继任务；每次 AI 会话只执行 selector 返回的一项，其精确文件、projection role、验收和命令以 machine work item 为准。真实 writer 仍须位于 Implementation Acceptance + Full Q0 之后。
+机器图总计 65 项。P1A-P1F 共 35 个编码切片，数量为 `4 + 5 + 7 + 6 + 7 + 6`；依赖图是确定性 DAG，不再伪装成单链。独立 fixture/adapter 分支可并行准备，但当前任务未 completed 时不得顺手关闭后继任务；每次 AI 会话只执行 selector 返回的一项，其精确文件、projection role、验收和命令以 machine work item 为准。真实 writer 仍须位于 Implementation Acceptance + Full Q0 之后。
 
 #### P1A Contracts/kernel
 
@@ -230,4 +238,4 @@ Network deny、secret scan、unknown path、reparse/hardlink、Git config、prot
 
 ## 10. 当前下一步
 
-当前 action 是 `close_baseline_normative_package_first`，task 是 `LAR-P0A-003`。它只允许创建 CanonicalizationPolicy、CanonicalEnvelope schema、canonicalization fixtures 和对应 verifier component；不得创建最终 `BaselineManifest.v1.json`、批准记录、Truth Reset、`runtime/local-ai-runtime` 或修改 `.ai/config`。
+当前 action 是 `run_native_thin_path_evaluation_first`，task 是 `LAR-P0A-EVAL-002`。三份 evaluation contract 已冻结且身份已写入 planning control plane；现在只允许在固定 commit 的 disposable detached worktree 执行比较并记录 machine-readable evidence。不得运行 live Batch、创建最终 `BaselineManifest.v1.json`、批准记录、Truth Reset、`runtime/local-ai-runtime`、remote push/CI retrieval，或修改 `.ai/config`。任何将评测结果写成 v3.23 语义变更的尝试必须改为 v3.24 successor workflow。

@@ -4,13 +4,13 @@ Local AI Runtime 是面向 Windows 本机、单操作者信任域的通用受控
 
 ## 当前状态
 
-当前规范候选是 `local-ai-runtime-0.2-v3.22`，状态为 `baseline_candidate`，`blocking_stage=baseline_approval`。冻结正文和 v3.22-bound lineage 已落盘，`BaselineManifest.v1` schema、byte fixtures 与 fail-closed verifier skeleton 已完成，但最终 manifest 尚未创建且 skeleton 尚未冻结为独立 verifier；规范包仍如实为 `15 required / 2 present / 13 missing`，因此仍是 **Request changes**，不是已批准实现基线。
+当前规范候选是 `local-ai-runtime-0.2-v3.23`，状态为 `baseline_candidate`，`blocking_stage=baseline_approval`。冻结正文和 v3.23-bound lineage 已落盘，`BaselineManifest.v1` schema、byte fixtures 与 fail-closed verifier skeleton 已完成，但最终 manifest 尚未创建且 skeleton 尚未冻结为独立 verifier；规范包仍如实为 `15 required / 2 present / 13 missing`，因此仍是 **Request changes**，不是已批准实现基线。
 
-稳定发现入口是 [baseline candidate entry](D:/CODE/local-ai-dev-orchestrator/docs/specs/local-ai-runtime-0.2-baseline-candidate.md)。它只导航到冻结 v3.22 正文，不能作为另一份规范正文、`BaselineManifest` 输入或批准证据。
+稳定发现入口是 [baseline candidate entry](D:/CODE/local-ai-dev-orchestrator/docs/specs/local-ai-runtime-0.2-baseline-candidate.md)。它只导航到冻结 v3.23 正文，不能作为另一份规范正文、`BaselineManifest` 输入或批准证据。
 
 - 当前队列：`LOCAL-AI-RUNTIME-0.2-BASELINE-CLOSURE`
-- 当前动作：`close_baseline_normative_package_first`
-- 当前工作项：`LAR-P0A-003`
+- 当前动作：`run_native_thin_path_evaluation_first`
+- 当前工作项：`LAR-P0A-EVAL-002`
 - 当前可执行内核：`runtime/host-orchestrator`
 - 新包 `runtime/local-ai-runtime`：尚不存在，批准前禁止创建
 - Truth Reset：未执行
@@ -23,9 +23,9 @@ Local AI Runtime 是面向 Windows 本机、单操作者信任域的通用受控
 
 1. [planning-status.json](D:/CODE/local-ai-dev-orchestrator/docs/architecture/planning-status.json)：当前阶段、门和唯一工作项。
 2. [baseline candidate entry](D:/CODE/local-ai-dev-orchestrator/docs/specs/local-ai-runtime-0.2-baseline-candidate.md)：稳定导航页，受 planning verifier 约束，不复制规范正文。
-3. [v3.22 baseline candidate](D:/CODE/local-ai-dev-orchestrator/docs/specs/local-ai-runtime-0.2-v3.22-baseline-candidate.md)：唯一冻结的完整、自包含目标语义；v3.17-v3.21 只作为精确谱系和 superseded candidates 保留。
+3. [v3.23 baseline candidate](D:/CODE/local-ai-dev-orchestrator/docs/specs/local-ai-runtime-0.2-v3.23-baseline-candidate.md)：唯一冻结的完整、自包含目标语义；v3.17-v3.22 只作为精确谱系和 superseded inputs 保留。
 4. [normative package inventory](D:/CODE/local-ai-dev-orchestrator/docs/specs/local-ai-runtime-0.2-normative-package.json)：批准前必须闭合的 artifact 及真实缺口。
-5. [machine work items](D:/CODE/local-ai-dev-orchestrator/docs/plans/local-ai-runtime-0.2-work-items.json)：v3 确定性 DAG，含关闭的 package-root/九子包 source layout、62 项 AI 可执行任务、11 项稳定 contract projection、依赖、验收、命令、证据、回滚和停止条件；其中 P1A-P1F 是 35 个可按依赖并行验证但受全局单 writer 运行边界约束的编码切片。
+5. [machine work items](D:/CODE/local-ai-dev-orchestrator/docs/plans/local-ai-runtime-0.2-work-items.json)：v3 确定性 DAG，含 Native thin-path 前置评测、关闭的 package-root/九子包 source layout、65 项 AI 可执行任务、11 项稳定 contract projection、依赖、验收、命令、证据、回滚和停止条件；其中 P1A-P1F 是 35 个受全局单 writer 运行边界约束的编码切片。
 6. [PRD](D:/CODE/local-ai-dev-orchestrator/docs/product/orchestrator-prd.md) 与 [目标架构](D:/CODE/local-ai-dev-orchestrator/docs/architecture/orchestrator-target-architecture.md)：产品和系统投影。
 7. [路线图](D:/CODE/local-ai-dev-orchestrator/docs/roadmap/orchestrator-roadmap.md)、[实施计划](D:/CODE/local-ai-dev-orchestrator/docs/plans/orchestrator-implementation-plan.md)、[任务清单](D:/CODE/local-ai-dev-orchestrator/docs/backlog/orchestrator-task-list.md)：阶段和执行顺序。
 8. [验收与门禁](D:/CODE/local-ai-dev-orchestrator/docs/specs/acceptance-and-gates.md)：批准、实现验收、Q0 和 cohort 口径。
@@ -54,11 +54,11 @@ pwsh -NoProfile -NonInteractive -File scripts/governance/preflight.ps1 -DisableA
 git diff --check
 ```
 
-预期 selector 结果为 `close_baseline_normative_package_first`，并返回 `LAR-P0A-003`。任何实现任务若绕过 v3.22 normative closure、Baseline Approval、Truth Reset 或 Legacy Ownership Guard，均属于非法跳阶段。
+预期 selector 结果为 `run_native_thin_path_evaluation_first`，并返回 `LAR-P0A-EVAL-002`。三份 exact-byte evaluation contract 已固定 snapshot、任务族、模型/effort、tool inventory、sandbox、gates 与人工介入定义，对比精简 Native、Native+关键 gates 和仅适用的外部 harness；CLI、App Server、SDK、managed Worktree、Automations 仍必须各自独立资格化。当前只证明评测可以开始，不代表已经完成比较、任一 surface 已资格化，或 baseline 已批准。任何实现任务若绕过 v3.23 evaluation、normative closure、Baseline Approval、Truth Reset 或 Legacy Ownership Guard，均属于非法跳阶段。
 
 ## 不可误读的结论
 
-- v3.22 正文完整且谱系 present，不等于规范包完整；正文 ID、各 artifact version 和最终 BaselineManifest 是三个不同的版本层次。
+- v3.23 正文完整且谱系 present，不等于规范包完整；正文 ID、各 artifact version 和最终 BaselineManifest 是三个不同的版本层次。
 - planning gate 绿色，不等于 Baseline Approval 绿色。
 - Baseline Approval 绿色，不等于 Implementation Acceptance 绿色。
 - Implementation Acceptance 绿色，不等于 Full Q0 或 P2 Admission 绿色。

@@ -2,13 +2,14 @@
 
 ## 1. 状态与架构原则
 
-目标规范为 `local-ai-runtime-0.2-v3.22`，当前仍是 baseline candidate。本文描述批准后的目标，不宣称组件已经实现。
+目标规范为 `local-ai-runtime-0.2-v3.23`，当前仍是 baseline candidate。本文描述批准后的目标，不宣称组件已经实现；v3.22 是保留 exact bytes 的 superseded input。
 
 核心原则：
 
 - 自由判断留在 Human-controlled Native；无人值守 Batch 只执行已批准、封闭、可复算的任务。
 - Python Policy/Evidence Kernel 是可信控制面，Codex writer 是不可信、zero-or-one execution-commit 的受限计算进程。
 - Epoch 1 是 Windows 本机、单操作者、单 SQLite authority、全局 capacity=1；controller side effects 用 authority、fence、CAS、immutable intent/result、read-back 和 reconcile 收口。
+- 产品以低人工、可预测、可恢复的开发吞吐为目标：Native 快路径优化低交互延迟；Batch 的 capacity=1 是可靠性边界，不能宣传为高速并发吞吐。
 - Git commit/ref 是唯一交付，evidence 外置；不 merge/push。
 - 当前 `runtime/host-orchestrator` 与目标 `runtime/local-ai-runtime` 之间只共享 ownership wire contract，不共享数据库或实现模块。
 - 不以“最终一致”掩盖不可解释的进程、对象、ref、worktree 或 evidence 状态。
@@ -21,7 +22,7 @@
 | 运行内核 | `runtime/host-orchestrator` | `runtime/local-ai-runtime/src/local_ai_runtime/` |
 | 状态 | `.ai/state/control-plane.db`，另有 experimental runtime_v2 | `%LOCALAPPDATA%/LocalAIRuntime/state` 独立 DB |
 | 运行证据 | legacy `.ai/runs/...` | 外置 `evidence`、journal、receipt、artifact index |
-| 所有权 | 尚无 v3.22 shared guard | versioned ownership wire + repo mutex + generation |
+| 所有权 | 尚无 v3.23 shared guard | versioned ownership wire + repo mutex + generation |
 | 执行 | legacy host-local paths | isolated Job-bound writer/gate/Git adapters |
 | 迁移 | 未开始 | guard legacy -> implement isolated -> per-repo cutover -> read-only compat |
 
@@ -39,12 +40,12 @@ flowchart TB
     K --> P["Runtime Composition + Execution Profile"]
     K --> Q["Qualification + Authorization"]
     K --> S["State / Guard / Storage"]
-    P --> C["Codex Capability Adapter"]
+    P --> C["Qualified Codex Capability Set"]
     P --> E["Windows Execution + Job Adapter"]
     P --> G["Git Capability Adapter"]
     P --> T["Toolchain + Gate Adapter"]
     K --> V["Evidence / Artifact / Backup"]
-    C --> W["One Codex Writer"]
+    C --> W["One qualified Codex writer"]
     E --> W
     T --> O["Offline Gate Processes"]
     G --> R["Registered Local Repo"]
@@ -54,6 +55,8 @@ flowchart TB
 ```
 
 稳定 kernel 负责 task/attempt/generation、lease/fence/CAS、qualification/Authorization、recovery、evidence、backup/migration/rollback 和 activation authority。可演进层只实现由同一 `RuntimeCompositionManifest` 绑定并共同验收的 Codex/Windows/Git/toolchain capability 与 `ExecutionProfile`。Profile 只能选择已实现能力，不能把 Provider、network、delivery、Git format 或 concurrency protocol变成配置开关。
+
+`CodexPlatformCapabilitySet` 由正交的 surface 组成：CLI 或 SDK 的 `ExecutionInterfaceCapability`、App Server 的 `ClientProtocolCapability`、managed Worktree 的 `WorkspaceIsolationCapability`、Automations 的 `SchedulingCapability`。这些不是一个可随意展开的 `CodexPlatformAdapter`：每个 surface 与实际组合都必须独立绑定 version/help/schema/tool inventory、sandbox/permission probe、允许的 state/effect envelope、recovery/rollback result 与 evidence projection。一个 surface 的资格化不向其他 surface 继承，未资格化实例不能进入 Batch。
 
 ### 3.1 模块化单体
 
@@ -224,10 +227,12 @@ Ownership record 绑定 canonical common-dir identity、owner、status、generat
 - `RuntimeActivationBundle B(C,I,Q,expected_previous_active)` 是唯一完整组合。Activation 持专用 named mutex，先 durable intent，再锁内重读 expected head、atomic replace/read-back `current.json` 并立即 quick preflight；结果写 immutable A。
 - `SelectedRuntimeIdentity={bundle_hash,resulting_generation,current_pointer_checksum}` 只表示指针已选择；只有 terminal A 为 `activated_and_preflight_passed` 时，`ActiveRuntimeIdentity={selected_identity,activation_record_hash}` 才存在并可授权 production qualification、Authorization 和 attempt。`selected_not_admitted` 或未终结 intent 必须 suspended/recovery-first。
 - Quick preflight 每 attempt；daily canary 持续验证行为。
-- `Q0TriggerPolicy` 对 composition diff 分类：已证明 envelope 内的收窄 timeout/resource/path/gate 可走 scoped requalification + new Authorization + canary；新 adapter/provider/runtime engine、sandbox/token/permission/tool inventory、Git/network/delivery、Windows helper、canonicalization/persistence/schema/migration/probe或 unknown diff 必须 Implementation Acceptance + Full Q0。
+- `Q0TriggerPolicy` 对 composition diff 分类：已证明 envelope 内的收窄 timeout/resource/path/gate 可走 scoped requalification + new Authorization + canary；新或改变的 CLI/SDK execution interface、App Server client protocol、managed Worktree isolation、Automations scheduling、adapter/provider/runtime engine、sandbox/token/permission/tool inventory、Git/network/delivery、Windows helper、canonicalization/persistence/schema/migration/probe或 unknown diff 必须创建新 capability generation、Implementation Acceptance + Full Q0。
 
 演进层级固定为：profile generation 选择已证明能力；capability generation 引入新 effect protocol；architecture epoch 改变 concurrency/trust/authority topology。Epoch 1 全局 capacity 永久为 1；跨 repo 多 writer需要 successor epoch 的 migration、resource/auth/backup/maintenance/recovery protocol 和完整 crash/conformance matrix。同 repo并发、多操作者或多信任域属于更晚独立 epoch。
 
 Portfolio selection 留在同一 Python/SQLite control plane，只消费 qualification-bound、content-addressed、closed-schema backlog data；不执行 repo 自带 selector code、脚本、表达式或 prompt。P4 在 B2/per-repo 下完成；绿色后 `LAR-P4-002` 才可独立激活 B3，P5 不依赖 B3。
+
+Baseline Approval 的第一前置是 Native thin-path / capability comparative evaluation，不是对任一 Codex surface 的名称推断。评测在固定 repo snapshot、TaskFamily、model/effort、tool inventory、sandbox、gates 与人工分钟定义下，比较精简 Native、Native + key gates 和仅在适用场景的外部 harness。质量、安全、证据任一 hard floor 下降都使效率收益无效。若结果改变 Batch 禁止面、adapter、authority、并发、Q0 trigger、质量晋升或事实来源，必须冻结 v3.23 并建立 v3.24 successor；若不改变规范语义，只记录非规范 decision 后继续 P0A。
 
 当前架构执行入口由 [machine work items](D:/CODE/local-ai-dev-orchestrator/docs/plans/local-ai-runtime-0.2-work-items.json) 控制；不能从本图直接跳到代码实现。

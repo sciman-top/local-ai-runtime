@@ -16,6 +16,11 @@ DEFAULT_POLICY_PATH = ROOT / "docs" / "architecture" / "next-work-selection-poli
 DEFAULT_VERIFIER_PATH = ROOT / "scripts" / "verify-planning-status.py"
 EXPECTED_SELECTOR_STEPS = [
     ("planning_integrity_red", "repair_gate_first"),
+    (
+        "native_thin_path_semantic_change_requires_successor",
+        "create_successor_candidate_first",
+    ),
+    ("native_thin_path_evaluation_pending", "run_native_thin_path_evaluation_first"),
     ("baseline_review_closure_pending", "run_baseline_consistency_review"),
     ("normative_package_incomplete", "close_baseline_normative_package_first"),
     ("approval_eligible_without_active_approval", "record_baseline_approval_first"),
@@ -167,6 +172,7 @@ def select_next_work(
     try:
         baseline = _required_object(status, "baseline_candidate")
         package = _required_object(status, "normative_package")
+        evaluation = _required_object(status, "native_thin_path_evaluation")
         approval = _required_object(status, "approval_state")
         truth_reset = _required_object(status, "truth_reset")
         legacy = _required_object(status, "legacy_runtime_posture")
@@ -205,7 +211,16 @@ def select_next_work(
             stage_snapshot=None,
         )
 
-    if package["status"] != "complete" or not package["approval_eligible"]:
+    evaluation_decision = evaluation.get("decision")
+    evaluation_status = evaluation.get("status")
+    if evaluation_decision in {
+        "narrow_profile_or_adapter_candidate",
+        "supersede_required",
+    }:
+        action = "create_successor_candidate_first"
+    elif evaluation_status != "preserve_v3_23_semantics":
+        action = "run_native_thin_path_evaluation_first"
+    elif package["status"] != "complete" or not package["approval_eligible"]:
         review_task_selected = current_id == "LAR-P0A-013"
         review_artifacts_pending = (
             missing in policy["baseline_review_missing_artifact_sets"]
@@ -311,7 +326,7 @@ def _validate_policy(policy: dict[str, Any]) -> dict[str, str]:
         )
     if allowed != EXPECTED_SELECTOR_ACTIONS:
         raise ValueError(
-            "selector allowed_next_actions must match the v3.22 action catalog"
+            "selector allowed_next_actions must match the v3.23 action catalog"
         )
     review_sets = policy["baseline_review_missing_artifact_sets"]
     if (
@@ -357,7 +372,7 @@ def _validate_policy(policy: dict[str, Any]) -> dict[str, str]:
     ]
     if actual_steps != EXPECTED_SELECTOR_STEPS:
         raise ValueError(
-            "selector condition/action order must match the v3.22 stage graph"
+            "selector condition/action order must match the v3.23 stage graph"
         )
     entrypoints = policy["required_entrypoints"]
     if not isinstance(entrypoints, list) or not all(
@@ -465,6 +480,12 @@ def _stage_snapshot(status: dict[str, Any]) -> dict[str, object]:
         "blocking_stage": status["baseline_candidate"]["blocking_stage"],
         "normative_package_status": status["normative_package"]["status"],
         "missing_artifact_count": len(status["normative_package"]["missing_artifact_ids"]),
+        "native_thin_path_evaluation_status": status["native_thin_path_evaluation"][
+            "status"
+        ],
+        "native_thin_path_evaluation_decision": status[
+            "native_thin_path_evaluation"
+        ]["decision"],
         "approval_active": status["approval_state"]["active"],
         "truth_reset_performed": status["truth_reset"]["performed"],
         "legacy_guard_complete": status["legacy_runtime_posture"]["legacy_guard_complete"],

@@ -1,0 +1,221 @@
+{
+  "schema_version": "NativeThinPathEvidenceSchema.v1",
+  "contract_set_id": "local-ai-runtime-0.2-v3.23-native-thin-path-evaluation-v1",
+  "baseline_id": "local-ai-runtime-0.2-v3.23",
+  "contract_task_id": "LAR-P0A-EVAL-001",
+  "execution_task_id": "LAR-P0A-EVAL-002",
+  "snapshot": {
+    "commit": "6fd6cd54037f17e44192bc272306b137def7f8a4",
+    "tree": "11c8ab770769b3aeff5c111063a316e712fa7241"
+  },
+  "contract_refs": {
+    "evaluation_contract": "docs/evaluations/local-ai-runtime-0.2/native-thin-path-capability-evaluation.v1.json",
+    "task_family_manifest": "docs/evaluations/local-ai-runtime-0.2/native-thin-path-task-family-manifest.v1.json",
+    "evidence_schema": "docs/evaluations/local-ai-runtime-0.2/native-thin-path-evidence-schema.v1.json"
+  },
+  "contract_identity_requirement": {
+    "identity_field": "contract_identity",
+    "required_in": [
+      "environment_capture",
+      "trial_record",
+      "capability_probe_record",
+      "recovery_rollback_record",
+      "downstream_outcome_record",
+      "results_artifact",
+      "decision_artifact",
+      "evidence_artifact"
+    ],
+    "rule": "Every identity must exactly equal planning-status.native_thin_path_evaluation.contract_identity, including paths, byte counts, hashes, baseline, task IDs, and snapshot identity. A path-only reference is insufficient."
+  },
+  "record_types": {
+    "environment_capture": {
+      "required_fields": [
+        "record_id",
+        "contract_identity",
+        "captured_at",
+        "surface_id",
+        "variant_id",
+        "executable_identity",
+        "tool_inventory",
+        "sandbox_and_permission_observation",
+        "environment_drift_status"
+      ],
+      "environment_drift_status_enum": [
+        "matched",
+        "drifted_stop",
+        "unavailable"
+      ]
+    },
+    "trial_record": {
+      "required_fields": [
+        "trial_id",
+        "contract_identity",
+        "task_family_id",
+        "variant_id",
+        "repeat_index",
+        "counterbalance_block",
+        "applicability",
+        "outcome",
+        "started_at",
+        "finished_at",
+        "active_human_minutes",
+        "passive_wait_minutes",
+        "gate_receipts",
+        "evidence_completeness",
+        "conflict_and_rework",
+        "token_and_cost",
+        "workspace_receipt"
+      ],
+      "applicability_enum": [
+        "applicable",
+        "not_applicable",
+        "excluded_by_stop"
+      ],
+      "outcome_enum": [
+        "succeeded",
+        "failed",
+        "stopped",
+        "inconclusive",
+        "not_applicable"
+      ]
+    },
+    "capability_probe_record": {
+      "required_fields": [
+        "probe_id",
+        "contract_identity",
+        "surface_id",
+        "qualification_state",
+        "generation_identity",
+        "tool_inventory",
+        "sandbox_and_permission_observation",
+        "effect_boundary",
+        "recovery_or_rollback_receipt",
+        "evidence_locator"
+      ],
+      "qualification_state_enum": [
+        "qualified",
+        "unqualified",
+        "not_applicable",
+        "inconclusive"
+      ]
+    },
+    "recovery_rollback_record": {
+      "required_fields": [
+        "recovery_id",
+        "contract_identity",
+        "trial_id",
+        "attempt_kind",
+        "trigger",
+        "reproducible",
+        "succeeded",
+        "before_identity",
+        "after_identity",
+        "evidence_locator"
+      ],
+      "attempt_kind_enum": [
+        "cleanup",
+        "recovery",
+        "rollback"
+      ]
+    },
+    "downstream_outcome_record": {
+      "required_fields": [
+        "downstream_id",
+        "contract_identity",
+        "trial_id",
+        "sampled_at",
+        "observation_status",
+        "human_review_disposition",
+        "integration_outcome",
+        "later_ci_outcome",
+        "revert_or_defect_signal",
+        "evidence_locator"
+      ],
+      "observation_status_enum": [
+        "observed",
+        "censored",
+        "unknown"
+      ],
+      "human_review_disposition_enum": [
+        "accepted",
+        "rejected",
+        "rework_requested",
+        "not_recorded"
+      ],
+      "integration_outcome_enum": [
+        "merged",
+        "rejected",
+        "reworked",
+        "not_recorded"
+      ],
+      "later_ci_outcome_enum": [
+        "passed",
+        "failed",
+        "not_recorded"
+      ],
+      "revert_or_defect_signal_enum": [
+        "none_observed",
+        "reverted",
+        "defect_observed",
+        "not_recorded"
+      ]
+    },
+    "results_artifact": {
+      "schema_version": "NativeThinPathCapabilityResults.v1",
+      "required_fields": [
+        "schema_version",
+        "baseline_id",
+        "status",
+        "decision",
+        "contract_output_refs",
+        "contract_identity",
+        "decision_ref",
+        "evidence_ref"
+      ]
+    },
+    "decision_artifact": {
+      "schema_version": "NativeThinPathCapabilityDecision.v1",
+      "required_fields": [
+        "schema_version",
+        "baseline_id",
+        "status",
+        "decision",
+        "contract_identity",
+        "result_ref",
+        "evidence_ref"
+      ],
+      "decision_enum": [
+        "preserve_v3_23_semantics",
+        "narrow_profile_or_adapter_candidate",
+        "supersede_required"
+      ]
+    },
+    "evidence_artifact": {
+      "schema_version": "NativeThinPathCapabilityEvidence.v1",
+      "required_fields": [
+        "schema_version",
+        "baseline_id",
+        "status",
+        "decision",
+        "contract_identity",
+        "result_ref",
+        "decision_ref",
+        "result_sha256",
+        "decision_sha256"
+      ]
+    }
+  },
+  "measurement_rules": {
+    "active_and_passive_time": "active_human_minutes and passive_wait_minutes are required separate fields. Neither may be inferred from the other.",
+    "token_and_cost": "token_and_cost records availability, source, value, and currency. unavailable is not zero.",
+    "conflict_and_rework": "Record every conflict category, retry, rework loop, and terminal disposition.",
+    "safety_gate_evidence": "Every gate receipt includes command or gate_na reason, exit code when executed, and evidence locator.",
+    "external_effects": "An unknown or unowned external effect produces stopped or inconclusive status and blocks a promotion claim.",
+    "downstream_sampling": "The runtime does not push, read remote CI, merge, reject, or synthesize downstream outcomes. An operator may attach secret-safe external evidence locators later."
+  },
+  "terminal_decision_rules": {
+    "quality_security_or_evidence_regression": "Efficiency gains remain reportable but are invalid for promotion.",
+    "semantic_change": "narrow_profile_or_adapter_candidate and supersede_required require a v3.24 successor; v3.23 may not be rewritten.",
+    "preserve": "preserve_v3_23_semantics is non-normative and only releases P0A closure."
+  }
+}

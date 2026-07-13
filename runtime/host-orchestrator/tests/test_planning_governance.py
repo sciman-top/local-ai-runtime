@@ -16,7 +16,7 @@ BASELINE_PATH = (
     REPO_ROOT
     / "docs"
     / "specs"
-    / "local-ai-runtime-0.2-v3.22-baseline-candidate.md"
+    / "local-ai-runtime-0.2-v3.23-baseline-candidate.md"
 )
 BASELINE_ENTRY_PATH = (
     REPO_ROOT
@@ -43,7 +43,7 @@ LINEAGE_PATH = (
     / "specs"
     / "local-ai-runtime-0.2"
     / "normative"
-    / "BaselineLineage.v1.json"
+    / "BaselineLineage.v2.json"
 )
 BASELINE_MANIFEST_SCHEMA_PATH = (
     REPO_ROOT
@@ -133,6 +133,108 @@ def _write_status(tmp_path: Path, mutate) -> Path:
     return path
 
 
+def _copy_native_thin_path_evaluation_contracts(root: Path) -> None:
+    status = json.loads(STATUS_PATH.read_text(encoding="utf-8"))
+    evaluation = status["native_thin_path_evaluation"]
+    identity = evaluation["contract_identity"]
+    assert isinstance(identity, dict)
+    contracts = identity["contracts"]
+    assert isinstance(contracts, list)
+    for entry in contracts:
+        assert isinstance(entry, dict)
+        relative = entry["path"]
+        assert isinstance(relative, str)
+        source = REPO_ROOT / relative
+        target = root / relative
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes(source.read_bytes())
+
+
+def _refresh_contract_identity_for_tmp_root(root: Path, evaluation: dict[str, object]) -> None:
+    identity = evaluation["contract_identity"]
+    assert isinstance(identity, dict)
+    contracts = identity["contracts"]
+    assert isinstance(contracts, list)
+    for entry in contracts:
+        assert isinstance(entry, dict)
+        path = entry["path"]
+        assert isinstance(path, str)
+        raw = (root / path).read_bytes()
+        entry["byte_count"] = len(raw)
+        entry["sha256"] = hashlib.sha256(raw).hexdigest()
+
+
+def _write_terminal_native_thin_path_evaluation_artifacts(
+    root: Path,
+    evaluation: dict[str, object],
+    *,
+    decision: str,
+) -> dict[str, Path]:
+    evidence_root = root / "docs" / "evaluations" / "local-ai-runtime-0.2"
+    evidence_root.mkdir(parents=True, exist_ok=True)
+    result_path = evidence_root / "results.json"
+    decision_path = evidence_root / "decision.json"
+    evidence_path = evidence_root / "evidence.json"
+    result_ref = result_path.relative_to(root).as_posix()
+    decision_ref = decision_path.relative_to(root).as_posix()
+    evidence_ref = evidence_path.relative_to(root).as_posix()
+
+    evaluation.update(
+        {
+            "status": decision,
+            "decision": decision,
+            "result_ref": result_ref,
+            "decision_ref": decision_ref,
+            "evidence_ref": evidence_ref,
+        }
+    )
+    result = {
+        "schema_version": "NativeThinPathCapabilityResults.v1",
+        "baseline_id": "local-ai-runtime-0.2-v3.23",
+        "status": decision,
+        "decision": decision,
+        "contract_output_refs": evaluation["contract_output_refs"],
+        "contract_identity": evaluation["contract_identity"],
+        "decision_ref": decision_ref,
+        "evidence_ref": evidence_ref,
+    }
+    decision_record = {
+        "schema_version": "NativeThinPathCapabilityDecision.v1",
+        "baseline_id": "local-ai-runtime-0.2-v3.23",
+        "status": decision,
+        "decision": decision,
+        "contract_identity": evaluation["contract_identity"],
+        "result_ref": result_ref,
+        "evidence_ref": evidence_ref,
+    }
+    result_path.write_text(
+        json.dumps(result, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
+    )
+    decision_path.write_text(
+        json.dumps(decision_record, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    evidence = {
+        "schema_version": "NativeThinPathCapabilityEvidence.v1",
+        "baseline_id": "local-ai-runtime-0.2-v3.23",
+        "status": decision,
+        "decision": decision,
+        "contract_identity": evaluation["contract_identity"],
+        "result_ref": result_ref,
+        "decision_ref": decision_ref,
+        "result_sha256": hashlib.sha256(result_path.read_bytes()).hexdigest(),
+        "decision_sha256": hashlib.sha256(decision_path.read_bytes()).hexdigest(),
+    }
+    evidence_path.write_text(
+        json.dumps(evidence, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
+    )
+    return {
+        "result": result_path,
+        "decision": decision_path,
+        "evidence": evidence_path,
+    }
+
+
 def _verifier_attestation(status_path: Path, current_work_item_id: str) -> dict[str, object]:
     return {
         "command": ["python", "verify-planning-status.py"],
@@ -143,7 +245,7 @@ def _verifier_attestation(status_path: Path, current_work_item_id: str) -> dict[
             "status_sha256": hashlib.sha256(status_path.read_bytes()).hexdigest(),
             "selector_policy_path": POLICY_PATH.resolve().as_posix(),
             "selector_policy_sha256": hashlib.sha256(POLICY_PATH.read_bytes()).hexdigest(),
-            "baseline_id": "local-ai-runtime-0.2-v3.22",
+            "baseline_id": "local-ai-runtime-0.2-v3.23",
             "current_work_item_id": current_work_item_id,
         },
         "stderr": "",
@@ -156,16 +258,19 @@ def test_planning_verifier_accepts_truthful_candidate_state() -> None:
     assert completed.returncode == 0, completed.stderr
     payload = json.loads(completed.stdout)
     assert payload["status"] == "pass"
-    assert payload["baseline_id"] == "local-ai-runtime-0.2-v3.22"
+    assert payload["baseline_id"] == "local-ai-runtime-0.2-v3.23"
     assert payload["approval_active"] is False
     assert payload["missing_artifact_count"] == 13
-    assert payload["current_work_item_id"] == "LAR-P0A-003"
+    assert payload["current_work_item_id"] == "LAR-P0A-EVAL-002"
     work_items = json.loads(WORK_ITEMS_PATH.read_text(encoding="utf-8"))["work_items"]
     task_ids = {item["task_id"] for item in work_items}
-    assert payload["work_item_count"] == len(work_items) == 62
+    assert payload["work_item_count"] == len(work_items) == 65
     assert {
         "LAR-P0A-001",
         "LAR-P0A-REBASELINE-V322",
+        "LAR-P0A-REBASELINE-V323",
+        "LAR-P0A-EVAL-001",
+        "LAR-P0A-EVAL-002",
         "LAR-P1C-007",
         "LAR-P1E-007",
         "LAR-P4-002",
@@ -178,10 +283,516 @@ def test_planning_selector_returns_baseline_closure_without_preflight() -> None:
 
     assert completed.returncode == 0, completed.stderr
     payload = json.loads(completed.stdout)
-    assert payload["next_action"] == "close_baseline_normative_package_first"
-    assert payload["current_work_item_id"] == "LAR-P0A-003"
+    assert payload["next_action"] == "run_native_thin_path_evaluation_first"
+    assert payload["current_work_item_id"] == "LAR-P0A-EVAL-002"
     assert payload["side_effects_performed"] is False
     assert payload["preflight_run"] is False
+
+
+def test_native_thin_path_evaluation_contract_is_sealed_before_execution() -> None:
+    status = json.loads(STATUS_PATH.read_text(encoding="utf-8"))
+    evaluation = status["native_thin_path_evaluation"]
+
+    assert evaluation["status"] == "execution_pending"
+    assert evaluation["decision"] is None
+    assert status["current_work_item"] == {
+        "task_id": "LAR-P0A-EVAL-002",
+        "selector_action": "run_native_thin_path_evaluation_first",
+        "status": "execution_pending",
+        "reason": "The evaluation contract, task-family manifest, evidence schema and their exact identity are sealed. Run only the fixed snapshot comparison in disposable detached worktrees; no surface is qualified and no decision exists yet.",
+    }
+    assert evaluation["independent_capability_surfaces"] == [
+        "codex_cli_execution_interface",
+        "codex_app_server_client_protocol",
+        "codex_sdk_execution_interface",
+        "codex_managed_worktree_isolation",
+        "codex_automations_scheduling",
+    ]
+    assert "sampled_downstream_outcome" in evaluation["required_metrics"]
+    assert "censored_or_unknown_downstream_outcome_remains_in_denominator" in evaluation[
+        "hard_promotion_rules"
+    ]
+    identity = evaluation["contract_identity"]
+    assert identity["snapshot"] == {
+        "commit": "6fd6cd54037f17e44192bc272306b137def7f8a4",
+        "tree": "11c8ab770769b3aeff5c111063a316e712fa7241",
+    }
+    for contract in identity["contracts"]:
+        path = REPO_ROOT / contract["path"]
+        raw = path.read_bytes()
+        assert len(raw) == contract["byte_count"]
+        assert hashlib.sha256(raw).hexdigest() == contract["sha256"]
+
+
+def test_terminal_native_thin_path_evaluation_requires_cross_referenced_json_artifacts(
+    tmp_path: Path,
+) -> None:
+    namespace = runpy.run_path(str(VERIFIER_PATH))
+    verify_evaluation = namespace["_verify_native_thin_path_evaluation"]
+    status = json.loads(STATUS_PATH.read_text(encoding="utf-8"))
+    evaluation = status["native_thin_path_evaluation"]
+    package = status["normative_package"]
+    assert isinstance(evaluation, dict)
+    assert isinstance(package, dict)
+    _copy_native_thin_path_evaluation_contracts(tmp_path)
+    _write_terminal_native_thin_path_evaluation_artifacts(
+        tmp_path,
+        evaluation,
+        decision="preserve_v3_23_semantics",
+    )
+    failures: list[str] = []
+
+    verify_evaluation(
+        root=tmp_path,
+        evaluation=evaluation,
+        package_state=package,
+        current_work={
+            "task_id": "LAR-P0A-002",
+            "selector_action": "close_baseline_normative_package_first",
+        },
+        failures=failures,
+    )
+
+    assert not failures
+
+
+def test_terminal_native_thin_path_evaluation_rejects_missing_or_mismatched_artifacts(
+    tmp_path: Path,
+) -> None:
+    namespace = runpy.run_path(str(VERIFIER_PATH))
+    verify_evaluation = namespace["_verify_native_thin_path_evaluation"]
+    status = json.loads(STATUS_PATH.read_text(encoding="utf-8"))
+    evaluation = status["native_thin_path_evaluation"]
+    package = status["normative_package"]
+    assert isinstance(evaluation, dict)
+    assert isinstance(package, dict)
+    _copy_native_thin_path_evaluation_contracts(tmp_path)
+    artifacts = _write_terminal_native_thin_path_evaluation_artifacts(
+        tmp_path,
+        evaluation,
+        decision="preserve_v3_23_semantics",
+    )
+    decision_record = json.loads(artifacts["decision"].read_text(encoding="utf-8"))
+    decision_record["decision"] = "supersede_required"
+    artifacts["decision"].write_text(
+        json.dumps(decision_record, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    evidence = json.loads(artifacts["evidence"].read_text(encoding="utf-8"))
+    evidence["decision_sha256"] = hashlib.sha256(
+        artifacts["decision"].read_bytes()
+    ).hexdigest()
+    artifacts["evidence"].write_text(
+        json.dumps(evidence, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
+    )
+    failures: list[str] = []
+
+    verify_evaluation(
+        root=tmp_path,
+        evaluation=evaluation,
+        package_state=package,
+        current_work={
+            "task_id": "LAR-P0A-002",
+            "selector_action": "close_baseline_normative_package_first",
+        },
+        failures=failures,
+    )
+
+    assert (
+        "terminal native thin-path decision artifact must match planning status and decision"
+        in failures
+    )
+    artifacts["result"].unlink()
+    failures.clear()
+
+    verify_evaluation(
+        root=tmp_path,
+        evaluation=evaluation,
+        package_state=package,
+        current_work={
+            "task_id": "LAR-P0A-002",
+            "selector_action": "close_baseline_normative_package_first",
+        },
+        failures=failures,
+    )
+
+    assert "terminal native_thin_path_evaluation.result_ref artifact does not exist" in failures
+    artifacts["result"].write_text("[]\n", encoding="utf-8")
+    failures.clear()
+
+    verify_evaluation(
+        root=tmp_path,
+        evaluation=evaluation,
+        package_state=package,
+        current_work={
+            "task_id": "LAR-P0A-002",
+            "selector_action": "close_baseline_normative_package_first",
+        },
+        failures=failures,
+    )
+
+    assert any(
+        "terminal native_thin_path_evaluation.result_ref must be a readable JSON object"
+        in failure
+        for failure in failures
+    )
+    _write_terminal_native_thin_path_evaluation_artifacts(
+        tmp_path,
+        evaluation,
+        decision="preserve_v3_23_semantics",
+    )
+    evidence = json.loads(artifacts["evidence"].read_text(encoding="utf-8"))
+    evidence["result_sha256"] = "0" * 64
+    artifacts["evidence"].write_text(
+        json.dumps(evidence, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
+    )
+    failures.clear()
+
+    verify_evaluation(
+        root=tmp_path,
+        evaluation=evaluation,
+        package_state=package,
+        current_work={
+            "task_id": "LAR-P0A-002",
+            "selector_action": "close_baseline_normative_package_first",
+        },
+        failures=failures,
+    )
+
+    assert (
+        "terminal native thin-path evidence artifact result_sha256 must match result bytes"
+        in failures
+    )
+
+
+@pytest.mark.parametrize(
+    ("mutate_contract", "expected_failure"),
+    [
+        (
+            lambda root, evaluation: (root / evaluation["contract_output_refs"][0]).unlink(),
+            "native_thin_path_evaluation sealed contract does not exist",
+        ),
+        (
+            lambda root, evaluation: (root / evaluation["contract_output_refs"][1]).write_text(
+                "[]\n", encoding="utf-8"
+            ),
+            "native_thin_path_evaluation sealed contract must be a readable JSON object",
+        ),
+        (
+            lambda root, evaluation: (root / evaluation["contract_output_refs"][2]).write_text(
+                '{"schema_version":"NativeThinPathEvidenceSchema.v1","schema_version":"duplicate"}\n',
+                encoding="utf-8",
+            ),
+            "native_thin_path_evaluation sealed contract must be a readable JSON object",
+        ),
+    ],
+)
+def test_native_thin_path_evaluation_rejects_missing_or_malformed_sealed_contracts(
+    tmp_path: Path,
+    mutate_contract,
+    expected_failure: str,
+) -> None:
+    namespace = runpy.run_path(str(VERIFIER_PATH))
+    verify_evaluation = namespace["_verify_native_thin_path_evaluation"]
+    status = json.loads(STATUS_PATH.read_text(encoding="utf-8"))
+    evaluation = status["native_thin_path_evaluation"]
+    package = status["normative_package"]
+    assert isinstance(evaluation, dict)
+    assert isinstance(package, dict)
+    _copy_native_thin_path_evaluation_contracts(tmp_path)
+    mutate_contract(tmp_path, evaluation)
+    failures: list[str] = []
+
+    verify_evaluation(
+        root=tmp_path,
+        evaluation=evaluation,
+        package_state=package,
+        current_work={
+            "task_id": "LAR-P0A-EVAL-002",
+            "selector_action": "run_native_thin_path_evaluation_first",
+        },
+        failures=failures,
+    )
+
+    assert any(expected_failure in failure for failure in failures)
+
+
+def test_native_thin_path_evaluation_rejects_contract_hash_drift_and_cross_reference_drift(
+    tmp_path: Path,
+) -> None:
+    namespace = runpy.run_path(str(VERIFIER_PATH))
+    verify_evaluation = namespace["_verify_native_thin_path_evaluation"]
+    status = json.loads(STATUS_PATH.read_text(encoding="utf-8"))
+    evaluation = status["native_thin_path_evaluation"]
+    package = status["normative_package"]
+    assert isinstance(evaluation, dict)
+    assert isinstance(package, dict)
+    _copy_native_thin_path_evaluation_contracts(tmp_path)
+    task_manifest_path = tmp_path / evaluation["contract_output_refs"][1]
+    manifest = json.loads(task_manifest_path.read_text(encoding="utf-8"))
+    manifest["contract_refs"]["evaluation_contract"] = "docs/evaluations/local-ai-runtime-0.2/wrong.json"
+    task_manifest_path.write_text(
+        json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
+    )
+    failures: list[str] = []
+
+    verify_evaluation(
+        root=tmp_path,
+        evaluation=evaluation,
+        package_state=package,
+        current_work={
+            "task_id": "LAR-P0A-EVAL-002",
+            "selector_action": "run_native_thin_path_evaluation_first",
+        },
+        failures=failures,
+    )
+
+    assert "native_thin_path_evaluation.contract_identity contract byte_count must match file bytes" in failures
+    assert any("sealed contract must preserve contract_refs" in failure for failure in failures)
+
+
+def test_native_thin_path_evaluation_rejects_semantic_contract_drift_even_with_refreshed_identity(
+    tmp_path: Path,
+) -> None:
+    namespace = runpy.run_path(str(VERIFIER_PATH))
+    verify_evaluation = namespace["_verify_native_thin_path_evaluation"]
+    status = json.loads(STATUS_PATH.read_text(encoding="utf-8"))
+    evaluation = status["native_thin_path_evaluation"]
+    package = status["normative_package"]
+    assert isinstance(evaluation, dict)
+    assert isinstance(package, dict)
+    _copy_native_thin_path_evaluation_contracts(tmp_path)
+    capability_contract_path = tmp_path / evaluation["contract_output_refs"][0]
+    capability_contract = json.loads(capability_contract_path.read_text(encoding="utf-8"))
+    capability_contract["generation_and_q0_rules"]["new_generation_triggers"].remove(
+        "automation_or_external_effect_change"
+    )
+    capability_contract_path.write_text(
+        json.dumps(capability_contract, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    _refresh_contract_identity_for_tmp_root(tmp_path, evaluation)
+    failures: list[str] = []
+
+    verify_evaluation(
+        root=tmp_path,
+        evaluation=evaluation,
+        package_state=package,
+        current_work={
+            "task_id": "LAR-P0A-EVAL-002",
+            "selector_action": "run_native_thin_path_evaluation_first",
+        },
+        failures=failures,
+    )
+
+    assert (
+        "native thin-path evaluation contract must preserve capability-generation triggers and Q0 followup"
+        in failures
+    )
+
+
+@pytest.mark.parametrize(
+    ("artifact_key", "identity_error"),
+    [
+        (
+            "result",
+            "terminal native thin-path results artifact must bind the exact contract_identity",
+        ),
+        (
+            "decision",
+            "terminal native thin-path decision artifact must bind the exact contract_identity",
+        ),
+        (
+            "evidence",
+            "terminal native thin-path evidence artifact must bind the exact contract_identity",
+        ),
+    ],
+)
+def test_terminal_native_thin_path_evaluation_rejects_mismatched_contract_identity(
+    tmp_path: Path,
+    artifact_key: str,
+    identity_error: str,
+) -> None:
+    namespace = runpy.run_path(str(VERIFIER_PATH))
+    verify_evaluation = namespace["_verify_native_thin_path_evaluation"]
+    status = json.loads(STATUS_PATH.read_text(encoding="utf-8"))
+    evaluation = status["native_thin_path_evaluation"]
+    package = status["normative_package"]
+    assert isinstance(evaluation, dict)
+    assert isinstance(package, dict)
+    _copy_native_thin_path_evaluation_contracts(tmp_path)
+    artifacts = _write_terminal_native_thin_path_evaluation_artifacts(
+        tmp_path,
+        evaluation,
+        decision="preserve_v3_23_semantics",
+    )
+    artifact = json.loads(artifacts[artifact_key].read_text(encoding="utf-8"))
+    artifact["contract_identity"] = {"contract_set_id": "wrong"}
+    artifacts[artifact_key].write_text(
+        json.dumps(artifact, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
+    )
+    evidence = json.loads(artifacts["evidence"].read_text(encoding="utf-8"))
+    if artifact_key == "result":
+        evidence["result_sha256"] = hashlib.sha256(artifacts["result"].read_bytes()).hexdigest()
+    elif artifact_key == "decision":
+        evidence["decision_sha256"] = hashlib.sha256(
+            artifacts["decision"].read_bytes()
+        ).hexdigest()
+    artifacts["evidence"].write_text(
+        json.dumps(evidence, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
+    )
+    failures: list[str] = []
+
+    verify_evaluation(
+        root=tmp_path,
+        evaluation=evaluation,
+        package_state=package,
+        current_work={
+            "task_id": "LAR-P0A-002",
+            "selector_action": "close_baseline_normative_package_first",
+        },
+        failures=failures,
+    )
+
+    assert identity_error in failures
+
+
+@pytest.mark.parametrize(
+    ("status_value", "contract_identity", "expected_failure"),
+    [
+        (
+            "contract_pending",
+            {"unexpected": "identity"},
+            "contract_pending native_thin_path_evaluation.contract_identity must remain null",
+        ),
+        (
+            "execution_pending",
+            None,
+            "execution or terminal native_thin_path_evaluation requires contract_identity",
+        ),
+    ],
+)
+def test_native_thin_path_evaluation_enforces_pending_contract_identity_state(
+    status_value: str,
+    contract_identity: object,
+    expected_failure: str,
+) -> None:
+    namespace = runpy.run_path(str(VERIFIER_PATH))
+    verify_evaluation = namespace["_verify_native_thin_path_evaluation"]
+    status = json.loads(STATUS_PATH.read_text(encoding="utf-8"))
+    evaluation = status["native_thin_path_evaluation"]
+    package = status["normative_package"]
+    assert isinstance(evaluation, dict)
+    assert isinstance(package, dict)
+    evaluation["status"] = status_value
+    evaluation["contract_identity"] = contract_identity
+    failures: list[str] = []
+
+    verify_evaluation(
+        root=REPO_ROOT,
+        evaluation=evaluation,
+        package_state=package,
+        current_work={
+            "task_id": "LAR-P0A-EVAL-001"
+            if status_value == "contract_pending"
+            else "LAR-P0A-EVAL-002",
+            "selector_action": "run_native_thin_path_evaluation_first",
+        },
+        failures=failures,
+    )
+
+    assert expected_failure in failures
+
+
+def test_verifier_rejects_native_thin_path_semantic_change_without_successor_action(
+    tmp_path: Path,
+) -> None:
+    def mutate(payload: dict[str, object]) -> None:
+        evaluation = payload["native_thin_path_evaluation"]
+        current = payload["current_work_item"]
+        assert isinstance(evaluation, dict)
+        assert isinstance(current, dict)
+        evaluation.update(
+            {
+                "status": "supersede_required",
+                "decision": "supersede_required",
+                "result_ref": "docs/evaluations/local-ai-runtime-0.2/native-thin-path-capability-results.v1.json",
+                "decision_ref": "docs/evaluations/local-ai-runtime-0.2/native-thin-path-capability-decision.v1.json",
+                "evidence_ref": "docs/evaluations/local-ai-runtime-0.2/native-thin-path-capability-evidence.v1.json",
+            }
+        )
+        current.update(
+            {
+                "task_id": "LAR-P0A-EVAL-002",
+                "selector_action": "run_native_thin_path_evaluation_first",
+                "status": "supersede_required",
+            }
+        )
+
+    status_path = _write_status(tmp_path, mutate)
+    completed = _run(str(VERIFIER_PATH), "--status-path", str(status_path))
+
+    assert completed.returncode == 1
+    assert "create_successor_candidate_first" in completed.stderr
+
+
+def test_selector_routes_semantic_change_to_successor_candidate(tmp_path: Path) -> None:
+    namespace = runpy.run_path(str(SELECTOR_PATH))
+    select_next_work = namespace["select_next_work"]
+
+    def mutate(payload: dict[str, object]) -> None:
+        evaluation = payload["native_thin_path_evaluation"]
+        current = payload["current_work_item"]
+        assert isinstance(evaluation, dict)
+        assert isinstance(current, dict)
+        evaluation.update(
+            {
+                "status": "narrow_profile_or_adapter_candidate",
+                "decision": "narrow_profile_or_adapter_candidate",
+                "result_ref": "docs/evaluations/local-ai-runtime-0.2/native-thin-path-capability-results.v1.json",
+                "decision_ref": "docs/evaluations/local-ai-runtime-0.2/native-thin-path-capability-decision.v1.json",
+                "evidence_ref": "docs/evaluations/local-ai-runtime-0.2/native-thin-path-capability-evidence.v1.json",
+            }
+        )
+        current.update(
+            {
+                "task_id": "LAR-P0A-EVAL-002",
+                "selector_action": "create_successor_candidate_first",
+                "status": "narrow_profile_or_adapter_candidate",
+            }
+        )
+
+    status_path = _write_status(tmp_path, mutate)
+    select_next_work.__globals__["_run_verifier"] = lambda _root, path, _verifier: {
+        **_verifier_attestation(path, "LAR-P0A-EVAL-002"),
+        "payload": {
+            **_verifier_attestation(path, "LAR-P0A-EVAL-002")["payload"],
+            "baseline_id": "local-ai-runtime-0.2-v3.23",
+        },
+    }
+
+    payload = select_next_work(
+        repo_root=REPO_ROOT,
+        status_path=status_path,
+        policy_path=POLICY_PATH,
+        verifier_path=VERIFIER_PATH,
+    )
+
+    assert payload["next_action"] == "create_successor_candidate_first"
+    assert payload["current_work_item_id"] == "LAR-P0A-EVAL-002"
+
+
+def test_selector_policy_and_implementation_keep_semantic_change_priority_in_sync() -> None:
+    policy = json.loads(POLICY_PATH.read_text(encoding="utf-8"))
+    selector = runpy.run_path(str(SELECTOR_PATH))
+
+    expected = (
+        "native_thin_path_semantic_change_requires_successor",
+        "create_successor_candidate_first",
+    )
+    assert policy["selection_order"][1]["condition_id"] == expected[0]
+    assert policy["selection_order"][1]["next_action"] == expected[1]
+    assert selector["EXPECTED_SELECTOR_STEPS"][1] == expected
 
 
 def test_baseline_manifest_component_self_test_is_green_without_final_manifest() -> None:
@@ -250,9 +861,9 @@ def test_baseline_bytes_match_planning_identity() -> None:
     status = json.loads(STATUS_PATH.read_text(encoding="utf-8"))
     raw = BASELINE_PATH.read_bytes()
 
-    assert len(raw) == status["baseline_candidate"]["byte_count"] == 178330
+    assert len(raw) == status["baseline_candidate"]["byte_count"] == 188325
     assert hashlib.sha256(raw).hexdigest() == status["baseline_candidate"]["sha256"]
-    assert hashlib.sha256(raw).hexdigest() == "8338a9dcf4bbbb40ca28f4f2ec6dca37587ee94fbfbbc6e3a0063c4de379569c"
+    assert hashlib.sha256(raw).hexdigest() == "80562322ebc744eda2a87a17c45f73a11982f4947c9d10e8628bb6f73ee9d5c6"
     assert raw.endswith(b"\n") and not raw.endswith(b"\n\n")
     assert b"\r" not in raw
 
@@ -273,8 +884,8 @@ def test_stable_baseline_entry_is_non_normative_and_targets_frozen_candidate() -
         "target_sha256": baseline["sha256"],
         "approval_input": False,
         "maximum_byte_count": 4096,
-        "byte_count": 2454,
-        "sha256": "077e3d028dce30712633abcc6000aab7fc00d40dc98ad5098c3af0033d723f67",
+        "byte_count": 2691,
+        "sha256": "d38c041e863d4618e053b11671a5d3dd76a26c5b96a5b430124c955e38e2a4bd",
     }
     assert len(raw) <= entry["maximum_byte_count"]
     assert len(raw) == entry["byte_count"]
@@ -380,7 +991,7 @@ def test_selector_policy_requires_the_stable_baseline_entry() -> None:
     assert policy["required_entrypoints"] == [
         "docs/architecture/planning-status.json",
         "docs/specs/local-ai-runtime-0.2-baseline-candidate.md",
-        "docs/specs/local-ai-runtime-0.2-v3.22-baseline-candidate.md",
+        "docs/specs/local-ai-runtime-0.2-v3.23-baseline-candidate.md",
         "docs/specs/local-ai-runtime-0.2-normative-package.json",
         "docs/plans/local-ai-runtime-0.2-work-items.json",
         "scripts/verify-planning-status.py",
@@ -760,17 +1371,17 @@ def test_inventory_versions_and_manifest_review_order_are_closed() -> None:
 
     assert len(artifacts) == 15
     assert all(item["artifact_version"] for item in artifacts)
-    assert by_id["P0A-SOURCE"]["artifact_version"] == "local-ai-runtime-0.2-v3.22"
-    assert by_id["P0A-SOURCE"]["byte_count"] == 178330
-    assert by_id["P0A-LINEAGE"]["artifact_version"] == "BaselineLineage.v1"
-    assert by_id["P0A-LINEAGE"]["producer_task_id"] == "LAR-P0A-REBASELINE-V322"
+    assert by_id["P0A-SOURCE"]["artifact_version"] == "local-ai-runtime-0.2-v3.23"
+    assert by_id["P0A-SOURCE"]["byte_count"] == 188325
+    assert by_id["P0A-LINEAGE"]["artifact_version"] == "BaselineLineage.v2"
+    assert by_id["P0A-LINEAGE"]["producer_task_id"] == "LAR-P0A-REBASELINE-V323"
     assert by_id["P0A-MANIFEST"]["producer_task_id"] == "LAR-P0A-013"
     assert by_id["P0A-REVIEW"]["producer_task_id"] == "LAR-P0A-013"
     assert artifact_ids.index("P0A-VERIFIER") < artifact_ids.index("P0A-MANIFEST")
     assert artifact_ids.index("P0A-MANIFEST") < artifact_ids.index("P0A-REVIEW")
 
 
-def test_machine_work_items_are_a_deterministic_v322_dag() -> None:
+def test_machine_work_items_are_a_deterministic_v323_dag() -> None:
     work_items = json.loads(WORK_ITEMS_PATH.read_text(encoding="utf-8"))["work_items"]
     by_id = {item["task_id"]: item for item in work_items}
     phase_counts = {
@@ -778,7 +1389,7 @@ def test_machine_work_items_are_a_deterministic_v322_dag() -> None:
         for phase in ("P1A", "P1B", "P1C", "P1D", "P1E", "P1F")
     }
 
-    assert len(work_items) == 62
+    assert len(work_items) == 65
     assert phase_counts == {
         "P1A": 4,
         "P1B": 5,
@@ -803,7 +1414,10 @@ def test_machine_work_items_are_a_deterministic_v322_dag() -> None:
     assert by_id["LAR-P1G-001"]["depends_on"] == ["LAR-P1F-006"]
     assert by_id["LAR-P0A-001"]["next_task_ids"] == ["LAR-P0A-REBASELINE-V322"]
     assert by_id["LAR-P0A-REBASELINE-V322"]["depends_on"] == ["LAR-P0A-001"]
-    assert by_id["LAR-P0A-002"]["depends_on"] == ["LAR-P0A-REBASELINE-V322"]
+    assert by_id["LAR-P0A-REBASELINE-V323"]["depends_on"] == ["LAR-P0A-REBASELINE-V322"]
+    assert by_id["LAR-P0A-EVAL-001"]["depends_on"] == ["LAR-P0A-REBASELINE-V323"]
+    assert by_id["LAR-P0A-EVAL-002"]["depends_on"] == ["LAR-P0A-EVAL-001"]
+    assert by_id["LAR-P0A-002"]["depends_on"] == ["LAR-P0A-EVAL-002"]
     assert by_id["LAR-P4-001"]["next_task_ids"] == ["LAR-P4-002", "LAR-P5-001"]
     assert by_id["LAR-P4-002"]["depends_on"] == ["LAR-P4-001"]
     assert by_id["LAR-P5-001"]["depends_on"] == ["LAR-P4-001"]
@@ -834,44 +1448,44 @@ def test_machine_work_items_are_a_deterministic_v322_dag() -> None:
             assert "python -m pytest tests/" not in "\n".join(item["verification"])
 
 
-def test_v322_lineage_binds_candidate_history_and_superseded_plan() -> None:
+def test_v323_lineage_binds_candidate_history_and_superseded_plan() -> None:
     status = json.loads(STATUS_PATH.read_text(encoding="utf-8"))
     lineage_raw = LINEAGE_PATH.read_bytes()
     lineage = json.loads(lineage_raw)
     work_items = json.loads(WORK_ITEMS_PATH.read_text(encoding="utf-8"))
     superseded = work_items["supersedes_plan"]
 
-    assert len(lineage_raw) == 3134
+    assert len(lineage_raw) == 3495
     assert hashlib.sha256(lineage_raw).hexdigest() == (
-        "8bb29e0fbc4990749424e07368e5b1c0f09cf378e78d1ada38b8fe998fb97b35"
+        "49141a69c9aed6065ba063714fb2349750e500199ed8dfaf64fa6e2b198b9043"
     )
-    assert lineage["domain"] == "local-ai-runtime/BaselineLineage/v1"
-    assert lineage["schema_version"] == 1
+    assert lineage["domain"] == "local-ai-runtime/BaselineLineage/v2"
+    assert lineage["schema_version"] == 2
     assert lineage["payload"]["candidate"] == {
-        "byte_count": 178330,
-        "id": "local-ai-runtime-0.2-v3.22",
-        "path": "docs/specs/local-ai-runtime-0.2-v3.22-baseline-candidate.md",
+        "byte_count": 188325,
+        "id": "local-ai-runtime-0.2-v3.23",
+        "path": "docs/specs/local-ai-runtime-0.2-v3.23-baseline-candidate.md",
         "role": "baseline_candidate",
         "sha256": status["baseline_candidate"]["sha256"],
     }
-    v321 = next(
+    v322 = next(
         entry
         for entry in lineage["payload"]["entries"]
-        if entry["id"] == "local-ai-runtime-0.2-v3.21"
+        if entry["id"] == "local-ai-runtime-0.2-v3.22"
     )
-    assert v321 == {
-        "byte_count": 158485,
-        "id": "local-ai-runtime-0.2-v3.21",
-        "path": "docs/specs/local-ai-runtime-0.2-v3.21-baseline-candidate.md",
+    assert v322 == {
+        "byte_count": 178330,
+        "id": "local-ai-runtime-0.2-v3.22",
+        "path": "docs/specs/local-ai-runtime-0.2-v3.22-baseline-candidate.md",
         "role": "superseded_candidate",
-        "sha256": "1bfb5cd2c92c036804a6005d5b36cdd5acc6bedc4d6bf4070ccfb7a70ce063fb",
+        "sha256": "8338a9dcf4bbbb40ca28f4f2ec6dca37587ee94fbfbbc6e3a0063c4de379569c",
     }
     assert superseded == {
-        "plan_id": "local-ai-runtime-0.2-v3.21-implementation-work-items",
+        "plan_id": "local-ai-runtime-0.2-v3.22-implementation-work-items",
         "terminal_status": "superseded",
-        "last_commit": "0405140eabea71037b0d3bf72bfc7d765c415b23",
-        "byte_count": 170102,
-        "sha256": "8737c9e68d95ff10f18dfd42df16ca5a2f908ff16c7021c309dacd44ed4d844b",
+        "last_commit": "6fd6cd54037f17e44192bc272306b137def7f8a4",
+        "byte_count": 202002,
+        "sha256": "acabe34f188d73015536a141a8990c333ce6643dc28347671c2523adcaf7d2cc",
     }
 
 
@@ -889,7 +1503,7 @@ def test_current_lineage_rejects_inventory_projection_drift() -> None:
         failures,
     )
 
-    assert "inventory lineage must exactly project BaselineLineage.v1" in failures
+    assert "inventory lineage must exactly project BaselineLineage.v2" in failures
 
 
 def test_work_item_verifier_rejects_nonreciprocal_or_unreachable_dag_edges() -> None:
@@ -1086,7 +1700,7 @@ def test_selector_rejects_unknown_action_even_when_policy_is_structurally_valid(
             "priority": 16,
             "condition_id": "invented_condition",
             "next_action": "invent_unapproved_work_first",
-            "why": "Structurally valid but not part of the reviewed v3.22 stage graph.",
+            "why": "Structurally valid but not part of the reviewed v3.23 stage graph.",
         }
     )
     policy_path = tmp_path / "unknown-action-policy.json"
@@ -1101,7 +1715,7 @@ def test_selector_rejects_unknown_action_even_when_policy_is_structurally_valid(
     assert payload["next_action"] == "repair_gate_first"
     assert payload["verifier_status"] is None
     assert any(
-        "v3.22 action catalog" in issue for issue in payload["governance_issues"]
+        "v3.23 action catalog" in issue for issue in payload["governance_issues"]
     )
 
 
@@ -1213,8 +1827,19 @@ def test_selector_runs_final_baseline_review_for_exact_closure_state(
     def mutate(payload: dict[str, object]) -> None:
         current = payload["current_work_item"]
         package = payload["normative_package"]
+        evaluation = payload["native_thin_path_evaluation"]
         assert isinstance(current, dict)
         assert isinstance(package, dict)
+        assert isinstance(evaluation, dict)
+        evaluation.update(
+            {
+                "status": "preserve_v3_23_semantics",
+                "decision": "preserve_v3_23_semantics",
+                "result_ref": "docs/evaluations/local-ai-runtime-0.2/native-thin-path-capability-results.v1.json",
+                "decision_ref": "docs/evaluations/local-ai-runtime-0.2/native-thin-path-capability-decision.v1.json",
+                "evidence_ref": "docs/evaluations/local-ai-runtime-0.2/native-thin-path-capability-evidence.v1.json",
+            }
+        )
         current["task_id"] = "LAR-P0A-013"
         package["missing_artifact_ids"] = ["P0A-MANIFEST", "P0A-REVIEW"]
 
@@ -1243,8 +1868,19 @@ def test_selector_repairs_malformed_final_review_artifact_set(tmp_path: Path) ->
     def mutate(payload: dict[str, object]) -> None:
         current = payload["current_work_item"]
         package = payload["normative_package"]
+        evaluation = payload["native_thin_path_evaluation"]
         assert isinstance(current, dict)
         assert isinstance(package, dict)
+        assert isinstance(evaluation, dict)
+        evaluation.update(
+            {
+                "status": "preserve_v3_23_semantics",
+                "decision": "preserve_v3_23_semantics",
+                "result_ref": "docs/evaluations/local-ai-runtime-0.2/native-thin-path-capability-results.v1.json",
+                "decision_ref": "docs/evaluations/local-ai-runtime-0.2/native-thin-path-capability-decision.v1.json",
+                "evidence_ref": "docs/evaluations/local-ai-runtime-0.2/native-thin-path-capability-evidence.v1.json",
+            }
+        )
         current["task_id"] = "LAR-P0A-013"
         package["missing_artifact_ids"] = ["P0A-REVIEW", "P0A-MANIFEST"]
 
@@ -1268,6 +1904,7 @@ def _write_post_p4_status(
 ) -> Path:
     def mutate(payload: dict[str, object]) -> None:
         package = payload["normative_package"]
+        evaluation = payload["native_thin_path_evaluation"]
         approval = payload["approval_state"]
         truth_reset = payload["truth_reset"]
         legacy = payload["legacy_runtime_posture"]
@@ -1279,6 +1916,7 @@ def _write_post_p4_status(
             isinstance(value, dict)
             for value in (
                 package,
+                evaluation,
                 approval,
                 truth_reset,
                 legacy,
@@ -1287,6 +1925,15 @@ def _write_post_p4_status(
                 rollout,
                 current,
             )
+        )
+        evaluation.update(
+            {
+                "status": "preserve_v3_23_semantics",
+                "decision": "preserve_v3_23_semantics",
+                "result_ref": "docs/evaluations/local-ai-runtime-0.2/native-thin-path-capability-results.v1.json",
+                "decision_ref": "docs/evaluations/local-ai-runtime-0.2/native-thin-path-capability-decision.v1.json",
+                "evidence_ref": "docs/evaluations/local-ai-runtime-0.2/native-thin-path-capability-evidence.v1.json",
+            }
         )
         package.update(
             {"status": "complete", "approval_eligible": True, "missing_artifact_ids": []}
@@ -1432,7 +2079,7 @@ def test_complete_package_requires_structured_standalone_verifier(tmp_path: Path
         root=REPO_ROOT,
         inventory_path=INVENTORY_PATH,
         verifier_path=fake_verifier,
-        baseline_id="local-ai-runtime-0.2-v3.22",
+        baseline_id="local-ai-runtime-0.2-v3.23",
         failures=failures,
     )
 
