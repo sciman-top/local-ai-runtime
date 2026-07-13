@@ -21,8 +21,8 @@
     "target_sha256": "80562322ebc744eda2a87a17c45f73a11982f4947c9d10e8628bb6f73ee9d5c6",
     "approval_input": false,
     "maximum_byte_count": 4096,
-    "byte_count": 2873,
-    "sha256": "843ce546d252a37f9622b330b51370968cb5a0b2339d94d90c2e836b1c187963"
+    "byte_count": 3046,
+    "sha256": "53535701d14f6dc17f53efbfb7071d64ae5b428cb8454b3f443a9c043b305203"
   },
   "approval_state": {
     "active": false,
@@ -36,9 +36,8 @@
     "status": "incomplete",
     "approval_eligible": false,
     "required_artifact_count": 15,
-    "present_artifact_count": 2,
+    "present_artifact_count": 3,
     "missing_artifact_ids": [
-      "P0A-CANONICAL",
       "P0A-PRODUCT",
       "P0A-QUALIFICATION",
       "P0A-EXECUTION",
@@ -134,13 +133,13 @@
     "source_work_items": "docs/plans/local-ai-runtime-0.2-work-items.json",
     "source_plan_id": "local-ai-runtime-0.2-v3.23-implementation-work-items",
     "work_item_count": 65,
-    "why_now": "The frozen Native thin-path comparison recorded preserve_v3_23_semantics without changing adapter, authority, concurrency, Q0, quality-promotion or truth-source semantics. Baseline Approval remains blocked by thirteen missing normative artifacts."
+    "why_now": "The frozen Native thin-path comparison preserved v3.23 semantics and LAR-P0A-003 closed CanonicalizationPolicy.v1 without changing runtime authority. Baseline Approval remains blocked by twelve missing normative artifacts."
   },
   "current_work_item": {
-    "task_id": "LAR-P0A-003",
+    "task_id": "LAR-P0A-004",
     "selector_action": "close_baseline_normative_package_first",
     "status": "ready",
-    "reason": "LAR-P0A-002 revalidated the BaselineManifest contract against the frozen v3.23 source and BaselineLineage.v2 while keeping the final manifest absent. Close CanonicalizationPolicy.v1 and Git/Windows path identity contracts without advancing approval."
+    "reason": "LAR-P0A-003 materialized and verified CanonicalizationPolicy.v1, canonical JSON, Git spelling, Windows collision/handle identity and alias-aware 8.3 behavior while keeping approval inactive. Close product, work routing, template, submission and resubmission contracts without adding a second planner or runtime model router."
   },
   "planning_optimization": {
     "status": "active",
@@ -186,7 +185,7 @@
     "p5_cutover_complete": false,
     "legacy_writer_retired": false
   },
-  "current_evidence_ref": "docs/change-evidence/20260714-planning-optimization-rebaseline.md",
+  "current_evidence_ref": "docs/change-evidence/20260714-lar-p0a-003-canonicalization.md",
   "authoritative_docs": [
     "AGENTS.md",
     "README.md",
@@ -210,7 +209,7 @@
         "local-ai-runtime-0.2-v3.23",
         "LOCAL-AI-RUNTIME-0.2-BASELINE-CLOSURE",
         "LAR-P0A-EVAL-002",
-        "LAR-P0A-003",
+        "LAR-P0A-004",
         "planning_optimization_policy",
         "同一 session"
       ]
@@ -222,7 +221,7 @@
         "baseline_candidate",
         "LOCAL-AI-RUNTIME-0.2-BASELINE-CLOSURE",
         "LAR-P0A-EVAL-002",
-        "LAR-P0A-003",
+        "LAR-P0A-004",
         "planning_optimization_policy",
         "最多 3 个"
       ]
@@ -233,7 +232,7 @@
         "local-ai-runtime-0.2-v3.23",
         "blocking_stage=baseline_approval",
         "LAR-P0A-EVAL-002",
-        "LAR-P0A-003",
+        "LAR-P0A-004",
         "planning_optimization_policy",
         "最多 3 个"
       ]
@@ -375,7 +374,7 @@
         "docs/specs/local-ai-runtime-0.2-v3.23-baseline-candidate.md",
         "80562322ebc744eda2a87a17c45f73a11982f4947c9d10e8628bb6f73ee9d5c6",
         "BaselineManifest.v1",
-        "LAR-P0A-003"
+        "LAR-P0A-004"
       ]
     },
     {

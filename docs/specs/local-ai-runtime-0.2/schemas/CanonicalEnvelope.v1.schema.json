@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local-ai-runtime.invalid/schemas/CanonicalEnvelope.v1.schema.json",
+  "title": "CanonicalEnvelope.v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "domain",
+    "payload",
+    "schema_version"
+  ],
+  "properties": {
+    "domain": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^local-ai-runtime/[A-Za-z0-9][A-Za-z0-9._-]{0,95}/v1$"
+    },
+    "payload": {
+      "$ref": "#/$defs/canonical_value"
+    },
+    "schema_version": {
+      "const": 1
+    }
+  },
+  "$defs": {
+    "canonical_value": {
+      "x-local-ai-runtime-maxDepth": 32,
+      "oneOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        {
+          "type": "string",
+          "maxLength": 4096,
+          "x-local-ai-runtime-maxUtf8Bytes": 4096
+        },
+        {
+          "type": "array",
+          "maxItems": 256,
+          "items": {
+            "$ref": "#/$defs/canonical_value"
+          }
+        },
+        {
+          "type": "object",
+          "maxProperties": 256,
+          "additionalProperties": {
+            "$ref": "#/$defs/canonical_value"
+          }
+        }
+      ]
+    }
+  }
+}

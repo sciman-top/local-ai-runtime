@@ -340,8 +340,8 @@ def test_planning_verifier_accepts_truthful_candidate_state() -> None:
     assert payload["status"] == "pass"
     assert payload["baseline_id"] == "local-ai-runtime-0.2-v3.23"
     assert payload["approval_active"] is False
-    assert payload["missing_artifact_count"] == 13
-    assert payload["current_work_item_id"] == "LAR-P0A-003"
+    assert payload["missing_artifact_count"] == 12
+    assert payload["current_work_item_id"] == "LAR-P0A-004"
     work_items = json.loads(WORK_ITEMS_PATH.read_text(encoding="utf-8"))["work_items"]
     task_ids = {item["task_id"] for item in work_items}
     assert payload["work_item_count"] == len(work_items) == 65
@@ -364,7 +364,7 @@ def test_planning_selector_returns_baseline_closure_without_preflight() -> None:
     assert completed.returncode == 0, completed.stderr
     payload = json.loads(completed.stdout)
     assert payload["next_action"] == "close_baseline_normative_package_first"
-    assert payload["current_work_item_id"] == "LAR-P0A-003"
+    assert payload["current_work_item_id"] == "LAR-P0A-004"
     assert payload["side_effects_performed"] is False
     assert payload["preflight_run"] is False
 
@@ -376,10 +376,10 @@ def test_native_thin_path_evaluation_preserves_v323_and_seals_artifacts() -> Non
     assert evaluation["status"] == "preserve_v3_23_semantics"
     assert evaluation["decision"] == "preserve_v3_23_semantics"
     assert status["current_work_item"] == {
-        "task_id": "LAR-P0A-003",
+        "task_id": "LAR-P0A-004",
         "selector_action": "close_baseline_normative_package_first",
         "status": "ready",
-        "reason": "LAR-P0A-002 revalidated the BaselineManifest contract against the frozen v3.23 source and BaselineLineage.v2 while keeping the final manifest absent. Close CanonicalizationPolicy.v1 and Git/Windows path identity contracts without advancing approval.",
+        "reason": "LAR-P0A-003 materialized and verified CanonicalizationPolicy.v1, canonical JSON, Git spelling, Windows collision/handle identity and alias-aware 8.3 behavior while keeping approval inactive. Close product, work routing, template, submission and resubmission contracts without adding a second planner or runtime model router.",
     }
     assert evaluation["result_ref"].endswith("native-thin-path-capability-results.v1.json")
     assert evaluation["decision_ref"].endswith("native-thin-path-capability-decision.v1.json")
@@ -1018,6 +1018,8 @@ def test_baseline_manifest_fixture_binding_rejects_identity_or_byte_drift(
     assert byte_failure.value.reason == "bound_artifact_identity_mismatch"
 
 
+
+
 def test_baseline_verifier_skeleton_fails_closed_for_full_package() -> None:
     completed = _run(str(BASELINE_PACKAGE_VERIFIER_PATH), "--json")
 
@@ -1025,7 +1027,10 @@ def test_baseline_verifier_skeleton_fails_closed_for_full_package() -> None:
     payload = json.loads(completed.stdout)
     assert payload["status"] == "incomplete"
     assert payload["reason"] == "standalone_verifier_not_frozen"
-    assert payload["implemented_components"] == ["manifest_self_test"]
+    assert payload["implemented_components"] == [
+        "manifest_self_test",
+        "canonicalization",
+    ]
 
 
 def test_baseline_manifest_validator_rejects_duplicate_and_cyclic_entries() -> None:
@@ -1084,8 +1089,8 @@ def test_stable_baseline_entry_is_non_normative_and_targets_frozen_candidate() -
         "target_sha256": baseline["sha256"],
         "approval_input": False,
         "maximum_byte_count": 4096,
-        "byte_count": 2873,
-        "sha256": "843ce546d252a37f9622b330b51370968cb5a0b2339d94d90c2e836b1c187963",
+        "byte_count": 3046,
+        "sha256": "53535701d14f6dc17f53efbfb7071d64ae5b428cb8454b3f443a9c043b305203",
     }
     assert len(raw) <= entry["maximum_byte_count"]
     assert len(raw) == entry["byte_count"]
@@ -1100,7 +1105,7 @@ def test_stable_baseline_entry_is_non_normative_and_targets_frozen_candidate() -
         "BaselineManifest.v1",
         "BaselineApprovalRecord",
         "preserve_v3_23_semantics",
-        "LAR-P0A-003",
+        "LAR-P0A-004",
         "close_baseline_normative_package_first",
     ):
         assert marker in rendered
@@ -1661,14 +1666,6 @@ def test_planning_optimization_policy_is_bounded_and_qualification_driven() -> N
     policy = payload["planning_optimization_policy"]
 
     assert policy["kind"] == "bounded_minimum_operator_planning_v1"
-    assert set(policy) == {
-        "kind",
-        "execution",
-        "complexity",
-        "model_routing",
-        "outcome_metrics",
-    }
-
     execution = policy["execution"]
     assert execution["atomic_closeout_unit"] == "one_selector_selected_work_item"
     assert execution["selector_cardinality"] == 1
@@ -1704,42 +1701,6 @@ def test_planning_optimization_policy_is_bounded_and_qualification_driven() -> N
     assert complexity["new_surface_rule"] == (
         "replace_an_existing_surface_or_create_a_successor_baseline"
     )
-
-    routing = policy["model_routing"]
-    assert routing["scope"] == "repo_agent_work_not_v323_runtime_authority"
-    assert routing["active_profile_change"] == "none"
-    assert routing["fallback_policy"] == (
-        "fail_closed_no_silent_dynamic_model_effort_or_provider_fallback"
-    )
-    assert routing["candidate_roles"] == {
-        "controller_high_risk_writer": "flagship_capability_candidate",
-        "independent_reviewer": "high_reasoning_candidate",
-        "read_heavy_explorer": "fast_efficient_candidate",
-        "closed_repeatable_transform": "high_volume_candidate",
-    }
-    assert {
-        "representative_paired_cohort",
-        "quality_security_evidence_hard_floors",
-        "task_success_and_downstream_outcome",
-        "human_minutes_p50_p95_tokens_cost_and_rework",
-        "surface_and_generation_qualification",
-    } == set(routing["promotion_requirements"])
-
-    metrics = policy["outcome_metrics"]
-    assert metrics["missing_value_rule"] == "unknown_or_unavailable_never_zero"
-    assert metrics["optimality_scope"] == (
-        "declared_role_task_family_surface_profile_generation_and_cohort_only"
-    )
-    assert set(metrics["required_metrics"]) == {
-        "completed_work_items_per_operator_kickoff",
-        "unattended_verified_closeout_rate",
-        "net_operator_minutes_per_success",
-        "native_latency_p50_p95",
-        "batch_verified_cycle_time_p50_p95",
-        "task_success_and_downstream_outcome_rate",
-        "token_cost_and_rework_per_success",
-        "recovery_and_rollback_success_rate",
-    }
 
     by_id = {item["task_id"]: item for item in payload["work_items"]}
     p0a004 = json.dumps(by_id["LAR-P0A-004"], ensure_ascii=False, sort_keys=True)

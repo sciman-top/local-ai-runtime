@@ -1,0 +1,454 @@
+{
+  "fixture_id": "CanonicalizationPolicy.v1.contract-fixtures",
+  "schema_version": 1,
+  "policy_path": "docs/specs/local-ai-runtime-0.2/normative/CanonicalizationPolicy.v1.json",
+  "schema_path": "docs/specs/local-ai-runtime-0.2/schemas/CanonicalEnvelope.v1.schema.json",
+  "canonical_positive_cases": [
+    {
+      "case_id": "preserve_array_and_sort_declared_set",
+      "raw_json": "{\"schema_version\":1,\"payload\":{\"steps\":[2,1],\"members\":[{\"value\":2,\"id\":\"b\"},{\"value\":1,\"id\":\"a\"}]},\"domain\":\"local-ai-runtime/Fixture/v1\"}",
+      "set_semantics": [
+        {
+          "json_pointer": "/payload/members",
+          "sort_key": "id"
+        }
+      ],
+      "expected_canonical_json": "{\"domain\":\"local-ai-runtime/Fixture/v1\",\"payload\":{\"members\":[{\"id\":\"a\",\"value\":1},{\"id\":\"b\",\"value\":2}],\"steps\":[2,1]},\"schema_version\":1}\n"
+    }
+  ],
+  "canonical_negative_cases": [
+    {
+      "case_id": "duplicate_json_key",
+      "raw_json": "{\"domain\":\"local-ai-runtime/Fixture/v1\",\"domain\":\"local-ai-runtime/Other/v1\",\"payload\":{},\"schema_version\":1}",
+      "expected_reason": "duplicate_json_key"
+    },
+    {
+      "case_id": "float",
+      "raw_json": "{\"domain\":\"local-ai-runtime/Fixture/v1\",\"payload\":{\"value\":1.5},\"schema_version\":1}",
+      "expected_reason": "float_not_allowed"
+    },
+    {
+      "case_id": "null",
+      "raw_json": "{\"domain\":\"local-ai-runtime/Fixture/v1\",\"payload\":{\"value\":null},\"schema_version\":1}",
+      "expected_reason": "null_not_allowed"
+    },
+    {
+      "case_id": "control_character",
+      "raw_json": "{\"domain\":\"local-ai-runtime/Fixture/v1\",\"payload\":{\"value\":\"x\\u0001y\"},\"schema_version\":1}",
+      "expected_reason": "disallowed_unicode"
+    },
+    {
+      "case_id": "non_nfc",
+      "raw_json": "{\"domain\":\"local-ai-runtime/Fixture/v1\",\"payload\":{\"value\":\"e\\u0301\"},\"schema_version\":1}",
+      "expected_reason": "non_nfc_string"
+    },
+    {
+      "case_id": "bidi_format",
+      "raw_json": "{\"domain\":\"local-ai-runtime/Fixture/v1\",\"payload\":{\"value\":\"x\\u202ey\"},\"schema_version\":1}",
+      "expected_reason": "disallowed_unicode"
+    },
+    {
+      "case_id": "zero_width_format",
+      "raw_json": "{\"domain\":\"local-ai-runtime/Fixture/v1\",\"payload\":{\"value\":\"x\\u200by\"},\"schema_version\":1}",
+      "expected_reason": "disallowed_unicode"
+    },
+    {
+      "case_id": "embedded_bom_format",
+      "raw_json": "{\"domain\":\"local-ai-runtime/Fixture/v1\",\"payload\":{\"value\":\"x\\ufeffy\"},\"schema_version\":1}",
+      "expected_reason": "disallowed_unicode"
+    },
+    {
+      "case_id": "unicode_noncharacter",
+      "raw_json": "{\"domain\":\"local-ai-runtime/Fixture/v1\",\"payload\":{\"value\":\"x\\uffff\"},\"schema_version\":1}",
+      "expected_reason": "disallowed_unicode"
+    },
+    {
+      "case_id": "private_use_character",
+      "raw_json": "{\"domain\":\"local-ai-runtime/Fixture/v1\",\"payload\":{\"value\":\"x\\ue000\"},\"schema_version\":1}",
+      "expected_reason": "disallowed_unicode"
+    },
+    {
+      "case_id": "duplicate_set_key",
+      "raw_json": "{\"domain\":\"local-ai-runtime/Fixture/v1\",\"payload\":{\"members\":[{\"id\":\"a\"},{\"id\":\"a\"}]},\"schema_version\":1}",
+      "set_semantics": [
+        {
+          "json_pointer": "/payload/members",
+          "sort_key": "id"
+        }
+      ],
+      "expected_reason": "duplicate_set_key"
+    },
+    {
+      "case_id": "missing_set_sort_key",
+      "raw_json": "{\"domain\":\"local-ai-runtime/Fixture/v1\",\"payload\":{\"members\":[{\"value\":1}]},\"schema_version\":1}",
+      "set_semantics": [
+        {
+          "json_pointer": "/payload/members",
+          "sort_key": "id"
+        }
+      ],
+      "expected_reason": "set_sort_key_missing"
+    },
+    {
+      "case_id": "set_pointer_missing",
+      "raw_json": "{\"domain\":\"local-ai-runtime/Fixture/v1\",\"payload\":{},\"schema_version\":1}",
+      "set_semantics": [
+        {
+          "json_pointer": "/payload/members",
+          "sort_key": "id"
+        }
+      ],
+      "expected_reason": "set_semantics_pointer_missing"
+    }
+  ],
+  "git_positive_cases": [
+    {
+      "case_id": "ascii_spelling_preserved",
+      "git_path": "src/ReadMe.txt",
+      "expected_git_path": "src/ReadMe.txt",
+      "expected_windows_collision_key": "SRC/README.TXT"
+    },
+    {
+      "case_id": "unicode_nfc_spelling_preserved",
+      "git_path": "docs/\u00c9cole.md",
+      "expected_git_path": "docs/\u00c9cole.md",
+      "expected_windows_collision_key": "DOCS/\u00c9COLE.MD"
+    }
+  ],
+  "git_negative_cases": [
+    {
+      "case_id": "invalid_utf8",
+      "raw_utf8_hex": "ff",
+      "expected_reason": "invalid_utf8"
+    },
+    {
+      "case_id": "non_nfc",
+      "git_path": "docs/e\u0301.txt",
+      "expected_reason": "non_nfc_path"
+    },
+    {
+      "case_id": "absolute",
+      "git_path": "/root/file.txt",
+      "expected_reason": "absolute_path"
+    },
+    {
+      "case_id": "drive_absolute",
+      "git_path": "C:/root/file.txt",
+      "expected_reason": "drive_absolute_path"
+    },
+    {
+      "case_id": "empty_component",
+      "git_path": "src//file.txt",
+      "expected_reason": "empty_path_component"
+    },
+    {
+      "case_id": "dot_component",
+      "git_path": "src/./file.txt",
+      "expected_reason": "dot_path_component"
+    },
+    {
+      "case_id": "dotdot_component",
+      "git_path": "src/../file.txt",
+      "expected_reason": "dotdot_path_component"
+    },
+    {
+      "case_id": "backslash",
+      "git_path": "src\\file.txt",
+      "expected_reason": "backslash_path"
+    },
+    {
+      "case_id": "alternate_data_stream",
+      "git_path": "src/file.txt:stream",
+      "expected_reason": "alternate_data_stream"
+    },
+    {
+      "case_id": "dos_device",
+      "git_path": "src/CON.txt",
+      "expected_reason": "dos_device_path"
+    },
+    {
+      "case_id": "dos_device_superscript",
+      "git_path": "src/COM\u00b9.txt",
+      "expected_reason": "dos_device_path"
+    },
+    {
+      "case_id": "control_character",
+      "git_path": "src/bad\u0001.txt",
+      "expected_reason": "disallowed_path_unicode"
+    },
+    {
+      "case_id": "trailing_dot",
+      "git_path": "src/file.",
+      "expected_reason": "trailing_dot_or_space"
+    },
+    {
+      "case_id": "trailing_space",
+      "git_path": "src/file ",
+      "expected_reason": "trailing_dot_or_space"
+    },
+    {
+      "case_id": "windows_case_collision",
+      "git_paths": [
+        "src/File.txt",
+        "src/file.txt"
+      ],
+      "expected_reason": "windows_case_collision"
+    }
+  ],
+  "alias_probe_cases": [
+    {
+      "case_id": "disabled_without_alias",
+      "policy_observation": "disabled",
+      "probe_attempted": true,
+      "handle_open_mode": "no_follow",
+      "long_handle_identity": {
+        "volume_id": "VOL-A",
+        "root_file_id_128": "00000000000000000000000000000001",
+        "file_id_128": "00000000000000000000000000000002"
+      },
+      "alias_handle_identity": null,
+      "original_approved_path_id": "approved-path-1",
+      "resolved_approved_path_id": "approved-path-1",
+      "bypass_observed": false,
+      "link_policy_passed": true,
+      "mapping_generation_unchanged": true,
+      "expected_result": "qualified"
+    },
+    {
+      "case_id": "enabled_same_identity",
+      "policy_observation": "enabled",
+      "probe_attempted": true,
+      "handle_open_mode": "no_follow",
+      "long_handle_identity": {
+        "volume_id": "VOL-A",
+        "root_file_id_128": "00000000000000000000000000000001",
+        "file_id_128": "00000000000000000000000000000002"
+      },
+      "alias_handle_identity": {
+        "volume_id": "VOL-A",
+        "root_file_id_128": "00000000000000000000000000000001",
+        "file_id_128": "00000000000000000000000000000002"
+      },
+      "original_approved_path_id": "approved-path-1",
+      "resolved_approved_path_id": "approved-path-1",
+      "bypass_observed": false,
+      "link_policy_passed": true,
+      "mapping_generation_unchanged": true,
+      "expected_result": "qualified"
+    },
+    {
+      "case_id": "policy_query_denied_probe_closure",
+      "policy_observation": "policy_query_denied",
+      "probe_attempted": true,
+      "handle_open_mode": "no_follow",
+      "long_handle_identity": {
+        "volume_id": "VOL-A",
+        "root_file_id_128": "00000000000000000000000000000001",
+        "file_id_128": "00000000000000000000000000000002"
+      },
+      "alias_handle_identity": {
+        "volume_id": "VOL-A",
+        "root_file_id_128": "00000000000000000000000000000001",
+        "file_id_128": "00000000000000000000000000000002"
+      },
+      "original_approved_path_id": "approved-path-1",
+      "resolved_approved_path_id": "approved-path-1",
+      "bypass_observed": false,
+      "link_policy_passed": true,
+      "mapping_generation_unchanged": true,
+      "expected_result": "qualified_by_probe"
+    },
+    {
+      "case_id": "policy_query_denied_without_probe",
+      "policy_observation": "policy_query_denied",
+      "probe_attempted": false,
+      "handle_open_mode": "no_follow",
+      "long_handle_identity": {
+        "volume_id": "VOL-A",
+        "root_file_id_128": "00000000000000000000000000000001",
+        "file_id_128": "00000000000000000000000000000002"
+      },
+      "alias_handle_identity": null,
+      "original_approved_path_id": "approved-path-1",
+      "resolved_approved_path_id": "approved-path-1",
+      "bypass_observed": false,
+      "link_policy_passed": true,
+      "mapping_generation_unchanged": true,
+      "expected_result": "policy_query_denied_without_probe"
+    },
+    {
+      "case_id": "alias_identity_collision",
+      "policy_observation": "enabled",
+      "probe_attempted": true,
+      "handle_open_mode": "no_follow",
+      "long_handle_identity": {
+        "volume_id": "VOL-A",
+        "root_file_id_128": "00000000000000000000000000000001",
+        "file_id_128": "00000000000000000000000000000002"
+      },
+      "alias_handle_identity": {
+        "volume_id": "VOL-A",
+        "root_file_id_128": "00000000000000000000000000000001",
+        "file_id_128": "00000000000000000000000000000003"
+      },
+      "original_approved_path_id": "approved-path-1",
+      "resolved_approved_path_id": "approved-path-1",
+      "bypass_observed": false,
+      "link_policy_passed": true,
+      "mapping_generation_unchanged": true,
+      "expected_result": "alias_identity_collision"
+    },
+    {
+      "case_id": "alias_bypass",
+      "policy_observation": "enabled",
+      "probe_attempted": true,
+      "handle_open_mode": "no_follow",
+      "long_handle_identity": {
+        "volume_id": "VOL-A",
+        "root_file_id_128": "00000000000000000000000000000001",
+        "file_id_128": "00000000000000000000000000000002"
+      },
+      "alias_handle_identity": {
+        "volume_id": "VOL-A",
+        "root_file_id_128": "00000000000000000000000000000001",
+        "file_id_128": "00000000000000000000000000000002"
+      },
+      "original_approved_path_id": "approved-path-1",
+      "resolved_approved_path_id": "approved-path-2",
+      "bypass_observed": true,
+      "link_policy_passed": true,
+      "mapping_generation_unchanged": true,
+      "expected_result": "alias_bypass"
+    },
+    {
+      "case_id": "reparse_or_unapproved_hardlink",
+      "policy_observation": "enabled",
+      "probe_attempted": true,
+      "handle_open_mode": "no_follow",
+      "long_handle_identity": {
+        "volume_id": "VOL-A",
+        "root_file_id_128": "00000000000000000000000000000001",
+        "file_id_128": "00000000000000000000000000000002"
+      },
+      "alias_handle_identity": {
+        "volume_id": "VOL-A",
+        "root_file_id_128": "00000000000000000000000000000001",
+        "file_id_128": "00000000000000000000000000000002"
+      },
+      "original_approved_path_id": "approved-path-1",
+      "resolved_approved_path_id": "approved-path-1",
+      "bypass_observed": false,
+      "link_policy_passed": false,
+      "mapping_generation_unchanged": true,
+      "expected_result": "identity_policy_violation"
+    },
+    {
+      "case_id": "post_qualification_drift",
+      "policy_observation": "enabled",
+      "probe_attempted": true,
+      "handle_open_mode": "no_follow",
+      "long_handle_identity": {
+        "volume_id": "VOL-A",
+        "root_file_id_128": "00000000000000000000000000000001",
+        "file_id_128": "00000000000000000000000000000002"
+      },
+      "alias_handle_identity": {
+        "volume_id": "VOL-A",
+        "root_file_id_128": "00000000000000000000000000000001",
+        "file_id_128": "00000000000000000000000000000002"
+      },
+      "original_approved_path_id": "approved-path-1",
+      "resolved_approved_path_id": "approved-path-1",
+      "bypass_observed": false,
+      "link_policy_passed": true,
+      "mapping_generation_unchanged": false,
+      "expected_result": "requalification_required"
+    }
+  ],
+  "boundary_dimensions": [
+    {
+      "bound_id": "array_items",
+      "kind": "maximum",
+      "limit": 256
+    },
+    {
+      "bound_id": "depth",
+      "kind": "maximum",
+      "limit": 32
+    },
+    {
+      "bound_id": "git_path_components",
+      "kind": "maximum",
+      "limit": 64
+    },
+    {
+      "bound_id": "git_path_utf8_bytes",
+      "kind": "maximum",
+      "limit": 1024
+    },
+    {
+      "bound_id": "identifier_utf8_bytes",
+      "kind": "maximum",
+      "limit": 128
+    },
+    {
+      "bound_id": "integer_max",
+      "kind": "maximum",
+      "limit": 9223372036854775807
+    },
+    {
+      "bound_id": "integer_min",
+      "kind": "minimum",
+      "limit": -9223372036854775808
+    },
+    {
+      "bound_id": "json_input_bytes",
+      "kind": "maximum",
+      "limit": 65536
+    },
+    {
+      "bound_id": "named_object_ascii_bytes",
+      "kind": "maximum",
+      "limit": 260
+    },
+    {
+      "bound_id": "object_members",
+      "kind": "maximum",
+      "limit": 256
+    },
+    {
+      "bound_id": "set_items",
+      "kind": "maximum",
+      "limit": 256
+    },
+    {
+      "bound_id": "sid_ascii_bytes",
+      "kind": "maximum",
+      "limit": 184
+    },
+    {
+      "bound_id": "string_utf8_bytes",
+      "kind": "maximum",
+      "limit": 4096
+    }
+  ],
+  "boundary_expectations": {
+    "maximum": {
+      "limit_minus_one": "accept",
+      "limit": "accept",
+      "limit_plus_one": "reject"
+    },
+    "minimum": {
+      "limit_minus_one": "reject",
+      "limit": "accept",
+      "limit_plus_one": "accept"
+    }
+  },
+  "sid_named_object_fixture": {
+    "canonical_sid": "S-1-5-21-1000-2000-3000-4000",
+    "expected_sid_hash": "63ca008be179e7640286281202f483f9ea37f67f96e8ec58806f32b38827e95b",
+    "repo_identity_hash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "attempt_uuid": "11111111-1111-4111-8111-111111111111",
+    "run_uuid": "22222222-2222-4222-8222-222222222222"
+  }
+}

@@ -7,7 +7,7 @@
   "package_status": "incomplete",
   "approval_eligible": false,
   "blocking_stage": "baseline_approval",
-  "updated_on": "2026-07-12",
+  "updated_on": "2026-07-14",
   "candidate_source": {
     "path": "docs/specs/local-ai-runtime-0.2-v3.23-baseline-candidate.md",
     "byte_count": 188325,
@@ -122,7 +122,9 @@
       "kind": "canonicalization_and_path_bundle",
       "artifact_version": "CanonicalizationPolicy.v1",
       "path": "docs/specs/local-ai-runtime-0.2/normative/CanonicalizationPolicy.v1.json",
-      "status": "missing",
+      "status": "present",
+      "byte_count": 4264,
+      "sha256": "9cbc7295fb1cefdb651985cc81181ffa3a81db33ccf229535bf2e65438b71a7f",
       "required_for_approval": true,
       "producer_task_id": "LAR-P0A-003",
       "verification": "schema_examples_fixtures_verifier"
@@ -249,7 +251,6 @@
     }
   ],
   "missing_artifact_ids": [
-    "P0A-CANONICAL",
     "P0A-PRODUCT",
     "P0A-QUALIFICATION",
     "P0A-EXECUTION",

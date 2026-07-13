@@ -783,9 +783,9 @@
       "task_id": "LAR-P0A-003",
       "phase": "P0A",
       "priority": 0,
-      "status": "ready",
+      "status": "completed",
       "title": "Close canonical JSON, Git path and Windows identity contracts",
-      "goal": "Materialize CanonicalizationPolicy.v1 and its positive/negative fixtures, including duplicate-key rejection, ordered-array semantics, declared set semantics and independent NTFS collision keys.",
+      "goal": "Materialize CanonicalizationPolicy.v1 and its positive/negative fixtures with duplicate-key rejection, ordered-array semantics, declared set semantics and independent NTFS collision keys.",
       "depends_on": [
         "LAR-P0A-002"
       ],
@@ -855,7 +855,7 @@
       ],
       "phase": "P0A",
       "priority": 0,
-      "status": "pending",
+      "status": "ready",
       "title": "Close product, work routing, template, submission and resubmission contracts",
       "goal": "Define Unified Native/Batch work-class routing, closed template parameters, permanent submission identity and the atomic TaskResubmission relation while keeping model selection in qualified profile generation.",
       "depends_on": [

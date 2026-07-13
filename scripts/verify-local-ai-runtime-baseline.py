@@ -30,6 +30,15 @@ MANIFEST_FIXTURE_RELATIVE = Path(
 FINAL_MANIFEST_RELATIVE = Path(
     "docs/specs/local-ai-runtime-0.2/normative/BaselineManifest.v1.json"
 )
+CANONICAL_POLICY_RELATIVE = Path(
+    "docs/specs/local-ai-runtime-0.2/normative/CanonicalizationPolicy.v1.json"
+)
+CANONICAL_SCHEMA_RELATIVE = Path(
+    "docs/specs/local-ai-runtime-0.2/schemas/CanonicalEnvelope.v1.schema.json"
+)
+CANONICAL_FIXTURE_RELATIVE = Path(
+    "docs/specs/local-ai-runtime-0.2/fixtures/canonicalization/manifest.json"
+)
 BASELINE_SPECIFICATION_ID = "local-ai-runtime-0.2-v3.23"
 BASELINE_FIXTURE_MANIFEST_ID = f"{BASELINE_SPECIFICATION_ID}-fixture"
 BOUND_ARTIFACTS = {
@@ -77,6 +86,137 @@ REQUIRED_PAYLOAD_FIELDS = {
     "package_review_head",
 }
 IDENTIFIER_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$")
+CANONICAL_DOMAIN_PATTERN = re.compile(
+    r"^local-ai-runtime/[A-Za-z0-9][A-Za-z0-9._-]{0,95}/v1$"
+)
+SID_PATTERN = re.compile(r"^S-[0-9]+(?:-[0-9]+)+$")
+UUID_V4_PATTERN = re.compile(
+    r"^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+)
+ALLOWED_UNICODE_CATEGORIES = {
+    "Ll",
+    "Lm",
+    "Lo",
+    "Lt",
+    "Lu",
+    "Mc",
+    "Me",
+    "Mn",
+    "Nd",
+    "Nl",
+    "No",
+    "Pc",
+    "Pd",
+    "Pe",
+    "Pf",
+    "Pi",
+    "Po",
+    "Ps",
+    "Sc",
+    "Sk",
+    "Sm",
+    "So",
+    "Zs",
+}
+EXPECTED_CANONICAL_BOUNDS = {
+    "array_items": 256,
+    "depth": 32,
+    "git_path_components": 64,
+    "git_path_utf8_bytes": 1024,
+    "identifier_utf8_bytes": 128,
+    "integer_max": 9223372036854775807,
+    "integer_min": -9223372036854775808,
+    "json_input_bytes": 65536,
+    "named_object_ascii_bytes": 260,
+    "object_members": 256,
+    "set_items": 256,
+    "sid_ascii_bytes": 184,
+    "string_utf8_bytes": 4096,
+}
+EXPECTED_DOS_DEVICE_CATALOG = [
+    "AUX",
+    "CLOCK$",
+    "COM1",
+    "COM2",
+    "COM3",
+    "COM4",
+    "COM5",
+    "COM6",
+    "COM7",
+    "COM8",
+    "COM9",
+    "COM\u00b9",
+    "COM\u00b2",
+    "COM\u00b3",
+    "CON",
+    "CONIN$",
+    "CONOUT$",
+    "LPT1",
+    "LPT2",
+    "LPT3",
+    "LPT4",
+    "LPT5",
+    "LPT6",
+    "LPT7",
+    "LPT8",
+    "LPT9",
+    "LPT\u00b9",
+    "LPT\u00b2",
+    "LPT\u00b3",
+    "NUL",
+    "PRN",
+]
+EXPECTED_NAMED_OBJECT_TEMPLATES = [
+    "Global\\LocalAIRuntime.BatchDrain.<SIDHash>.v1",
+    "Global\\LocalAIRuntime.OwnershipRegistry.<SIDHash>.v1",
+    "Global\\LocalAIRuntime.RepoOwnership.<SIDHash>.<RepoIdentityHash>.v1",
+    "Global\\LocalAIRuntime.Attempt.<SIDHash>.<attempt_uuid>.v1",
+    "Global\\LocalAIRuntime.Job.<SIDHash>.<attempt_uuid>.v1",
+    "Global\\LocalAIRuntime.StageJob.<SIDHash>.<attempt_uuid>.<run_uuid>.v1",
+]
+EXPECTED_GIT_PATH_REJECTIONS = [
+    "invalid_utf8",
+    "non_nfc",
+    "absolute",
+    "drive_absolute",
+    "empty_component",
+    "dot_component",
+    "dotdot_component",
+    "backslash",
+    "alternate_data_stream",
+    "dos_device",
+    "unicode_disallowed",
+    "trailing_dot_or_space",
+    "windows_case_collision",
+]
+EXPECTED_WINDOWS_AUTHORIZATION_BASIS = [
+    "no_follow_handle",
+    "volume_identity",
+    "file_id_128",
+    "expected_root_ancestry",
+    "owner_dacl",
+    "reparse_hardlink_policy",
+]
+EXPECTED_UPPERCASE_CATALOG = {
+    "algorithm_id": "unicode_default_uppercase_v15.1.0_invariant",
+    "conditional_special_casing": "excluded",
+    "input_units": "unicode_scalar_values",
+    "locale": "invariant",
+    "mapping_order": "unicode_data_simple_uppercase_then_unconditional_special_casing",
+    "normalization": "none",
+    "output_units": "full_uppercase_scalar_sequence",
+    "special_casing": {
+        "byte_count": 16832,
+        "sha256": "55a477efd933a52cd27e6a9bf70265bb2d8814af31aab07767abc8eb421f27ef",
+        "url": "https://www.unicode.org/Public/15.1.0/ucd/SpecialCasing.txt",
+    },
+    "unicode_data": {
+        "byte_count": 1914200,
+        "sha256": "2fc713e6a31a87c4850a37fe2caffa4218180fadb5de86b43a143ddb4581fb86",
+        "url": "https://www.unicode.org/Public/15.1.0/ucd/UnicodeData.txt",
+    },
+    "unicode_version": "15.1.0",
+}
 
 
 class ValidationFailure(ValueError):
@@ -92,7 +232,7 @@ def _reject_duplicates(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
     result: dict[str, Any] = {}
     for key, value in pairs:
         if key in result:
-            raise ValidationFailure("duplicate_json_key", f"duplicate JSON key: {key}")
+            raise ValidationFailure("duplicate_json_key", f"duplicate JSON key: {key!a}")
         result[key] = value
     return result
 
@@ -105,8 +245,9 @@ def _load_json_object(path: Path) -> tuple[dict[str, Any], bytes]:
     validate_normative_bytes(raw, str(path))
     try:
         value = json.loads(raw.decode("utf-8"), object_pairs_hook=_reject_duplicates)
-    except json.JSONDecodeError as exc:
-        raise ValidationFailure("invalid_json", f"invalid JSON in {path}: {exc.msg}") from exc
+    except (json.JSONDecodeError, RecursionError) as exc:
+        detail = getattr(exc, "msg", "maximum JSON nesting exceeded")
+        raise ValidationFailure("invalid_json", f"invalid JSON in {path}: {detail}") from exc
     if not isinstance(value, dict):
         raise ValidationFailure("invalid_json_root", f"JSON root must be an object: {path}")
     return value, raw
@@ -157,16 +298,51 @@ def validate_normative_bytes(raw: bytes, label: str) -> None:
             )
 
 
-def _require_exact_fields(value: Any, required: set[str], label: str) -> dict[str, Any]:
+def _require_object(
+    value: Any, label: str, *, reason: str = "schema_violation"
+) -> dict[str, Any]:
     if not isinstance(value, dict):
-        raise ValidationFailure("schema_violation", f"{label} must be an object")
+        raise ValidationFailure(reason, f"{label} must be an object")
+    return value
+
+
+def _require_array(
+    value: Any, label: str, *, reason: str = "schema_violation"
+) -> list[Any]:
+    if not isinstance(value, list):
+        raise ValidationFailure(reason, f"{label} must be an array")
+    return value
+
+
+def _require_string_array(
+    value: Any, label: str, *, reason: str = "schema_violation"
+) -> list[str]:
+    items = _require_array(value, label, reason=reason)
+    if not all(isinstance(item, str) for item in items):
+        raise ValidationFailure(reason, f"{label} must contain only strings")
+    return items
+
+
+def _require_exact_fields(
+    value: Any,
+    required: set[str],
+    label: str,
+    *,
+    reason: str = "schema_violation",
+) -> dict[str, Any]:
+    value = _require_object(value, label, reason=reason)
     actual = set(value)
     if actual != required:
         unknown = sorted(actual - required)
         missing = sorted(required - actual)
-        reason = "unknown_payload_field" if label == "payload" and unknown else "schema_violation"
+        failure_reason = (
+            "unknown_payload_field"
+            if reason == "schema_violation" and label == "payload" and unknown
+            else reason
+        )
         raise ValidationFailure(
-            reason, f"{label} fields mismatch: missing={missing}, unknown={unknown}"
+            failure_reason,
+            f"{label} fields mismatch: missing={missing}, unknown={unknown}",
         )
     return value
 
@@ -177,6 +353,21 @@ def _is_sha256(value: Any) -> bool:
         and len(value) == 64
         and all(character in "0123456789abcdef" for character in value)
     )
+
+
+def _json_values_equal(actual: Any, expected: Any) -> bool:
+    if type(actual) is not type(expected):
+        return False
+    if isinstance(expected, dict):
+        return set(actual) == set(expected) and all(
+            _json_values_equal(actual[key], expected[key]) for key in expected
+        )
+    if isinstance(expected, list):
+        return len(actual) == len(expected) and all(
+            _json_values_equal(actual_item, expected_item)
+            for actual_item, expected_item in zip(actual, expected)
+        )
+    return actual == expected
 
 
 def _validate_identifier(value: Any, label: str) -> None:
@@ -426,6 +617,957 @@ def verify_manifest_component(repo_root: Path) -> dict[str, Any]:
     }
 
 
+def _verify_canonical_policy(policy: dict[str, Any], raw: bytes) -> dict[str, Any]:
+    try:
+        canonical = (
+            json.dumps(
+                policy,
+                ensure_ascii=False,
+                sort_keys=True,
+                separators=(",", ":"),
+            ).encode("utf-8")
+            + b"\n"
+        )
+    except (RecursionError, TypeError, UnicodeEncodeError) as exc:
+        raise ValidationFailure(
+            "canonical_policy_bytes", "CanonicalizationPolicy is not canonical UTF-8 JSON"
+        ) from exc
+    if raw != canonical:
+        raise ValidationFailure(
+            "canonical_policy_bytes", "CanonicalizationPolicy must use canonical JSON bytes"
+        )
+    envelope = _require_exact_fields(
+        policy, {"domain", "payload", "schema_version"}, "canonical policy"
+    )
+    if (
+        envelope["domain"] != "local-ai-runtime/CanonicalizationPolicy/v1"
+        or type(envelope["schema_version"]) is not int
+        or envelope["schema_version"] != 1
+    ):
+        raise ValidationFailure(
+            "canonical_policy_identity", "CanonicalizationPolicy envelope mismatch"
+        )
+    payload = _require_exact_fields(
+        envelope["payload"],
+        {
+            "artifact_id",
+            "artifact_version",
+            "baseline_id",
+            "bounds",
+            "canonical_json",
+            "git_path",
+            "named_object_identity",
+            "sid_identity",
+            "windows_identity",
+        },
+        "canonical policy payload",
+    )
+    if (
+        payload["artifact_id"] != "P0A-CANONICAL"
+        or payload["artifact_version"] != "CanonicalizationPolicy.v1"
+        or payload["baseline_id"] != BASELINE_SPECIFICATION_ID
+    ):
+        raise ValidationFailure(
+            "canonical_policy_identity", "canonical artifact binding mismatch"
+        )
+    if not _json_values_equal(payload["bounds"], EXPECTED_CANONICAL_BOUNDS):
+        raise ValidationFailure("canonical_bounds_drift", "canonical bounds mismatch")
+    canonical_json = _require_object(
+        payload["canonical_json"],
+        "canonical JSON policy",
+        reason="canonical_policy_drift",
+    )
+    _require_exact_fields(
+        canonical_json,
+        {
+            "array_default",
+            "domain_envelope",
+            "duplicate_keys",
+            "float",
+            "hash",
+            "integer",
+            "nullable_optional",
+            "object_key_order",
+            "serialization",
+            "set_semantics",
+            "strings",
+            "unknown_fields",
+        },
+        "canonical JSON policy",
+        reason="canonical_policy_drift",
+    )
+    domain_envelope = _require_exact_fields(
+        canonical_json["domain_envelope"],
+        {"exact_fields", "pattern", "schema_version"},
+        "domain envelope policy",
+        reason="canonical_policy_drift",
+    )
+    if {
+        "duplicate_keys": canonical_json.get("duplicate_keys"),
+        "float": canonical_json.get("float"),
+        "object_key_order": canonical_json.get("object_key_order"),
+        "array_default": canonical_json.get("array_default"),
+    } != {
+        "duplicate_keys": "reject",
+        "float": "reject",
+        "object_key_order": "utf8_byte_lexicographic",
+        "array_default": "preserve_input_order",
+    } or not _json_values_equal(domain_envelope, {
+        "exact_fields": ["domain", "payload", "schema_version"],
+        "pattern": "local-ai-runtime/<object-type>/v1",
+        "schema_version": 1,
+    }) or {
+        "hash": canonical_json.get("hash"),
+        "integer": canonical_json.get("integer"),
+        "nullable_optional": canonical_json.get("nullable_optional"),
+        "serialization": canonical_json.get("serialization"),
+        "unknown_fields": canonical_json.get("unknown_fields"),
+    } != {
+        "hash": "lowercase_sha256_of_canonical_utf8_envelope_excluding_self_hash_fields",
+        "integer": "schema_bounded_signed_integer_only",
+        "nullable_optional": "reject_use_absent_field",
+        "serialization": (
+            "utf8_no_bom_no_extra_whitespace_minimal_json_escaping_terminal_lf"
+        ),
+        "unknown_fields": "reject_by_object_schema",
+    }:
+        raise ValidationFailure(
+            "canonical_policy_drift", "canonical JSON behavior mismatch"
+        )
+    set_policy = _require_exact_fields(
+        canonical_json.get("set_semantics"),
+        {"declaration", "duplicate_sort_key", "sort"},
+        "set policy",
+        reason="canonical_policy_drift",
+    )
+    if not _json_values_equal(set_policy, {
+        "declaration": "schema_keyword_x-local-ai-runtime-set-semantics",
+        "duplicate_sort_key": "reject",
+        "sort": "canonical_utf8_bytes_of_declared_unique_sort_key",
+    }):
+        raise ValidationFailure("canonical_policy_drift", "set semantics mismatch")
+    string_policy = _require_exact_fields(
+        canonical_json.get("strings"),
+        {
+            "allowed_general_categories",
+            "noncharacters",
+            "normalization",
+            "rewrite",
+            "unapproved_general_categories",
+        },
+        "string policy",
+        reason="canonical_policy_drift",
+    )
+    allowed_categories = _require_string_array(
+        string_policy.get("allowed_general_categories"),
+        "allowed Unicode categories",
+        reason="canonical_policy_drift",
+    )
+    unapproved_categories = _require_string_array(
+        string_policy.get("unapproved_general_categories"),
+        "unapproved Unicode categories",
+        reason="canonical_policy_drift",
+    )
+    if (
+        set(allowed_categories) != ALLOWED_UNICODE_CATEGORIES
+        or set(unapproved_categories) != {"Cc", "Cf", "Cn", "Co", "Cs", "Zl", "Zp"}
+        or string_policy.get("normalization") != "already_nfc"
+        or string_policy.get("rewrite") != "none"
+        or string_policy.get("noncharacters") != "reject"
+    ):
+        raise ValidationFailure("canonical_policy_drift", "string allowlist mismatch")
+    git_policy = _require_exact_fields(
+        payload["git_path"],
+        {
+            "collision_detection",
+            "dos_device_catalog",
+            "preserve",
+            "reject",
+            "windows_collision_key",
+        },
+        "Git path policy",
+        reason="canonical_policy_drift",
+    )
+    dos_devices = _require_string_array(
+        git_policy.get("dos_device_catalog"),
+        "DOS device catalog",
+        reason="canonical_policy_drift",
+    )
+    rejection_catalog = _require_string_array(
+        git_policy.get("reject"),
+        "Git rejection catalog",
+        reason="canonical_policy_drift",
+    )
+    if (
+        git_policy.get("collision_detection")
+        != "reject_duplicate_windows_collision_key_within_closed_path_set"
+        or dos_devices != EXPECTED_DOS_DEVICE_CATALOG
+        or git_policy.get("preserve")
+        != "original_utf8_spelling_case_and_forward_slash"
+        or rejection_catalog != EXPECTED_GIT_PATH_REJECTIONS
+        or git_policy.get("windows_collision_key")
+        != "separate_derived_value_never_replaces_git_path"
+    ):
+        raise ValidationFailure("canonical_policy_drift", "Git path policy mismatch")
+    windows_policy = _require_exact_fields(
+        payload["windows_identity"],
+        {
+            "alias_authority",
+            "alias_mapping_drift",
+            "authorization_basis",
+            "global_8dot3_disable_required",
+            "policy_query_denied",
+            "short_alias_acceptance",
+            "uppercase_catalog",
+        },
+        "Windows identity policy",
+        reason="canonical_policy_drift",
+    )
+    query_denied = _require_exact_fields(
+        windows_policy.get("policy_query_denied"),
+        {"record", "required_fallback"},
+        "policy_query_denied policy",
+        reason="canonical_policy_drift",
+    )
+    authorization_basis = _require_string_array(
+        windows_policy.get("authorization_basis"),
+        "Windows authorization basis",
+        reason="canonical_policy_drift",
+    )
+    if (
+        windows_policy.get("alias_authority")
+        != "original_request_class_and_approved_path_id_only"
+        or windows_policy.get("alias_mapping_drift") != "requalification_required"
+        or authorization_basis != EXPECTED_WINDOWS_AUTHORIZATION_BASIS
+        or windows_policy.get("global_8dot3_disable_required") is not False
+        or not _json_values_equal(query_denied, {
+            "record": "policy_query_denied",
+            "required_fallback": "non_elevated_alias_and_handle_identity_probe",
+        })
+        or windows_policy.get("short_alias_acceptance")
+        != "same_managed_root_same_expected_file_id_128_no_policy_bypass"
+        or not _json_values_equal(
+            windows_policy.get("uppercase_catalog"), EXPECTED_UPPERCASE_CATALOG
+        )
+    ):
+        raise ValidationFailure("canonical_policy_drift", "Windows identity policy mismatch")
+
+    named_object_policy = _require_exact_fields(
+        payload["named_object_identity"],
+        {"inputs", "name_encoding", "templates", "user_supplied_name"},
+        "named object identity policy",
+        reason="canonical_policy_drift",
+    )
+    named_object_inputs = _require_string_array(
+        named_object_policy.get("inputs"),
+        "named object identity inputs",
+        reason="canonical_policy_drift",
+    )
+    named_object_templates = _require_string_array(
+        named_object_policy.get("templates"),
+        "named object templates",
+        reason="canonical_policy_drift",
+    )
+    if (
+        named_object_inputs
+        != [
+            "canonical_sid_hash",
+            "repo_identity_hash_when_scoped",
+            "attempt_uuid_when_scoped",
+            "run_uuid_when_scoped",
+        ]
+        or named_object_policy.get("name_encoding") != "ascii"
+        or named_object_templates != EXPECTED_NAMED_OBJECT_TEMPLATES
+        or named_object_policy.get("user_supplied_name") != "reject"
+    ):
+        raise ValidationFailure("canonical_policy_drift", "named object policy mismatch")
+    sid_policy = _require_exact_fields(
+        payload["sid_identity"],
+        {"canonical_source", "sid_hash", "string_rewrite"},
+        "SID identity policy",
+        reason="canonical_policy_drift",
+    )
+    if not _json_values_equal(sid_policy, {
+        "canonical_source": "ConvertSidToStringSidW",
+        "sid_hash": "lowercase_sha256_of_full_ascii_sid",
+        "string_rewrite": "none",
+    }):
+        raise ValidationFailure("canonical_policy_drift", "SID identity policy mismatch")
+    return payload
+
+
+def _verify_canonical_schema(schema: dict[str, Any], bounds: dict[str, int]) -> None:
+    if not _json_values_equal(bounds, EXPECTED_CANONICAL_BOUNDS):
+        raise ValidationFailure("canonical_schema_drift", "canonical bounds mismatch")
+    value_ref = {"$ref": "#/$defs/canonical_value"}
+    expected = {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": (
+            "https://local-ai-runtime.invalid/schemas/"
+            "CanonicalEnvelope.v1.schema.json"
+        ),
+        "title": "CanonicalEnvelope.v1",
+        "type": "object",
+        "additionalProperties": False,
+        "required": ["domain", "payload", "schema_version"],
+        "properties": {
+            "domain": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": bounds["identifier_utf8_bytes"],
+                "pattern": r"^local-ai-runtime/[A-Za-z0-9][A-Za-z0-9._-]{0,95}/v1$",
+            },
+            "payload": value_ref,
+            "schema_version": {"const": 1},
+        },
+        "$defs": {
+            "canonical_value": {
+                "x-local-ai-runtime-maxDepth": bounds["depth"],
+                "oneOf": [
+                    {"type": "boolean"},
+                    {
+                        "type": "integer",
+                        "minimum": bounds["integer_min"],
+                        "maximum": bounds["integer_max"],
+                    },
+                    {
+                        "type": "string",
+                        "maxLength": bounds["string_utf8_bytes"],
+                        "x-local-ai-runtime-maxUtf8Bytes": bounds[
+                            "string_utf8_bytes"
+                        ],
+                    },
+                    {
+                        "type": "array",
+                        "maxItems": bounds["array_items"],
+                        "items": value_ref,
+                    },
+                    {
+                        "type": "object",
+                        "maxProperties": bounds["object_members"],
+                        "additionalProperties": value_ref,
+                    },
+                ],
+            }
+        },
+    }
+    if not _json_values_equal(schema, expected):
+        raise ValidationFailure(
+            "canonical_schema_drift", "CanonicalEnvelope schema mismatch"
+        )
+
+
+def _validate_contract_string(value: Any, bounds: dict[str, int], label: str) -> bytes:
+    if not isinstance(value, str):
+        raise ValidationFailure("invalid_utf8_string", f"{label} must be a string")
+    if value != unicodedata.normalize("NFC", value):
+        raise ValidationFailure("non_nfc_string", f"{label} is not NFC")
+    try:
+        encoded = value.encode("utf-8")
+    except UnicodeEncodeError as exc:
+        raise ValidationFailure("invalid_utf8_string", f"{label} is not valid UTF-8") from exc
+    if len(encoded) > bounds["string_utf8_bytes"]:
+        raise ValidationFailure("string_limit", f"{label} exceeds UTF-8 bound")
+    for character in value:
+        category = unicodedata.category(character)
+        if category not in ALLOWED_UNICODE_CATEGORIES or _is_noncharacter(ord(character)):
+            raise ValidationFailure(
+                "disallowed_unicode", f"{label} contains disallowed Unicode"
+            )
+    return encoded
+
+
+def _pointer_child(path: str, key: str) -> str:
+    escaped = key.replace("~", "~0").replace("/", "~1")
+    return f"{path}/{escaped}"
+
+
+def _canonicalize_value(
+    value: Any,
+    bounds: dict[str, int],
+    set_specs: dict[str, str],
+    used_set_paths: set[str],
+    *,
+    path: str,
+    depth: int,
+) -> Any:
+    if depth > bounds["depth"]:
+        raise ValidationFailure("depth_limit", f"canonical depth exceeded at {path}")
+    if value is None:
+        raise ValidationFailure("null_not_allowed", f"null is not allowed at {path}")
+    if isinstance(value, bool):
+        return value
+    if type(value) is int:
+        if not bounds["integer_min"] <= value <= bounds["integer_max"]:
+            raise ValidationFailure("integer_limit", f"integer out of bounds at {path}")
+        return value
+    if isinstance(value, float):
+        raise ValidationFailure("float_not_allowed", f"float is not allowed at {path}")
+    if isinstance(value, str):
+        _validate_contract_string(value, bounds, path)
+        return value
+    if isinstance(value, list):
+        if len(value) > bounds["array_items"]:
+            raise ValidationFailure("array_limit", f"array exceeds bound at {path}")
+        ordered = value
+        if path in set_specs:
+            used_set_paths.add(path)
+            if len(value) > bounds["set_items"]:
+                raise ValidationFailure("set_limit", f"set exceeds bound at {path}")
+            sort_key = set_specs[path]
+            keyed: list[tuple[bytes, Any]] = []
+            seen: set[bytes] = set()
+            for item in value:
+                if not isinstance(item, dict) or sort_key not in item:
+                    raise ValidationFailure(
+                        "set_sort_key_missing", f"set item lacks {sort_key} at {path}"
+                    )
+                key_value = item[sort_key]
+                if isinstance(key_value, bool) or not isinstance(key_value, (int, str)):
+                    raise ValidationFailure(
+                        "set_sort_key_type", f"set sort key is not scalar at {path}"
+                    )
+                canonical_key = json.dumps(
+                    _canonicalize_value(
+                        key_value,
+                        bounds,
+                        {},
+                        set(),
+                        path=f"{path}/@sort-key",
+                        depth=depth + 1,
+                    ),
+                    ensure_ascii=False,
+                    separators=(",", ":"),
+                ).encode("utf-8")
+                if canonical_key in seen:
+                    raise ValidationFailure(
+                        "duplicate_set_key", f"duplicate set key at {path}"
+                    )
+                seen.add(canonical_key)
+                keyed.append((canonical_key, item))
+            ordered = [item for _, item in sorted(keyed, key=lambda entry: entry[0])]
+        return [
+            _canonicalize_value(
+                item,
+                bounds,
+                set_specs,
+                used_set_paths,
+                path=_pointer_child(path, str(index)),
+                depth=depth + 1,
+            )
+            for index, item in enumerate(ordered)
+        ]
+    if isinstance(value, dict):
+        if len(value) > bounds["object_members"]:
+            raise ValidationFailure("object_limit", f"object exceeds bound at {path}")
+        result: dict[str, Any] = {}
+        encoded_keys = [
+            (_validate_contract_string(key, bounds, f"{path}/@key"), key)
+            for key in value
+        ]
+        for _, key in sorted(encoded_keys, key=lambda item: item[0]):
+            result[key] = _canonicalize_value(
+                value[key],
+                bounds,
+                set_specs,
+                used_set_paths,
+                path=_pointer_child(path, key),
+                depth=depth + 1,
+            )
+        return result
+    raise ValidationFailure("unsupported_json_type", f"unsupported value at {path}")
+
+
+def _canonicalize_fixture_case(case: dict[str, Any], bounds: dict[str, int]) -> str:
+    case = _require_object(case, "canonical fixture case", reason="fixture_schema")
+    raw_json = case.get("raw_json")
+    if not isinstance(raw_json, str):
+        raise ValidationFailure("fixture_schema", "raw_json must be a string")
+    try:
+        raw = raw_json.encode("utf-8")
+    except UnicodeEncodeError as exc:
+        raise ValidationFailure(
+            "invalid_utf8_string", "raw_json is not valid UTF-8"
+        ) from exc
+    if len(raw) > bounds["json_input_bytes"]:
+        raise ValidationFailure("json_input_limit", "canonical input exceeds byte bound")
+    try:
+        value = json.loads(raw_json, object_pairs_hook=_reject_duplicates)
+    except (json.JSONDecodeError, RecursionError) as exc:
+        detail = getattr(exc, "msg", "maximum JSON nesting exceeded")
+        raise ValidationFailure("invalid_json", detail) from exc
+    if not isinstance(value, dict) or set(value) != {"domain", "payload", "schema_version"}:
+        raise ValidationFailure("canonical_envelope", "canonical envelope fields mismatch")
+    if (
+        not isinstance(value["domain"], str)
+        or CANONICAL_DOMAIN_PATTERN.fullmatch(value["domain"]) is None
+        or len(value["domain"].encode("utf-8")) > bounds["identifier_utf8_bytes"]
+        or type(value["schema_version"]) is not int
+        or value["schema_version"] != 1
+    ):
+        raise ValidationFailure("canonical_envelope", "canonical envelope identity mismatch")
+    specs: dict[str, str] = {}
+    set_semantics = _require_array(
+        case.get("set_semantics", []), "set_semantics", reason="fixture_schema"
+    )
+    for spec in set_semantics:
+        if not isinstance(spec, dict) or set(spec) != {"json_pointer", "sort_key"}:
+            raise ValidationFailure("fixture_schema", "set semantics fixture mismatch")
+        pointer, sort_key = spec["json_pointer"], spec["sort_key"]
+        if not isinstance(pointer, str) or not isinstance(sort_key, str) or pointer in specs:
+            raise ValidationFailure("fixture_schema", "set semantics declaration mismatch")
+        specs[pointer] = sort_key
+    used: set[str] = set()
+    canonical_value = _canonicalize_value(
+        value, bounds, specs, used, path="", depth=0
+    )
+    if used != set(specs):
+        raise ValidationFailure(
+            "set_semantics_pointer_missing", "declared set pointer did not resolve"
+        )
+    return (
+        json.dumps(
+            canonical_value,
+            ensure_ascii=False,
+            sort_keys=False,
+            separators=(",", ":"),
+        )
+        + "\n"
+    )
+
+
+def _validate_git_path(value: str, policy: dict[str, Any]) -> tuple[str, str]:
+    policy = _require_object(policy, "canonical policy", reason="canonical_policy_drift")
+    if policy.get("bounds") != EXPECTED_CANONICAL_BOUNDS:
+        raise ValidationFailure("canonical_policy_drift", "canonical bounds mismatch")
+    bounds = policy["bounds"]
+    git_policy = _require_object(
+        policy.get("git_path"), "Git path policy", reason="canonical_policy_drift"
+    )
+    device_catalog = _require_string_array(
+        git_policy.get("dos_device_catalog"),
+        "DOS device catalog",
+        reason="canonical_policy_drift",
+    )
+    if not isinstance(value, str):
+        raise ValidationFailure("invalid_utf8", "Git path must decode to a string")
+    if value != unicodedata.normalize("NFC", value):
+        raise ValidationFailure("non_nfc_path", "Git path is not NFC")
+    try:
+        encoded = value.encode("utf-8")
+    except UnicodeEncodeError as exc:
+        raise ValidationFailure("invalid_utf8", "Git path is not valid UTF-8") from exc
+    if len(encoded) > bounds["git_path_utf8_bytes"]:
+        raise ValidationFailure("git_path_limit", "Git path exceeds byte bound")
+    if value.startswith("/"):
+        raise ValidationFailure("absolute_path", "Git path is absolute")
+    if re.match(r"^[A-Za-z]:", value):
+        raise ValidationFailure("drive_absolute_path", "Git path has a drive prefix")
+    if "\\" in value:
+        raise ValidationFailure("backslash_path", "Git path contains backslash")
+    if ":" in value:
+        raise ValidationFailure("alternate_data_stream", "Git path contains colon")
+    components = value.split("/")
+    if len(components) > bounds["git_path_components"]:
+        raise ValidationFailure("git_path_component_limit", "too many path components")
+    if "" in components:
+        raise ValidationFailure("empty_path_component", "Git path has empty component")
+    if "." in components:
+        raise ValidationFailure("dot_path_component", "Git path has dot component")
+    if ".." in components:
+        raise ValidationFailure("dotdot_path_component", "Git path has dotdot component")
+    devices = set(device_catalog)
+    for component in components:
+        if component.endswith((".", " ")):
+            raise ValidationFailure(
+                "trailing_dot_or_space", "Git path has trailing dot or space"
+            )
+        for character in component:
+            category = unicodedata.category(character)
+            if category not in ALLOWED_UNICODE_CATEGORIES or _is_noncharacter(
+                ord(character)
+            ):
+                raise ValidationFailure(
+                    "disallowed_path_unicode", "Git path contains disallowed Unicode"
+                )
+        if component.split(".", 1)[0].upper() in devices:
+            raise ValidationFailure("dos_device_path", "Git path uses DOS device name")
+    if unicodedata.unidata_version != EXPECTED_UPPERCASE_CATALOG["unicode_version"]:
+        raise ValidationFailure(
+            "uppercase_catalog_unavailable", "Unicode uppercase catalog version mismatch"
+        )
+    return value, value.upper()
+
+
+def _validate_git_path_set(values: list[str], policy: dict[str, Any]) -> None:
+    values = _require_array(values, "Git path set", reason="fixture_schema")
+    seen: set[str] = set()
+    for value in values:
+        _, collision_key = _validate_git_path(value, policy)
+        if collision_key in seen:
+            raise ValidationFailure(
+                "windows_case_collision", "Git paths share a Windows collision key"
+            )
+        seen.add(collision_key)
+
+
+def _evaluate_alias_probe(case: dict[str, Any]) -> str:
+    required = {
+        "case_id",
+        "policy_observation",
+        "probe_attempted",
+        "handle_open_mode",
+        "long_handle_identity",
+        "alias_handle_identity",
+        "original_approved_path_id",
+        "resolved_approved_path_id",
+        "bypass_observed",
+        "link_policy_passed",
+        "mapping_generation_unchanged",
+        "expected_result",
+    }
+    case = _require_exact_fields(
+        case, required, "alias probe case", reason="fixture_schema"
+    )
+    if not isinstance(case["policy_observation"], str) or case[
+        "policy_observation"
+    ] not in {
+        "disabled",
+        "enabled",
+        "policy_query_denied",
+    }:
+        raise ValidationFailure("fixture_schema", "unknown 8.3 policy observation")
+    for field in {
+        "probe_attempted",
+        "bypass_observed",
+        "link_policy_passed",
+        "mapping_generation_unchanged",
+    }:
+        if not isinstance(case[field], bool):
+            raise ValidationFailure("fixture_schema", f"{field} must be boolean")
+    if case["handle_open_mode"] != "no_follow":
+        raise ValidationFailure("fixture_schema", "alias probe must use no-follow handles")
+    identity_fields = {"volume_id", "root_file_id_128", "file_id_128"}
+    long_identity = _require_exact_fields(
+        case["long_handle_identity"], identity_fields, "long handle identity"
+    )
+    alias_identity = case["alias_handle_identity"]
+    if alias_identity is not None:
+        alias_identity = _require_exact_fields(
+            alias_identity, identity_fields, "alias handle identity"
+        )
+    for identity in (long_identity, alias_identity):
+        if identity is None:
+            continue
+        if not isinstance(identity["volume_id"], str) or not identity["volume_id"]:
+            raise ValidationFailure("fixture_schema", "volume identity must be non-empty")
+        for field in ("root_file_id_128", "file_id_128"):
+            value = identity[field]
+            if (
+                not isinstance(value, str)
+                or len(value) != 32
+                or any(character not in "0123456789abcdef" for character in value)
+            ):
+                raise ValidationFailure("fixture_schema", f"{field} must be lowercase hex")
+    for field in ("original_approved_path_id", "resolved_approved_path_id"):
+        if not isinstance(case[field], str) or not case[field]:
+            raise ValidationFailure("fixture_schema", f"{field} must be non-empty")
+    if not case["mapping_generation_unchanged"]:
+        return "requalification_required"
+    if not case["link_policy_passed"]:
+        return "identity_policy_violation"
+    if case["policy_observation"] == "policy_query_denied" and not case[
+        "probe_attempted"
+    ]:
+        return "policy_query_denied_without_probe"
+    if alias_identity is not None and alias_identity != long_identity:
+        return "alias_identity_collision"
+    if (
+        case["bypass_observed"]
+        or case["resolved_approved_path_id"] != case["original_approved_path_id"]
+    ):
+        return "alias_bypass"
+    if case["policy_observation"] == "policy_query_denied":
+        return "qualified_by_probe"
+    return "qualified"
+
+
+def _verify_boundary_fixtures(fixture: dict[str, Any], bounds: dict[str, int]) -> int:
+    fixture = _require_object(fixture, "canonical fixture", reason="fixture_schema")
+    dimensions = _require_array(
+        fixture.get("boundary_dimensions"),
+        "boundary_dimensions",
+        reason="fixture_schema",
+    )
+    by_id: dict[str, dict[str, Any]] = {}
+    for raw_entry in dimensions:
+        entry = _require_exact_fields(
+            raw_entry,
+            {"bound_id", "kind", "limit"},
+            "boundary dimension",
+            reason="fixture_schema",
+        )
+        if not isinstance(entry["bound_id"], str) or not isinstance(entry["kind"], str):
+            raise ValidationFailure(
+                "fixture_schema", "boundary identifiers must be strings"
+            )
+        if entry["bound_id"] in by_id:
+            raise ValidationFailure("fixture_schema", "duplicate boundary identifier")
+        by_id[entry["bound_id"]] = entry
+    if set(by_id) != set(bounds) or len(by_id) != len(dimensions):
+        raise ValidationFailure("boundary_fixture_gap", "bounded field coverage mismatch")
+    expectations = fixture.get("boundary_expectations")
+    expected_matrix = {
+        "maximum": {
+            "limit_minus_one": "accept",
+            "limit": "accept",
+            "limit_plus_one": "reject",
+        },
+        "minimum": {
+            "limit_minus_one": "reject",
+            "limit": "accept",
+            "limit_plus_one": "accept",
+        },
+    }
+    if expectations != expected_matrix:
+        raise ValidationFailure("boundary_fixture_gap", "boundary matrix mismatch")
+    for bound_id, entry in by_id.items():
+        if entry["limit"] != bounds[bound_id]:
+            raise ValidationFailure("boundary_fixture_gap", f"{bound_id} fixture mismatch")
+        if entry["kind"] not in expected_matrix:
+            raise ValidationFailure("boundary_fixture_gap", f"{bound_id} kind mismatch")
+    return len(dimensions)
+
+
+def _verify_sid_named_objects(
+    fixture: dict[str, Any], policy: dict[str, Any]
+) -> int:
+    fixture = _require_object(fixture, "canonical fixture", reason="fixture_schema")
+    policy = _require_object(policy, "canonical policy", reason="canonical_policy_drift")
+    if policy.get("bounds") != EXPECTED_CANONICAL_BOUNDS:
+        raise ValidationFailure("canonical_policy_drift", "canonical bounds mismatch")
+    value = _require_exact_fields(
+        fixture.get("sid_named_object_fixture"),
+        {
+            "canonical_sid",
+            "expected_sid_hash",
+            "repo_identity_hash",
+            "attempt_uuid",
+            "run_uuid",
+        },
+        "SID/named-object fixture",
+    )
+    sid = value["canonical_sid"]
+    if (
+        not isinstance(sid, str)
+        or SID_PATTERN.fullmatch(sid) is None
+        or len(sid.encode("ascii")) > policy["bounds"]["sid_ascii_bytes"]
+        or any(
+            len(component) > 1 and component.startswith("0")
+            for component in sid.split("-")[1:]
+        )
+    ):
+        raise ValidationFailure("sid_identity", "canonical SID fixture is invalid")
+    for field in (
+        "expected_sid_hash",
+        "repo_identity_hash",
+        "attempt_uuid",
+        "run_uuid",
+    ):
+        if not isinstance(value[field], str):
+            raise ValidationFailure("named_object_identity", f"{field} must be a string")
+    if not _is_sha256(value["expected_sid_hash"]) or not _is_sha256(
+        value["repo_identity_hash"]
+    ):
+        raise ValidationFailure("named_object_identity", "fixture hashes are invalid")
+    if UUID_V4_PATTERN.fullmatch(value["attempt_uuid"]) is None or UUID_V4_PATTERN.fullmatch(
+        value["run_uuid"]
+    ) is None:
+        raise ValidationFailure("named_object_identity", "fixture UUIDs are not canonical v4")
+    sid_hash = hashlib.sha256(sid.encode("ascii")).hexdigest()
+    if sid_hash != value["expected_sid_hash"]:
+        raise ValidationFailure("sid_identity", "SID hash fixture mismatch")
+    named_object_policy = _require_object(
+        policy.get("named_object_identity"),
+        "named object identity policy",
+        reason="canonical_policy_drift",
+    )
+    templates = _require_string_array(
+        named_object_policy.get("templates"),
+        "named object templates",
+        reason="canonical_policy_drift",
+    )
+    for template in templates:
+        rendered = (
+            template.replace("<SIDHash>", sid_hash)
+            .replace("<RepoIdentityHash>", value["repo_identity_hash"])
+            .replace("<attempt_uuid>", value["attempt_uuid"])
+            .replace("<run_uuid>", value["run_uuid"])
+        )
+        try:
+            encoded = rendered.encode("ascii")
+        except UnicodeEncodeError as exc:
+            raise ValidationFailure("named_object_identity", "name is not ASCII") from exc
+        if len(encoded) > policy["bounds"]["named_object_ascii_bytes"] or "<" in rendered:
+            raise ValidationFailure("named_object_identity", "name fixture is not closed")
+    return len(templates)
+
+
+def verify_canonicalization_component(repo_root: Path) -> dict[str, Any]:
+    policy, policy_raw = _load_json_object(repo_root / CANONICAL_POLICY_RELATIVE)
+    schema, _ = _load_json_object(repo_root / CANONICAL_SCHEMA_RELATIVE)
+    fixture, _ = _load_json_object(repo_root / CANONICAL_FIXTURE_RELATIVE)
+    policy_payload = _verify_canonical_policy(policy, policy_raw)
+    bounds = policy_payload["bounds"]
+    _verify_canonical_schema(schema, bounds)
+    fixture = _require_exact_fields(
+        fixture,
+        {
+            "alias_probe_cases",
+            "boundary_dimensions",
+            "boundary_expectations",
+            "canonical_negative_cases",
+            "canonical_positive_cases",
+            "fixture_id",
+            "git_negative_cases",
+            "git_positive_cases",
+            "policy_path",
+            "schema_path",
+            "schema_version",
+            "sid_named_object_fixture",
+        },
+        "canonical fixture",
+        reason="fixture_schema",
+    )
+    if (
+        fixture["fixture_id"] != "CanonicalizationPolicy.v1.contract-fixtures"
+        or type(fixture["schema_version"]) is not int
+        or fixture["schema_version"] != 1
+    ):
+        raise ValidationFailure("fixture_schema", "canonical fixture identity mismatch")
+    if fixture.get("policy_path") != str(CANONICAL_POLICY_RELATIVE).replace("\\", "/"):
+        raise ValidationFailure("fixture_binding_mismatch", "fixture policy path mismatch")
+    if fixture.get("schema_path") != str(CANONICAL_SCHEMA_RELATIVE).replace("\\", "/"):
+        raise ValidationFailure("fixture_binding_mismatch", "fixture schema path mismatch")
+
+    positive = _require_array(
+        fixture["canonical_positive_cases"],
+        "canonical_positive_cases",
+        reason="fixture_schema",
+    )
+    for raw_case in positive:
+        case = _require_object(raw_case, "canonical positive case", reason="fixture_schema")
+        actual = _canonicalize_fixture_case(case, bounds)
+        if actual != case.get("expected_canonical_json"):
+            raise ValidationFailure(
+                "canonical_fixture_mismatch", f"{case.get('case_id')} output mismatch"
+            )
+    canonical_negative = _require_array(
+        fixture["canonical_negative_cases"],
+        "canonical_negative_cases",
+        reason="fixture_schema",
+    )
+    for raw_case in canonical_negative:
+        case = _require_object(raw_case, "canonical negative case", reason="fixture_schema")
+        try:
+            _canonicalize_fixture_case(case, bounds)
+        except ValidationFailure as exc:
+            if exc.reason != case.get("expected_reason"):
+                raise ValidationFailure(
+                    "fixture_reason_mismatch",
+                    f"{case.get('case_id')}: expected {case.get('expected_reason')}, got {exc.reason}",
+                ) from exc
+        else:
+            raise ValidationFailure("negative_fixture_accepted", str(case.get("case_id")))
+
+    git_positive = _require_array(
+        fixture["git_positive_cases"], "git_positive_cases", reason="fixture_schema"
+    )
+    for raw_case in git_positive:
+        case = _require_exact_fields(
+            raw_case,
+            {
+                "case_id",
+                "expected_git_path",
+                "expected_windows_collision_key",
+                "git_path",
+            },
+            "Git positive case",
+            reason="fixture_schema",
+        )
+        git_path, collision_key = _validate_git_path(case["git_path"], policy_payload)
+        if (
+            git_path != case.get("expected_git_path")
+            or collision_key != case.get("expected_windows_collision_key")
+        ):
+            raise ValidationFailure("git_fixture_mismatch", str(case.get("case_id")))
+    git_negative = _require_array(
+        fixture["git_negative_cases"], "git_negative_cases", reason="fixture_schema"
+    )
+    for raw_case in git_negative:
+        case = _require_object(raw_case, "Git negative case", reason="fixture_schema")
+        input_fields = {"git_path", "git_paths", "raw_utf8_hex"}.intersection(case)
+        if (
+            len(input_fields) != 1
+            or set(case) != {"case_id", "expected_reason"}.union(input_fields)
+            or not isinstance(case["case_id"], str)
+            or not isinstance(case["expected_reason"], str)
+        ):
+            raise ValidationFailure(
+                "fixture_schema", "Git negative case shape mismatch"
+            )
+        if "raw_utf8_hex" in case and not isinstance(case["raw_utf8_hex"], str):
+            raise ValidationFailure("fixture_schema", "raw_utf8_hex must be a string")
+        if "git_paths" in case:
+            _require_array(case["git_paths"], "git_paths", reason="fixture_schema")
+        try:
+            if "raw_utf8_hex" in case:
+                try:
+                    value = bytes.fromhex(case["raw_utf8_hex"]).decode("utf-8")
+                except (UnicodeDecodeError, ValueError) as exc:
+                    raise ValidationFailure("invalid_utf8", "Git path bytes are invalid") from exc
+                _validate_git_path(value, policy_payload)
+            elif "git_paths" in case:
+                _validate_git_path_set(case["git_paths"], policy_payload)
+            else:
+                _validate_git_path(case["git_path"], policy_payload)
+        except ValidationFailure as exc:
+            if exc.reason != case.get("expected_reason"):
+                raise ValidationFailure(
+                    "fixture_reason_mismatch",
+                    f"{case.get('case_id')}: expected {case.get('expected_reason')}, got {exc.reason}",
+                ) from exc
+        else:
+            raise ValidationFailure("negative_fixture_accepted", str(case.get("case_id")))
+
+    alias_cases = _require_array(
+        fixture["alias_probe_cases"], "alias_probe_cases", reason="fixture_schema"
+    )
+    for raw_case in alias_cases:
+        case = _require_object(raw_case, "alias probe case", reason="fixture_schema")
+        actual = _evaluate_alias_probe(case)
+        if actual != case.get("expected_result"):
+            raise ValidationFailure("alias_fixture_mismatch", str(case.get("case_id")))
+    boundary_count = _verify_boundary_fixtures(fixture, bounds)
+    named_object_count = _verify_sid_named_objects(fixture, policy_payload)
+    return {
+        "status": "pass",
+        "component": "canonicalization",
+        "artifact_version": "CanonicalizationPolicy.v1",
+        "artifact_byte_count": len(policy_raw),
+        "artifact_sha256": hashlib.sha256(policy_raw).hexdigest(),
+        "fixture_counts": {
+            "alias_probe": len(alias_cases),
+            "boundary_dimension": boundary_count,
+            "canonical_negative": len(canonical_negative),
+            "canonical_positive": len(positive),
+            "git_negative": len(git_negative),
+            "git_positive": len(git_positive),
+            "named_object_template": named_object_count,
+        },
+    }
+
+
 def _parse_args(argv: list[str]) -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", type=Path, default=Path(__file__).resolve().parents[1])
@@ -443,11 +1585,17 @@ def main(argv: list[str] | None = None) -> int:
         if args.component == "manifest" and args.self_test:
             payload = verify_manifest_component(root)
             exit_code = 0
+        elif args.component == "canonicalization":
+            payload = verify_canonicalization_component(root)
+            exit_code = 0
         else:
             payload = {
                 "status": "incomplete",
                 "reason": "standalone_verifier_not_frozen",
-                "implemented_components": ["manifest_self_test"],
+                "implemented_components": [
+                    "manifest_self_test",
+                    "canonicalization",
+                ],
                 "requested_component": args.component or "package",
             }
             exit_code = 3

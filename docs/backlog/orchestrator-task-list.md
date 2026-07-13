@@ -4,7 +4,7 @@
 
 机器真源是 `docs/plans/local-ai-runtime-0.2-work-items.json`。本文件只作可读索引；状态、依赖、验收、命令、证据、回滚、停止条件和 prohibited actions 必须从机器真源读取。
 
-当前：`local-ai-runtime-0.2-v3.23` 为 `baseline_candidate`；队列 `LOCAL-AI-RUNTIME-0.2-BASELINE-CLOSURE`；唯一 selectable 项 `LAR-P0A-003`。机器图是 `local_ai_runtime_work_items.v3` 确定性 DAG，共 65 项，其中 P1A-P1F 的 35 项仍按 work-item 原子闭环；顶层 11 项 contract projection 机械绑定规范 producer、实现 consumer 与 acceptance consumer。`bounded continuation` 只允许完整 closeout 后同一 run 重新 selector，默认最多 3 项/180 分钟，不批量关闭状态，也不跨阶段或授权边界。
+当前：`local-ai-runtime-0.2-v3.23` 为 `baseline_candidate`；队列 `LOCAL-AI-RUNTIME-0.2-BASELINE-CLOSURE`；唯一 selectable 项 `LAR-P0A-004`。机器图是 `local_ai_runtime_work_items.v3` 确定性 DAG，共 65 项，其中 P1A-P1F 的 35 项仍按 work-item 原子闭环；顶层 11 项 contract projection 机械绑定规范 producer、实现 consumer 与 acceptance consumer。`bounded continuation` 只允许完整 closeout 后同一 run 重新 selector，默认最多 3 项/180 分钟，不批量关闭状态，也不跨阶段或授权边界。
 
 目标源码使用关闭布局：`approved_root_files=["__init__.py","__main__.py"]`；`approved_subpackages=["contracts","kernel","qualification","storage","execution","recovery","git_local","operations","compat"]`；`required_source_owners` 固定 bootstrap/marker 的唯一任务。`__main__.py` 只转发 contracts verifier；任务若计划其他包根功能模块、第十个首级子包、重复源码 owner 或缺失 marker，planning verifier 必须先阻断。
 
@@ -23,8 +23,8 @@
 - [x] `LAR-P0A-EVAL-001` completed：三份 machine-readable contract 已冻结并由 exact byte/hash/snapshot identity 绑定；定义 TaskFamily、model/effort、tool inventory、sandbox、gates、人工分钟、stop rules、evidence schema 和五个独立 capability surface，但不产生比较结果或资格化结论。
 - [x] `LAR-P0A-EVAL-002` completed：18 个 core trial 与全部 conditional disposition 已封存；决定为 `preserve_v3_23_semantics`，不 promotion 当前 high-effort profile，未知 downstream outcome 保留在分母。
 - [x] `LAR-P0A-002` completed：已重验 Narrative/artifact/package 三层版本语义，并把 manifest fixture/self-test 绑定到冻结 v3.23 source 与 `BaselineLineage.v2`；最终 manifest 未创建，`P0A-MANIFEST` 保持 missing，`P0A-VERIFIER` 保持 in_progress。
-- [ ] `LAR-P0A-003` ready：Canonical JSON、Git path、Windows identity/collision、alias-aware 8.3 与 `policy_query_denied` probe。
-- [ ] `LAR-P0A-004` pending：Product/routing/template、`WorkDefinition`/`TaskFamily`、永久 ordinary replay、absent-only secret/admission、原子 resubmission。
+- [x] `LAR-P0A-003` completed：Canonical JSON、Git path、Windows identity/collision、SID/named-object、alias-aware 8.3 与 `policy_query_denied` probe 已闭合为 `CanonicalizationPolicy.v1`。
+- [ ] `LAR-P0A-004` ready：Product/routing/template、`WorkDefinition`/`TaskFamily`、永久 ordinary replay、absent-only secret/admission、原子 resubmission。
 - [ ] `LAR-P0A-005` pending：base-bound QualificationObservation、base-independent QualificationSensitiveInputSet、environment、opaque sandbox state/log、Authorization continuation、root/child effect grant。
 - [ ] `LAR-P0A-006` pending：`EffectPlan`、`writer_effect_id`/`writer_launch_id`、Writer/StageJob、marker、JOB_LIST/HANDLE_LIST、精确 stdio/EOF、suspended execution barrier、Authorization/SafetyOnly authority union、fencing/adoption。
 - [ ] `LAR-P0A-007` pending：event/status matrix、journal、receipt、artifact、runtime-managed external evidence、key envelopes、anti-rollback backup/restore。
