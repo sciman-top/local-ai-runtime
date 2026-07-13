@@ -1,0 +1,72 @@
+{
+  "fixture_id": "ProductContract.v1.contract-fixtures",
+  "schema_version": 1,
+  "policy_path": "docs/specs/local-ai-runtime-0.2/normative/ProductContract.v1.json",
+  "task_template_schema_path": "docs/specs/local-ai-runtime-0.2/schemas/TaskTemplate.v1.schema.json",
+  "batch_submission_schema_path": "docs/specs/local-ai-runtime-0.2/schemas/BatchSubmission.v1.schema.json",
+  "task_template_positive": {
+    "schema_version": 1,
+    "template_id": "bounded-doc-update",
+    "template_version": "v1",
+    "work_class": "batch",
+    "risk_class": "low",
+    "host_scope": "host_local",
+    "parameter_definitions": [
+      {"parameter_id": "branch_mode", "required": true, "value_spec": {"kind": "enum", "values": ["code", "docs"]}},
+      {"parameter_id": "include_tests", "required": true, "value_spec": {"kind": "boolean"}},
+      {"parameter_id": "issue_id", "required": true, "value_spec": {"kind": "public_id", "max_utf8_bytes": 64}},
+      {"parameter_id": "max_files", "required": true, "value_spec": {"kind": "integer", "minimum": 1, "maximum": 20}},
+      {"parameter_id": "tags", "required": false, "value_spec": {"kind": "array", "minimum_items": 0, "maximum_items": 8, "items": {"kind": "public_id", "max_utf8_bytes": 32}}},
+      {"parameter_id": "write_scope", "required": true, "value_spec": {"kind": "approved_relative_path_id", "allowed_path_ids": ["src", "tests"]}}
+    ],
+    "prompt_template_sha256": "1111111111111111111111111111111111111111111111111111111111111111"
+  },
+  "task_template_negative_mutations": [
+    {"case_id": "free_text_kind", "mutation": "replace_first_kind_free_text", "expected_reason": "template_parameter_kind"},
+    {"case_id": "model_control", "mutation": "add_model_top_field", "expected_reason": "template_schema"},
+    {"case_id": "reserved_parameter", "mutation": "replace_first_parameter_id_provider", "expected_reason": "template_parameter_influence"},
+    {"case_id": "duplicate_parameter", "mutation": "duplicate_first_parameter", "expected_reason": "template_parameter_duplicate"}
+  ],
+  "submission_positive": {
+    "repo_id": "sample-repo",
+    "template_id": "bounded-doc-update",
+    "parameters": {
+      "branch_mode": "docs",
+      "include_tests": true,
+      "issue_id": "issue-42",
+      "max_files": 10,
+      "tags": ["docs", "tests"],
+      "write_scope": "src"
+    },
+    "expected_base_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+  },
+  "submission_expected_fingerprint": "2b5a0b0d6b69a20f22f87de73ed7311bfb26700b1a46a6b0ea4ae58b53eead20",
+  "submission_negative_mutations": [
+    {"case_id": "unknown_model_field", "mutation": "add_model_top_field", "expected_reason": "submission_schema"},
+    {"case_id": "free_prompt_value", "mutation": "add_free_prompt_parameter", "expected_reason": "submission_parameter_value"},
+    {"case_id": "float_value", "mutation": "replace_max_files_float", "expected_reason": "submission_parameter_value"},
+    {"case_id": "nested_object", "mutation": "replace_max_files_object", "expected_reason": "submission_parameter_value"},
+    {"case_id": "uppercase_base", "mutation": "uppercase_base", "expected_reason": "submission_base_commit"}
+  ],
+  "routing_cases": [
+    {"case_id": "eligible_batch", "batch_template_eligible": true, "decision_complete": true, "free_prompt": false, "high_risk_or_external": false, "independent_write_set_count": 1, "integration_order_fixed": true, "expected_work_class": "batch"},
+    {"case_id": "free_prompt_native", "batch_template_eligible": true, "decision_complete": true, "free_prompt": true, "high_risk_or_external": false, "independent_write_set_count": 1, "integration_order_fixed": true, "expected_work_class": "native_direct"},
+    {"case_id": "needs_spec", "batch_template_eligible": false, "decision_complete": false, "free_prompt": false, "high_risk_or_external": false, "independent_write_set_count": 1, "integration_order_fixed": true, "expected_work_class": "native_spec"},
+    {"case_id": "native_program", "batch_template_eligible": false, "decision_complete": true, "free_prompt": false, "high_risk_or_external": false, "independent_write_set_count": 2, "integration_order_fixed": true, "expected_work_class": "native_program"},
+    {"case_id": "unfixed_program_needs_spec", "batch_template_eligible": false, "decision_complete": true, "free_prompt": false, "high_risk_or_external": false, "independent_write_set_count": 2, "integration_order_fixed": false, "expected_work_class": "native_spec"},
+    {"case_id": "high_risk_human_native", "batch_template_eligible": true, "decision_complete": true, "free_prompt": false, "high_risk_or_external": true, "independent_write_set_count": 1, "integration_order_fixed": true, "expected_work_class": "native_direct"}
+  ],
+  "family_replay_cases": [
+    {"case_id": "existing_family_before_later_guards", "family_exists": true, "read_permitted": true, "record_integrity": true, "absent_family_guards_pass": false, "expected_result": "return_generation_zero_root_task_id"},
+    {"case_id": "existing_family_read_denied", "family_exists": true, "read_permitted": false, "record_integrity": true, "absent_family_guards_pass": true, "expected_result": "replay_read_denied"},
+    {"case_id": "absent_family_rejected", "family_exists": false, "read_permitted": true, "record_integrity": true, "absent_family_guards_pass": false, "expected_result": "reject_without_input_derived_retention"},
+    {"case_id": "absent_family_transaction", "family_exists": false, "read_permitted": true, "record_integrity": true, "absent_family_guards_pass": true, "expected_result": "begin_immediate_create_or_replay"}
+  ],
+  "resubmission_cases": [
+    {"case_id": "existing_relation_before_current_guards", "relation_exists": true, "read_permitted": true, "record_integrity": true, "source_current": false, "terminal_state": "completed", "terminal_snapshot_unchanged": false, "closure_complete": false, "historical_task_ref_success": true, "current_guards_pass": false, "expected_result": "return_existing_successor"},
+    {"case_id": "historical_ref_blocks", "relation_exists": false, "read_permitted": true, "record_integrity": true, "source_current": true, "terminal_state": "failed", "terminal_snapshot_unchanged": true, "closure_complete": true, "historical_task_ref_success": true, "current_guards_pass": true, "expected_result": "historical_task_ref_success_blocks"},
+    {"case_id": "valid_resubmission", "relation_exists": false, "read_permitted": true, "record_integrity": true, "source_current": true, "terminal_state": "failed", "terminal_snapshot_unchanged": true, "closure_complete": true, "historical_task_ref_success": false, "current_guards_pass": true, "expected_result": "atomic_create_generation_plus_one"},
+    {"case_id": "non_current_blocks", "relation_exists": false, "read_permitted": true, "record_integrity": true, "source_current": false, "terminal_state": "cancelled", "terminal_snapshot_unchanged": true, "closure_complete": true, "historical_task_ref_success": false, "current_guards_pass": true, "expected_result": "source_not_current"},
+    {"case_id": "completed_blocks", "relation_exists": false, "read_permitted": true, "record_integrity": true, "source_current": true, "terminal_state": "completed", "terminal_snapshot_unchanged": true, "closure_complete": true, "historical_task_ref_success": false, "current_guards_pass": true, "expected_result": "source_not_failed_or_cancelled"}
+  ]
+}

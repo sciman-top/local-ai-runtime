@@ -1,5 +1,7 @@
 # Change Evidence Index
 
+- [20260714 LAR-P0A-004 Product And Submission](20260714-lar-p0a-004-product-submission.md): closes work-class-only Native/Batch routing, closed template/submission parameters, permanent generation-0 root replay and atomic resubmission without adding a planner or runtime model router.
+
 - [20260714 LAR-P0A-003 Canonicalization And Path Identity](20260714-lar-p0a-003-canonicalization.md): closes canonical JSON, raw Git spelling/independent Windows collision key, SID/named-object and alias-aware 8.3 handle identity with pinned locale-independent catalog and bounded fixtures.
 
 - [20260714 Planning Optimization Rebaseline](20260714-planning-optimization-rebaseline.md): decouples atomic work-item closeout from AI sessions, adds bounded same-run continuation, machine planning-complexity caps, qualification-only role model routing, measurable autonomy/speed/efficiency semantics and explicit `warning_all_dimensions` truth without changing frozen v3.23/runtime authority.
@@ -26,7 +28,7 @@
 
 - v3.23 是 `baseline_candidate`，不是 approved baseline；v3.17、两份 conflicted v3.18、v3.19-v3.22 只作为精确历史/被替代身份保留。
 - 当前队列是 `LOCAL-AI-RUNTIME-0.2-BASELINE-CLOSURE`。
-- Native thin-path comparison 已记录 `preserve_v3_23_semantics`；`LAR-P0A-003` 已完成 `CanonicalizationPolicy.v1` contract bundle，当前 selector 是 `close_baseline_normative_package_first`，唯一 selectable task 是 `LAR-P0A-004`。规范包仍为 15 required / 3 present / 12 missing，`P0A-VERIFIER` 为 in_progress；baseline 仍未批准。
+- Native thin-path comparison 已记录 `preserve_v3_23_semantics`；`LAR-P0A-004` 已完成 `ProductContract.v1`、work routing 与 submission/resubmission contract bundle，当前 selector 是 `close_baseline_normative_package_first`，唯一 selectable task 是 `LAR-P0A-005`。规范包仍为 15 required / 4 present / 11 missing，`P0A-VERIFIER` 为 in_progress；baseline 仍未批准。
 - `runtime/host-orchestrator` 仍是现行内核；没有 Truth Reset、新 Batch、Implementation Acceptance、Full Q0 或 P2 admission。
 - 下方 2026-07-06 至 2026-07-10 的 Phase 1/runtime_v2 selector 结论是历史 evidence，不再是 next-work truth。
 

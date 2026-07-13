@@ -1,0 +1,132 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local-ai-runtime.invalid/schemas/TaskTemplate.v1.schema.json",
+  "title": "TaskTemplate.v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "template_id",
+    "template_version",
+    "work_class",
+    "risk_class",
+    "host_scope",
+    "parameter_definitions",
+    "prompt_template_sha256"
+  ],
+  "properties": {
+    "schema_version": {"const": 1},
+    "template_id": {"$ref": "#/$defs/public_id"},
+    "template_version": {"$ref": "#/$defs/public_id"},
+    "work_class": {"const": "batch"},
+    "risk_class": {"const": "low"},
+    "host_scope": {"const": "host_local"},
+    "parameter_definitions": {
+      "type": "array",
+      "maxItems": 64,
+      "x-local-ai-runtime-set-semantics": {"sort_key": "parameter_id"},
+      "items": {"$ref": "#/$defs/parameter_definition"}
+    },
+    "prompt_template_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  },
+  "$defs": {
+    "public_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9._-]{0,62}$"
+    },
+    "parameter_definition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["parameter_id", "required", "value_spec"],
+      "properties": {
+        "parameter_id": {"$ref": "#/$defs/public_id"},
+        "required": {"type": "boolean"},
+        "value_spec": {"$ref": "#/$defs/value_spec"}
+      }
+    },
+    "value_spec": {
+      "oneOf": [
+        {"$ref": "#/$defs/boolean_spec"},
+        {"$ref": "#/$defs/integer_spec"},
+        {"$ref": "#/$defs/enum_spec"},
+        {"$ref": "#/$defs/public_id_spec"},
+        {"$ref": "#/$defs/path_id_spec"},
+        {"$ref": "#/$defs/array_spec"}
+      ]
+    },
+    "boolean_spec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind"],
+      "properties": {"kind": {"const": "boolean"}}
+    },
+    "integer_spec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "minimum", "maximum"],
+      "properties": {
+        "kind": {"const": "integer"},
+        "minimum": {"type": "integer"},
+        "maximum": {"type": "integer"}
+      }
+    },
+    "enum_spec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "values"],
+      "properties": {
+        "kind": {"const": "enum"},
+        "values": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 64,
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/public_id"}
+        }
+      }
+    },
+    "public_id_spec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "max_utf8_bytes"],
+      "properties": {
+        "kind": {"const": "public_id"},
+        "max_utf8_bytes": {"type": "integer", "minimum": 1, "maximum": 256}
+      }
+    },
+    "path_id_spec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "allowed_path_ids"],
+      "properties": {
+        "kind": {"const": "approved_relative_path_id"},
+        "allowed_path_ids": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 64,
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/public_id"}
+        }
+      }
+    },
+    "array_spec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "minimum_items", "maximum_items", "items"],
+      "properties": {
+        "kind": {"const": "array"},
+        "minimum_items": {"type": "integer", "minimum": 0, "maximum": 256},
+        "maximum_items": {"type": "integer", "minimum": 1, "maximum": 256},
+        "items": {
+          "oneOf": [
+            {"$ref": "#/$defs/boolean_spec"},
+            {"$ref": "#/$defs/integer_spec"},
+            {"$ref": "#/$defs/enum_spec"},
+            {"$ref": "#/$defs/public_id_spec"},
+            {"$ref": "#/$defs/path_id_spec"}
+          ]
+        }
+      }
+    }
+  }
+}

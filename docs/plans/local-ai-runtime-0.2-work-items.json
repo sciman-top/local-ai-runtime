@@ -855,7 +855,7 @@
       ],
       "phase": "P0A",
       "priority": 0,
-      "status": "ready",
+      "status": "completed",
       "title": "Close product, work routing, template, submission and resubmission contracts",
       "goal": "Define Unified Native/Batch work-class routing, closed template parameters, permanent submission identity and the atomic TaskResubmission relation while keeping model selection in qualified profile generation.",
       "depends_on": [
@@ -922,7 +922,7 @@
       "task_id": "LAR-P0A-005",
       "phase": "P0A",
       "priority": 0,
-      "status": "pending",
+      "status": "ready",
       "title": "Close qualification, environment and Authorization contracts",
       "goal": "Define reproducible qualification input closure, immutable environment bindings, keyring-only auth and reusable Authorization with continuation rules.",
       "depends_on": [

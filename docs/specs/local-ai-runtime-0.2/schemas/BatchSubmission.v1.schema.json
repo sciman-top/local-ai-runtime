@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local-ai-runtime.invalid/schemas/BatchSubmission.v1.schema.json",
+  "title": "BatchSubmission.v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["repo_id", "template_id", "parameters", "expected_base_commit"],
+  "properties": {
+    "repo_id": {"$ref": "#/$defs/public_id"},
+    "template_id": {"$ref": "#/$defs/public_id"},
+    "parameters": {
+      "type": "object",
+      "maxProperties": 64,
+      "propertyNames": {"$ref": "#/$defs/public_id"},
+      "additionalProperties": {"$ref": "#/$defs/parameter_value"},
+      "x-local-ai-runtime-maxUtf8Bytes": 65536,
+      "x-local-ai-runtime-maxDepth": 3
+    },
+    "expected_base_commit": {"type": "string", "pattern": "^[0-9a-f]{40}$"}
+  },
+  "$defs": {
+    "public_id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9._-]{0,62}$"},
+    "public_value": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._/-]{0,255}$"},
+    "scalar_value": {
+      "oneOf": [
+        {"type": "boolean"},
+        {"type": "integer", "minimum": -9223372036854775808, "maximum": 9223372036854775807},
+        {"$ref": "#/$defs/public_value"}
+      ]
+    },
+    "parameter_value": {
+      "oneOf": [
+        {"$ref": "#/$defs/scalar_value"},
+        {
+          "type": "array",
+          "maxItems": 256,
+          "items": {"$ref": "#/$defs/scalar_value"}
+        }
+      ]
+    }
+  }
+}

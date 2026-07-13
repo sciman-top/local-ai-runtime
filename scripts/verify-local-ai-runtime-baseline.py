@@ -39,6 +39,18 @@ CANONICAL_SCHEMA_RELATIVE = Path(
 CANONICAL_FIXTURE_RELATIVE = Path(
     "docs/specs/local-ai-runtime-0.2/fixtures/canonicalization/manifest.json"
 )
+PRODUCT_POLICY_RELATIVE = Path(
+    "docs/specs/local-ai-runtime-0.2/normative/ProductContract.v1.json"
+)
+TASK_TEMPLATE_SCHEMA_RELATIVE = Path(
+    "docs/specs/local-ai-runtime-0.2/schemas/TaskTemplate.v1.schema.json"
+)
+BATCH_SUBMISSION_SCHEMA_RELATIVE = Path(
+    "docs/specs/local-ai-runtime-0.2/schemas/BatchSubmission.v1.schema.json"
+)
+PRODUCT_FIXTURE_RELATIVE = Path(
+    "docs/specs/local-ai-runtime-0.2/fixtures/submission/manifest.json"
+)
 BASELINE_SPECIFICATION_ID = "local-ai-runtime-0.2-v3.23"
 BASELINE_FIXTURE_MANIFEST_ID = f"{BASELINE_SPECIFICATION_ID}-fixture"
 BOUND_ARTIFACTS = {
@@ -86,6 +98,9 @@ REQUIRED_PAYLOAD_FIELDS = {
     "package_review_head",
 }
 IDENTIFIER_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$")
+PUBLIC_ID_PATTERN = re.compile(r"^[a-z0-9][a-z0-9._-]{0,62}$")
+PUBLIC_VALUE_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._/-]{0,255}$")
+SHA1_PATTERN = re.compile(r"^[0-9a-f]{40}$")
 CANONICAL_DOMAIN_PATTERN = re.compile(
     r"^local-ai-runtime/[A-Za-z0-9][A-Za-z0-9._-]{0,95}/v1$"
 )
@@ -216,6 +231,41 @@ EXPECTED_UPPERCASE_CATALOG = {
         "url": "https://www.unicode.org/Public/15.1.0/ucd/UnicodeData.txt",
     },
     "unicode_version": "15.1.0",
+}
+EXPECTED_PRODUCT_IDENTITIES = {
+    "policy": {
+        "byte_count": 5003,
+        "sha256": "b239cee308681ac5972e494ad4ff76958623fbd558a47e03b95e0be4159fb1ef",
+    },
+    "task_template_schema": {
+        "byte_count": 3956,
+        "sha256": "a9332c772cc64b4e3530ff52afa1f4137c696d500bf2a35cf9c02af58d489ab3",
+    },
+    "batch_submission_schema": {
+        "byte_count": 1424,
+        "sha256": "4b7285427ac4878bca9e20a84f2774a31783a8499cccb71d1ebeac8e60c5b3fd",
+    },
+    "fixture": {
+        "byte_count": 7411,
+        "sha256": "cd9787660be95db2e1ce8ff8b303eee8e819f8567582cbc5f406e32cce715cf1",
+    },
+}
+FORBIDDEN_PARAMETER_IDS = {
+    "argv",
+    "authorization",
+    "command",
+    "contract_generation",
+    "environment",
+    "executable",
+    "feature",
+    "gate_set",
+    "git_policy",
+    "git_ref",
+    "model",
+    "permission_root",
+    "prompt",
+    "provider",
+    "sandbox",
 }
 
 
@@ -1568,11 +1618,615 @@ def verify_canonicalization_component(repo_root: Path) -> dict[str, Any]:
     }
 
 
+def _verify_product_policy(policy: dict[str, Any], raw: bytes) -> dict[str, Any]:
+    identity = EXPECTED_PRODUCT_IDENTITIES["policy"]
+    try:
+        canonical = (
+            json.dumps(
+                policy,
+                ensure_ascii=False,
+                sort_keys=True,
+                separators=(",", ":"),
+            ).encode("utf-8")
+            + b"\n"
+        )
+    except (RecursionError, TypeError, UnicodeEncodeError) as exc:
+        raise ValidationFailure(
+            "product_policy_bytes", "ProductContract is not canonical UTF-8 JSON"
+        ) from exc
+    if (
+        raw != canonical
+        or len(raw) != identity["byte_count"]
+        or hashlib.sha256(raw).hexdigest() != identity["sha256"]
+    ):
+        raise ValidationFailure(
+            "product_policy_identity", "ProductContract bytes or identity mismatch"
+        )
+    envelope = _require_exact_fields(
+        policy, {"domain", "payload", "schema_version"}, "product policy"
+    )
+    if (
+        envelope["domain"] != "local-ai-runtime/ProductContract/v1"
+        or type(envelope["schema_version"]) is not int
+        or envelope["schema_version"] != 1
+    ):
+        raise ValidationFailure("product_policy_drift", "product envelope mismatch")
+    payload = _require_exact_fields(
+        envelope["payload"],
+        {
+            "artifact_id",
+            "artifact_version",
+            "baseline_id",
+            "batch_submission",
+            "product",
+            "resubmission_policy",
+            "submission_family",
+            "task_template",
+            "work_routing_policy",
+        },
+        "product policy payload",
+        reason="product_policy_drift",
+    )
+    if (
+        payload["artifact_id"] != "P0A-PRODUCT"
+        or payload["artifact_version"] != "ProductContract.v1"
+        or payload["baseline_id"] != BASELINE_SPECIFICATION_ID
+    ):
+        raise ValidationFailure("product_policy_drift", "product artifact binding mismatch")
+    routing = _require_object(
+        payload["work_routing_policy"],
+        "work routing policy",
+        reason="product_policy_drift",
+    )
+    profile_boundary = _require_object(
+        routing.get("execution_profile_boundary"),
+        "execution profile boundary",
+        reason="product_policy_drift",
+    )
+    if (
+        routing.get("output_work_classes")
+        != ["native_direct", "native_spec", "native_program", "batch"]
+        or routing.get("runtime_model_router_service") != "absent"
+        or profile_boundary.get("owner")
+        != "qualified_ExecutionProfile_and_profile_generation"
+        or profile_boundary.get("work_routing_output") != "work_class_only"
+    ):
+        raise ValidationFailure("product_policy_drift", "work routing boundary mismatch")
+    submission = _require_object(
+        payload["batch_submission"],
+        "batch submission policy",
+        reason="product_policy_drift",
+    )
+    resubmission = _require_object(
+        payload["resubmission_policy"],
+        "resubmission policy",
+        reason="product_policy_drift",
+    )
+    if (
+        submission.get("exact_fields")
+        != ["repo_id", "template_id", "parameters", "expected_base_commit"]
+        or resubmission.get("no_resubmission_permit") is not True
+        or resubmission.get("command")
+        != "batch resolve <source_task_id> --code create_resubmission_v1"
+    ):
+        raise ValidationFailure("product_policy_drift", "submission policy mismatch")
+    return payload
+
+
+def _verify_product_schema_identity(raw: bytes, identity_key: str, label: str) -> None:
+    identity = EXPECTED_PRODUCT_IDENTITIES[identity_key]
+    if (
+        len(raw) != identity["byte_count"]
+        or hashlib.sha256(raw).hexdigest() != identity["sha256"]
+    ):
+        raise ValidationFailure("product_schema_drift", f"{label} identity mismatch")
+
+
+def _verify_product_fixture_identity(raw: bytes) -> None:
+    identity = EXPECTED_PRODUCT_IDENTITIES["fixture"]
+    if (
+        len(raw) != identity["byte_count"]
+        or hashlib.sha256(raw).hexdigest() != identity["sha256"]
+    ):
+        raise ValidationFailure("product_fixture_drift", "product fixture identity mismatch")
+
+
+def _validate_value_spec(spec: Any, *, allow_array: bool) -> dict[str, Any]:
+    spec = _require_object(spec, "template value_spec", reason="template_schema")
+    kind = spec.get("kind")
+    if kind == "boolean":
+        _require_exact_fields(spec, {"kind"}, "boolean value_spec", reason="template_schema")
+    elif kind == "integer":
+        _require_exact_fields(
+            spec, {"kind", "minimum", "maximum"}, "integer value_spec", reason="template_schema"
+        )
+        if (
+            type(spec["minimum"]) is not int
+            or type(spec["maximum"]) is not int
+            or spec["minimum"] > spec["maximum"]
+        ):
+            raise ValidationFailure("template_schema", "integer bounds are invalid")
+    elif kind == "enum":
+        _require_exact_fields(spec, {"kind", "values"}, "enum value_spec", reason="template_schema")
+        values = _require_string_array(spec["values"], "enum values", reason="template_schema")
+        if (
+            not values
+            or len(values) > 64
+            or len(values) != len(set(values))
+            or any(PUBLIC_VALUE_PATTERN.fullmatch(value) is None for value in values)
+        ):
+            raise ValidationFailure("template_schema", "enum values are invalid")
+    elif kind == "public_id":
+        _require_exact_fields(
+            spec, {"kind", "max_utf8_bytes"}, "public ID value_spec", reason="template_schema"
+        )
+        maximum = spec["max_utf8_bytes"]
+        if type(maximum) is not int or not 1 <= maximum <= 256:
+            raise ValidationFailure("template_schema", "public ID bound is invalid")
+    elif kind == "approved_relative_path_id":
+        _require_exact_fields(
+            spec,
+            {"kind", "allowed_path_ids"},
+            "path ID value_spec",
+            reason="template_schema",
+        )
+        values = _require_string_array(
+            spec["allowed_path_ids"], "allowed path IDs", reason="template_schema"
+        )
+        if (
+            not values
+            or len(values) > 64
+            or len(values) != len(set(values))
+            or any(PUBLIC_ID_PATTERN.fullmatch(value) is None for value in values)
+        ):
+            raise ValidationFailure("template_schema", "allowed path IDs are invalid")
+    elif kind == "array" and allow_array:
+        _require_exact_fields(
+            spec,
+            {"kind", "minimum_items", "maximum_items", "items"},
+            "array value_spec",
+            reason="template_schema",
+        )
+        minimum, maximum = spec["minimum_items"], spec["maximum_items"]
+        if (
+            type(minimum) is not int
+            or type(maximum) is not int
+            or not 0 <= minimum <= maximum <= 256
+            or maximum < 1
+        ):
+            raise ValidationFailure("template_schema", "array bounds are invalid")
+        _validate_value_spec(spec["items"], allow_array=False)
+    else:
+        raise ValidationFailure("template_parameter_kind", f"unsupported parameter kind: {kind!r}")
+    return spec
+
+
+def _validate_task_template(template: Any) -> None:
+    template = _require_exact_fields(
+        template,
+        {
+            "host_scope",
+            "parameter_definitions",
+            "prompt_template_sha256",
+            "risk_class",
+            "schema_version",
+            "template_id",
+            "template_version",
+            "work_class",
+        },
+        "TaskTemplate",
+        reason="template_schema",
+    )
+    if (
+        type(template["schema_version"]) is not int
+        or template["schema_version"] != 1
+        or not isinstance(template["template_id"], str)
+        or PUBLIC_ID_PATTERN.fullmatch(template["template_id"]) is None
+        or not isinstance(template["template_version"], str)
+        or PUBLIC_ID_PATTERN.fullmatch(template["template_version"]) is None
+        or template["work_class"] != "batch"
+        or template["risk_class"] != "low"
+        or template["host_scope"] != "host_local"
+        or not _is_sha256(template["prompt_template_sha256"])
+    ):
+        raise ValidationFailure("template_schema", "TaskTemplate identity or boundary mismatch")
+    definitions = _require_array(
+        template["parameter_definitions"], "parameter_definitions", reason="template_schema"
+    )
+    if len(definitions) > 64:
+        raise ValidationFailure("template_schema", "too many parameter definitions")
+    seen: set[str] = set()
+    for raw_definition in definitions:
+        definition = _require_exact_fields(
+            raw_definition,
+            {"parameter_id", "required", "value_spec"},
+            "parameter definition",
+            reason="template_schema",
+        )
+        parameter_id = definition["parameter_id"]
+        if not isinstance(parameter_id, str) or PUBLIC_ID_PATTERN.fullmatch(parameter_id) is None:
+            raise ValidationFailure("template_schema", "parameter ID is invalid")
+        if parameter_id in FORBIDDEN_PARAMETER_IDS:
+            raise ValidationFailure(
+                "template_parameter_influence", "parameter ID controls an execution surface"
+            )
+        if parameter_id in seen:
+            raise ValidationFailure("template_parameter_duplicate", "duplicate parameter ID")
+        seen.add(parameter_id)
+        if not isinstance(definition["required"], bool):
+            raise ValidationFailure("template_schema", "required must be boolean")
+        _validate_value_spec(definition["value_spec"], allow_array=True)
+
+
+def _validate_generic_parameter_value(value: Any, *, allow_array: bool = True) -> None:
+    if isinstance(value, bool):
+        return
+    if type(value) is int:
+        if not EXPECTED_CANONICAL_BOUNDS["integer_min"] <= value <= EXPECTED_CANONICAL_BOUNDS[
+            "integer_max"
+        ]:
+            raise ValidationFailure("submission_parameter_value", "integer is out of bounds")
+        return
+    if isinstance(value, str) and PUBLIC_VALUE_PATTERN.fullmatch(value) is not None:
+        return
+    if isinstance(value, list) and allow_array and len(value) <= 256:
+        for item in value:
+            _validate_generic_parameter_value(item, allow_array=False)
+        return
+    raise ValidationFailure("submission_parameter_value", "parameter value is not closed")
+
+
+def _validate_batch_submission(submission: Any) -> str:
+    submission = _require_exact_fields(
+        submission,
+        {"expected_base_commit", "parameters", "repo_id", "template_id"},
+        "BatchSubmission",
+        reason="submission_schema",
+    )
+    for field in ("repo_id", "template_id"):
+        value = submission[field]
+        if not isinstance(value, str) or PUBLIC_ID_PATTERN.fullmatch(value) is None:
+            raise ValidationFailure("submission_public_id", f"{field} is invalid")
+    base = submission["expected_base_commit"]
+    if not isinstance(base, str) or SHA1_PATTERN.fullmatch(base) is None:
+        raise ValidationFailure("submission_base_commit", "expected base commit is invalid")
+    parameters = _require_object(
+        submission["parameters"], "submission parameters", reason="submission_schema"
+    )
+    if len(parameters) > 64:
+        raise ValidationFailure("submission_schema", "too many parameters")
+    for parameter_id, value in parameters.items():
+        if PUBLIC_ID_PATTERN.fullmatch(parameter_id) is None:
+            raise ValidationFailure("submission_schema", "parameter ID is invalid")
+        if parameter_id in FORBIDDEN_PARAMETER_IDS:
+            raise ValidationFailure(
+                "submission_parameter_influence", "parameter controls an execution surface"
+            )
+        _validate_generic_parameter_value(value)
+    canonical_parameters = json.dumps(
+        parameters, ensure_ascii=False, sort_keys=True, separators=(",", ":")
+    ).encode("utf-8")
+    if len(canonical_parameters) > 65536:
+        raise ValidationFailure("submission_schema", "canonical parameters exceed byte bound")
+    envelope = {
+        "domain": "local-ai-runtime/BatchSubmission/v1",
+        "payload": submission,
+        "schema_version": 1,
+    }
+    raw = (
+        json.dumps(envelope, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+        + "\n"
+    ).encode("utf-8")
+    return hashlib.sha256(raw).hexdigest()
+
+
+def _value_matches_spec(value: Any, spec: dict[str, Any]) -> bool:
+    kind = spec["kind"]
+    if kind == "boolean":
+        return isinstance(value, bool)
+    if kind == "integer":
+        return type(value) is int and spec["minimum"] <= value <= spec["maximum"]
+    if kind == "enum":
+        return isinstance(value, str) and value in spec["values"]
+    if kind == "public_id":
+        return (
+            isinstance(value, str)
+            and PUBLIC_VALUE_PATTERN.fullmatch(value) is not None
+            and len(value.encode("utf-8")) <= spec["max_utf8_bytes"]
+        )
+    if kind == "approved_relative_path_id":
+        return isinstance(value, str) and value in spec["allowed_path_ids"]
+    if kind == "array":
+        return (
+            isinstance(value, list)
+            and spec["minimum_items"] <= len(value) <= spec["maximum_items"]
+            and all(_value_matches_spec(item, spec["items"]) for item in value)
+        )
+    return False
+
+
+def _validate_submission_against_template(
+    submission: dict[str, Any], template: dict[str, Any]
+) -> None:
+    definitions = {
+        definition["parameter_id"]: definition
+        for definition in template["parameter_definitions"]
+    }
+    parameters = submission["parameters"]
+    required = {
+        parameter_id
+        for parameter_id, definition in definitions.items()
+        if definition["required"]
+    }
+    if not required.issubset(parameters) or not set(parameters).issubset(definitions):
+        raise ValidationFailure("submission_template_schema", "template parameter set mismatch")
+    for parameter_id, value in parameters.items():
+        if not _value_matches_spec(value, definitions[parameter_id]["value_spec"]):
+            raise ValidationFailure(
+                "submission_template_schema", f"parameter does not match template: {parameter_id}"
+            )
+
+
+def _evaluate_work_routing(case: dict[str, Any]) -> str:
+    if (
+        case["batch_template_eligible"]
+        and case["decision_complete"]
+        and not case["free_prompt"]
+        and not case["high_risk_or_external"]
+    ):
+        return "batch"
+    if not case["decision_complete"] or (
+        case["independent_write_set_count"] >= 2
+        and not case["integration_order_fixed"]
+    ):
+        return "native_spec"
+    if case["independent_write_set_count"] >= 2:
+        return "native_program"
+    return "native_direct"
+
+
+def _evaluate_family_replay(case: dict[str, Any]) -> str:
+    if case["family_exists"]:
+        if not case["read_permitted"]:
+            return "replay_read_denied"
+        if not case["record_integrity"]:
+            return "replay_integrity_failure"
+        return "return_generation_zero_root_task_id"
+    if case["absent_family_guards_pass"]:
+        return "begin_immediate_create_or_replay"
+    return "reject_without_input_derived_retention"
+
+
+def _evaluate_resubmission(case: dict[str, Any]) -> str:
+    if case["relation_exists"]:
+        if not case["read_permitted"]:
+            return "relation_read_denied"
+        if not case["record_integrity"]:
+            return "relation_integrity_failure"
+        return "return_existing_successor"
+    if not case["source_current"]:
+        return "source_not_current"
+    if case["terminal_state"] not in {"failed", "cancelled"}:
+        return "source_not_failed_or_cancelled"
+    if not case["terminal_snapshot_unchanged"]:
+        return "terminal_snapshot_changed"
+    if not case["closure_complete"]:
+        return "source_closure_incomplete"
+    if case["historical_task_ref_success"]:
+        return "historical_task_ref_success_blocks"
+    if not case["current_guards_pass"]:
+        return "current_guards_failed"
+    return "atomic_create_generation_plus_one"
+
+
+def _fixture_cases(
+    fixture: dict[str, Any], field: str, expected_ids: set[str]
+) -> list[dict[str, Any]]:
+    values = _require_array(fixture[field], field, reason="fixture_schema")
+    cases: list[dict[str, Any]] = []
+    ids: list[str] = []
+    for raw_case in values:
+        case = _require_object(raw_case, f"{field} case", reason="fixture_schema")
+        case_id = case.get("case_id")
+        if not isinstance(case_id, str):
+            raise ValidationFailure("fixture_schema", f"{field} case_id must be a string")
+        cases.append(case)
+        ids.append(case_id)
+    if len(ids) != len(set(ids)) or set(ids) != expected_ids:
+        raise ValidationFailure("fixture_schema", f"{field} case IDs mismatch")
+    return cases
+
+
+def verify_product_submission_component(repo_root: Path) -> dict[str, Any]:
+    policy, policy_raw = _load_json_object(repo_root / PRODUCT_POLICY_RELATIVE)
+    _, template_schema_raw = _load_json_object(repo_root / TASK_TEMPLATE_SCHEMA_RELATIVE)
+    _, submission_schema_raw = _load_json_object(repo_root / BATCH_SUBMISSION_SCHEMA_RELATIVE)
+    fixture, fixture_raw = _load_json_object(repo_root / PRODUCT_FIXTURE_RELATIVE)
+    _verify_product_policy(policy, policy_raw)
+    _verify_product_schema_identity(
+        template_schema_raw, "task_template_schema", "TaskTemplate schema"
+    )
+    _verify_product_schema_identity(
+        submission_schema_raw, "batch_submission_schema", "BatchSubmission schema"
+    )
+    _verify_product_fixture_identity(fixture_raw)
+    fixture = _require_exact_fields(
+        fixture,
+        {
+            "batch_submission_schema_path",
+            "family_replay_cases",
+            "fixture_id",
+            "policy_path",
+            "resubmission_cases",
+            "routing_cases",
+            "schema_version",
+            "submission_expected_fingerprint",
+            "submission_negative_mutations",
+            "submission_positive",
+            "task_template_negative_mutations",
+            "task_template_positive",
+            "task_template_schema_path",
+        },
+        "product fixture",
+        reason="fixture_schema",
+    )
+    if (
+        fixture["fixture_id"] != "ProductContract.v1.contract-fixtures"
+        or type(fixture["schema_version"]) is not int
+        or fixture["schema_version"] != 1
+        or fixture["policy_path"] != str(PRODUCT_POLICY_RELATIVE).replace("\\", "/")
+        or fixture["task_template_schema_path"]
+        != str(TASK_TEMPLATE_SCHEMA_RELATIVE).replace("\\", "/")
+        or fixture["batch_submission_schema_path"]
+        != str(BATCH_SUBMISSION_SCHEMA_RELATIVE).replace("\\", "/")
+    ):
+        raise ValidationFailure("fixture_schema", "product fixture identity mismatch")
+
+    template = fixture["task_template_positive"]
+    _validate_task_template(template)
+    template_cases = _fixture_cases(
+        fixture,
+        "task_template_negative_mutations",
+        {"duplicate_parameter", "free_text_kind", "model_control", "reserved_parameter"},
+    )
+    template_mutations: dict[str, Callable[[dict[str, Any]], None]] = {
+        "replace_first_kind_free_text": lambda value: value["parameter_definitions"][0][
+            "value_spec"
+        ].__setitem__("kind", "free_text"),
+        "add_model_top_field": lambda value: value.__setitem__("model", "gpt"),
+        "replace_first_parameter_id_provider": lambda value: value["parameter_definitions"][
+            0
+        ].__setitem__("parameter_id", "provider"),
+        "duplicate_first_parameter": lambda value: value["parameter_definitions"].append(
+            copy.deepcopy(value["parameter_definitions"][0])
+        ),
+    }
+    for case in template_cases:
+        candidate = copy.deepcopy(template)
+        mutation = template_mutations.get(case.get("mutation"))
+        if mutation is None:
+            raise ValidationFailure("fixture_schema", "unknown template mutation")
+        mutation(candidate)
+        try:
+            _validate_task_template(candidate)
+        except ValidationFailure as exc:
+            if exc.reason != case.get("expected_reason"):
+                raise ValidationFailure("fixture_reason_mismatch", case["case_id"]) from exc
+        else:
+            raise ValidationFailure("negative_fixture_accepted", case["case_id"])
+
+    submission = fixture["submission_positive"]
+    fingerprint = _validate_batch_submission(submission)
+    _validate_submission_against_template(submission, template)
+    if fingerprint != fixture["submission_expected_fingerprint"]:
+        raise ValidationFailure("submission_fingerprint", "submission fingerprint mismatch")
+    submission_cases = _fixture_cases(
+        fixture,
+        "submission_negative_mutations",
+        {"float_value", "free_prompt_value", "nested_object", "unknown_model_field", "uppercase_base"},
+    )
+    submission_mutations: dict[str, Callable[[dict[str, Any]], None]] = {
+        "add_model_top_field": lambda value: value.__setitem__("model", "gpt"),
+        "add_free_prompt_parameter": lambda value: value["parameters"].__setitem__(
+            "notes", "free prompt text"
+        ),
+        "replace_max_files_float": lambda value: value["parameters"].__setitem__(
+            "max_files", 1.5
+        ),
+        "replace_max_files_object": lambda value: value["parameters"].__setitem__(
+            "max_files", {"value": 10}
+        ),
+        "uppercase_base": lambda value: value.__setitem__(
+            "expected_base_commit", value["expected_base_commit"].upper()
+        ),
+    }
+    for case in submission_cases:
+        candidate = copy.deepcopy(submission)
+        mutation = submission_mutations.get(case.get("mutation"))
+        if mutation is None:
+            raise ValidationFailure("fixture_schema", "unknown submission mutation")
+        mutation(candidate)
+        try:
+            _validate_batch_submission(candidate)
+        except ValidationFailure as exc:
+            if exc.reason != case.get("expected_reason"):
+                raise ValidationFailure("fixture_reason_mismatch", case["case_id"]) from exc
+        else:
+            raise ValidationFailure("negative_fixture_accepted", case["case_id"])
+
+    routing_cases = _fixture_cases(
+        fixture,
+        "routing_cases",
+        {
+            "eligible_batch",
+            "free_prompt_native",
+            "high_risk_human_native",
+            "native_program",
+            "needs_spec",
+            "unfixed_program_needs_spec",
+        },
+    )
+    family_cases = _fixture_cases(
+        fixture,
+        "family_replay_cases",
+        {
+            "absent_family_rejected",
+            "absent_family_transaction",
+            "existing_family_before_later_guards",
+            "existing_family_read_denied",
+        },
+    )
+    resubmission_cases = _fixture_cases(
+        fixture,
+        "resubmission_cases",
+        {
+            "completed_blocks",
+            "existing_relation_before_current_guards",
+            "historical_ref_blocks",
+            "non_current_blocks",
+            "valid_resubmission",
+        },
+    )
+    for cases, evaluator in (
+        (routing_cases, _evaluate_work_routing),
+        (family_cases, _evaluate_family_replay),
+        (resubmission_cases, _evaluate_resubmission),
+    ):
+        for case in cases:
+            try:
+                actual = evaluator(case)
+            except (KeyError, TypeError) as exc:
+                raise ValidationFailure("fixture_schema", f"malformed case: {case['case_id']}") from exc
+            expected = case.get("expected_work_class", case.get("expected_result"))
+            if actual != expected:
+                raise ValidationFailure("fixture_result_mismatch", case["case_id"])
+    return {
+        "status": "pass",
+        "component": "product-submission",
+        "artifact_version": "ProductContract.v1",
+        "artifact_byte_count": len(policy_raw),
+        "artifact_sha256": hashlib.sha256(policy_raw).hexdigest(),
+        "submission_fingerprint": fingerprint,
+        "fixture_counts": {
+            "family_replay": len(family_cases),
+            "resubmission": len(resubmission_cases),
+            "routing": len(routing_cases),
+            "submission_negative": len(submission_cases),
+            "submission_positive": 1,
+            "template_negative": len(template_cases),
+            "template_positive": 1,
+        },
+    }
+
+
 def _parse_args(argv: list[str]) -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", type=Path, default=Path(__file__).resolve().parents[1])
     parser.add_argument("--inventory-path", type=Path)
-    parser.add_argument("--component", choices=["manifest", "canonicalization", "package"])
+    parser.add_argument(
+        "--component",
+        choices=["manifest", "canonicalization", "product-submission", "package"],
+    )
     parser.add_argument("--self-test", action="store_true")
     parser.add_argument("--json", action="store_true")
     return parser.parse_args(argv)
@@ -1588,6 +2242,9 @@ def main(argv: list[str] | None = None) -> int:
         elif args.component == "canonicalization":
             payload = verify_canonicalization_component(root)
             exit_code = 0
+        elif args.component == "product-submission":
+            payload = verify_product_submission_component(root)
+            exit_code = 0
         else:
             payload = {
                 "status": "incomplete",
@@ -1595,6 +2252,7 @@ def main(argv: list[str] | None = None) -> int:
                 "implemented_components": [
                     "manifest_self_test",
                     "canonicalization",
+                    "product_submission",
                 ],
                 "requested_component": args.component or "package",
             }

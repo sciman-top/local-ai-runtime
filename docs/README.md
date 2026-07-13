@@ -1,6 +1,6 @@
 # Local AI Runtime 文档索引
 
-本索引服务于冻结的 `local-ai-runtime-0.2-v3.23` 候选基线。v3.23 是现行 `baseline_candidate`、`blocking_stage=baseline_approval`；正文、v3.23-bound lineage 与 `CanonicalizationPolicy.v1` 已闭合，manifest schema/fixtures/verifier skeleton 已完成但最终 manifest 不存在，规范包仍为 `15 required / 3 present / 12 missing`。`LAR-P0A-EVAL-002` Native thin-path 固定比较已记录 `preserve_v3_23_semantics`；当前 selector 为 `close_baseline_normative_package_first / LAR-P0A-004`。历史 action `run_native_thin_path_evaluation_first` 已完成，不能再次选择或误读为 baseline approval。
+本索引服务于冻结的 `local-ai-runtime-0.2-v3.23` 候选基线。v3.23 是现行 `baseline_candidate`、`blocking_stage=baseline_approval`；正文、v3.23-bound lineage、`CanonicalizationPolicy.v1` 与 `ProductContract.v1` 已闭合，manifest schema/fixtures/verifier skeleton 已完成但最终 manifest 不存在，规范包仍为 `15 required / 4 present / 11 missing`。`LAR-P0A-EVAL-002` Native thin-path 固定比较已记录 `preserve_v3_23_semantics`；当前 selector 为 `close_baseline_normative_package_first / LAR-P0A-005`。历史 action `run_native_thin_path_evaluation_first` 已完成，不能再次选择或误读为 baseline approval。
 
 ## 真源层级
 

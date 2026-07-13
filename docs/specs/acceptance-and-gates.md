@@ -58,7 +58,7 @@ Selector 是只读、快速、无副作用入口；不运行 full preflight，�
 ```json
 {
   "next_action": "close_baseline_normative_package_first",
-  "current_work_item_id": "LAR-P0A-004"
+  "current_work_item_id": "LAR-P0A-005"
 }
 ```
 

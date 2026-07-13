@@ -21,8 +21,8 @@
     "target_sha256": "80562322ebc744eda2a87a17c45f73a11982f4947c9d10e8628bb6f73ee9d5c6",
     "approval_input": false,
     "maximum_byte_count": 4096,
-    "byte_count": 3046,
-    "sha256": "53535701d14f6dc17f53efbfb7071d64ae5b428cb8454b3f443a9c043b305203"
+    "byte_count": 3201,
+    "sha256": "80c30300131d95694d630fea0d97d4e7657fa18dcd8865f3c1dc519804bffe57"
   },
   "approval_state": {
     "active": false,
@@ -36,9 +36,8 @@
     "status": "incomplete",
     "approval_eligible": false,
     "required_artifact_count": 15,
-    "present_artifact_count": 3,
+    "present_artifact_count": 4,
     "missing_artifact_ids": [
-      "P0A-PRODUCT",
       "P0A-QUALIFICATION",
       "P0A-EXECUTION",
       "P0A-EVIDENCE",
@@ -133,13 +132,13 @@
     "source_work_items": "docs/plans/local-ai-runtime-0.2-work-items.json",
     "source_plan_id": "local-ai-runtime-0.2-v3.23-implementation-work-items",
     "work_item_count": 65,
-    "why_now": "The frozen Native thin-path comparison preserved v3.23 semantics and LAR-P0A-003 closed CanonicalizationPolicy.v1 without changing runtime authority. Baseline Approval remains blocked by twelve missing normative artifacts."
+    "why_now": "The frozen Native thin-path comparison preserved v3.23 semantics and LAR-P0A-004 closed ProductContract.v1 without adding a planner, model router or runtime authority. Baseline Approval remains blocked by eleven missing normative artifacts."
   },
   "current_work_item": {
-    "task_id": "LAR-P0A-004",
+    "task_id": "LAR-P0A-005",
     "selector_action": "close_baseline_normative_package_first",
     "status": "ready",
-    "reason": "LAR-P0A-003 materialized and verified CanonicalizationPolicy.v1, canonical JSON, Git spelling, Windows collision/handle identity and alias-aware 8.3 behavior while keeping approval inactive. Close product, work routing, template, submission and resubmission contracts without adding a second planner or runtime model router."
+    "reason": "LAR-P0A-004 materialized and verified ProductContract.v1, work-class-only routing, closed TaskTemplate and BatchSubmission schemas, permanent root replay and atomic resubmission while keeping approval inactive. Close qualification, environment, sandbox-state and reusable Authorization contracts."
   },
   "planning_optimization": {
     "status": "active",
@@ -209,7 +208,7 @@
         "local-ai-runtime-0.2-v3.23",
         "LOCAL-AI-RUNTIME-0.2-BASELINE-CLOSURE",
         "LAR-P0A-EVAL-002",
-        "LAR-P0A-004",
+        "LAR-P0A-005",
         "planning_optimization_policy",
         "同一 session"
       ]
@@ -221,7 +220,7 @@
         "baseline_candidate",
         "LOCAL-AI-RUNTIME-0.2-BASELINE-CLOSURE",
         "LAR-P0A-EVAL-002",
-        "LAR-P0A-004",
+        "LAR-P0A-005",
         "planning_optimization_policy",
         "最多 3 个"
       ]
@@ -232,7 +231,7 @@
         "local-ai-runtime-0.2-v3.23",
         "blocking_stage=baseline_approval",
         "LAR-P0A-EVAL-002",
-        "LAR-P0A-004",
+        "LAR-P0A-005",
         "planning_optimization_policy",
         "最多 3 个"
       ]
@@ -374,7 +373,7 @@
         "docs/specs/local-ai-runtime-0.2-v3.23-baseline-candidate.md",
         "80562322ebc744eda2a87a17c45f73a11982f4947c9d10e8628bb6f73ee9d5c6",
         "BaselineManifest.v1",
-        "LAR-P0A-004"
+        "LAR-P0A-005"
       ]
     },
     {

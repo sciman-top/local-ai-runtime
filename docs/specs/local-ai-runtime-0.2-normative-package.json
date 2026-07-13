@@ -134,7 +134,9 @@
       "kind": "product_routing_submission_bundle",
       "artifact_version": "ProductContract.v1",
       "path": "docs/specs/local-ai-runtime-0.2/normative/ProductContract.v1.json",
-      "status": "missing",
+      "status": "present",
+      "byte_count": 5003,
+      "sha256": "b239cee308681ac5972e494ad4ff76958623fbd558a47e03b95e0be4159fb1ef",
       "required_for_approval": true,
       "producer_task_id": "LAR-P0A-004",
       "verification": "schema_examples_catalog_verifier"
@@ -251,7 +253,6 @@
     }
   ],
   "missing_artifact_ids": [
-    "P0A-PRODUCT",
     "P0A-QUALIFICATION",
     "P0A-EXECUTION",
     "P0A-EVIDENCE",

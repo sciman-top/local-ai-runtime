@@ -244,4 +244,4 @@ Network deny、secret scan、unknown path、reparse/hardlink、Git config、prot
 
 ## 10. 当前下一步
 
-当前 action 是 `close_baseline_normative_package_first`，task 是 `LAR-P0A-004`。`LAR-P0A-003` 已闭合 `CanonicalizationPolicy.v1`、Canonical JSON、Git spelling/Windows collision key、handle identity、SID/named-object 和 alias-aware 8.3 fixtures/probes；下一步只物化 ProductContract、WorkRoutingPolicy、TaskTemplate、BatchSubmission 与 submission/resubmission identity contract。最终 `BaselineManifest.v1.json` 仍不得创建。不得新增第二 planner/runtime model router、运行 live Batch、创建批准记录、Truth Reset、`runtime/local-ai-runtime`、remote push/CI retrieval，或修改 `.ai/config`。
+当前 action 是 `close_baseline_normative_package_first`，task 是 `LAR-P0A-005`。`LAR-P0A-004` 已闭合 `ProductContract.v1`、work-class-only routing、closed TaskTemplate/BatchSubmission、永久 generation-0 root replay 和原子 resubmission；下一步只物化 qualification/environment/sandbox-state/reusable Authorization contracts。最终 `BaselineManifest.v1.json` 仍不得创建。不得新增第二 planner/runtime model router、运行 live Batch、创建批准记录、Truth Reset、`runtime/local-ai-runtime`、remote push/CI retrieval，或修改 `.ai/config`。
