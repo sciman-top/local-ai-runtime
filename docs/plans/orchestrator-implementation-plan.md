@@ -39,11 +39,11 @@
 
 原始 session 中 v3.17 与两份 conflicted v3.18 已按唯一 message/content 边界归档并双路径复算；v3.21 精确 `158485 / 1bfb5cd2...63fb` 与 v3.22 精确 `178330 / 8338a9dc...569c` 均作为 superseded candidate 保留。v3.23 精确 `188325 / 80562322...d5c6` 与 `BaselineLineage.v2` 已冻结。它们只作为 completed DAG history，不再是 selector 可选分支。
 
-### 当前：`LAR-P0A-EVAL-002` Native thin-path / capability comparative evaluation
+### 已完成：`LAR-P0A-EVAL-002` Native thin-path / capability comparative evaluation
 
-`LAR-P0A-EVAL-001` 已冻结 evaluation contract、TaskFamily manifest 和 evidence schema 的 exact byte/hash/snapshot identity。`LAR-P0A-EVAL-002` 才执行比较：contract 固定 repo snapshot、TaskFamily、模型/effort、tool inventory、sandbox、gates、成功 oracle、重复/交叉顺序和人工介入定义；比较精简 Codex Native、Native + key gates，以及只在可比场景下的 Superpowers/Trellis/Hermes。所有 write trial 必须从固定 commit 建立 disposable detached worktree，当前 primary worktree 不得作为 trial workspace。CLI、App Server、SDK、managed Worktree、Automations 各自独立 probe，不能由同安装、名称或单一 surface 的结果推定资格化。
+`LAR-P0A-EVAL-001` 冻结的 exact byte/hash/snapshot contract 已执行：18 个 core trial 均使用固定 repo snapshot、TaskFamily、模型/effort、tool inventory、sandbox、gates、成功 oracle、重复/交叉顺序和人工介入定义。精简 Native 为 `4/9`，Native + agent-side mandatory gate prompt 为 `1/9`；Superpowers 条件 lane 因 sealed VCS identity 漂移 fail-closed，Trellis/Hermes 对本 corpus not_applicable。结果记录 `preserve_v3_23_semantics`，不 promotion 当前 high-effort profile，不把任何第三方 harness 变成控制面。
 
-硬指标：任务成功、漏检/回归、安全/gate/evidence 完整率、净人工分钟、P50/P95 wall time、token/成本、冲突/返工、recovery/rollback 成功率和抽样 `DownstreamOutcomeRecord`。质量、安全、证据任一 hard floor 下降、unknown/unowned external effect 或不可复现 recovery/rollback，都使效率收益无效并停止评测。只有 `preserve_v3_23_semantics` 才释放 P0A；`narrow_profile_or_adapter_candidate` 或 `supersede_required` 必须冻结 v3.23 并创建 v3.24 candidate、lineage、inventory、DAG、selector 和 verifier，不能原地改写。
+硬指标已保留全部分母：总体成功 `5/18`，TF-003 稳定语义漏检 `6/6`，独立 evaluator gate 集 `18/18` 完整，P95 `1446.966s`，累计 input token `17770559`，13 次 recovery/rollback 均由原始或 append-only follow-up evidence 收口；18 个 downstream outcome 均为 unknown/not_recorded，成本 unavailable 而非 0。外部 host 漂移触发两份 transition record、新 generation 与 Q0，18 个 core trial 分布在 3 个 admitted generation；另一个中间 generation 在 Q0 后、core trial 前失效。质量 floor 和跨 generation 边界共同使任何观察到的效率收益不能 promotion，但不要求改变 v3.23 规范语义。
 
 `grill-with-docs` 可用于低频、高不确定、不可逆设计决策的人类术语/ADR 对齐；不作为日常自动执行、Batch admission 或本仓控制面的前门。
 
@@ -238,4 +238,4 @@ Network deny、secret scan、unknown path、reparse/hardlink、Git config、prot
 
 ## 10. 当前下一步
 
-当前 action 是 `run_native_thin_path_evaluation_first`，task 是 `LAR-P0A-EVAL-002`。三份 evaluation contract 已冻结且身份已写入 planning control plane；现在只允许在固定 commit 的 disposable detached worktree 执行比较并记录 machine-readable evidence。不得运行 live Batch、创建最终 `BaselineManifest.v1.json`、批准记录、Truth Reset、`runtime/local-ai-runtime`、remote push/CI retrieval，或修改 `.ai/config`。任何将评测结果写成 v3.23 语义变更的尝试必须改为 v3.24 successor workflow。
+当前 action 是 `close_baseline_normative_package_first`，task 是 `LAR-P0A-002`。Native thin-path 结果、决定和证据已交叉绑定；下一步只重验 manifest schema/fixtures/verifier skeleton 与 v3.23 的一致性，最终 `BaselineManifest.v1.json` 仍不得创建。不得运行 live Batch、创建批准记录、Truth Reset、`runtime/local-ai-runtime`、remote push/CI retrieval，或修改 `.ai/config`。

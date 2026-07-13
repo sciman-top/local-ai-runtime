@@ -1,7 +1,7 @@
 {
   "schema_version": "2.0",
   "status_id": "local-ai-runtime-0.2-rebaseline-status",
-  "updated_on": "2026-07-12",
+  "updated_on": "2026-07-13",
   "baseline_candidate": {
     "id": "local-ai-runtime-0.2-v3.23",
     "title": "Local AI Runtime 0.2 v3.23 Windows-Local Governed AI Development Execution Baseline Candidate",
@@ -21,8 +21,8 @@
     "target_sha256": "80562322ebc744eda2a87a17c45f73a11982f4947c9d10e8628bb6f73ee9d5c6",
     "approval_input": false,
     "maximum_byte_count": 4096,
-    "byte_count": 2691,
-    "sha256": "d38c041e863d4618e053b11671a5d3dd76a26c5b96a5b430124c955e38e2a4bd"
+    "byte_count": 2736,
+    "sha256": "6607470b7bea37a59eecc5753b6db8e83750c483009b16ffae7336c93d26d2a8"
   },
   "approval_state": {
     "active": false,
@@ -54,8 +54,8 @@
     ]
   },
   "native_thin_path_evaluation": {
-    "status": "execution_pending",
-    "decision": null,
+    "status": "preserve_v3_23_semantics",
+    "decision": "preserve_v3_23_semantics",
     "contract_task_id": "LAR-P0A-EVAL-001",
     "execution_task_id": "LAR-P0A-EVAL-002",
     "contract_output_refs": [
@@ -90,9 +90,9 @@
         }
       ]
     },
-    "result_ref": null,
-    "decision_ref": null,
-    "evidence_ref": null,
+    "result_ref": "docs/evaluations/local-ai-runtime-0.2/native-thin-path-capability-results.v1.json",
+    "decision_ref": "docs/evaluations/local-ai-runtime-0.2/native-thin-path-capability-decision.v1.json",
+    "evidence_ref": "docs/evaluations/local-ai-runtime-0.2/native-thin-path-capability-evidence.v1.json",
     "comparison_variants": [
       "thin_codex_native",
       "native_plus_key_gates",
@@ -128,19 +128,19 @@
   },
   "current_active_queue": {
     "queue_id": "LOCAL-AI-RUNTIME-0.2-BASELINE-CLOSURE",
-    "label": "Run the frozen Native thin-path evaluation before closing the v3.23 normative package",
+    "label": "Close the v3.23 normative package after the Native thin-path preserve decision",
     "status": "in_progress",
     "source_plan": "docs/plans/orchestrator-implementation-plan.md",
     "source_work_items": "docs/plans/local-ai-runtime-0.2-work-items.json",
     "source_plan_id": "local-ai-runtime-0.2-v3.23-implementation-work-items",
     "work_item_count": 65,
-    "why_now": "The v3.23 narrative and v3.23-bound lineage are frozen and verified, but Baseline Approval is additionally blocked by the mandatory Native thin-path / capability comparative evaluation before the thirteen missing normative artifacts may be closed."
+    "why_now": "The frozen Native thin-path comparison recorded preserve_v3_23_semantics without changing adapter, authority, concurrency, Q0, quality-promotion or truth-source semantics. Baseline Approval remains blocked by thirteen missing normative artifacts."
   },
   "current_work_item": {
-    "task_id": "LAR-P0A-EVAL-002",
-    "selector_action": "run_native_thin_path_evaluation_first",
-    "status": "execution_pending",
-    "reason": "The evaluation contract, task-family manifest, evidence schema and their exact identity are sealed. Run only the fixed snapshot comparison in disposable detached worktrees; no surface is qualified and no decision exists yet."
+    "task_id": "LAR-P0A-002",
+    "selector_action": "close_baseline_normative_package_first",
+    "status": "ready",
+    "reason": "LAR-P0A-EVAL-002 preserved v3.23 semantics and did not promote either evaluated high-effort profile. Revalidate the existing BaselineManifest schema, fixtures and verifier skeleton against v3.23 while keeping the final manifest absent."
   },
   "legacy_runtime_posture": {
     "current_kernel": "runtime/host-orchestrator",
@@ -178,7 +178,7 @@
     "p5_cutover_complete": false,
     "legacy_writer_retired": false
   },
-  "current_evidence_ref": "docs/change-evidence/20260712-lar-p0a-eval-001-evaluation-contract.md",
+  "current_evidence_ref": "docs/change-evidence/20260713-lar-p0a-eval-002-comparative-results.md",
   "authoritative_docs": [
     "AGENTS.md",
     "README.md",
@@ -259,6 +259,7 @@
         "P5",
         "LAR-P4-002",
         "B2/per-repo",
+        "机器图总计 65 项",
         "approved_root_files",
         "approved_subpackages",
         "required_source_owners"
@@ -348,7 +349,7 @@
         "docs/specs/local-ai-runtime-0.2-v3.23-baseline-candidate.md",
         "80562322ebc744eda2a87a17c45f73a11982f4947c9d10e8628bb6f73ee9d5c6",
         "BaselineManifest.v1",
-        "LAR-P0A-EVAL-002"
+        "LAR-P0A-002"
       ]
     },
     {

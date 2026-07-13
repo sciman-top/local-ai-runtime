@@ -1,0 +1,52 @@
+{
+  "schema_version": "NativeThinPathCapabilityDecision.v1",
+  "baseline_id": "local-ai-runtime-0.2-v3.23",
+  "status": "preserve_v3_23_semantics",
+  "decision": "preserve_v3_23_semantics",
+  "decided_at": "2026-07-13T15:06:47.4142616Z",
+  "contract_identity": {
+    "contract_set_id": "local-ai-runtime-0.2-v3.23-native-thin-path-evaluation-v1",
+    "baseline_id": "local-ai-runtime-0.2-v3.23",
+    "contract_task_id": "LAR-P0A-EVAL-001",
+    "execution_task_id": "LAR-P0A-EVAL-002",
+    "snapshot": {"commit":"6fd6cd54037f17e44192bc272306b137def7f8a4","tree":"11c8ab770769b3aeff5c111063a316e712fa7241"},
+    "contracts": [
+      {"path":"docs/evaluations/local-ai-runtime-0.2/native-thin-path-capability-evaluation.v1.json","byte_count":13775,"sha256":"e4129a743a976e2e286c43e6ebcb9c3a1d634079d3188e18292a147c06499b39"},
+      {"path":"docs/evaluations/local-ai-runtime-0.2/native-thin-path-task-family-manifest.v1.json","byte_count":8996,"sha256":"27965825d8ba79ae008d876992ea70a380b213578fc8ed14fc3af8a0016bc6b0"},
+      {"path":"docs/evaluations/local-ai-runtime-0.2/native-thin-path-evidence-schema.v1.json","byte_count":6827,"sha256":"a82b869eae6b64aed51e847cb5835a69e98e91095fdf832fb5391beaea501721"}
+    ]
+  },
+  "result_ref": "docs/evaluations/local-ai-runtime-0.2/native-thin-path-capability-results.v1.json",
+  "evidence_ref": "docs/evaluations/local-ai-runtime-0.2/native-thin-path-capability-evidence.v1.json",
+  "decision_basis": [
+    "The evaluation found no need to change the v3.23 Batch prohibition, adapter family, authority, concurrency, Q0 triggers, quality promotion rules, or repository truth source.",
+    "Thin Native was the better quality result in this small corpus, but 4/9 success and two stopped trials are not a production promotion result.",
+    "Native plus mandatory agent-side gate prompting fell to 1/9 success. Its lower aggregate latency and token use cannot offset the quality-floor decline.",
+    "The 18 core trials span three separately Q0-admitted CLI generations after two observed host transitions. Pooled totals are directional and are not same-generation profile-promotion evidence; one intermediate Q0 generation was invalidated before any core trial.",
+    "Independent evaluator gates, evidence, cleanup, generation, Q0, recovery, and rollback controls remained necessary and must be retained.",
+    "The conditional Superpowers lane became inconclusive when its sealed VCS identity drifted. Trellis and Hermes remained not applicable to this corpus; no replacement or retirement claim follows."
+  ],
+  "normative_change_assessment": {
+    "batch_prohibition_changed": false,
+    "adapter_contract_changed": false,
+    "authority_changed": false,
+    "concurrency_changed": false,
+    "q0_trigger_changed": false,
+    "quality_promotion_rule_changed": false,
+    "truth_source_changed": false,
+    "successor_candidate_required": false
+  },
+  "non_normative_profile_disposition": {
+    "native_first": true,
+    "native_only": false,
+    "promote_gpt_5_6_sol_high": false,
+    "promote_native_plus_agent_gate_prompt": false,
+    "promote_pooled_cross_generation_profile": false,
+    "retain_independent_policy_and_evaluator_gates": true,
+    "superpowers_default": false,
+    "trellis_default": false,
+    "hermes_retired_by_this_evaluation": false,
+    "grill_default_batch_front_door": false
+  },
+  "next_action": "Continue v3.23 P0A normative package closure at the next dependency-ready work item; Baseline Approval remains separate and inactive."
+}

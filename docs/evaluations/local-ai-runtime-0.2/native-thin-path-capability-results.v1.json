@@ -1,0 +1,231 @@
+{
+  "schema_version": "NativeThinPathCapabilityResults.v1",
+  "baseline_id": "local-ai-runtime-0.2-v3.23",
+  "status": "preserve_v3_23_semantics",
+  "decision": "preserve_v3_23_semantics",
+  "generated_at": "2026-07-13T15:06:47.4142616Z",
+  "contract_output_refs": [
+    "docs/evaluations/local-ai-runtime-0.2/native-thin-path-capability-evaluation.v1.json",
+    "docs/evaluations/local-ai-runtime-0.2/native-thin-path-task-family-manifest.v1.json",
+    "docs/evaluations/local-ai-runtime-0.2/native-thin-path-evidence-schema.v1.json"
+  ],
+  "contract_identity": {
+    "contract_set_id": "local-ai-runtime-0.2-v3.23-native-thin-path-evaluation-v1",
+    "baseline_id": "local-ai-runtime-0.2-v3.23",
+    "contract_task_id": "LAR-P0A-EVAL-001",
+    "execution_task_id": "LAR-P0A-EVAL-002",
+    "snapshot": {
+      "commit": "6fd6cd54037f17e44192bc272306b137def7f8a4",
+      "tree": "11c8ab770769b3aeff5c111063a316e712fa7241"
+    },
+    "contracts": [
+      {"path":"docs/evaluations/local-ai-runtime-0.2/native-thin-path-capability-evaluation.v1.json","byte_count":13775,"sha256":"e4129a743a976e2e286c43e6ebcb9c3a1d634079d3188e18292a147c06499b39"},
+      {"path":"docs/evaluations/local-ai-runtime-0.2/native-thin-path-task-family-manifest.v1.json","byte_count":8996,"sha256":"27965825d8ba79ae008d876992ea70a380b213578fc8ed14fc3af8a0016bc6b0"},
+      {"path":"docs/evaluations/local-ai-runtime-0.2/native-thin-path-evidence-schema.v1.json","byte_count":6827,"sha256":"a82b869eae6b64aed51e847cb5835a69e98e91095fdf832fb5391beaea501721"}
+    ]
+  },
+  "decision_ref": "docs/evaluations/local-ai-runtime-0.2/native-thin-path-capability-decision.v1.json",
+  "evidence_ref": "docs/evaluations/local-ai-runtime-0.2/native-thin-path-capability-evidence.v1.json",
+  "execution_condition": {
+    "model": "gpt-5.6-sol",
+    "reasoning_effort": "high",
+    "cli_version": "codex-cli 0.144.1",
+    "core_generation_policy": "append_only_resume_after_new_generation_q0",
+    "core_generation_count": 3,
+    "core_generation_sha256": [
+      "b3f5c32875be9f21e73c454afa8fb3b926c353e33079b9822d58a3cf76741b36",
+      "9f137a1c3905f10314938b0aa5133d18449cca653e38fd65315b95031ea2a2b1",
+      "ffb9c5c40e7ac30769409818f17d0426f4260a328971a50074acbd7d11934f2d"
+    ],
+    "q0_only_invalidated_generation_sha256": [
+      "478f4e2c60aceed97761ea800f6a5a9c34c102cf523e95ed78124f23c2568edc"
+    ],
+    "current_qualified_cli_generation_sha256": "ffb9c5c40e7ac30769409818f17d0426f4260a328971a50074acbd7d11934f2d",
+    "sandbox": "workspace-write",
+    "network_access": false,
+    "approval_mode": "never"
+  },
+  "metric_method": {
+    "normalization": "Apply append-only NTPE-NORM-001 and NTPE-NORM-002 without rewriting raw receipts.",
+    "percentile": "nearest_rank",
+    "unknown_rule": "Unknown token cost and downstream outcomes remain in their declared denominators.",
+    "cross_generation_reporting": "Report pooled frozen-corpus totals and generation strata. Pooled values may not qualify or promote an execution profile."
+  },
+  "core_comparison": {
+    "declared_trials": 18,
+    "raw_receipts": 18,
+    "normalized_successes": 5,
+    "normalized_failures": 11,
+    "normalized_stops": 2,
+    "overall_success_rate": 0.277778,
+    "pooled_across_generation_count": 3,
+    "pooled_profile_promotion_eligible": false,
+    "variants": [
+      {
+        "variant_id": "thin_codex_native",
+        "trials": 9,
+        "successes": 4,
+        "failures": 3,
+        "stops": 2,
+        "task_success_rate": 0.444444,
+        "wall_time_p50_seconds": 793.613,
+        "wall_time_p95_seconds": 1446.966,
+        "wall_time_total_seconds": 6366.03,
+        "input_tokens": 9697000,
+        "cached_input_tokens": 8887680,
+        "output_tokens": 109652,
+        "reasoning_output_tokens": 19139,
+        "command_failures": 47,
+        "retries": 26,
+        "rework_loops": 0,
+        "independent_gate_pass_trials": 9,
+        "rollback_or_recovery_successes": 7,
+        "rollback_or_recovery_attempts": 7
+      },
+      {
+        "variant_id": "native_plus_key_gates",
+        "trials": 9,
+        "successes": 1,
+        "failures": 8,
+        "stops": 0,
+        "task_success_rate": 0.111111,
+        "wall_time_p50_seconds": 603.442,
+        "wall_time_p95_seconds": 995.069,
+        "wall_time_total_seconds": 4859.939,
+        "input_tokens": 8073559,
+        "cached_input_tokens": 7505152,
+        "output_tokens": 159878,
+        "reasoning_output_tokens": 14977,
+        "command_failures": 40,
+        "retries": 23,
+        "rework_loops": 2,
+        "independent_gate_pass_trials": 9,
+        "rollback_or_recovery_successes": 6,
+        "rollback_or_recovery_attempts": 6
+      }
+    ],
+    "generation_strata": [
+      {
+        "generation_sha256": "b3f5c32875be9f21e73c454afa8fb3b926c353e33079b9822d58a3cf76741b36",
+        "trials": 10,
+        "successes": 4,
+        "failures": 4,
+        "stops": 2,
+        "wall_time_total_seconds": 5158.877,
+        "input_tokens": 6344360,
+        "cached_input_tokens": 5668864,
+        "output_tokens": 108270,
+        "reasoning_output_tokens": 14673,
+        "variants": [
+          {"variant_id":"thin_codex_native","trials":5,"successes":3,"failures":0,"stops":2},
+          {"variant_id":"native_plus_key_gates","trials":5,"successes":1,"failures":4,"stops":0}
+        ]
+      },
+      {
+        "generation_sha256": "9f137a1c3905f10314938b0aa5133d18449cca653e38fd65315b95031ea2a2b1",
+        "trials": 5,
+        "successes": 1,
+        "failures": 4,
+        "stops": 0,
+        "wall_time_total_seconds": 3363.878,
+        "input_tokens": 5321700,
+        "cached_input_tokens": 4921216,
+        "output_tokens": 130066,
+        "reasoning_output_tokens": 8476,
+        "variants": [
+          {"variant_id":"thin_codex_native","trials":2,"successes":1,"failures":1,"stops":0},
+          {"variant_id":"native_plus_key_gates","trials":3,"successes":0,"failures":3,"stops":0}
+        ]
+      },
+      {
+        "generation_sha256": "ffb9c5c40e7ac30769409818f17d0426f4260a328971a50074acbd7d11934f2d",
+        "trials": 3,
+        "successes": 0,
+        "failures": 3,
+        "stops": 0,
+        "wall_time_total_seconds": 2703.214,
+        "input_tokens": 6104499,
+        "cached_input_tokens": 5802752,
+        "output_tokens": 31194,
+        "reasoning_output_tokens": 10967,
+        "variants": [
+          {"variant_id":"thin_codex_native","trials":2,"successes":0,"failures":2,"stops":0},
+          {"variant_id":"native_plus_key_gates","trials":1,"successes":0,"failures":1,"stops":0}
+        ]
+      }
+    ],
+    "generation_transition_summary": {
+      "transition_records": 2,
+      "q0_admitted_trial_generations": 3,
+      "q0_only_invalidated_generations": 1,
+      "stopped_trials_retained_without_rerun": 1
+    },
+    "task_family_results": [
+      {"task_family_id":"NTPE-TF-001","variant_id":"thin_codex_native","successes":3,"trials":3},
+      {"task_family_id":"NTPE-TF-001","variant_id":"native_plus_key_gates","successes":0,"trials":3},
+      {"task_family_id":"NTPE-TF-002","variant_id":"thin_codex_native","successes":1,"trials":3},
+      {"task_family_id":"NTPE-TF-002","variant_id":"native_plus_key_gates","successes":1,"trials":3},
+      {"task_family_id":"NTPE-TF-003","variant_id":"thin_codex_native","successes":0,"trials":3},
+      {"task_family_id":"NTPE-TF-003","variant_id":"native_plus_key_gates","successes":0,"trials":3}
+    ]
+  },
+  "required_metrics": {
+    "task_success_rate": {"successes":5,"denominator":18,"rate":0.277778},
+    "missed_defect_or_regression_rate": {
+      "stable_semantic_requirement_misses": 6,
+      "stable_semantic_requirement_denominator": 6,
+      "stable_semantic_requirement_miss_rate": 1.0,
+      "finding": "Every TF-003 trial failed to invoke the required direct JSON loader.",
+      "later_downstream_defects_observed": 0,
+      "later_downstream_observation_unknown": 18
+    },
+    "safety_gate_evidence_completeness": {
+      "independent_gate_sets_complete": 18,
+      "independent_gate_sets_required": 18,
+      "raw_receipt_state_checks_true": 88,
+      "raw_receipt_state_checks_required": 90,
+      "append_only_recovery_or_transition_records": 2,
+      "normalized_complete_trials": 18,
+      "normalized_complete_trial_denominator": 18,
+      "normalized_completeness_rate": 1.0,
+      "external_effects_unknown_or_unowned": 0
+    },
+    "net_human_minutes": {"active_minutes":0,"trial_denominator":18,"scope":"trial execution only; research and harness preparation are not claimed as measured operator time","passive_wait_excluded":true},
+    "wall_time_p50_p95": {"p50_seconds":603.442,"p95_seconds":1446.966,"total_seconds":11225.969},
+    "token_and_cost": {
+      "input_tokens":17770559,
+      "cached_input_tokens":16392832,
+      "output_tokens":269530,
+      "reasoning_output_tokens":34116,
+      "token_observations_available":18,
+      "cost_observations_available":0,
+      "cost_status":"unavailable_not_zero"
+    },
+    "conflict_and_rework": {"merge_or_patch_conflicts":0,"command_failures":87,"retries":49,"rework_loops":2},
+    "recovery_and_rollback_success_rate": {"successes":13,"attempts":13,"rate":1.0,"raw_trial_receipt_successes":11,"normalized_or_followup_closures":2},
+    "sampled_downstream_outcome": {"known":0,"unknown":18,"denominator":18,"synthetic_acceptance":0}
+  },
+  "conditional_harnesses": {
+    "disposition_ref": "private-local/native-thin-path-conditional-dispositions.json",
+    "superpowers_when_applicable": {"predeclared_applicable":3,"attempted":0,"excluded_by_stop":3,"not_applicable":6,"result":"inconclusive_due_to_sealed_identity_drift"},
+    "trellis_when_applicable": {"attempted":0,"not_applicable":9,"result":"not_applicable"},
+    "hermes_when_applicable": {"attempted":0,"not_applicable":9,"result":"not_applicable"},
+    "grill_me_and_grill_with_docs": "excluded_from_frozen_variant_set"
+  },
+  "capability_surface_results": [
+    {"surface_id":"codex_cli_execution_interface","state":"qualified","scope":"current generation ffb9c5c4 only; capability execution and recovery, not promotion of the gpt-5.6-sol/high profile or pooled cross-generation metrics","evidence":"final-generation Q0 plus append-only generation transitions and 18 core receipts"},
+    {"surface_id":"codex_app_server_client_protocol","state":"inconclusive","scope":"no protocol lifecycle trial was authorized","evidence":"official-surface research and host identity observation only"},
+    {"surface_id":"codex_sdk_execution_interface","state":"inconclusive","scope":"no pinned SDK lifecycle trial was authorized","evidence":"official-surface research only"},
+    {"surface_id":"codex_managed_worktree_isolation","state":"inconclusive","scope":"manual disposable git worktrees do not qualify App-managed worktrees","evidence":"manual worktree receipts are explicitly non-inheritable"},
+    {"surface_id":"codex_automations_scheduling","state":"not_applicable","scope":"the corpus has no scheduling requirement and no automation creation was authorized","evidence":"frozen corpus and forbidden-effect rules"}
+  ],
+  "hard_floor_evaluation": {
+    "native_plus_key_gates_quality_regressed": true,
+    "efficiency_gain_valid_for_promotion": false,
+    "thin_native_promoted_to_batch_default": false,
+    "gpt_5_6_sol_high_profile_promoted": false,
+    "security_or_unowned_effect_regression_observed": false,
+    "evidence_floor_regression_observed": false,
+    "terminal_effect": "Preserve the v3.23 architecture and gates, but do not promote either evaluated high-effort execution profile. Keep independent evaluator gates; do not make agent-side repeated gate prompting the default."
+  }
+}

@@ -1,8 +1,8 @@
 {
   "schema_version": "2.0",
   "policy_id": "local-ai-runtime-0.2-stage-selector",
-  "reviewed_on": "2026-07-12",
-  "review_expires_at": "2026-08-12",
+  "reviewed_on": "2026-07-13",
+  "review_expires_at": "2026-08-13",
   "baseline_review_missing_artifact_sets": [
     [
       "P0A-MANIFEST",
@@ -152,7 +152,7 @@
     },
     {
       "path": "docs/README.md",
-      "contains": "run_native_thin_path_evaluation_first"
+      "contains": "close_baseline_normative_package_first"
     },
     {
       "path": "docs/plans/orchestrator-implementation-plan.md",

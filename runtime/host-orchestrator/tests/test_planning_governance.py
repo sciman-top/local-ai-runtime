@@ -178,6 +178,8 @@ def _write_terminal_native_thin_path_evaluation_artifacts(
     result_ref = result_path.relative_to(root).as_posix()
     decision_ref = decision_path.relative_to(root).as_posix()
     evidence_ref = evidence_path.relative_to(root).as_posix()
+    generation_sha256 = "a" * 64
+    receipt_sha256 = "b" * 64
 
     evaluation.update(
         {
@@ -197,6 +199,47 @@ def _write_terminal_native_thin_path_evaluation_artifacts(
         "contract_identity": evaluation["contract_identity"],
         "decision_ref": decision_ref,
         "evidence_ref": evidence_ref,
+        "execution_condition": {
+            "core_generation_policy": "append_only_resume_after_new_generation_q0",
+            "core_generation_count": 1,
+            "core_generation_sha256": [generation_sha256],
+            "q0_only_invalidated_generation_sha256": [],
+            "current_qualified_cli_generation_sha256": generation_sha256,
+        },
+        "core_comparison": {
+            "declared_trials": 1,
+            "normalized_successes": 1,
+            "normalized_failures": 0,
+            "normalized_stops": 0,
+            "pooled_across_generation_count": 1,
+            "pooled_profile_promotion_eligible": False,
+            "generation_strata": [
+                {
+                    "generation_sha256": generation_sha256,
+                    "trials": 1,
+                    "successes": 1,
+                    "failures": 0,
+                    "stops": 0,
+                    "wall_time_total_seconds": 1.0,
+                    "input_tokens": 1,
+                    "output_tokens": 1,
+                    "variants": [
+                        {
+                            "variant_id": "thin_codex_native",
+                            "trials": 1,
+                            "successes": 1,
+                            "failures": 0,
+                            "stops": 0,
+                        }
+                    ],
+                }
+            ],
+            "generation_transition_summary": {
+                "transition_records": 0,
+                "q0_admitted_trial_generations": 1,
+                "q0_only_invalidated_generations": 0,
+            },
+        },
     }
     decision_record = {
         "schema_version": "NativeThinPathCapabilityDecision.v1",
@@ -224,6 +267,43 @@ def _write_terminal_native_thin_path_evaluation_artifacts(
         "decision_ref": decision_ref,
         "result_sha256": hashlib.sha256(result_path.read_bytes()).hexdigest(),
         "decision_sha256": hashlib.sha256(decision_path.read_bytes()).hexdigest(),
+        "supporting_records": {
+            "generation_lock": {"path": "private-local/lock.json", "sha256": "c" * 64},
+            "generation_q0": {"path": "private-local/q0.json", "sha256": "d" * 64},
+        },
+        "generation_record_projection": [
+            {
+                "generation_sha256": generation_sha256,
+                "lock_record": "generation_lock",
+                "q0_record": "generation_q0",
+                "q0_state": "passed",
+                "selected_for_core": True,
+            }
+        ],
+        "trial_receipts": [
+            {
+                "path": "private-local/receipt.json",
+                "sha256": receipt_sha256,
+                "variant_id": "thin_codex_native",
+                "normalized_outcome": "succeeded",
+                "wall_seconds": 1.0,
+                "input_tokens": 1,
+                "output_tokens": 1,
+            }
+        ],
+        "generation_trial_projection": [
+            {
+                "generation_sha256": generation_sha256,
+                "receipt_sha256": [receipt_sha256],
+            }
+        ],
+        "evidence_completeness": {
+            "core_generation_count": 1,
+            "generation_transition_records_present": 0,
+            "generation_transition_records_expected": 0,
+            "q0_only_invalidated_generation_count": 0,
+            "cross_generation_strata_reported": False,
+        },
     }
     evidence_path.write_text(
         json.dumps(evidence, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
@@ -261,7 +341,7 @@ def test_planning_verifier_accepts_truthful_candidate_state() -> None:
     assert payload["baseline_id"] == "local-ai-runtime-0.2-v3.23"
     assert payload["approval_active"] is False
     assert payload["missing_artifact_count"] == 13
-    assert payload["current_work_item_id"] == "LAR-P0A-EVAL-002"
+    assert payload["current_work_item_id"] == "LAR-P0A-002"
     work_items = json.loads(WORK_ITEMS_PATH.read_text(encoding="utf-8"))["work_items"]
     task_ids = {item["task_id"] for item in work_items}
     assert payload["work_item_count"] == len(work_items) == 65
@@ -283,24 +363,31 @@ def test_planning_selector_returns_baseline_closure_without_preflight() -> None:
 
     assert completed.returncode == 0, completed.stderr
     payload = json.loads(completed.stdout)
-    assert payload["next_action"] == "run_native_thin_path_evaluation_first"
-    assert payload["current_work_item_id"] == "LAR-P0A-EVAL-002"
+    assert payload["next_action"] == "close_baseline_normative_package_first"
+    assert payload["current_work_item_id"] == "LAR-P0A-002"
     assert payload["side_effects_performed"] is False
     assert payload["preflight_run"] is False
 
 
-def test_native_thin_path_evaluation_contract_is_sealed_before_execution() -> None:
+def test_native_thin_path_evaluation_preserves_v323_and_seals_artifacts() -> None:
     status = json.loads(STATUS_PATH.read_text(encoding="utf-8"))
     evaluation = status["native_thin_path_evaluation"]
 
-    assert evaluation["status"] == "execution_pending"
-    assert evaluation["decision"] is None
+    assert evaluation["status"] == "preserve_v3_23_semantics"
+    assert evaluation["decision"] == "preserve_v3_23_semantics"
     assert status["current_work_item"] == {
-        "task_id": "LAR-P0A-EVAL-002",
-        "selector_action": "run_native_thin_path_evaluation_first",
-        "status": "execution_pending",
-        "reason": "The evaluation contract, task-family manifest, evidence schema and their exact identity are sealed. Run only the fixed snapshot comparison in disposable detached worktrees; no surface is qualified and no decision exists yet.",
+        "task_id": "LAR-P0A-002",
+        "selector_action": "close_baseline_normative_package_first",
+        "status": "ready",
+        "reason": "LAR-P0A-EVAL-002 preserved v3.23 semantics and did not promote either evaluated high-effort profile. Revalidate the existing BaselineManifest schema, fixtures and verifier skeleton against v3.23 while keeping the final manifest absent.",
     }
+    assert evaluation["result_ref"].endswith("native-thin-path-capability-results.v1.json")
+    assert evaluation["decision_ref"].endswith("native-thin-path-capability-decision.v1.json")
+    assert evaluation["evidence_ref"].endswith("native-thin-path-capability-evidence.v1.json")
+    result = json.loads((REPO_ROOT / evaluation["result_ref"]).read_text(encoding="utf-8"))
+    assert result["execution_condition"]["core_generation_count"] == 3
+    assert len(result["core_comparison"]["generation_strata"]) == 3
+    assert result["core_comparison"]["pooled_profile_promotion_eligible"] is False
     assert evaluation["independent_capability_surfaces"] == [
         "codex_cli_execution_interface",
         "codex_app_server_client_protocol",
@@ -322,6 +409,84 @@ def test_native_thin_path_evaluation_contract_is_sealed_before_execution() -> No
         raw = path.read_bytes()
         assert len(raw) == contract["byte_count"]
         assert hashlib.sha256(raw).hexdigest() == contract["sha256"]
+
+
+def test_terminal_generation_projection_covers_every_core_receipt() -> None:
+    status = json.loads(STATUS_PATH.read_text(encoding="utf-8"))
+    evaluation = status["native_thin_path_evaluation"]
+    result = json.loads(
+        (REPO_ROOT / evaluation["result_ref"]).read_text(encoding="utf-8")
+    )
+    evidence = json.loads(
+        (REPO_ROOT / evaluation["evidence_ref"]).read_text(encoding="utf-8")
+    )
+    verify_projection = runpy.run_path(str(VERIFIER_PATH))[
+        "_verify_terminal_generation_projection"
+    ]
+    failures: list[str] = []
+
+    verify_projection(result, evidence, failures)
+
+    assert failures == []
+    evidence["generation_trial_projection"][0]["receipt_sha256"].pop()
+    verify_projection(result, evidence, failures)
+    assert (
+        "terminal native thin-path evidence generation projection must cover each trial receipt exactly once"
+        in failures
+    )
+    evidence = json.loads(
+        (REPO_ROOT / evaluation["evidence_ref"]).read_text(encoding="utf-8")
+    )
+    evidence["generation_trial_projection"][0]["receipt_sha256"][0] = {"bad": True}
+    failures.clear()
+    verify_projection(result, evidence, failures)
+    assert (
+        "terminal native thin-path evidence generation projection must bind a core generation to receipt hashes"
+        in failures
+    )
+
+    evidence = json.loads(
+        (REPO_ROOT / evaluation["evidence_ref"]).read_text(encoding="utf-8")
+    )
+    evidence["generation_trial_projection"].insert(
+        0,
+        {
+            "generation_sha256": evidence["generation_trial_projection"][0][
+                "generation_sha256"
+            ],
+            "receipt_sha256": [],
+        },
+    )
+    failures.clear()
+    verify_projection(result, evidence, failures)
+    assert (
+        "terminal native thin-path evidence generation projection must cover each core generation exactly once"
+        in failures
+    )
+
+    evidence = json.loads(
+        (REPO_ROOT / evaluation["evidence_ref"]).read_text(encoding="utf-8")
+    )
+    evidence["trial_receipts"][0]["wall_seconds"] = True
+    failures.clear()
+    verify_projection(result, evidence, failures)
+    assert (
+        "terminal native thin-path evidence trial receipts must contain private-local locators, typed non-negative metrics and SHA-256 identities"
+        in failures
+    )
+
+    evidence = json.loads(
+        (REPO_ROOT / evaluation["evidence_ref"]).read_text(encoding="utf-8")
+    )
+    evidence["supporting_records"]["generation_transition_001"]["path"] = (
+        "../transition.json"
+    )
+    failures.clear()
+    verify_projection(result, evidence, failures)
+    assert (
+        "terminal native thin-path supporting generation transition is invalid: generation_transition_001"
+        in failures
+    )
 
 
 def test_terminal_native_thin_path_evaluation_requires_cross_referenced_json_artifacts(
@@ -884,8 +1049,8 @@ def test_stable_baseline_entry_is_non_normative_and_targets_frozen_candidate() -
         "target_sha256": baseline["sha256"],
         "approval_input": False,
         "maximum_byte_count": 4096,
-        "byte_count": 2691,
-        "sha256": "d38c041e863d4618e053b11671a5d3dd76a26c5b96a5b430124c955e38e2a4bd",
+        "byte_count": 2736,
+        "sha256": "6607470b7bea37a59eecc5753b6db8e83750c483009b16ffae7336c93d26d2a8",
     }
     assert len(raw) <= entry["maximum_byte_count"]
     assert len(raw) == entry["byte_count"]
@@ -899,6 +1064,9 @@ def test_stable_baseline_entry_is_non_normative_and_targets_frozen_candidate() -
         "not a narrative specification",
         "BaselineManifest.v1",
         "BaselineApprovalRecord",
+        "preserve_v3_23_semantics",
+        "LAR-P0A-002",
+        "close_baseline_normative_package_first",
     ):
         assert marker in rendered
 
@@ -1417,6 +1585,11 @@ def test_machine_work_items_are_a_deterministic_v323_dag() -> None:
     assert by_id["LAR-P0A-REBASELINE-V323"]["depends_on"] == ["LAR-P0A-REBASELINE-V322"]
     assert by_id["LAR-P0A-EVAL-001"]["depends_on"] == ["LAR-P0A-REBASELINE-V323"]
     assert by_id["LAR-P0A-EVAL-002"]["depends_on"] == ["LAR-P0A-EVAL-001"]
+    assert by_id["LAR-P0A-EVAL-002"]["status"] == "completed"
+    assert by_id["LAR-P0A-EVAL-002"]["next_task_ids"] == ["LAR-P0A-002"]
+    evaluation_acceptance = "\n".join(by_id["LAR-P0A-EVAL-002"]["acceptance"])
+    assert "releases LAR-P0A-002" in evaluation_acceptance
+    assert "releases LAR-P0A-003" not in evaluation_acceptance
     assert by_id["LAR-P0A-002"]["depends_on"] == ["LAR-P0A-EVAL-002"]
     assert by_id["LAR-P4-001"]["next_task_ids"] == ["LAR-P4-002", "LAR-P5-001"]
     assert by_id["LAR-P4-002"]["depends_on"] == ["LAR-P4-001"]
@@ -1446,6 +1619,21 @@ def test_machine_work_items_are_a_deterministic_v323_dag() -> None:
                 for path in item["scope"]["primary_files"]
             )
             assert "python -m pytest tests/" not in "\n".join(item["verification"])
+
+
+def test_human_readable_roadmap_projects_machine_work_item_count() -> None:
+    work_items = json.loads(WORK_ITEMS_PATH.read_text(encoding="utf-8"))["work_items"]
+    expected_projection = f"机器图总计 {len(work_items)} 项"
+    status = json.loads(STATUS_PATH.read_text(encoding="utf-8"))
+    doc_contracts = {
+        item["path"]: set(item["required_strings"])
+        for item in status["doc_contracts"]
+    }
+
+    assert expected_projection in ROADMAP_PATH.read_text(encoding="utf-8")
+    assert expected_projection in doc_contracts[
+        "docs/roadmap/orchestrator-roadmap.md"
+    ]
 
 
 def test_v323_lineage_binds_candidate_history_and_superseded_plan() -> None:

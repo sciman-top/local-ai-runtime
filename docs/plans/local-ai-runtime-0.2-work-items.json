@@ -203,7 +203,7 @@
   },
   "baseline_status": "baseline_candidate",
   "blocking_stage": "baseline_approval",
-  "updated_on": "2026-07-12",
+  "updated_on": "2026-07-13",
   "status_catalog": [
     "completed",
     "contract_pending",
@@ -553,7 +553,7 @@
       "task_id": "LAR-P0A-EVAL-002",
       "phase": "EVAL",
       "priority": 0,
-      "status": "execution_pending",
+      "status": "completed",
       "title": "Execute the Native thin-path and capability comparative evaluation",
       "goal": "Run the frozen comparative evaluation and produce one machine-readable decision without changing v3.23 semantics, unless the evidence requires an explicit v3.24 successor candidate.",
       "depends_on": [
@@ -587,7 +587,7 @@
         "The report includes task success, missed defect/regression, safety/gate/evidence completeness, net human minutes, P50/P95 wall time, token/cost, conflict/rework, recovery/rollback and sampled downstream acceptance",
         "No quality, security or evidence hard floor declines; otherwise efficiency gains are reported but invalid for promotion",
         "Each capability surface has an explicit qualified, unqualified, not_applicable or inconclusive result with evidence locator",
-        "preserve_v3_23_semantics records a non-normative decision and releases LAR-P0A-003; narrow_profile_or_adapter_candidate or supersede_required freezes v3.23 and requires a v3.24 candidate, lineage, inventory, DAG, selector and verifier before P0A continues"
+        "preserve_v3_23_semantics records a non-normative decision and releases LAR-P0A-002; narrow_profile_or_adapter_candidate or supersede_required freezes v3.23 and requires a v3.24 candidate, lineage, inventory, DAG, selector and verifier before P0A continues"
       ],
       "verification": [
         "python -m json.tool docs/evaluations/local-ai-runtime-0.2/native-thin-path-capability-results.v1.json",
@@ -616,7 +616,7 @@
       "task_id": "LAR-P0A-002",
       "phase": "P0A",
       "priority": 0,
-      "status": "pending",
+      "status": "ready",
       "title": "Revalidate BaselineManifest and normative package closure rules for v3.23",
       "goal": "Revalidate the retained manifest schema, byte/version rules, fixtures and verifier skeleton against the v3.23 candidate after the comparative evaluation preserves semantics; do not inherit a v3.22 task result by task ID alone or create the final BaselineManifest instance before the package review head is frozen.",
       "depends_on": [

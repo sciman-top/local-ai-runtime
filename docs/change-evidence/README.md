@@ -1,5 +1,7 @@
 # Change Evidence Index
 
+- [20260713 LAR-P0A-EVAL-002 Comparative Results](20260713-lar-p0a-eval-002-comparative-results.md): 18 frozen core trials, conditional harness dispositions, normalized metrics, capability surface states and the non-normative `preserve_v3_23_semantics` decision.
+- [20260713 Official Surface And Harness Research](20260713-lar-p0a-eval-002-official-surface-and-harness-research.md): official OpenAI surface boundaries and primary-source Superpowers/Trellis/Hermes/Grill applicability findings.
 - [20260712 LAR-P0A-002 BaselineManifest contract](20260712-lar-p0a-002-manifest.md): manifest schema, byte and structural fixtures, fail-closed verifier skeleton, regression tests and the precise no-final-manifest boundary.
 - [20260712 LAR-P0A-EVAL-001 Evaluation Contract](20260712-lar-p0a-eval-001-evaluation-contract.md): sealed Native thin-path comparison contract, fixed snapshot/task families/metrics, independent capability surfaces, exact contract identity and the no-execution boundary.
 - [20260712 LAR-P0A-EVAL-002 Environment Preflight](20260712-lar-p0a-eval-002-environment-preflight.md): fixed-model execution-environment preflight, isolated worktree cleanup receipt, provider-bound CLI qualification failure, and the explicit non-terminal `execution_pending` boundary.
@@ -15,11 +17,11 @@
 - task-level `result.json`、`verification_summary.json`、`cost_summary.json`、`evidence_index.json` 仍属于 `.ai/runs/<run_id>/<task_id>/`
 - 这里的索引只回答“当前仓的治理增强面何时、为何、如何被刷新”
 
-## 2026-07-12 当前规划真值
+## 2026-07-13 当前规划真值
 
 - v3.23 是 `baseline_candidate`，不是 approved baseline；v3.17、两份 conflicted v3.18、v3.19-v3.22 只作为精确历史/被替代身份保留。
 - 当前队列是 `LOCAL-AI-RUNTIME-0.2-BASELINE-CLOSURE`。
-- 当前 selector 是 `run_native_thin_path_evaluation_first`，唯一 selectable task 是 `LAR-P0A-EVAL-002`；三份 evaluation contract 已 exact-byte 封存，但比较、surface qualification 和 decision 均尚未发生。规范包为 15 required / 2 present / 13 missing，`P0A-VERIFIER` 为 in_progress。只有 `preserve_v3_23_semantics` 才释放 P0A closure；语义变更必须创建 v3.24 successor。
+- Native thin-path comparison 已记录 `preserve_v3_23_semantics`；当前 selector 是 `close_baseline_normative_package_first`，唯一 selectable task 是 `LAR-P0A-002`。规范包仍为 15 required / 2 present / 13 missing，`P0A-VERIFIER` 为 in_progress；baseline 仍未批准。
 - `runtime/host-orchestrator` 仍是现行内核；没有 Truth Reset、新 Batch、Implementation Acceptance、Full Q0 或 P2 admission。
 - 下方 2026-07-06 至 2026-07-10 的 Phase 1/runtime_v2 selector 结论是历史 evidence，不再是 next-work truth。
 

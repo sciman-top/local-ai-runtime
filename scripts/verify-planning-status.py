@@ -3057,6 +3057,383 @@ def _verify_terminal_native_thin_path_evaluation_artifacts(
         failures.append(
             "terminal native thin-path evidence artifact decision_sha256 must match decision bytes"
         )
+    _verify_terminal_generation_projection(result, evidence, failures)
+
+
+def _verify_terminal_generation_projection(
+    result: dict[str, Any],
+    evidence: dict[str, Any],
+    failures: list[str],
+) -> None:
+    """Require pooled trial metrics to remain attributable to capability generations."""
+
+    execution = result.get("execution_condition")
+    comparison = result.get("core_comparison")
+    if not isinstance(execution, dict) or not isinstance(comparison, dict):
+        failures.append(
+            "terminal native thin-path results artifact must contain execution_condition and core_comparison objects"
+        )
+        return
+
+    generation_ids = execution.get("core_generation_sha256")
+    generation_count = execution.get("core_generation_count")
+    current_generation = execution.get("current_qualified_cli_generation_sha256")
+    if (
+        not isinstance(generation_ids, list)
+        or not generation_ids
+        or any(not _is_sha256(value) for value in generation_ids)
+        or len(set(generation_ids)) != len(generation_ids)
+    ):
+        failures.append(
+            "terminal native thin-path results artifact core_generation_sha256 must contain distinct SHA-256 identities"
+        )
+        return
+    if type(generation_count) is not int or generation_count != len(generation_ids):
+        failures.append(
+            "terminal native thin-path results artifact core_generation_count must match core_generation_sha256"
+        )
+    if execution.get("core_generation_policy") != (
+        "append_only_resume_after_new_generation_q0"
+    ):
+        failures.append(
+            "terminal native thin-path results artifact must declare append-only generation/Q0 resume policy"
+        )
+    if current_generation not in generation_ids:
+        failures.append(
+            "terminal native thin-path results artifact current qualified generation must be a core generation"
+        )
+
+    q0_only = execution.get("q0_only_invalidated_generation_sha256", [])
+    if (
+        not isinstance(q0_only, list)
+        or any(not _is_sha256(value) for value in q0_only)
+        or set(q0_only) & set(generation_ids)
+    ):
+        failures.append(
+            "terminal native thin-path results artifact q0-only generations must be distinct SHA-256 identities outside the core set"
+        )
+
+    strata = comparison.get("generation_strata")
+    if not isinstance(strata, list) or len(strata) != len(generation_ids):
+        failures.append(
+            "terminal native thin-path results artifact generation_strata must cover every core generation"
+        )
+        return
+    strata_by_generation: dict[str, dict[str, Any]] = {}
+    for stratum in strata:
+        if not isinstance(stratum, dict) or not _is_sha256(
+            stratum.get("generation_sha256")
+        ):
+            failures.append(
+                "terminal native thin-path results artifact generation_strata entries must be identified objects"
+            )
+            continue
+        generation_id = stratum["generation_sha256"]
+        if generation_id in strata_by_generation:
+            failures.append(
+                "terminal native thin-path results artifact generation_strata must not duplicate a generation"
+            )
+        strata_by_generation[generation_id] = stratum
+    if set(strata_by_generation) != set(generation_ids):
+        failures.append(
+            "terminal native thin-path results artifact generation_strata identities must match core generations"
+        )
+
+    receipts = evidence.get("trial_receipts")
+    projections = evidence.get("generation_trial_projection")
+    generation_records = evidence.get("generation_record_projection")
+    completeness = evidence.get("evidence_completeness")
+    supporting = evidence.get("supporting_records")
+    if (
+        not isinstance(receipts, list)
+        or not isinstance(projections, list)
+        or not isinstance(generation_records, list)
+        or not isinstance(completeness, dict)
+        or not isinstance(supporting, dict)
+    ):
+        failures.append(
+            "terminal native thin-path evidence artifact must contain receipts, generation projections, completeness and supporting records"
+        )
+        return
+
+    record_generation_ids: list[str] = []
+
+    def valid_private_evidence_path(value: Any) -> bool:
+        return (
+            isinstance(value, str)
+            and value.startswith("private-local/")
+            and ".." not in value.split("/")
+        )
+
+    def valid_support_record(key: Any) -> bool:
+        record = supporting.get(key) if isinstance(key, str) else None
+        return (
+            isinstance(record, dict)
+            and valid_private_evidence_path(record.get("path"))
+            and _is_sha256(record.get("sha256"))
+        )
+
+    def is_non_negative_int(value: Any) -> bool:
+        return type(value) is int and value >= 0
+
+    def is_non_negative_number(value: Any) -> bool:
+        return (
+            type(value) in {int, float}
+            and value >= 0
+            and value < float("inf")
+        )
+
+    for projection in generation_records:
+        if not isinstance(projection, dict):
+            failures.append(
+                "terminal native thin-path evidence generation record projection entries must be objects"
+            )
+            continue
+        generation_id = projection.get("generation_sha256")
+        lock_key = projection.get("lock_record")
+        q0_key = projection.get("q0_record")
+        selected_for_core = projection.get("selected_for_core")
+        if (
+            not _is_sha256(generation_id)
+            or not isinstance(lock_key, str)
+            or not isinstance(q0_key, str)
+            or not valid_support_record(lock_key)
+            or not valid_support_record(q0_key)
+            or not isinstance(projection.get("q0_state"), str)
+            or not projection["q0_state"].strip()
+            or not isinstance(selected_for_core, bool)
+            or selected_for_core != (generation_id in generation_ids)
+        ):
+            failures.append(
+                "terminal native thin-path evidence generation record projection must bind each generation to lock and Q0 evidence"
+            )
+            continue
+        record_generation_ids.append(generation_id)
+    expected_record_generations = set(generation_ids) | set(q0_only)
+    if (
+        len(record_generation_ids) != len(set(record_generation_ids))
+        or set(record_generation_ids) != expected_record_generations
+    ):
+        failures.append(
+            "terminal native thin-path evidence generation record projection must cover core and q0-only generations exactly once"
+        )
+
+    receipt_by_hash: dict[str, dict[str, Any]] = {}
+    for receipt in receipts:
+        if (
+            not isinstance(receipt, dict)
+            or not valid_private_evidence_path(receipt.get("path"))
+            or not _is_sha256(receipt.get("sha256"))
+            or not isinstance(receipt.get("variant_id"), str)
+            or receipt.get("normalized_outcome")
+            not in {"succeeded", "failed", "stopped"}
+            or not is_non_negative_number(receipt.get("wall_seconds"))
+            or not is_non_negative_int(receipt.get("input_tokens"))
+            or not is_non_negative_int(receipt.get("output_tokens"))
+        ):
+            failures.append(
+                "terminal native thin-path evidence trial receipts must contain private-local locators, typed non-negative metrics and SHA-256 identities"
+            )
+            continue
+        receipt_by_hash[receipt["sha256"]] = receipt
+    if len(receipt_by_hash) != len(receipts):
+        failures.append(
+            "terminal native thin-path evidence trial receipt identities must be unique"
+        )
+
+    projected_hashes: list[str] = []
+    projected_generation_ids: list[str] = []
+    projected_by_generation: dict[str, list[dict[str, Any]]] = {}
+    for projection in projections:
+        if not isinstance(projection, dict):
+            failures.append(
+                "terminal native thin-path evidence generation projection entries must be objects"
+            )
+            continue
+        generation_id = projection.get("generation_sha256")
+        hashes = projection.get("receipt_sha256")
+        if (
+            generation_id not in generation_ids
+            or not isinstance(hashes, list)
+            or any(not _is_sha256(value) for value in hashes)
+        ):
+            failures.append(
+                "terminal native thin-path evidence generation projection must bind a core generation to receipt hashes"
+            )
+            continue
+        projected_generation_ids.append(generation_id)
+        projected_hashes.extend(hashes)
+        projected_by_generation[generation_id] = [
+            receipt_by_hash[value] for value in hashes if value in receipt_by_hash
+        ]
+    if (
+        len(projected_generation_ids) != len(set(projected_generation_ids))
+        or set(projected_generation_ids) != set(generation_ids)
+    ):
+        failures.append(
+            "terminal native thin-path evidence generation projection must cover each core generation exactly once"
+        )
+    if (
+        len(projected_hashes) != len(set(projected_hashes))
+        or set(projected_hashes) != set(receipt_by_hash)
+    ):
+        failures.append(
+            "terminal native thin-path evidence generation projection must cover each trial receipt exactly once"
+        )
+
+    for generation_id, generation_receipts in projected_by_generation.items():
+        stratum = strata_by_generation.get(generation_id)
+        if stratum is None:
+            continue
+        outcome_counts = {
+            outcome: sum(
+                receipt.get("normalized_outcome") == outcome
+                for receipt in generation_receipts
+            )
+            for outcome in ("succeeded", "failed", "stopped")
+        }
+        expected = {
+            "trials": len(generation_receipts),
+            "successes": outcome_counts["succeeded"],
+            "failures": outcome_counts["failed"],
+            "stops": outcome_counts["stopped"],
+            "input_tokens": sum(
+                receipt.get("input_tokens", 0) for receipt in generation_receipts
+            ),
+            "output_tokens": sum(
+                receipt.get("output_tokens", 0) for receipt in generation_receipts
+            ),
+        }
+        for field, value in expected.items():
+            if not is_non_negative_int(stratum.get(field)) or stratum.get(
+                field
+            ) != value:
+                failures.append(
+                    f"terminal native thin-path generation stratum {field} must match projected receipts: {generation_id}"
+                )
+        wall_total = round(
+            sum(receipt.get("wall_seconds", 0) for receipt in generation_receipts), 3
+        )
+        if not is_non_negative_number(
+            stratum.get("wall_time_total_seconds")
+        ) or stratum.get("wall_time_total_seconds") != wall_total:
+            failures.append(
+                f"terminal native thin-path generation stratum wall time must match projected receipts: {generation_id}"
+            )
+        variants = stratum.get("variants")
+        if not isinstance(variants, list):
+            failures.append(
+                f"terminal native thin-path generation stratum variants must be an array: {generation_id}"
+            )
+            continue
+        variants_by_id = {
+            value.get("variant_id"): value
+            for value in variants
+            if isinstance(value, dict) and isinstance(value.get("variant_id"), str)
+        }
+        expected_variant_ids = {
+            receipt["variant_id"] for receipt in generation_receipts
+        }
+        if len(variants_by_id) != len(variants) or set(variants_by_id) != expected_variant_ids:
+            failures.append(
+                f"terminal native thin-path generation stratum variants must match projected receipts: {generation_id}"
+            )
+            continue
+        for variant_id in expected_variant_ids:
+            variant_receipts = [
+                receipt
+                for receipt in generation_receipts
+                if receipt["variant_id"] == variant_id
+            ]
+            variant = variants_by_id[variant_id]
+            variant_expected = {
+                "trials": len(variant_receipts),
+                "successes": sum(
+                    receipt["normalized_outcome"] == "succeeded"
+                    for receipt in variant_receipts
+                ),
+                "failures": sum(
+                    receipt["normalized_outcome"] == "failed"
+                    for receipt in variant_receipts
+                ),
+                "stops": sum(
+                    receipt["normalized_outcome"] == "stopped"
+                    for receipt in variant_receipts
+                ),
+            }
+            for field, value in variant_expected.items():
+                if not is_non_negative_int(variant.get(field)) or variant.get(
+                    field
+                ) != value:
+                    failures.append(
+                        f"terminal native thin-path generation variant {field} must match projected receipts: {generation_id}/{variant_id}"
+                    )
+
+    declared_trials = comparison.get("declared_trials")
+    if not is_non_negative_int(declared_trials) or declared_trials != len(receipts):
+        failures.append(
+            "terminal native thin-path evidence receipt count must match declared core trials"
+        )
+    if not is_non_negative_int(
+        comparison.get("pooled_across_generation_count")
+    ) or comparison.get("pooled_across_generation_count") != len(generation_ids):
+        failures.append(
+            "terminal native thin-path pooled generation count must match execution condition"
+        )
+    if comparison.get("pooled_profile_promotion_eligible") is not False:
+        failures.append(
+            "terminal native thin-path pooled cross-generation metrics must not be promotion-eligible"
+        )
+    aggregate_fields = {
+        "declared_trials": "trials",
+        "normalized_successes": "successes",
+        "normalized_failures": "failures",
+        "normalized_stops": "stops",
+    }
+    for aggregate_field, stratum_field in aggregate_fields.items():
+        values = [stratum.get(stratum_field) for stratum in strata_by_generation.values()]
+        if not all(is_non_negative_int(value) for value in values) or comparison.get(
+            aggregate_field
+        ) != sum(values):
+            failures.append(
+                f"terminal native thin-path pooled {aggregate_field} must equal generation strata"
+            )
+
+    transition_keys = sorted(
+        key for key in supporting if key.startswith("generation_transition_")
+    )
+    expected_transition_count = max(len(generation_ids) - 1, 0)
+    transition_summary = comparison.get("generation_transition_summary")
+    if (
+        not isinstance(transition_summary, dict)
+        or transition_summary.get("transition_records")
+        != expected_transition_count
+        or transition_summary.get("q0_admitted_trial_generations")
+        != len(generation_ids)
+        or transition_summary.get("q0_only_invalidated_generations") != len(q0_only)
+    ):
+        failures.append(
+            "terminal native thin-path generation transition summary must match execution generations"
+        )
+    if (
+        completeness.get("core_generation_count") != len(generation_ids)
+        or completeness.get("generation_transition_records_present")
+        != len(transition_keys)
+        or completeness.get("generation_transition_records_expected")
+        != expected_transition_count
+        or len(transition_keys) != expected_transition_count
+        or completeness.get("q0_only_invalidated_generation_count") != len(q0_only)
+        or completeness.get("cross_generation_strata_reported")
+        != (len(generation_ids) > 1)
+    ):
+        failures.append(
+            "terminal native thin-path generation completeness must match strata and transition evidence"
+        )
+    for key in transition_keys:
+        if not valid_support_record(key):
+            failures.append(
+                f"terminal native thin-path supporting generation transition is invalid: {key}"
+            )
 
 
 def _load_native_thin_path_evaluation_artifact(

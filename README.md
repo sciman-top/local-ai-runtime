@@ -9,8 +9,8 @@ Local AI Runtime 是面向 Windows 本机、单操作者信任域的通用受控
 稳定发现入口是 [baseline candidate entry](D:/CODE/local-ai-dev-orchestrator/docs/specs/local-ai-runtime-0.2-baseline-candidate.md)。它只导航到冻结 v3.23 正文，不能作为另一份规范正文、`BaselineManifest` 输入或批准证据。
 
 - 当前队列：`LOCAL-AI-RUNTIME-0.2-BASELINE-CLOSURE`
-- 当前动作：`run_native_thin_path_evaluation_first`
-- 当前工作项：`LAR-P0A-EVAL-002`
+- 当前动作：`close_baseline_normative_package_first`
+- 当前工作项：`LAR-P0A-002`
 - 当前可执行内核：`runtime/host-orchestrator`
 - 新包 `runtime/local-ai-runtime`：尚不存在，批准前禁止创建
 - Truth Reset：未执行
@@ -54,7 +54,7 @@ pwsh -NoProfile -NonInteractive -File scripts/governance/preflight.ps1 -DisableA
 git diff --check
 ```
 
-预期 selector 结果为 `run_native_thin_path_evaluation_first`，并返回 `LAR-P0A-EVAL-002`。三份 exact-byte evaluation contract 已固定 snapshot、任务族、模型/effort、tool inventory、sandbox、gates 与人工介入定义，对比精简 Native、Native+关键 gates 和仅适用的外部 harness；CLI、App Server、SDK、managed Worktree、Automations 仍必须各自独立资格化。当前只证明评测可以开始，不代表已经完成比较、任一 surface 已资格化，或 baseline 已批准。任何实现任务若绕过 v3.23 evaluation、normative closure、Baseline Approval、Truth Reset 或 Legacy Ownership Guard，均属于非法跳阶段。
+预期 selector 结果为 `close_baseline_normative_package_first`，并返回 `LAR-P0A-002`。`LAR-P0A-EVAL-002` 固定比较已记录 `preserve_v3_23_semantics`：精简 Native 为 `4/9`，Native+agent-side mandatory gate prompt 为 `1/9`，两者都不足以 promotion `gpt-5.6-sol/high` profile；独立 evaluator gates/evidence/recovery 继续保留。18 个 core trial 因外部 host 漂移跨 3 个分别 Q0-admitted CLI generation，合并结果只用于保守决策，不是同 generation profile promotion 证据；CLI execution interface 的资格只绑定当前最终 generation，不能外推到 App Server、SDK、managed Worktree 或 Automations。baseline 仍未批准；任何实现任务若绕过 normative closure、Baseline Approval、Truth Reset 或 Legacy Ownership Guard，均属于非法跳阶段。
 
 ## 不可误读的结论
 

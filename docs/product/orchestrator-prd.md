@@ -80,6 +80,8 @@ CLI 与 SDK 只构成 execution-interface candidates；App Server 是 client-pro
 
 评测只有三种结果：`preserve_v3_23_semantics`、`narrow_profile_or_adapter_candidate`、`supersede_required`。前者只记录非规范决策并释放 P0A closure；后两者若涉及 Batch 禁止面、adapter、authority、并发、Q0 trigger、质量晋升或事实来源，必须冻结 v3.23 并创建 v3.24 candidate、lineage、inventory、DAG、selector 与 verifier，禁止原地改写。
 
+当前实测决定为 `preserve_v3_23_semantics`。精简 Native 在固定 corpus 为 `4/9`，Native + agent-side mandatory gate prompt 为 `1/9`，TF-003 的直接 loader 语义要求两组均 `0/3`；18 个 core trial 因外部 host 漂移跨 3 个分别 Q0-admitted CLI generation，合并结果不是同 generation profile promotion 证据。因此不 promotion 任一 `gpt-5.6-sol/high` execution profile，也不把重复全门禁 prompt 设为默认。独立 policy/evaluator gates、evidence、generation/Q0 和 recovery/rollback 继续作为产品硬边界；Superpowers 条件 lane 因 sealed VCS identity 漂移为 inconclusive，Trellis/Hermes 对本 corpus not_applicable，不能据此作普遍替代或退休结论。
+
 ## 5. 路由规则
 
 | 任务特征 | 路由 |

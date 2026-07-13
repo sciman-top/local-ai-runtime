@@ -1,0 +1,116 @@
+{
+  "schema_version": "NativeThinPathCapabilityEvidence.v1",
+  "baseline_id": "local-ai-runtime-0.2-v3.23",
+  "status": "preserve_v3_23_semantics",
+  "decision": "preserve_v3_23_semantics",
+  "sealed_at": "2026-07-13T15:06:47.4142616Z",
+  "contract_identity": {
+    "contract_set_id": "local-ai-runtime-0.2-v3.23-native-thin-path-evaluation-v1",
+    "baseline_id": "local-ai-runtime-0.2-v3.23",
+    "contract_task_id": "LAR-P0A-EVAL-001",
+    "execution_task_id": "LAR-P0A-EVAL-002",
+    "snapshot": {"commit":"6fd6cd54037f17e44192bc272306b137def7f8a4","tree":"11c8ab770769b3aeff5c111063a316e712fa7241"},
+    "contracts": [
+      {"path":"docs/evaluations/local-ai-runtime-0.2/native-thin-path-capability-evaluation.v1.json","byte_count":13775,"sha256":"e4129a743a976e2e286c43e6ebcb9c3a1d634079d3188e18292a147c06499b39"},
+      {"path":"docs/evaluations/local-ai-runtime-0.2/native-thin-path-task-family-manifest.v1.json","byte_count":8996,"sha256":"27965825d8ba79ae008d876992ea70a380b213578fc8ed14fc3af8a0016bc6b0"},
+      {"path":"docs/evaluations/local-ai-runtime-0.2/native-thin-path-evidence-schema.v1.json","byte_count":6827,"sha256":"a82b869eae6b64aed51e847cb5835a69e98e91095fdf832fb5391beaea501721"}
+    ]
+  },
+  "result_ref": "docs/evaluations/local-ai-runtime-0.2/native-thin-path-capability-results.v1.json",
+  "decision_ref": "docs/evaluations/local-ai-runtime-0.2/native-thin-path-capability-decision.v1.json",
+  "result_sha256": "6168db2aa1657d34c1b38f71b6abce0d6250a1a5eb0ab749ca5057b4078adf27",
+  "decision_sha256": "b242cf86c85ecf48fff1d137380f8ce9a98fc4023d866416d0d6a2ef81bf8eeb",
+  "supporting_records": {
+    "initial_generation_q0_preflight": {"path":"private-local/native-thin-path-generation-q0-preflight.json","sha256":"ac4faf78d77c7ce45d233fa79aee603852d7d55a3f0ab84c7c1f58f8ab12876a"},
+    "initial_generation_lock": {"path":"private-local/native-thin-path-eval-generation-lock.json","sha256":"39264d1e2d0410b9939773d17ca753345fdc9a292eff4bc23ebf325cca704faf"},
+    "generation_transition_001": {"path":"private-local/native-thin-path-generation-transition-001.json","sha256":"7599b1c6191663a1a44af7867caf1cc63616202b9d4e4aa86ae246748f0cabbe"},
+    "generation_2_lock": {"path":"private-local/native-thin-path-eval-generation-lock-v2.json","sha256":"d34ff0bd371b7dce9432007dc0022bfada318c82c06a6bdc2aeaf4dff23e31ca"},
+    "generation_2_q0": {"path":"private-local/native-thin-path-generation-q0-receipts/ntpe-q0-codex-cli-execution-interface-config-4565d9797de6.json","sha256":"56a9332dde46f0b4f26cf2e84d735b0b3d6097e845d321a5a5925e09c813b2a6"},
+    "generation_transition_002": {"path":"private-local/native-thin-path-generation-transition-002.json","sha256":"3f752d24521c48a5fdc3d00c35ad39dc9767bc57f43a22f7a9a55a62590d333e"},
+    "intermediate_generation_3_lock": {"path":"private-local/native-thin-path-eval-generation-lock-v3.json","sha256":"3390eb0030f7ce9a96e922feacb68a5070f75ccc0ebc1aeed167ae6483b05e7c"},
+    "intermediate_generation_3_q0": {"path":"private-local/native-thin-path-generation-q0-receipts/ntpe-q0-codex-cli-execution-interface-effective-config-v3.json","sha256":"bacfbe7853af4fbc2fb2a8d45534f8a8838ff0ce7b9b647afdda846d41b944b9"},
+    "final_generation_lock": {"path":"private-local/native-thin-path-eval-generation-lock-v4.json","sha256":"5e020567093c4df323903e1f9f4039aa9e5d38da1db9a55eb59f75c4a321c133"},
+    "final_generation_q0": {"path":"private-local/native-thin-path-generation-q0-receipts/ntpe-q0-codex-cli-execution-interface-v4-after-auth-refresh.json","sha256":"45209e8351a72d2811b63f9c8c3802da1bdd6e08ba41ad4f33bb9fe426697aac"},
+    "normalization_amendments": {"path":"private-local/native-thin-path-normalization-amendments.json","sha256":"ebe9ed0002db35d4773a5f8b2e99438e9759e933447759b9ffc571e1e53a3467"},
+    "cleanup_recovery": {"path":"private-local/native-thin-path-recovery-records/ntpe-tf-002-thin-codex-native-r1-cleanup-recovery.json","sha256":"8b4a6d5aacbc9456419e6547dbd1f365738c5fd59c01a50cf7cbac55156957ab"},
+    "conditional_applicability": {"path":"private-local/native-thin-path-conditional-applicability.json","sha256":"ed51353b0288f46dd7df4a6eaf2c91a5e89842d25e172ca65c01aab650c3d6ae"},
+    "conditional_dispositions": {"path":"private-local/native-thin-path-conditional-dispositions.json","sha256":"a4d3d0833f8c730a79d601fa8dcccbe87078ae5e8c9bbafd9725b01c133394c6"}
+  },
+  "generation_record_projection": [
+    {"generation_sha256":"b3f5c32875be9f21e73c454afa8fb3b926c353e33079b9822d58a3cf76741b36","lock_record":"initial_generation_lock","q0_record":"initial_generation_q0_preflight","q0_state":"admitted_by_first_sealed_trial","selected_for_core":true},
+    {"generation_sha256":"9f137a1c3905f10314938b0aa5133d18449cca653e38fd65315b95031ea2a2b1","lock_record":"generation_2_lock","q0_record":"generation_2_q0","q0_state":"passed_for_evaluation_resume","selected_for_core":true},
+    {"generation_sha256":"478f4e2c60aceed97761ea800f6a5a9c34c102cf523e95ed78124f23c2568edc","lock_record":"intermediate_generation_3_lock","q0_record":"intermediate_generation_3_q0","q0_state":"passed_then_invalidated_before_core_trial","selected_for_core":false},
+    {"generation_sha256":"ffb9c5c40e7ac30769409818f17d0426f4260a328971a50074acbd7d11934f2d","lock_record":"final_generation_lock","q0_record":"final_generation_q0","q0_state":"passed_for_evaluation_resume","selected_for_core":true}
+  ],
+  "trial_receipts": [
+    {"path":"private-local/native-thin-path-eval-receipts/ntpe-tf-001-native-plus-key-gates-r1.json","sha256":"809876a728b56b18d2bb3c4eb8ee818ba173b3d61320e6ecc64c8bf57c1616e9","task_family_id":"NTPE-TF-001","variant_id":"native_plus_key_gates","repeat_index":1,"raw_outcome":"succeeded","normalized_outcome":"failed","wall_seconds":224.368,"input_tokens":215652,"output_tokens":2826,"independent_gate_set_complete":true,"recovery_status":"not_required"},
+    {"path":"private-local/native-thin-path-eval-receipts/ntpe-tf-001-native-plus-key-gates-r2.json","sha256":"1a9deedbc4e70851300bfe459f6a950bd038443ad19838a9c1a0c87d3ca6f4bb","task_family_id":"NTPE-TF-001","variant_id":"native_plus_key_gates","repeat_index":2,"raw_outcome":"failed","normalized_outcome":"failed","wall_seconds":213.183,"input_tokens":213633,"output_tokens":2851,"independent_gate_set_complete":true,"recovery_status":"not_required"},
+    {"path":"private-local/native-thin-path-eval-receipts/ntpe-tf-001-native-plus-key-gates-r3.json","sha256":"696663fe31901db9003f4037154255bff9545f4b0c77f41425e1397287a8d055","task_family_id":"NTPE-TF-001","variant_id":"native_plus_key_gates","repeat_index":3,"raw_outcome":"failed","normalized_outcome":"failed","wall_seconds":185.486,"input_tokens":254261,"output_tokens":2921,"independent_gate_set_complete":true,"recovery_status":"not_required"},
+    {"path":"private-local/native-thin-path-eval-receipts/ntpe-tf-001-thin-codex-native-r1.json","sha256":"c4e8034d902fa89e919498dd586cd5988ba981fc63230b44a831068451e3fb90","task_family_id":"NTPE-TF-001","variant_id":"thin_codex_native","repeat_index":1,"raw_outcome":"succeeded","normalized_outcome":"succeeded","wall_seconds":206.487,"input_tokens":183272,"output_tokens":3115,"independent_gate_set_complete":true,"recovery_status":"not_required"},
+    {"path":"private-local/native-thin-path-eval-receipts/ntpe-tf-001-thin-codex-native-r2.json","sha256":"08899e175ae3d5c21d6a035cd3830829afc283386da4c2f661380276d3e3ffda","task_family_id":"NTPE-TF-001","variant_id":"thin_codex_native","repeat_index":2,"raw_outcome":"succeeded","normalized_outcome":"succeeded","wall_seconds":219.114,"input_tokens":258333,"output_tokens":3834,"independent_gate_set_complete":true,"recovery_status":"not_required"},
+    {"path":"private-local/native-thin-path-eval-receipts/ntpe-tf-001-thin-codex-native-r3.json","sha256":"51de30cdfe2d5b99ea53536818d1208b218addc21d8519b72071bf99d85e1380","task_family_id":"NTPE-TF-001","variant_id":"thin_codex_native","repeat_index":3,"raw_outcome":"succeeded","normalized_outcome":"succeeded","wall_seconds":199.748,"input_tokens":169437,"output_tokens":2505,"independent_gate_set_complete":true,"recovery_status":"not_required"},
+    {"path":"private-local/native-thin-path-eval-receipts/ntpe-tf-002-native-plus-key-gates-r1.json","sha256":"6d08481cb2920f5b0c06b0bbc84aeb42b8bb495cd5aa0e62c78d0b0973e67a0c","task_family_id":"NTPE-TF-002","variant_id":"native_plus_key_gates","repeat_index":1,"raw_outcome":"stopped","normalized_outcome":"succeeded","wall_seconds":674.843,"input_tokens":1210836,"output_tokens":9619,"independent_gate_set_complete":true,"recovery_status":"normalized_followup_succeeded"},
+    {"path":"private-local/native-thin-path-eval-receipts/ntpe-tf-002-native-plus-key-gates-r2.json","sha256":"628dc83ca9d8c40688b7a4fba5b65e6c428825f98213046a608bb4ba7351490a","task_family_id":"NTPE-TF-002","variant_id":"native_plus_key_gates","repeat_index":2,"raw_outcome":"failed","normalized_outcome":"failed","wall_seconds":995.069,"input_tokens":693789,"output_tokens":33397,"independent_gate_set_complete":true,"recovery_status":"succeeded"},
+    {"path":"private-local/native-thin-path-eval-receipts/ntpe-tf-002-native-plus-key-gates-r3.json","sha256":"29482643154140f4cfe17f8ab5e999439db81ba4c46a7f94e8666e3c09132be8","task_family_id":"NTPE-TF-002","variant_id":"native_plus_key_gates","repeat_index":3,"raw_outcome":"failed","normalized_outcome":"failed","wall_seconds":449.835,"input_tokens":792383,"output_tokens":7388,"independent_gate_set_complete":true,"recovery_status":"succeeded"},
+    {"path":"private-local/native-thin-path-eval-receipts/ntpe-tf-002-thin-codex-native-r1.json","sha256":"310ad6ab8c97555e7c9cd7bbfa0acaa969f447f553fe2039030a50f56c4bad22","task_family_id":"NTPE-TF-002","variant_id":"thin_codex_native","repeat_index":1,"raw_outcome":"stopped","normalized_outcome":"stopped","wall_seconds":793.613,"input_tokens":1284249,"output_tokens":11276,"independent_gate_set_complete":true,"recovery_status":"followup_cleanup_succeeded"},
+    {"path":"private-local/native-thin-path-eval-receipts/ntpe-tf-002-thin-codex-native-r2.json","sha256":"9b4e3cce3d69e62796e2a29789d97bcd612a843dc6bd5cea7bcf4db92485d56c","task_family_id":"NTPE-TF-002","variant_id":"thin_codex_native","repeat_index":2,"raw_outcome":"stopped","normalized_outcome":"stopped","wall_seconds":1446.966,"input_tokens":1860898,"output_tokens":35926,"independent_gate_set_complete":true,"recovery_status":"succeeded"},
+    {"path":"private-local/native-thin-path-eval-receipts/ntpe-tf-002-thin-codex-native-r3.json","sha256":"91af24e233c423fac8f79381403bd9ec788229061ca7934727c6d09ae4509719","task_family_id":"NTPE-TF-002","variant_id":"thin_codex_native","repeat_index":3,"raw_outcome":"succeeded","normalized_outcome":"succeeded","wall_seconds":591.878,"input_tokens":729770,"output_tokens":8946,"independent_gate_set_complete":true,"recovery_status":"succeeded"},
+    {"path":"private-local/native-thin-path-eval-receipts/ntpe-tf-003-native-plus-key-gates-r1.json","sha256":"2bf9b30e72316231481da050b036a6496fd2f17bdbf290d640779207ccff5539","task_family_id":"NTPE-TF-003","variant_id":"native_plus_key_gates","repeat_index":1,"raw_outcome":"failed","normalized_outcome":"failed","wall_seconds":686.556,"input_tokens":1142099,"output_tokens":43637,"independent_gate_set_complete":true,"recovery_status":"succeeded"},
+    {"path":"private-local/native-thin-path-eval-receipts/ntpe-tf-003-native-plus-key-gates-r2.json","sha256":"7d21a16ced97991f5f72655e1429ed3646fb8c40039f4c5cbf97698c94f5427c","task_family_id":"NTPE-TF-003","variant_id":"native_plus_key_gates","repeat_index":2,"raw_outcome":"failed","normalized_outcome":"failed","wall_seconds":603.442,"input_tokens":1088077,"output_tokens":44938,"independent_gate_set_complete":true,"recovery_status":"succeeded"},
+    {"path":"private-local/native-thin-path-eval-receipts/ntpe-tf-003-native-plus-key-gates-r3.json","sha256":"08949480764cb25a72340e5066ccc73e7d437b4784ee60dd73b3a05b22052302","task_family_id":"NTPE-TF-003","variant_id":"native_plus_key_gates","repeat_index":3,"raw_outcome":"failed","normalized_outcome":"failed","wall_seconds":827.157,"input_tokens":2462829,"output_tokens":12301,"independent_gate_set_complete":true,"recovery_status":"succeeded"},
+    {"path":"private-local/native-thin-path-eval-receipts/ntpe-tf-003-thin-codex-native-r1.json","sha256":"c8fc66a1fc965062f706b54d19aea4e285f99030a6bf5caf1f82020a5844f36e","task_family_id":"NTPE-TF-003","variant_id":"thin_codex_native","repeat_index":1,"raw_outcome":"failed","normalized_outcome":"failed","wall_seconds":1032.167,"input_tokens":1569371,"output_tokens":25157,"independent_gate_set_complete":true,"recovery_status":"succeeded"},
+    {"path":"private-local/native-thin-path-eval-receipts/ntpe-tf-003-thin-codex-native-r2.json","sha256":"689be5f669cba1a8f5941c61a02191f77d7a5327c18962f3602cec47ceefe194","task_family_id":"NTPE-TF-003","variant_id":"thin_codex_native","repeat_index":2,"raw_outcome":"failed","normalized_outcome":"failed","wall_seconds":900.955,"input_tokens":2393835,"output_tokens":10645,"independent_gate_set_complete":true,"recovery_status":"succeeded"},
+    {"path":"private-local/native-thin-path-eval-receipts/ntpe-tf-003-thin-codex-native-r3.json","sha256":"a974ad2c7eec3435a4722de22f75f81d43aa8ff37c3bd5d2c01dec9e11ca8aad","task_family_id":"NTPE-TF-003","variant_id":"thin_codex_native","repeat_index":3,"raw_outcome":"failed","normalized_outcome":"failed","wall_seconds":975.102,"input_tokens":1247835,"output_tokens":8248,"independent_gate_set_complete":true,"recovery_status":"succeeded"}
+  ],
+  "generation_trial_projection": [
+    {
+      "generation_sha256": "b3f5c32875be9f21e73c454afa8fb3b926c353e33079b9822d58a3cf76741b36",
+      "receipt_sha256": [
+        "809876a728b56b18d2bb3c4eb8ee818ba173b3d61320e6ecc64c8bf57c1616e9",
+        "1a9deedbc4e70851300bfe459f6a950bd038443ad19838a9c1a0c87d3ca6f4bb",
+        "696663fe31901db9003f4037154255bff9545f4b0c77f41425e1397287a8d055",
+        "c4e8034d902fa89e919498dd586cd5988ba981fc63230b44a831068451e3fb90",
+        "08899e175ae3d5c21d6a035cd3830829afc283386da4c2f661380276d3e3ffda",
+        "51de30cdfe2d5b99ea53536818d1208b218addc21d8519b72071bf99d85e1380",
+        "6d08481cb2920f5b0c06b0bbc84aeb42b8bb495cd5aa0e62c78d0b0973e67a0c",
+        "628dc83ca9d8c40688b7a4fba5b65e6c428825f98213046a608bb4ba7351490a",
+        "310ad6ab8c97555e7c9cd7bbfa0acaa969f447f553fe2039030a50f56c4bad22",
+        "9b4e3cce3d69e62796e2a29789d97bcd612a843dc6bd5cea7bcf4db92485d56c"
+      ]
+    },
+    {
+      "generation_sha256": "9f137a1c3905f10314938b0aa5133d18449cca653e38fd65315b95031ea2a2b1",
+      "receipt_sha256": [
+        "29482643154140f4cfe17f8ab5e999439db81ba4c46a7f94e8666e3c09132be8",
+        "91af24e233c423fac8f79381403bd9ec788229061ca7934727c6d09ae4509719",
+        "2bf9b30e72316231481da050b036a6496fd2f17bdbf290d640779207ccff5539",
+        "7d21a16ced97991f5f72655e1429ed3646fb8c40039f4c5cbf97698c94f5427c",
+        "c8fc66a1fc965062f706b54d19aea4e285f99030a6bf5caf1f82020a5844f36e"
+      ]
+    },
+    {
+      "generation_sha256": "ffb9c5c40e7ac30769409818f17d0426f4260a328971a50074acbd7d11934f2d",
+      "receipt_sha256": [
+        "08949480764cb25a72340e5066ccc73e7d437b4784ee60dd73b3a05b22052302",
+        "689be5f669cba1a8f5941c61a02191f77d7a5327c18962f3602cec47ceefe194",
+        "a974ad2c7eec3435a4722de22f75f81d43aa8ff37c3bd5d2c01dec9e11ca8aad"
+      ]
+    }
+  ],
+  "evidence_completeness": {
+    "core_trial_receipts_present": 18,
+    "core_trial_receipts_expected": 18,
+    "core_generation_count": 3,
+    "generation_transition_records_present": 2,
+    "generation_transition_records_expected": 2,
+    "q0_only_invalidated_generation_count": 1,
+    "cross_generation_strata_reported": true,
+    "normalization_amendments_present": 2,
+    "conditional_slots_disposed": 27,
+    "conditional_slots_expected": 27,
+    "downstream_outcomes_known": 0,
+    "downstream_outcomes_unknown": 18,
+    "unknowns_retained_in_denominator": true,
+    "remote_ci_or_delivery_performed": false
+  }
+}

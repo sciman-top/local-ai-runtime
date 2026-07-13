@@ -28,6 +28,8 @@
 
 批准前禁止创建目标包；P0C Legacy Ownership Guard 绿色前禁止目标 runtime claim repo。
 
+预批准 Native thin-path 评测已记录 `preserve_v3_23_semantics`，所以本架构不增加 v3.24 successor。该决定只资格化固定 generation 的 CLI execution interface 证据，不 promotion `gpt-5.6-sol/high` profile，也不跨 surface 外推；App Server、SDK、managed Worktree 仍需独立 probe，Automations 在当前 corpus 为 not_applicable。独立 policy/evaluator gates、evidence 和 recovery kernel 保持不变。
+
 目标源码的首级子包边界固定为 `contracts/kernel/qualification/storage/execution/recovery/git_local/operations/compat`。结构化机器约束固定为 `approved_root_files=["__init__.py","__main__.py"]`、`approved_subpackages=["contracts","kernel","qualification","storage","execution","recovery","git_local","operations","compat"]` 和 bootstrap/marker 到首个任务的一对一 `required_source_owners`。`__main__.py` 仅作为 `python -m local_ai_runtime contracts verify` 的薄转发层。Artifact/evidence 持久化归 `storage`，安装、激活、CLI、Batch、doctor、scheduler、managed Native 和 evaluation 编排归 `operations`；不得在包根新增其他功能模块，也不得增生平行的 `evidence`、`commands` 或其他未批准首级子包。
 
 ## 3. 逻辑架构

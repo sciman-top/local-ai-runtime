@@ -29,11 +29,12 @@ The v3.23 candidate remains **Request changes**. Its normative package is
 incomplete: the candidate source and v3.23-bound lineage are present, while
 thirteen required artifacts are still missing. The historical v3.17 and both
 conflicted v3.18 source bodies, plus the exact superseded v3.21 identity, are
-bound by `BaselineLineage.v2`. The evaluation contract is sealed; before the
-package may close, the unique ready work item is `LAR-P0A-EVAL-002`, selected
-as `run_native_thin_path_evaluation_first`. Only an immutable
-`preserve_v3_23_semantics` decision releases P0A closure; a semantic change
-requires a v3.24 successor instead of rewriting this frozen target.
+bound by `BaselineLineage.v2`. The sealed evaluation recorded an immutable
+`preserve_v3_23_semantics` decision without promoting either evaluated
+high-effort profile. The unique ready work item is now `LAR-P0A-002`, selected
+as `close_baseline_normative_package_first`. Baseline Approval remains
+inactive; any later semantic change still requires a v3.24 successor instead
+of rewriting this frozen target.
 
 - [Planning status](../architecture/planning-status.json): machine truth for
   baseline identity, approval state, queue, and current work item.
