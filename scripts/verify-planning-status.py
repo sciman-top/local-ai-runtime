@@ -1918,6 +1918,12 @@ def _verify_work_items(
             "release_emergency_reserve",
             "rebuild_emergency_reserve",
         ],
+        "LAR-P0A-007": [
+            "ExecutionReceipt",
+            "BackupPostActivity",
+            "BackupRestoreIntent",
+            "runtime_external_v1",
+        ],
         "LAR-P0A-010": [
             "accounting_kill_audit",
             "EmergencyDiskReserve",

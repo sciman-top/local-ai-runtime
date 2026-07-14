@@ -1,5 +1,7 @@
 # Change Evidence Index
 
+- [20260714 LAR-P0A-007 Evidence And Backup](20260714-lar-p0a-007-evidence.md): closes the exhaustive normalized-event matrix and hash chain, pre-scan secret-safe projections, flush-before-cursor journal, six-condition receipt, no-replace artifacts, activation-bound external evidence, purpose-separated key envelopes and single-intent anti-rollback backup/restore without reading live evidence, DPAPI state or backups.
+
 - [20260714 LAR-P0A-006 Execution Safety](20260714-lar-p0a-006-execution-safety.md): closes EffectPlan, stable writer effect/launch identity, suspended atomic Job join, exact stdio handles/EOF, execution-commit barriers, the closed execution-authority union, same-name Job fail-closed behavior and non-forking fenced adoption without starting a process or opening a Job.
 
 - [20260714 LAR-P0A-005 Qualification And Authorization](20260714-lar-p0a-005-qualification.md): closes exhaustive sensitive-input discovery, immutable environment/sandbox binding, keyring-only auth, opaque diagnostics, reusable Authorization, exact effect grants and no-writer continuation without reading live credentials or sandbox state.
@@ -32,7 +34,7 @@
 
 - v3.23 是 `baseline_candidate`，不是 approved baseline；v3.17、两份 conflicted v3.18、v3.19-v3.22 只作为精确历史/被替代身份保留。
 - 当前队列是 `LOCAL-AI-RUNTIME-0.2-BASELINE-CLOSURE`。
-- Native thin-path comparison 已记录 `preserve_v3_23_semantics`；`LAR-P0A-006` 已完成 `ExecutionSafetyContractSet.v1`、process/Job/handle/execution-authority/fencing/adoption contract bundle，当前 selector 是 `close_baseline_normative_package_first`，唯一 selectable task 是 `LAR-P0A-007`。规范包仍为 15 required / 6 present / 9 missing，`P0A-VERIFIER` 为 in_progress；baseline 仍未批准。
+- Native thin-path comparison 已记录 `preserve_v3_23_semantics`；`LAR-P0A-007` 已完成 `EvidenceContractSet.v1`、event/journal/receipt/artifact/external-evidence/key-envelope/backup-restore contract bundle，当前 selector 是 `close_baseline_normative_package_first`，唯一 selectable task 是 `LAR-P0A-008`。规范包仍为 15 required / 7 present / 8 missing，`P0A-VERIFIER` 为 in_progress；baseline 仍未批准。
 - `runtime/host-orchestrator` 仍是现行内核；没有 Truth Reset、新 Batch、Implementation Acceptance、Full Q0 或 P2 admission。
 - 下方 2026-07-06 至 2026-07-10 的 Phase 1/runtime_v2 selector 结论是历史 evidence，不再是 next-work truth。
 

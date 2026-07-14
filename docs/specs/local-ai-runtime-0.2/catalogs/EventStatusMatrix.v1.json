@@ -1,0 +1,105 @@
+{
+  "catalog_id": "EventStatusMatrix.v1",
+  "schema_version": 1,
+  "event_schema_path": "docs/specs/local-ai-runtime-0.2/schemas/NormalizedExecutionEvent.v1.schema.json",
+  "common_required_fields": ["schema_version", "attempt_uuid", "fence", "seq", "observed_at_utc", "event_type", "status", "prev_hash", "event_hash"],
+  "event_specific_field_universe": ["accepted_end_offset", "approved_path_id", "bounded_usage", "byte_count", "canonical_relative_path", "configured_limit", "content_sha256", "exit_code", "final_state", "framing_class", "item_id", "job_identity_id", "mutation_observation_id", "observed_at_least", "partial_byte_count", "path_class", "process_kind", "reason_code", "report_projection_hash", "resource_kind", "run_id", "segment_no", "stream_kind", "termination_class", "tool_kind", "validated_result_projection_hash"],
+  "matrix": [
+    {
+      "matrix_id": "process_started.started", "event_type": "process_started", "status": "started",
+      "required_fields": ["job_identity_id", "process_kind", "run_id"], "optional_fields": [],
+      "forbidden_fields": ["accepted_end_offset", "approved_path_id", "bounded_usage", "byte_count", "canonical_relative_path", "configured_limit", "content_sha256", "exit_code", "final_state", "framing_class", "item_id", "mutation_observation_id", "observed_at_least", "partial_byte_count", "path_class", "reason_code", "report_projection_hash", "resource_kind", "segment_no", "stream_kind", "termination_class", "tool_kind", "validated_result_projection_hash"],
+      "conditional_constraints": ["process_identity_must_reference_JobIdentity.v1"]
+    },
+    {
+      "matrix_id": "tool_started.started", "event_type": "tool_started", "status": "started",
+      "required_fields": ["item_id", "tool_kind"], "optional_fields": [],
+      "forbidden_fields": ["accepted_end_offset", "approved_path_id", "bounded_usage", "byte_count", "canonical_relative_path", "configured_limit", "content_sha256", "exit_code", "final_state", "framing_class", "job_identity_id", "mutation_observation_id", "observed_at_least", "partial_byte_count", "path_class", "process_kind", "reason_code", "report_projection_hash", "resource_kind", "run_id", "segment_no", "stream_kind", "termination_class", "validated_result_projection_hash"],
+      "conditional_constraints": []
+    },
+    {
+      "matrix_id": "mutation_observed.observed", "event_type": "mutation_observed", "status": "observed",
+      "required_fields": ["mutation_observation_id", "byte_count", "path_class"], "optional_fields": ["approved_path_id"],
+      "forbidden_fields": ["accepted_end_offset", "bounded_usage", "canonical_relative_path", "configured_limit", "content_sha256", "exit_code", "final_state", "framing_class", "item_id", "job_identity_id", "observed_at_least", "partial_byte_count", "process_kind", "reason_code", "report_projection_hash", "resource_kind", "run_id", "segment_no", "stream_kind", "termination_class", "tool_kind", "validated_result_projection_hash"],
+      "conditional_constraints": ["approved_path_id_required_only_when_path_class_is_approved_mapped", "unknown_denied_out_of_bound_or_reparse_forbids_path_or_content_or_digest"]
+    },
+    {
+      "matrix_id": "stream_eof.observed", "event_type": "stream_eof", "status": "observed",
+      "required_fields": ["stream_kind", "byte_count", "partial_byte_count", "termination_class"], "optional_fields": [],
+      "forbidden_fields": ["accepted_end_offset", "approved_path_id", "bounded_usage", "canonical_relative_path", "configured_limit", "content_sha256", "exit_code", "final_state", "framing_class", "item_id", "job_identity_id", "mutation_observation_id", "observed_at_least", "path_class", "process_kind", "reason_code", "report_projection_hash", "resource_kind", "run_id", "segment_no", "tool_kind", "validated_result_projection_hash"],
+      "conditional_constraints": ["partial_bytes_or_content_hash_forbidden"]
+    },
+    {
+      "matrix_id": "content_validated.completed", "event_type": "content_validated", "status": "completed",
+      "required_fields": ["mutation_observation_id", "approved_path_id", "canonical_relative_path", "content_sha256", "byte_count"], "optional_fields": [],
+      "forbidden_fields": ["accepted_end_offset", "bounded_usage", "configured_limit", "exit_code", "final_state", "framing_class", "item_id", "job_identity_id", "observed_at_least", "partial_byte_count", "path_class", "process_kind", "reason_code", "report_projection_hash", "resource_kind", "run_id", "segment_no", "stream_kind", "termination_class", "tool_kind", "validated_result_projection_hash"],
+      "conditional_constraints": ["must_follow_successful_path_and_content_scan", "prior_mutation_observed_immutable"]
+    },
+    {
+      "matrix_id": "tool_completed.completed", "event_type": "tool_completed", "status": "completed",
+      "required_fields": ["item_id", "tool_kind", "exit_code"], "optional_fields": ["report_projection_hash"],
+      "forbidden_fields": ["accepted_end_offset", "approved_path_id", "bounded_usage", "byte_count", "canonical_relative_path", "configured_limit", "content_sha256", "final_state", "framing_class", "job_identity_id", "mutation_observation_id", "observed_at_least", "partial_byte_count", "path_class", "process_kind", "reason_code", "resource_kind", "run_id", "segment_no", "stream_kind", "termination_class", "validated_result_projection_hash"],
+      "conditional_constraints": ["optional_hash_references_secret_scanned_allowlisted_projection_only"]
+    },
+    {
+      "matrix_id": "turn_completed.completed", "event_type": "turn_completed", "status": "completed",
+      "required_fields": ["bounded_usage"], "optional_fields": [],
+      "forbidden_fields": ["accepted_end_offset", "approved_path_id", "byte_count", "canonical_relative_path", "configured_limit", "content_sha256", "exit_code", "final_state", "framing_class", "item_id", "job_identity_id", "mutation_observation_id", "observed_at_least", "partial_byte_count", "path_class", "process_kind", "reason_code", "report_projection_hash", "resource_kind", "run_id", "segment_no", "stream_kind", "termination_class", "tool_kind", "validated_result_projection_hash"],
+      "conditional_constraints": ["numeric_usage_only_here"]
+    },
+    {
+      "matrix_id": "final_result.completed", "event_type": "final_result", "status": "completed",
+      "required_fields": ["final_state", "validated_result_projection_hash"], "optional_fields": ["reason_code"],
+      "forbidden_fields": ["accepted_end_offset", "approved_path_id", "bounded_usage", "byte_count", "canonical_relative_path", "configured_limit", "content_sha256", "exit_code", "framing_class", "item_id", "job_identity_id", "mutation_observation_id", "observed_at_least", "partial_byte_count", "path_class", "process_kind", "report_projection_hash", "resource_kind", "run_id", "segment_no", "stream_kind", "termination_class", "tool_kind"],
+      "conditional_constraints": ["reason_code_required_when_final_state_blocked", "reason_code_forbidden_when_final_state_completed", "projection_must_be_secret_scanned"]
+    },
+    {
+      "matrix_id": "journal_sealed.completed", "event_type": "journal_sealed", "status": "completed",
+      "required_fields": ["segment_no", "accepted_end_offset"], "optional_fields": [],
+      "forbidden_fields": ["approved_path_id", "bounded_usage", "byte_count", "canonical_relative_path", "configured_limit", "content_sha256", "exit_code", "final_state", "framing_class", "item_id", "job_identity_id", "mutation_observation_id", "observed_at_least", "partial_byte_count", "path_class", "process_kind", "reason_code", "report_projection_hash", "resource_kind", "run_id", "stream_kind", "termination_class", "tool_kind", "validated_result_projection_hash"],
+      "conditional_constraints": ["segment_must_be_flushed_before_cursor_advance"]
+    },
+    {
+      "matrix_id": "tool_failed.failed", "event_type": "tool_failed", "status": "failed",
+      "required_fields": ["item_id", "tool_kind", "reason_code"], "optional_fields": ["exit_code"],
+      "forbidden_fields": ["accepted_end_offset", "approved_path_id", "bounded_usage", "byte_count", "canonical_relative_path", "configured_limit", "content_sha256", "final_state", "framing_class", "job_identity_id", "mutation_observation_id", "observed_at_least", "partial_byte_count", "path_class", "process_kind", "report_projection_hash", "resource_kind", "run_id", "segment_no", "stream_kind", "termination_class", "validated_result_projection_hash"],
+      "conditional_constraints": ["reason_code_catalog_version_and_hash_bound"]
+    },
+    {
+      "matrix_id": "turn_failed.failed", "event_type": "turn_failed", "status": "failed",
+      "required_fields": ["reason_code"], "optional_fields": [],
+      "forbidden_fields": ["accepted_end_offset", "approved_path_id", "bounded_usage", "byte_count", "canonical_relative_path", "configured_limit", "content_sha256", "exit_code", "final_state", "framing_class", "item_id", "job_identity_id", "mutation_observation_id", "observed_at_least", "partial_byte_count", "path_class", "process_kind", "report_projection_hash", "resource_kind", "run_id", "segment_no", "stream_kind", "termination_class", "tool_kind", "validated_result_projection_hash"],
+      "conditional_constraints": ["reason_code_catalog_version_and_hash_bound"]
+    },
+    {
+      "matrix_id": "resource_limit_exceeded.failed", "event_type": "resource_limit_exceeded", "status": "failed",
+      "required_fields": ["resource_kind", "configured_limit", "observed_at_least", "reason_code"], "optional_fields": ["job_identity_id"],
+      "forbidden_fields": ["accepted_end_offset", "approved_path_id", "bounded_usage", "byte_count", "canonical_relative_path", "content_sha256", "exit_code", "final_state", "framing_class", "item_id", "mutation_observation_id", "partial_byte_count", "path_class", "process_kind", "report_projection_hash", "run_id", "segment_no", "stream_kind", "termination_class", "tool_kind", "validated_result_projection_hash"],
+      "conditional_constraints": ["reason_code_catalog_version_and_hash_bound"]
+    },
+    {
+      "matrix_id": "process_terminated.failed", "event_type": "process_terminated", "status": "failed",
+      "required_fields": ["job_identity_id", "process_kind", "reason_code"], "optional_fields": ["exit_code"],
+      "forbidden_fields": ["accepted_end_offset", "approved_path_id", "bounded_usage", "byte_count", "canonical_relative_path", "configured_limit", "content_sha256", "final_state", "framing_class", "item_id", "mutation_observation_id", "observed_at_least", "partial_byte_count", "path_class", "report_projection_hash", "resource_kind", "run_id", "segment_no", "stream_kind", "termination_class", "tool_kind", "validated_result_projection_hash"],
+      "conditional_constraints": ["reason_code_catalog_version_and_hash_bound"]
+    },
+    {
+      "matrix_id": "adapter_rejected.rejected", "event_type": "adapter_rejected", "status": "rejected",
+      "required_fields": ["framing_class", "reason_code"], "optional_fields": ["stream_kind", "partial_byte_count"],
+      "forbidden_fields": ["accepted_end_offset", "approved_path_id", "bounded_usage", "byte_count", "canonical_relative_path", "configured_limit", "content_sha256", "exit_code", "final_state", "item_id", "job_identity_id", "mutation_observation_id", "observed_at_least", "path_class", "process_kind", "report_projection_hash", "resource_kind", "run_id", "segment_no", "termination_class", "tool_kind", "validated_result_projection_hash"],
+      "conditional_constraints": ["reason_code_catalog_version_and_hash_bound", "raw_or_partial_bytes_and_hash_forbidden"]
+    },
+    {
+      "matrix_id": "process_exited.completed", "event_type": "process_exited", "status": "completed",
+      "required_fields": ["job_identity_id", "process_kind", "exit_code"], "optional_fields": [],
+      "forbidden_fields": ["accepted_end_offset", "approved_path_id", "bounded_usage", "byte_count", "canonical_relative_path", "configured_limit", "content_sha256", "final_state", "framing_class", "item_id", "mutation_observation_id", "observed_at_least", "partial_byte_count", "path_class", "reason_code", "report_projection_hash", "resource_kind", "run_id", "segment_no", "stream_kind", "termination_class", "tool_kind", "validated_result_projection_hash"],
+      "conditional_constraints": ["exit_code_must_be_zero", "framing_must_be_complete", "reason_code_forbidden"]
+    },
+    {
+      "matrix_id": "process_exited.failed", "event_type": "process_exited", "status": "failed",
+      "required_fields": ["job_identity_id", "process_kind", "exit_code", "reason_code"], "optional_fields": [],
+      "forbidden_fields": ["accepted_end_offset", "approved_path_id", "bounded_usage", "byte_count", "canonical_relative_path", "configured_limit", "content_sha256", "final_state", "framing_class", "item_id", "mutation_observation_id", "observed_at_least", "partial_byte_count", "path_class", "report_projection_hash", "resource_kind", "run_id", "segment_no", "stream_kind", "termination_class", "tool_kind", "validated_result_projection_hash"],
+      "conditional_constraints": ["selected_for_nonzero_exit_or_incomplete_expected_framing", "reason_code_catalog_version_and_hash_bound"]
+    }
+  ]
+}

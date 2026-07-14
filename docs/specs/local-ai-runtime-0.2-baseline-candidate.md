@@ -27,27 +27,21 @@ implementation.
 
 The v3.23 candidate remains **Request changes**. Its normative package is
 incomplete: the candidate source and v3.23-bound lineage are present, while
-nine required artifacts are still missing. The historical v3.17 and both
+eight required artifacts are still missing. The historical v3.17 and both
 conflicted v3.18 source bodies, plus the exact superseded v3.21 identity, are
 bound by `BaselineLineage.v2`. The sealed evaluation recorded an immutable
 `preserve_v3_23_semantics` decision without promoting either evaluated
 high-effort profile. `LAR-P0A-002` revalidated the non-final manifest fixture
 and verifier skeleton against the frozen v3.23 source and `BaselineLineage.v2`.
-`LAR-P0A-003` then materialized the canonical JSON, Git path, Windows
-collision/handle identity, SID/named-object and alias-aware 8.3 contract as
-`CanonicalizationPolicy.v1`. `LAR-P0A-004` then closed product/work-class routing,
-TaskTemplate/BatchSubmission, permanent root replay and atomic resubmission as
-`ProductContract.v1`. `LAR-P0A-005` then closed exhaustive sensitive-input
-discovery, base-independent reusable qualification, immutable environment and
-sandbox binding, keyring-only auth, opaque diagnostics, reusable Authorization,
-exact effect grants and no-writer continuation as `QualificationContractSet.v1`.
-`LAR-P0A-006` then closed pre-execution `EffectPlan`, stable writer effect and
-attempt-scoped launch identity, suspended atomic Job join, exact stdio handle
-inheritance, execution-commit barriers, the closed Authorization/SafetyOnly
-authority union, same-name Job fail-closed behavior and non-forking fenced
-adoption as `ExecutionSafetyContractSet.v1`. No process was started and no Job
-or live runtime authority was opened or changed. The unique ready work item is
-now `LAR-P0A-007`, selected as
+`LAR-P0A-003` through `LAR-P0A-006` closed canonicalization/path identity,
+product/submission, qualification/authorization and execution/fencing bundles
+without opening live runtime authority. `LAR-P0A-007` then closed the
+exhaustive event/status matrix, append-only journal and six-condition receipt,
+no-replace artifact and runtime-managed external evidence rules, purpose-bound
+key envelopes, and marker-before-mutation backup/restore anti-rollback protocol
+as `EvidenceContractSet.v1`. No raw output, DPAPI state, external evidence root,
+backup or restore was read or changed. The unique ready work item is now
+`LAR-P0A-008`, selected as
 `close_baseline_normative_package_first`. Baseline Approval remains
 inactive; any later semantic change still requires a v3.24 successor instead
 of rewriting this frozen target.

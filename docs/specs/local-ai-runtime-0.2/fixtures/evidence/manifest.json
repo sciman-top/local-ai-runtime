@@ -1,0 +1,147 @@
+{
+  "fixture_id": "EvidenceContractSet.v1.contract-fixtures",
+  "schema_version": 1,
+  "policy_path": "docs/specs/local-ai-runtime-0.2/normative/EvidenceContractSet.v1.json",
+  "event_schema_path": "docs/specs/local-ai-runtime-0.2/schemas/NormalizedExecutionEvent.v1.schema.json",
+  "event_catalog_path": "docs/specs/local-ai-runtime-0.2/catalogs/EventStatusMatrix.v1.json",
+  "event_pair_examples": [
+    {"event_type": "process_started", "status": "started", "event_fields": {"job_identity_id": "2222222222222222222222222222222222222222222222222222222222222222", "process_kind": "writer", "run_id": "22222222-2222-4222-8222-222222222222"}},
+    {"event_type": "tool_started", "status": "started", "event_fields": {"item_id": "item-1", "tool_kind": "model_tool"}},
+    {"event_type": "mutation_observed", "status": "observed", "event_fields": {"mutation_observation_id": "33333333-3333-4333-8333-333333333333", "byte_count": 12, "path_class": "approved_mapped", "approved_path_id": "path-1"}},
+    {"event_type": "stream_eof", "status": "observed", "event_fields": {"stream_kind": "stderr", "byte_count": 0, "partial_byte_count": 0, "termination_class": "normal_exit"}},
+    {"event_type": "content_validated", "status": "completed", "event_fields": {"mutation_observation_id": "33333333-3333-4333-8333-333333333333", "approved_path_id": "path-1", "canonical_relative_path": "src/main.py", "content_sha256": "4444444444444444444444444444444444444444444444444444444444444444", "byte_count": 12}},
+    {"event_type": "tool_completed", "status": "completed", "event_fields": {"item_id": "item-1", "tool_kind": "model_tool", "exit_code": 0, "report_projection_hash": "5555555555555555555555555555555555555555555555555555555555555555"}},
+    {"event_type": "turn_completed", "status": "completed", "event_fields": {"bounded_usage": {"input_tokens": 10, "cached_input_tokens": 2, "output_tokens": 3, "total_tokens": 13}}},
+    {"event_type": "final_result", "status": "completed", "event_fields": {"final_state": "completed", "validated_result_projection_hash": "6666666666666666666666666666666666666666666666666666666666666666"}},
+    {"event_type": "journal_sealed", "status": "completed", "event_fields": {"segment_no": 1, "accepted_end_offset": 2048}},
+    {"event_type": "tool_failed", "status": "failed", "event_fields": {"item_id": "item-2", "tool_kind": "gate", "reason_code": "gate_failed", "exit_code": 1}},
+    {"event_type": "turn_failed", "status": "failed", "event_fields": {"reason_code": "turn_failed"}},
+    {"event_type": "resource_limit_exceeded", "status": "failed", "event_fields": {"resource_kind": "stdout_bytes", "configured_limit": 1024, "observed_at_least": 1025, "reason_code": "stdout_limit", "job_identity_id": "2222222222222222222222222222222222222222222222222222222222222222"}},
+    {"event_type": "process_terminated", "status": "failed", "event_fields": {"job_identity_id": "2222222222222222222222222222222222222222222222222222222222222222", "process_kind": "writer", "reason_code": "terminated", "exit_code": 1}},
+    {"event_type": "adapter_rejected", "status": "rejected", "event_fields": {"framing_class": "complete_invalid_json", "reason_code": "adapter_invalid", "stream_kind": "stdout_jsonl", "partial_byte_count": 0}},
+    {"event_type": "process_exited", "status": "completed", "event_fields": {"job_identity_id": "2222222222222222222222222222222222222222222222222222222222222222", "process_kind": "writer", "exit_code": 0}},
+    {"event_type": "process_exited", "status": "failed", "event_fields": {"job_identity_id": "2222222222222222222222222222222222222222222222222222222222222222", "process_kind": "writer", "exit_code": 1, "reason_code": "process_failed"}}
+  ],
+  "event_chain_positive": [
+    {
+      "schema_version": 1,
+      "attempt_uuid": "11111111-1111-4111-8111-111111111111",
+      "fence": 3,
+      "seq": 1,
+      "observed_at_utc": "2026-07-14T01:00:00.000001Z",
+      "event_type": "process_started",
+      "status": "started",
+      "prev_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+      "event_hash": "a16ddaf7bc7fa7d44780ffbb27e83e23d27204caf1ebeed679672fc34f63b6f0",
+      "job_identity_id": "2222222222222222222222222222222222222222222222222222222222222222",
+      "process_kind": "writer",
+      "run_id": "22222222-2222-4222-8222-222222222222"
+    },
+    {
+      "schema_version": 1,
+      "attempt_uuid": "11111111-1111-4111-8111-111111111111",
+      "fence": 3,
+      "seq": 2,
+      "observed_at_utc": "2026-07-14T01:00:00.000002Z",
+      "event_type": "mutation_observed",
+      "status": "observed",
+      "prev_hash": "a16ddaf7bc7fa7d44780ffbb27e83e23d27204caf1ebeed679672fc34f63b6f0",
+      "event_hash": "ac45feb117c579c3be337ddb977ad01294eb7799dda26acab7b81c0d064c08e7",
+      "mutation_observation_id": "33333333-3333-4333-8333-333333333333",
+      "byte_count": 12,
+      "path_class": "approved_mapped",
+      "approved_path_id": "path-1"
+    },
+    {
+      "schema_version": 1,
+      "attempt_uuid": "11111111-1111-4111-8111-111111111111",
+      "fence": 3,
+      "seq": 3,
+      "observed_at_utc": "2026-07-14T01:00:00.000003Z",
+      "event_type": "content_validated",
+      "status": "completed",
+      "prev_hash": "ac45feb117c579c3be337ddb977ad01294eb7799dda26acab7b81c0d064c08e7",
+      "event_hash": "fb3b095ad34f59ec134e9b6bf6c8928d208b1c95cd7b6935543c056d55a87909",
+      "mutation_observation_id": "33333333-3333-4333-8333-333333333333",
+      "approved_path_id": "path-1",
+      "canonical_relative_path": "src/main.py",
+      "content_sha256": "4444444444444444444444444444444444444444444444444444444444444444",
+      "byte_count": 12
+    }
+  ],
+  "pre_scan_projection_cases": [
+    {"case_id": "approved_mapping", "path_class": "approved_mapped", "approved_path_id_present": true, "path_text_present": false, "content_hash_present": false, "ordinary_digest_present": false, "summary_present": false, "free_text_present": false, "expected_result": "projection_accepted"},
+    {"case_id": "unknown_random_id_only", "path_class": "unknown", "approved_path_id_present": false, "path_text_present": false, "content_hash_present": false, "ordinary_digest_present": false, "summary_present": false, "free_text_present": false, "expected_result": "projection_accepted"},
+    {"case_id": "unknown_with_path", "path_class": "unknown", "approved_path_id_present": false, "path_text_present": true, "content_hash_present": false, "ordinary_digest_present": false, "summary_present": false, "free_text_present": false, "expected_result": "pre_scan_oracle_forbidden"},
+    {"case_id": "denied_with_digest", "path_class": "denied", "approved_path_id_present": false, "path_text_present": false, "content_hash_present": false, "ordinary_digest_present": true, "summary_present": false, "free_text_present": false, "expected_result": "pre_scan_oracle_forbidden"},
+    {"case_id": "unmapped_approved_id", "path_class": "out_of_bound", "approved_path_id_present": true, "path_text_present": false, "content_hash_present": false, "ordinary_digest_present": false, "summary_present": false, "free_text_present": false, "expected_result": "approved_path_mapping_forbidden"},
+    {"case_id": "content_hash_before_scan", "path_class": "approved_mapped", "approved_path_id_present": true, "path_text_present": false, "content_hash_present": true, "ordinary_digest_present": false, "summary_present": false, "free_text_present": false, "expected_result": "pre_scan_oracle_forbidden"},
+    {"case_id": "unknown_with_summary", "path_class": "unknown", "approved_path_id_present": false, "path_text_present": false, "content_hash_present": false, "ordinary_digest_present": false, "summary_present": true, "free_text_present": false, "expected_result": "pre_scan_oracle_forbidden"},
+    {"case_id": "denied_with_free_text", "path_class": "denied", "approved_path_id_present": false, "path_text_present": false, "content_hash_present": false, "ordinary_digest_present": false, "summary_present": false, "free_text_present": true, "expected_result": "pre_scan_oracle_forbidden"}
+  ],
+  "journal_cursor_cases": [
+    {"case_id": "flushed_then_cursor", "event_appended": true, "journal_flushed": true, "cursor_advanced": true, "cursor_at_or_before_flushed_offset": true, "expected_result": "cursor_commit_allowed"},
+    {"case_id": "cursor_before_flush", "event_appended": true, "journal_flushed": false, "cursor_advanced": true, "cursor_at_or_before_flushed_offset": false, "expected_result": "cursor_lead_forbidden"},
+    {"case_id": "cursor_beyond_flush", "event_appended": true, "journal_flushed": true, "cursor_advanced": true, "cursor_at_or_before_flushed_offset": false, "expected_result": "cursor_lead_forbidden"},
+    {"case_id": "journal_may_lead", "event_appended": true, "journal_flushed": true, "cursor_advanced": false, "cursor_at_or_before_flushed_offset": true, "expected_result": "journal_ahead_recoverable"}
+  ],
+  "receipt_cases": [
+    {"case_id": "all_terminal", "process_exited": true, "stdout_jsonl_eof": true, "final_schema_passed": true, "no_output_or_resource_overflow": true, "normalized_chain_and_segments_sealed": true, "job_zero_process": true, "expected_result": "receipt_publish"},
+    {"case_id": "process_running", "process_exited": false, "stdout_jsonl_eof": true, "final_schema_passed": true, "no_output_or_resource_overflow": true, "normalized_chain_and_segments_sealed": true, "job_zero_process": true, "expected_result": "receipt_withheld"},
+    {"case_id": "stdout_not_eof", "process_exited": true, "stdout_jsonl_eof": false, "final_schema_passed": true, "no_output_or_resource_overflow": true, "normalized_chain_and_segments_sealed": true, "job_zero_process": true, "expected_result": "receipt_withheld"},
+    {"case_id": "schema_failed", "process_exited": true, "stdout_jsonl_eof": true, "final_schema_passed": false, "no_output_or_resource_overflow": true, "normalized_chain_and_segments_sealed": true, "job_zero_process": true, "expected_result": "receipt_withheld"},
+    {"case_id": "overflow", "process_exited": true, "stdout_jsonl_eof": true, "final_schema_passed": true, "no_output_or_resource_overflow": false, "normalized_chain_and_segments_sealed": true, "job_zero_process": true, "expected_result": "receipt_withheld"},
+    {"case_id": "journal_unsealed", "process_exited": true, "stdout_jsonl_eof": true, "final_schema_passed": true, "no_output_or_resource_overflow": true, "normalized_chain_and_segments_sealed": false, "job_zero_process": true, "expected_result": "receipt_withheld"},
+    {"case_id": "job_has_process", "process_exited": true, "stdout_jsonl_eof": true, "final_schema_passed": true, "no_output_or_resource_overflow": true, "normalized_chain_and_segments_sealed": true, "job_zero_process": false, "expected_result": "receipt_withheld"}
+  ],
+  "artifact_publish_cases": [
+    {"case_id": "new_destination", "spool_flushed": true, "intent_durable": true, "destination_exists": false, "same_identity": false, "no_replace_api": true, "readback_matches": true, "expected_result": "publish_new"},
+    {"case_id": "response_loss_same_identity", "spool_flushed": true, "intent_durable": true, "destination_exists": true, "same_identity": true, "no_replace_api": true, "readback_matches": true, "expected_result": "confirm_existing"},
+    {"case_id": "existing_conflict", "spool_flushed": true, "intent_durable": true, "destination_exists": true, "same_identity": false, "no_replace_api": true, "readback_matches": false, "expected_result": "destination_conflict"},
+    {"case_id": "replace_api", "spool_flushed": true, "intent_durable": true, "destination_exists": false, "same_identity": false, "no_replace_api": false, "readback_matches": true, "expected_result": "replace_forbidden"},
+    {"case_id": "intent_missing", "spool_flushed": true, "intent_durable": false, "destination_exists": false, "same_identity": false, "no_replace_api": true, "readback_matches": true, "expected_result": "intent_required"},
+    {"case_id": "readback_mismatch", "spool_flushed": true, "intent_durable": true, "destination_exists": false, "same_identity": false, "no_replace_api": true, "readback_matches": false, "expected_result": "readback_integrity_failure"}
+  ],
+  "external_evidence_cases": [
+    {"case_id": "managed_controller_publish", "activation_bound": true, "managed_root_exact": true, "identity_disjoint": true, "no_follow_verified": true, "current_fence": true, "controller_publisher": true, "target_accepts": true, "identity_drift": false, "expected_result": "publish_allowed"},
+    {"case_id": "operator_root", "activation_bound": true, "managed_root_exact": false, "identity_disjoint": true, "no_follow_verified": true, "current_fence": true, "controller_publisher": true, "target_accepts": true, "identity_drift": false, "expected_result": "managed_root_required"},
+    {"case_id": "repo_ancestor_overlap", "activation_bound": true, "managed_root_exact": true, "identity_disjoint": false, "no_follow_verified": true, "current_fence": true, "controller_publisher": true, "target_accepts": true, "identity_drift": false, "expected_result": "identity_overlap_forbidden"},
+    {"case_id": "writer_publish", "activation_bound": true, "managed_root_exact": true, "identity_disjoint": true, "no_follow_verified": true, "current_fence": true, "controller_publisher": false, "target_accepts": true, "identity_drift": false, "expected_result": "publisher_forbidden"},
+    {"case_id": "target_not_accepting", "activation_bound": true, "managed_root_exact": true, "identity_disjoint": true, "no_follow_verified": true, "current_fence": true, "controller_publisher": true, "target_accepts": false, "identity_drift": false, "expected_result": "target_contract_required"},
+    {"case_id": "publish_identity_drift", "activation_bound": true, "managed_root_exact": true, "identity_disjoint": true, "no_follow_verified": true, "current_fence": true, "controller_publisher": true, "target_accepts": true, "identity_drift": true, "expected_result": "requalification_required"}
+  ],
+  "key_envelope_cases": [
+    {"case_id": "quarantine_envelope", "envelope_kind": "quarantine", "purpose": "quarantine_encryption", "dpapi_scope": "current_user", "domain_matches": true, "plaintext_present": false, "key_hash_present": false, "shares_other_key": false, "expected_result": "envelope_accepted"},
+    {"case_id": "integrity_envelope", "envelope_kind": "runtime_integrity", "purpose": "runtime_integrity_and_backup_wrapper", "dpapi_scope": "current_user", "domain_matches": true, "plaintext_present": false, "key_hash_present": false, "shares_other_key": false, "expected_result": "envelope_accepted"},
+    {"case_id": "purpose_mixed", "envelope_kind": "quarantine", "purpose": "runtime_integrity_and_backup_wrapper", "dpapi_scope": "current_user", "domain_matches": true, "plaintext_present": false, "key_hash_present": false, "shares_other_key": false, "expected_result": "purpose_mismatch"},
+    {"case_id": "machine_scope", "envelope_kind": "runtime_integrity", "purpose": "runtime_integrity_and_backup_wrapper", "dpapi_scope": "local_machine", "domain_matches": true, "plaintext_present": false, "key_hash_present": false, "shares_other_key": false, "expected_result": "current_user_scope_required"},
+    {"case_id": "plaintext_persisted", "envelope_kind": "quarantine", "purpose": "quarantine_encryption", "dpapi_scope": "current_user", "domain_matches": true, "plaintext_present": true, "key_hash_present": false, "shares_other_key": false, "expected_result": "key_material_forbidden"},
+    {"case_id": "ordinary_key_hash", "envelope_kind": "runtime_integrity", "purpose": "runtime_integrity_and_backup_wrapper", "dpapi_scope": "current_user", "domain_matches": true, "plaintext_present": false, "key_hash_present": true, "shares_other_key": false, "expected_result": "key_material_forbidden"},
+    {"case_id": "shared_key", "envelope_kind": "quarantine", "purpose": "quarantine_encryption", "dpapi_scope": "current_user", "domain_matches": true, "plaintext_present": false, "key_hash_present": false, "shares_other_key": true, "expected_result": "independent_keys_required"}
+  ],
+  "backup_eligibility_cases": [
+    {"case_id": "suspended_stable", "already_suspended": true, "control_generation_unchanged": true, "resumed_after_publish": false, "expected_result": "eligible"},
+    {"case_id": "online_backup", "already_suspended": false, "control_generation_unchanged": true, "resumed_after_publish": false, "expected_result": "stale_drill_only"},
+    {"case_id": "generation_drift", "already_suspended": true, "control_generation_unchanged": false, "resumed_after_publish": false, "expected_result": "stale_drill_only"},
+    {"case_id": "resumed_after_publish", "already_suspended": true, "control_generation_unchanged": true, "resumed_after_publish": true, "expected_result": "stale_drill_only"}
+  ],
+  "post_activity_cases": [
+    {"case_id": "marker_before_mutation", "create_new_write_through": true, "marker_flushed": true, "head_staled": true, "mutation_started": true, "mutation_started_before_marker": false, "expected_result": "mutation_allowed"},
+    {"case_id": "mutation_first", "create_new_write_through": true, "marker_flushed": true, "head_staled": true, "mutation_started": true, "mutation_started_before_marker": true, "expected_result": "ordering_violation"},
+    {"case_id": "marker_not_flushed", "create_new_write_through": true, "marker_flushed": false, "head_staled": false, "mutation_started": true, "mutation_started_before_marker": false, "expected_result": "mutation_forbidden"},
+    {"case_id": "marker_only", "create_new_write_through": true, "marker_flushed": true, "head_staled": true, "mutation_started": false, "mutation_started_before_marker": false, "expected_result": "conservative_stale"},
+    {"case_id": "partial_marker_without_mutation", "create_new_write_through": true, "marker_flushed": false, "head_staled": true, "mutation_started": false, "mutation_started_before_marker": false, "expected_result": "conservative_stale"}
+  ],
+  "restore_cases": [
+    {"case_id": "single_restore", "sidecar_present": true, "copied_backup": false, "same_suspended_generation": true, "post_activity_present": false, "marker_or_head_ambiguous": false, "identity_matches": true, "head_state": "eligible", "intent_present": true, "intent_flushed": true, "intent_unique": true, "expected_head_matches": true, "cas_to_restoring": true, "response_lost": false, "same_intent_replay": false, "cas_to_consumed": true, "expected_result": "restore_consumed"},
+    {"case_id": "missing_sidecar", "sidecar_present": false, "copied_backup": false, "same_suspended_generation": true, "post_activity_present": false, "marker_or_head_ambiguous": false, "identity_matches": true, "head_state": "eligible", "intent_present": true, "intent_flushed": true, "intent_unique": true, "expected_head_matches": true, "cas_to_restoring": true, "response_lost": false, "same_intent_replay": false, "cas_to_consumed": true, "expected_result": "drill_only"},
+    {"case_id": "copied_backup", "sidecar_present": true, "copied_backup": true, "same_suspended_generation": true, "post_activity_present": false, "marker_or_head_ambiguous": false, "identity_matches": true, "head_state": "eligible", "intent_present": true, "intent_flushed": true, "intent_unique": true, "expected_head_matches": true, "cas_to_restoring": true, "response_lost": false, "same_intent_replay": false, "cas_to_consumed": true, "expected_result": "drill_only"},
+    {"case_id": "post_activity_marker", "sidecar_present": true, "copied_backup": false, "same_suspended_generation": true, "post_activity_present": true, "marker_or_head_ambiguous": false, "identity_matches": true, "head_state": "eligible", "intent_present": true, "intent_flushed": true, "intent_unique": true, "expected_head_matches": true, "cas_to_restoring": true, "response_lost": false, "same_intent_replay": false, "cas_to_consumed": true, "expected_result": "drill_only"},
+    {"case_id": "generation_drift", "sidecar_present": true, "copied_backup": false, "same_suspended_generation": false, "post_activity_present": false, "marker_or_head_ambiguous": false, "identity_matches": true, "head_state": "eligible", "intent_present": true, "intent_flushed": true, "intent_unique": true, "expected_head_matches": true, "cas_to_restoring": true, "response_lost": false, "same_intent_replay": false, "cas_to_consumed": true, "expected_result": "drill_only"},
+    {"case_id": "intent_not_flushed", "sidecar_present": true, "copied_backup": false, "same_suspended_generation": true, "post_activity_present": false, "marker_or_head_ambiguous": false, "identity_matches": true, "head_state": "eligible", "intent_present": true, "intent_flushed": false, "intent_unique": true, "expected_head_matches": true, "cas_to_restoring": true, "response_lost": false, "same_intent_replay": false, "cas_to_consumed": false, "expected_result": "restore_intent_not_durable"},
+    {"case_id": "response_loss_same_intent", "sidecar_present": true, "copied_backup": false, "same_suspended_generation": true, "post_activity_present": false, "marker_or_head_ambiguous": false, "identity_matches": true, "head_state": "restoring", "intent_present": true, "intent_flushed": true, "intent_unique": true, "expected_head_matches": true, "cas_to_restoring": true, "response_lost": true, "same_intent_replay": true, "cas_to_consumed": false, "expected_result": "continue_same_intent"},
+    {"case_id": "response_loss_second_intent", "sidecar_present": true, "copied_backup": false, "same_suspended_generation": true, "post_activity_present": false, "marker_or_head_ambiguous": false, "identity_matches": true, "head_state": "restoring", "intent_present": true, "intent_flushed": true, "intent_unique": false, "expected_head_matches": true, "cas_to_restoring": true, "response_lost": true, "same_intent_replay": false, "cas_to_consumed": false, "expected_result": "second_restore_forbidden"},
+    {"case_id": "head_cas_conflict", "sidecar_present": true, "copied_backup": false, "same_suspended_generation": true, "post_activity_present": false, "marker_or_head_ambiguous": false, "identity_matches": true, "head_state": "eligible", "intent_present": true, "intent_flushed": true, "intent_unique": true, "expected_head_matches": false, "cas_to_restoring": false, "response_lost": false, "same_intent_replay": false, "cas_to_consumed": false, "expected_result": "head_conflict_stale"},
+    {"case_id": "marker_or_head_ambiguous", "sidecar_present": true, "copied_backup": false, "same_suspended_generation": true, "post_activity_present": false, "marker_or_head_ambiguous": true, "identity_matches": true, "head_state": "eligible", "intent_present": true, "intent_flushed": true, "intent_unique": true, "expected_head_matches": true, "cas_to_restoring": true, "response_lost": false, "same_intent_replay": false, "cas_to_consumed": false, "expected_result": "drill_only"}
+  ]
+}

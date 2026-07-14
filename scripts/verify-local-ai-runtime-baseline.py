@@ -76,6 +76,18 @@ FENCED_ACTION_ADOPTION_SCHEMA_RELATIVE = Path(
 EXECUTION_SAFETY_FIXTURE_RELATIVE = Path(
     "docs/specs/local-ai-runtime-0.2/fixtures/execution-safety/manifest.json"
 )
+EVIDENCE_POLICY_RELATIVE = Path(
+    "docs/specs/local-ai-runtime-0.2/normative/EvidenceContractSet.v1.json"
+)
+NORMALIZED_EVENT_SCHEMA_RELATIVE = Path(
+    "docs/specs/local-ai-runtime-0.2/schemas/NormalizedExecutionEvent.v1.schema.json"
+)
+EVENT_STATUS_CATALOG_RELATIVE = Path(
+    "docs/specs/local-ai-runtime-0.2/catalogs/EventStatusMatrix.v1.json"
+)
+EVIDENCE_FIXTURE_RELATIVE = Path(
+    "docs/specs/local-ai-runtime-0.2/fixtures/evidence/manifest.json"
+)
 BASELINE_SPECIFICATION_ID = "local-ai-runtime-0.2-v3.23"
 BASELINE_FIXTURE_MANIFEST_ID = f"{BASELINE_SPECIFICATION_ID}-fixture"
 BOUND_ARTIFACTS = {
@@ -309,6 +321,24 @@ EXPECTED_EXECUTION_SAFETY_IDENTITIES = {
     "fixture": {
         "byte_count": 11250,
         "sha256": "560974384c6038e980867eab577ba81bd921687614ca5f3224129942b713e70d",
+    },
+}
+EXPECTED_EVIDENCE_IDENTITIES = {
+    "policy": {
+        "byte_count": 9656,
+        "sha256": "d9cea69a4680a0229b5680ea0de503e9d6f9d24eb6232893b727e11c1e52e9e0",
+    },
+    "event_schema": {
+        "byte_count": 10832,
+        "sha256": "45ab72fca886dca978473de0d9b43c3475a64bb0104a4f30bd8c4556f8b99591",
+    },
+    "event_catalog": {
+        "byte_count": 13212,
+        "sha256": "7508aa4061f9526d53b7e547125792016f08748078fb2cffbbcafb517fc6d7d7",
+    },
+    "fixture": {
+        "byte_count": 22916,
+        "sha256": "92c649b58d25391c5968fc0f64e6344e40933a91fa5957dcd346f052d67461aa",
     },
 }
 FORBIDDEN_PARAMETER_IDS = {
@@ -3971,6 +4001,1035 @@ def verify_execution_safety_component(repo_root: Path) -> dict[str, Any]:
     }
 
 
+EVIDENCE_COMMON_EVENT_FIELDS = {
+    "schema_version",
+    "attempt_uuid",
+    "fence",
+    "seq",
+    "observed_at_utc",
+    "event_type",
+    "status",
+    "prev_hash",
+    "event_hash",
+}
+EVIDENCE_EVENT_PAIRS = [
+    ("process_started", "started"),
+    ("tool_started", "started"),
+    ("mutation_observed", "observed"),
+    ("stream_eof", "observed"),
+    ("content_validated", "completed"),
+    ("tool_completed", "completed"),
+    ("turn_completed", "completed"),
+    ("final_result", "completed"),
+    ("journal_sealed", "completed"),
+    ("tool_failed", "failed"),
+    ("turn_failed", "failed"),
+    ("resource_limit_exceeded", "failed"),
+    ("process_terminated", "failed"),
+    ("adapter_rejected", "rejected"),
+    ("process_exited", "completed"),
+    ("process_exited", "failed"),
+]
+EVIDENCE_EVENT_SPECIFIC_FIELDS = {
+    "accepted_end_offset",
+    "approved_path_id",
+    "bounded_usage",
+    "byte_count",
+    "canonical_relative_path",
+    "configured_limit",
+    "content_sha256",
+    "exit_code",
+    "final_state",
+    "framing_class",
+    "item_id",
+    "job_identity_id",
+    "mutation_observation_id",
+    "observed_at_least",
+    "partial_byte_count",
+    "path_class",
+    "process_kind",
+    "reason_code",
+    "report_projection_hash",
+    "resource_kind",
+    "run_id",
+    "segment_no",
+    "stream_kind",
+    "termination_class",
+    "tool_kind",
+    "validated_result_projection_hash",
+}
+
+
+def _verify_evidence_identity(
+    raw: bytes, identity_key: str, reason: str, label: str
+) -> None:
+    identity = EXPECTED_EVIDENCE_IDENTITIES[identity_key]
+    if (
+        len(raw) != identity["byte_count"]
+        or hashlib.sha256(raw).hexdigest() != identity["sha256"]
+    ):
+        raise ValidationFailure(reason, f"{label} identity mismatch")
+
+
+def _verify_evidence_policy(policy: dict[str, Any], raw: bytes) -> dict[str, Any]:
+    canonical = (
+        json.dumps(policy, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+        + "\n"
+    ).encode("utf-8")
+    _verify_evidence_identity(
+        raw, "policy", "evidence_policy_identity", "evidence policy"
+    )
+    if raw != canonical:
+        raise ValidationFailure(
+            "evidence_policy_identity", "evidence policy is not canonical"
+        )
+    envelope = _require_exact_fields(
+        policy, {"domain", "payload", "schema_version"}, "evidence policy"
+    )
+    if (
+        envelope["domain"] != "local-ai-runtime/EvidenceContractSet/v1"
+        or envelope["schema_version"] != 1
+    ):
+        raise ValidationFailure("evidence_policy_drift", "policy envelope mismatch")
+    payload = _require_exact_fields(
+        envelope["payload"],
+        {
+            "artifact_id",
+            "artifact_publish",
+            "artifact_version",
+            "backup_restore",
+            "baseline_id",
+            "execution_receipt",
+            "external_evidence",
+            "journal",
+            "normalized_event",
+            "output_handling",
+            "quarantine_crypto",
+            "secret_safe_projection",
+        },
+        "evidence policy payload",
+        reason="evidence_policy_drift",
+    )
+    normalized = _require_object(
+        payload["normalized_event"],
+        "normalized event policy",
+        reason="evidence_policy_drift",
+    )
+    projection = _require_object(
+        payload["secret_safe_projection"],
+        "secret-safe projection policy",
+        reason="evidence_policy_drift",
+    )
+    journal = _require_object(
+        payload["journal"], "journal policy", reason="evidence_policy_drift"
+    )
+    receipt = _require_object(
+        payload["execution_receipt"],
+        "execution receipt policy",
+        reason="evidence_policy_drift",
+    )
+    artifact = _require_object(
+        payload["artifact_publish"],
+        "artifact policy",
+        reason="evidence_policy_drift",
+    )
+    crypto = _require_object(
+        payload["quarantine_crypto"],
+        "quarantine crypto policy",
+        reason="evidence_policy_drift",
+    )
+    external = _require_object(
+        payload["external_evidence"],
+        "external evidence policy",
+        reason="evidence_policy_drift",
+    )
+    backup = _require_object(
+        payload["backup_restore"],
+        "backup restore policy",
+        reason="evidence_policy_drift",
+    )
+    key_envelopes = _require_object(
+        crypto.get("key_envelopes"),
+        "key envelope policy",
+        reason="evidence_policy_drift",
+    )
+    quarantine_key = _require_object(
+        key_envelopes.get("quarantine"),
+        "quarantine key envelope",
+        reason="evidence_policy_drift",
+    )
+    integrity_key = _require_object(
+        key_envelopes.get("runtime_integrity"),
+        "runtime integrity key envelope",
+        reason="evidence_policy_drift",
+    )
+    eligibility = _require_object(
+        backup.get("eligibility"),
+        "backup eligibility policy",
+        reason="evidence_policy_drift",
+    )
+    post_activity = _require_object(
+        backup.get("post_activity"),
+        "backup post-activity policy",
+        reason="evidence_policy_drift",
+    )
+    production_restore = _require_object(
+        backup.get("production_restore"),
+        "production restore policy",
+        reason="evidence_policy_drift",
+    )
+    fail_closed = _require_object(
+        backup.get("fail_closed"),
+        "backup fail-closed policy",
+        reason="evidence_policy_drift",
+    )
+    if (
+        payload["artifact_id"] != "P0A-EVIDENCE"
+        or payload["artifact_version"] != "EvidenceContractSet.v1"
+        or payload["baseline_id"] != BASELINE_SPECIFICATION_ID
+        or normalized.get("record_type") != "NormalizedExecutionEvent.v1"
+        or normalized.get("event_hash_domain")
+        != "local-ai-runtime/NormalizedExecutionEvent/v1"
+        or normalized.get("immutable_append_only") is not True
+        or normalized.get("optional_null_allowed") is not False
+        or projection.get("prior_event_mutation_allowed") is not False
+        or projection.get("mutation_pre_scan_fields")
+        != [
+            "mutation_observation_id",
+            "byte_count",
+            "path_class",
+            "approved_path_id_if_successfully_mapped",
+        ]
+        or journal.get("append_order")
+        != [
+            "append_NormalizedExecutionEvent",
+            "FlushFileBuffers",
+            "short_sqlite_cursor_transaction",
+        ]
+        or journal.get("cursor_relation")
+        != "database_may_lag_flushed_journal_never_lead"
+        or journal.get("segment_record_type") != "JournalSegmentManifest.v1"
+        or receipt.get("record_type") != "ExecutionReceipt.v1"
+        or receipt.get("terminal_conditions")
+        != [
+            "process_exited",
+            "stdout_jsonl_eof",
+            "final_schema_passed",
+            "no_output_or_resource_overflow",
+            "normalized_chain_and_segments_sealed",
+            "job_zero_process",
+        ]
+        or artifact.get("no_replace") is not True
+        or artifact.get("replace_api_forbidden") != "os.replace"
+        or external.get("evidence_mode") != "runtime_external_v1"
+        or external.get("operator_absolute_root_allowed") is not False
+        or external.get("repo_fallback_allowed") is not False
+        or external.get("task_payload_access") != "deny_read_write"
+        or crypto.get("keys_independent") is not True
+        or crypto.get("key_plaintext_or_hash_persisted") is not False
+        or quarantine_key.get("record_type") != "QuarantineKeyEnvelope.v1"
+        or quarantine_key.get("purpose") != "quarantine_encryption"
+        or quarantine_key.get("dpapi_scope") != "current_user"
+        or integrity_key.get("record_type") != "RuntimeIntegrityKeyEnvelope.v1"
+        or integrity_key.get("purpose") != "runtime_integrity_and_backup_wrapper"
+        or integrity_key.get("dpapi_scope") != "current_user"
+        or eligibility.get("record_type") != "BackupRestoreEligibility.v1"
+        or eligibility.get("online_backup_initial_state") != "stale"
+        or post_activity.get("record_type") != "BackupPostActivity.v1"
+        or production_restore.get("record_type") != "BackupRestoreIntent.v1"
+        or production_restore.get("single_intent") is not True
+        or production_restore.get("cas_chain")
+        != ["eligible", "restoring", "consumed"]
+        or production_restore.get("response_loss")
+        != "continue_only_same_immutable_intent"
+        or fail_closed.get("production_restore_result") != "restore_drill_only"
+    ):
+        raise ValidationFailure(
+            "evidence_policy_drift", "evidence policy boundary mismatch"
+        )
+    required_fail_closed = {
+        "missing_eligibility_sidecar",
+        "copied_or_exported_old_backup",
+        "post_activity_marker_present",
+        "control_generation_drift",
+        "manifest_or_envelope_identity_mismatch",
+        "owner_sid_or_installation_mismatch",
+        "ambiguous_marker_or_head_state",
+        "response_loss_with_different_intent",
+    }
+    if set(fail_closed.get("conditions", [])) != required_fail_closed:
+        raise ValidationFailure(
+            "evidence_policy_drift", "backup fail-closed set mismatch"
+        )
+    return payload
+
+
+def _verify_event_schema_shape(schema: dict[str, Any]) -> None:
+    expected_refs = {
+        f"#/$defs/{name}"
+        for name in (
+            "process_started",
+            "tool_started",
+            "mutation_observed",
+            "stream_eof",
+            "content_validated",
+            "tool_completed",
+            "turn_completed",
+            "final_result",
+            "journal_sealed",
+            "tool_failed",
+            "turn_failed",
+            "resource_limit_exceeded",
+            "process_terminated",
+            "adapter_rejected",
+            "process_exited_completed",
+            "process_exited_failed",
+        )
+    }
+    one_of = schema.get("oneOf")
+    defs = schema.get("$defs")
+    if (
+        schema.get("$schema") != "https://json-schema.org/draft/2020-12/schema"
+        or schema.get("title") != "NormalizedExecutionEvent.v1"
+        or schema.get("unevaluatedProperties") is not False
+        or not isinstance(one_of, list)
+        or {item.get("$ref") for item in one_of if isinstance(item, dict)}
+        != expected_refs
+        or not isinstance(defs, dict)
+        or set(defs.get("common", {}).get("required", []))
+        != EVIDENCE_COMMON_EVENT_FIELDS
+    ):
+        raise ValidationFailure(
+            "evidence_schema_drift", "normalized event schema boundary mismatch"
+        )
+
+
+def _verify_event_catalog(catalog: dict[str, Any]) -> dict[tuple[str, str], dict[str, Any]]:
+    catalog = _require_exact_fields(
+        catalog,
+        {
+            "catalog_id",
+            "schema_version",
+            "event_schema_path",
+            "common_required_fields",
+            "event_specific_field_universe",
+            "matrix",
+        },
+        "event status catalog",
+        reason="event_catalog_schema",
+    )
+    matrix = _require_array(
+        catalog["matrix"], "event status matrix", reason="event_catalog_schema"
+    )
+    if (
+        catalog["catalog_id"] != "EventStatusMatrix.v1"
+        or catalog["schema_version"] != 1
+        or catalog["event_schema_path"]
+        != str(NORMALIZED_EVENT_SCHEMA_RELATIVE).replace("\\", "/")
+        or set(catalog["common_required_fields"]) != EVIDENCE_COMMON_EVENT_FIELDS
+        or set(catalog["event_specific_field_universe"])
+        != EVIDENCE_EVENT_SPECIFIC_FIELDS
+        or len(matrix) != len(EVIDENCE_EVENT_PAIRS)
+    ):
+        raise ValidationFailure("event_catalog_drift", "event catalog identity mismatch")
+    index: dict[tuple[str, str], dict[str, Any]] = {}
+    for entry in matrix:
+        entry = _require_exact_fields(
+            entry,
+            {
+                "matrix_id",
+                "event_type",
+                "status",
+                "required_fields",
+                "optional_fields",
+                "forbidden_fields",
+                "conditional_constraints",
+            },
+            "event status entry",
+            reason="event_catalog_schema",
+        )
+        pair = (entry["event_type"], entry["status"])
+        required = set(
+            _require_string_array(
+                entry["required_fields"],
+                "event required fields",
+                reason="event_catalog_schema",
+            )
+        )
+        optional = set(
+            _require_string_array(
+                entry["optional_fields"],
+                "event optional fields",
+                reason="event_catalog_schema",
+            )
+        )
+        forbidden = set(
+            _require_string_array(
+                entry["forbidden_fields"],
+                "event forbidden fields",
+                reason="event_catalog_schema",
+            )
+        )
+        _require_string_array(
+            entry["conditional_constraints"],
+            "event conditional constraints",
+            reason="event_catalog_schema",
+        )
+        if (
+            pair in index
+            or entry["matrix_id"] != f"{pair[0]}.{pair[1]}"
+            or required & optional
+            or required & forbidden
+            or optional & forbidden
+            or required | optional | forbidden != EVIDENCE_EVENT_SPECIFIC_FIELDS
+        ):
+            raise ValidationFailure(
+                "event_catalog_drift", f"event field partition mismatch: {pair}"
+            )
+        index[pair] = entry
+    if set(index) != set(EVIDENCE_EVENT_PAIRS):
+        raise ValidationFailure(
+            "event_catalog_drift", "event/status pair set is not exhaustive"
+        )
+    return index
+
+
+def _normalized_event_hash(value: dict[str, Any]) -> str:
+    payload = dict(value)
+    payload.pop("event_hash", None)
+    envelope = {
+        "domain": "local-ai-runtime/NormalizedExecutionEvent/v1",
+        "payload": payload,
+        "schema_version": 1,
+    }
+    raw = (
+        json.dumps(envelope, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+        + "\n"
+    ).encode("utf-8")
+    return hashlib.sha256(raw).hexdigest()
+
+
+def _validate_normalized_event(
+    value: Any,
+    catalog: dict[tuple[str, str], dict[str, Any]],
+    expected_prev_hash: str,
+) -> str:
+    if not isinstance(value, dict) or any(item is None for item in value.values()):
+        raise ValidationFailure(
+            "normalized_event_schema", "event must be a non-null object"
+        )
+    if not EVIDENCE_COMMON_EVENT_FIELDS <= set(value):
+        raise ValidationFailure(
+            "normalized_event_schema", "event common fields mismatch"
+        )
+    pair = (value["event_type"], value["status"])
+    entry = catalog.get(pair)
+    if entry is None:
+        raise ValidationFailure(
+            "normalized_event_schema", "event/status pair is not catalogued"
+        )
+    required = set(entry["required_fields"])
+    optional = set(entry["optional_fields"])
+    specific = set(value) - EVIDENCE_COMMON_EVENT_FIELDS
+    if not required <= specific or not specific <= required | optional:
+        raise ValidationFailure(
+            "normalized_event_schema", "event-specific fields mismatch"
+        )
+    timestamp_pattern = re.compile(
+        r"^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}\.[0-9]{6}Z$"
+    )
+    if (
+        value["schema_version"] != 1
+        or not isinstance(value["attempt_uuid"], str)
+        or UUID_V4_PATTERN.fullmatch(value["attempt_uuid"]) is None
+        or type(value["fence"]) is not int
+        or value["fence"] < 1
+        or type(value["seq"]) is not int
+        or value["seq"] < 1
+        or not isinstance(value["observed_at_utc"], str)
+        or timestamp_pattern.fullmatch(value["observed_at_utc"]) is None
+        or not _is_sha256(value["prev_hash"])
+        or not _is_sha256(value["event_hash"])
+        or value["prev_hash"] != expected_prev_hash
+    ):
+        raise ValidationFailure(
+            "normalized_event_schema", "event common value mismatch"
+        )
+    try:
+        datetime.strptime(value["observed_at_utc"], "%Y-%m-%dT%H:%M:%S.%fZ")
+    except ValueError as exc:
+        raise ValidationFailure(
+            "normalized_event_schema", "event timestamp is invalid"
+        ) from exc
+    if value["event_type"] == "mutation_observed":
+        path_classes = {
+            "approved_mapped",
+            "unknown",
+            "denied",
+            "out_of_bound",
+            "reparse_or_alias",
+        }
+        approved_path_id = value.get("approved_path_id")
+        if (
+            not isinstance(value["mutation_observation_id"], str)
+            or UUID_V4_PATTERN.fullmatch(value["mutation_observation_id"]) is None
+            or type(value["byte_count"]) is not int
+            or not 0 <= value["byte_count"] <= 9223372036854775807
+            or value["path_class"] not in path_classes
+            or (
+                approved_path_id is not None
+                and (
+                    not isinstance(approved_path_id, str)
+                    or IDENTIFIER_PATTERN.fullmatch(approved_path_id) is None
+                )
+            )
+        ):
+            raise ValidationFailure(
+                "normalized_event_schema", "mutation observation value mismatch"
+            )
+        approved = value["path_class"] == "approved_mapped"
+        if approved != ("approved_path_id" in value):
+            raise ValidationFailure(
+                "pre_scan_projection", "approved path mapping mismatch"
+            )
+    if value["event_type"] == "final_result":
+        blocked = value["final_state"] == "blocked"
+        if blocked != ("reason_code" in value):
+            raise ValidationFailure(
+                "normalized_event_schema", "final result reason mismatch"
+            )
+    if value["event_type"] == "process_exited":
+        if value["status"] == "completed" and (
+            value["exit_code"] != 0 or "reason_code" in value
+        ):
+            raise ValidationFailure(
+                "normalized_event_schema", "completed process exit mismatch"
+            )
+        if value["status"] == "failed" and "reason_code" not in value:
+            raise ValidationFailure(
+                "normalized_event_schema", "failed process exit reason missing"
+            )
+    expected_hash = _normalized_event_hash(value)
+    if value["event_hash"] != expected_hash:
+        raise ValidationFailure(
+            "normalized_event_hash", "event hash does not match canonical event"
+        )
+    return expected_hash
+
+
+def _evidence_case(
+    value: Any, fields: set[str], bool_fields: set[str], label: str
+) -> dict[str, Any]:
+    case = _require_exact_fields(
+        value,
+        fields | {"case_id", "expected_result"},
+        label,
+        reason="evidence_fixture_schema",
+    )
+    if (
+        not isinstance(case["case_id"], str)
+        or not isinstance(case["expected_result"], str)
+        or not all(isinstance(case[field], bool) for field in bool_fields)
+    ):
+        raise ValidationFailure(
+            "evidence_fixture_schema", f"{label} value mismatch"
+        )
+    return case
+
+
+def _evaluate_pre_scan_projection(case: dict[str, Any]) -> str:
+    flags = {
+        "approved_path_id_present",
+        "path_text_present",
+        "content_hash_present",
+        "ordinary_digest_present",
+        "summary_present",
+        "free_text_present",
+    }
+    case = _evidence_case(case, flags | {"path_class"}, flags, "pre-scan case")
+    if case["path_class"] not in {
+        "approved_mapped",
+        "unknown",
+        "denied",
+        "out_of_bound",
+        "reparse_or_alias",
+    }:
+        raise ValidationFailure("evidence_fixture_schema", "path class mismatch")
+    if (
+        case["path_text_present"]
+        or case["content_hash_present"]
+        or case["ordinary_digest_present"]
+        or case["summary_present"]
+        or case["free_text_present"]
+    ):
+        return "pre_scan_oracle_forbidden"
+    if case["path_class"] != "approved_mapped" and case["approved_path_id_present"]:
+        return "approved_path_mapping_forbidden"
+    if case["path_class"] == "approved_mapped" and not case["approved_path_id_present"]:
+        return "approved_path_mapping_required"
+    return "projection_accepted"
+
+
+def _evaluate_journal_cursor(case: dict[str, Any]) -> str:
+    flags = {
+        "event_appended",
+        "journal_flushed",
+        "cursor_advanced",
+        "cursor_at_or_before_flushed_offset",
+    }
+    case = _evidence_case(case, flags, flags, "journal cursor case")
+    if case["cursor_advanced"] and (
+        not case["event_appended"]
+        or not case["journal_flushed"]
+        or not case["cursor_at_or_before_flushed_offset"]
+    ):
+        return "cursor_lead_forbidden"
+    if case["journal_flushed"] and not case["cursor_advanced"]:
+        return "journal_ahead_recoverable"
+    return "cursor_commit_allowed"
+
+
+def _evaluate_receipt(case: dict[str, Any]) -> str:
+    flags = {
+        "process_exited",
+        "stdout_jsonl_eof",
+        "final_schema_passed",
+        "no_output_or_resource_overflow",
+        "normalized_chain_and_segments_sealed",
+        "job_zero_process",
+    }
+    case = _evidence_case(case, flags, flags, "receipt case")
+    return "receipt_publish" if all(case[field] for field in flags) else "receipt_withheld"
+
+
+def _evaluate_artifact_publish(case: dict[str, Any]) -> str:
+    flags = {
+        "spool_flushed",
+        "intent_durable",
+        "destination_exists",
+        "same_identity",
+        "no_replace_api",
+        "readback_matches",
+    }
+    case = _evidence_case(case, flags, flags, "artifact publish case")
+    if not case["no_replace_api"]:
+        return "replace_forbidden"
+    if not case["spool_flushed"]:
+        return "spool_flush_required"
+    if not case["intent_durable"]:
+        return "intent_required"
+    if case["destination_exists"]:
+        return "confirm_existing" if case["same_identity"] else "destination_conflict"
+    if not case["readback_matches"]:
+        return "readback_integrity_failure"
+    return "publish_new"
+
+
+def _evaluate_external_evidence(case: dict[str, Any]) -> str:
+    flags = {
+        "activation_bound",
+        "managed_root_exact",
+        "identity_disjoint",
+        "no_follow_verified",
+        "current_fence",
+        "controller_publisher",
+        "target_accepts",
+        "identity_drift",
+    }
+    case = _evidence_case(case, flags, flags, "external evidence case")
+    if case["identity_drift"]:
+        return "requalification_required"
+    if not case["activation_bound"] or not case["managed_root_exact"]:
+        return "managed_root_required"
+    if not case["identity_disjoint"] or not case["no_follow_verified"]:
+        return "identity_overlap_forbidden"
+    if not case["current_fence"] or not case["controller_publisher"]:
+        return "publisher_forbidden"
+    if not case["target_accepts"]:
+        return "target_contract_required"
+    return "publish_allowed"
+
+
+def _evaluate_key_envelope(case: dict[str, Any]) -> str:
+    flags = {
+        "domain_matches",
+        "plaintext_present",
+        "key_hash_present",
+        "shares_other_key",
+    }
+    case = _evidence_case(
+        case,
+        flags | {"envelope_kind", "purpose", "dpapi_scope"},
+        flags,
+        "key envelope case",
+    )
+    purposes = {
+        "quarantine": "quarantine_encryption",
+        "runtime_integrity": "runtime_integrity_and_backup_wrapper",
+    }
+    if case["envelope_kind"] not in purposes or not case["domain_matches"]:
+        return "envelope_domain_mismatch"
+    if case["purpose"] != purposes[case["envelope_kind"]]:
+        return "purpose_mismatch"
+    if case["dpapi_scope"] != "current_user":
+        return "current_user_scope_required"
+    if case["plaintext_present"] or case["key_hash_present"]:
+        return "key_material_forbidden"
+    if case["shares_other_key"]:
+        return "independent_keys_required"
+    return "envelope_accepted"
+
+
+def _evaluate_backup_eligibility(case: dict[str, Any]) -> str:
+    flags = {
+        "already_suspended",
+        "control_generation_unchanged",
+        "resumed_after_publish",
+    }
+    case = _evidence_case(case, flags, flags, "backup eligibility case")
+    if (
+        case["already_suspended"]
+        and case["control_generation_unchanged"]
+        and not case["resumed_after_publish"]
+    ):
+        return "eligible"
+    return "stale_drill_only"
+
+
+def _evaluate_post_activity(case: dict[str, Any]) -> str:
+    flags = {
+        "create_new_write_through",
+        "marker_flushed",
+        "head_staled",
+        "mutation_started",
+        "mutation_started_before_marker",
+    }
+    case = _evidence_case(case, flags, flags, "post-activity case")
+    if case["mutation_started_before_marker"]:
+        return "ordering_violation"
+    marker_complete = (
+        case["create_new_write_through"]
+        and case["marker_flushed"]
+        and case["head_staled"]
+    )
+    marker_partial = (
+        case["create_new_write_through"]
+        or case["marker_flushed"]
+        or case["head_staled"]
+    ) and not marker_complete
+    if case["mutation_started"] and not marker_complete:
+        return "mutation_forbidden"
+    if not case["mutation_started"] and (marker_complete or marker_partial):
+        return "conservative_stale"
+    return "mutation_allowed"
+
+
+def _evaluate_restore(case: dict[str, Any]) -> str:
+    bool_fields = {
+        "sidecar_present",
+        "copied_backup",
+        "same_suspended_generation",
+        "post_activity_present",
+        "marker_or_head_ambiguous",
+        "identity_matches",
+        "intent_present",
+        "intent_flushed",
+        "intent_unique",
+        "expected_head_matches",
+        "cas_to_restoring",
+        "response_lost",
+        "same_intent_replay",
+        "cas_to_consumed",
+    }
+    case = _evidence_case(
+        case, bool_fields | {"head_state"}, bool_fields, "restore case"
+    )
+    if case["head_state"] not in {"eligible", "stale", "restoring", "consumed"}:
+        raise ValidationFailure("evidence_fixture_schema", "restore head state mismatch")
+    if (
+        not case["sidecar_present"]
+        or case["copied_backup"]
+        or not case["same_suspended_generation"]
+        or case["post_activity_present"]
+        or case["marker_or_head_ambiguous"]
+        or not case["identity_matches"]
+    ):
+        return "drill_only"
+    if case["response_lost"]:
+        if not case["intent_unique"] or not case["same_intent_replay"]:
+            return "second_restore_forbidden"
+        if case["head_state"] == "restoring" and case["intent_flushed"]:
+            return "continue_same_intent"
+        return "head_conflict_stale"
+    if not case["intent_present"] or not case["intent_flushed"]:
+        return "restore_intent_not_durable"
+    if not case["intent_unique"]:
+        return "second_restore_forbidden"
+    if (
+        case["head_state"] != "eligible"
+        or not case["expected_head_matches"]
+        or not case["cas_to_restoring"]
+    ):
+        return "head_conflict_stale"
+    return "restore_consumed" if case["cas_to_consumed"] else "restore_incomplete_park"
+
+
+def _verify_evidence_case_matrix(
+    fixture: dict[str, Any],
+    field: str,
+    expected_ids: set[str],
+    evaluator: Callable[[dict[str, Any]], str],
+) -> int:
+    cases = _fixture_cases(fixture, field, expected_ids)
+    for case in cases:
+        if evaluator(case) != case.get("expected_result"):
+            raise ValidationFailure("fixture_result_mismatch", str(case.get("case_id")))
+    return len(cases)
+
+
+def verify_evidence_component(repo_root: Path) -> dict[str, Any]:
+    policy, policy_raw = _load_json_object(repo_root / EVIDENCE_POLICY_RELATIVE)
+    event_schema, schema_raw = _load_json_object(
+        repo_root / NORMALIZED_EVENT_SCHEMA_RELATIVE
+    )
+    event_catalog, catalog_raw = _load_json_object(
+        repo_root / EVENT_STATUS_CATALOG_RELATIVE
+    )
+    fixture, fixture_raw = _load_json_object(repo_root / EVIDENCE_FIXTURE_RELATIVE)
+    _verify_evidence_policy(policy, policy_raw)
+    _verify_evidence_identity(
+        schema_raw, "event_schema", "evidence_schema_drift", "event schema"
+    )
+    _verify_evidence_identity(
+        catalog_raw, "event_catalog", "event_catalog_drift", "event catalog"
+    )
+    _verify_evidence_identity(
+        fixture_raw, "fixture", "evidence_fixture_drift", "evidence fixture"
+    )
+    _verify_event_schema_shape(event_schema)
+    catalog = _verify_event_catalog(event_catalog)
+    fixture = _require_exact_fields(
+        fixture,
+        {
+            "fixture_id",
+            "schema_version",
+            "policy_path",
+            "event_schema_path",
+            "event_catalog_path",
+            "event_pair_examples",
+            "event_chain_positive",
+            "pre_scan_projection_cases",
+            "journal_cursor_cases",
+            "receipt_cases",
+            "artifact_publish_cases",
+            "external_evidence_cases",
+            "key_envelope_cases",
+            "backup_eligibility_cases",
+            "post_activity_cases",
+            "restore_cases",
+        },
+        "evidence fixture",
+        reason="evidence_fixture_schema",
+    )
+    if (
+        fixture["fixture_id"] != "EvidenceContractSet.v1.contract-fixtures"
+        or fixture["schema_version"] != 1
+        or fixture["policy_path"]
+        != str(EVIDENCE_POLICY_RELATIVE).replace("\\", "/")
+        or fixture["event_schema_path"]
+        != str(NORMALIZED_EVENT_SCHEMA_RELATIVE).replace("\\", "/")
+        or fixture["event_catalog_path"]
+        != str(EVENT_STATUS_CATALOG_RELATIVE).replace("\\", "/")
+    ):
+        raise ValidationFailure(
+            "evidence_fixture_schema", "evidence fixture identity mismatch"
+        )
+    pair_examples = _require_array(
+        fixture["event_pair_examples"],
+        "event pair examples",
+        reason="evidence_fixture_schema",
+    )
+    observed_pairs: list[tuple[str, str]] = []
+    for index, example in enumerate(pair_examples, start=1):
+        example = _require_exact_fields(
+            example,
+            {"event_type", "status", "event_fields"},
+            "event pair example",
+            reason="evidence_fixture_schema",
+        )
+        event_fields = _require_object(
+            example["event_fields"],
+            "event pair fields",
+            reason="evidence_fixture_schema",
+        )
+        event = {
+            "schema_version": 1,
+            "attempt_uuid": "11111111-1111-4111-8111-111111111111",
+            "fence": 3,
+            "seq": index,
+            "observed_at_utc": f"2026-07-14T02:00:00.{index:06d}Z",
+            "event_type": example["event_type"],
+            "status": example["status"],
+            "prev_hash": "0" * 64,
+            "event_hash": "0" * 64,
+            **event_fields,
+        }
+        event["event_hash"] = _normalized_event_hash(event)
+        _validate_normalized_event(event, catalog, "0" * 64)
+        observed_pairs.append((example["event_type"], example["status"]))
+    if observed_pairs != EVIDENCE_EVENT_PAIRS:
+        raise ValidationFailure(
+            "evidence_fixture_schema", "event pair examples are not exhaustive"
+        )
+    event_chain = _require_array(
+        fixture["event_chain_positive"],
+        "event hash chain",
+        reason="evidence_fixture_schema",
+    )
+    previous_hash = "0" * 64
+    for index, event in enumerate(event_chain, start=1):
+        if not isinstance(event, dict) or event.get("seq") != index:
+            raise ValidationFailure(
+                "evidence_fixture_schema", "event chain sequence mismatch"
+            )
+        previous_hash = _validate_normalized_event(event, catalog, previous_hash)
+    counts = {
+        "event_pair": len(pair_examples),
+        "event_chain": len(event_chain),
+        "pre_scan": _verify_evidence_case_matrix(
+            fixture,
+            "pre_scan_projection_cases",
+            {
+                "approved_mapping",
+                "unknown_random_id_only",
+                "unknown_with_path",
+                "denied_with_digest",
+                "unmapped_approved_id",
+                "content_hash_before_scan",
+                "unknown_with_summary",
+                "denied_with_free_text",
+            },
+            _evaluate_pre_scan_projection,
+        ),
+        "journal_cursor": _verify_evidence_case_matrix(
+            fixture,
+            "journal_cursor_cases",
+            {
+                "flushed_then_cursor",
+                "cursor_before_flush",
+                "cursor_beyond_flush",
+                "journal_may_lead",
+            },
+            _evaluate_journal_cursor,
+        ),
+        "receipt": _verify_evidence_case_matrix(
+            fixture,
+            "receipt_cases",
+            {
+                "all_terminal",
+                "process_running",
+                "stdout_not_eof",
+                "schema_failed",
+                "overflow",
+                "journal_unsealed",
+                "job_has_process",
+            },
+            _evaluate_receipt,
+        ),
+        "artifact_publish": _verify_evidence_case_matrix(
+            fixture,
+            "artifact_publish_cases",
+            {
+                "new_destination",
+                "response_loss_same_identity",
+                "existing_conflict",
+                "replace_api",
+                "intent_missing",
+                "readback_mismatch",
+            },
+            _evaluate_artifact_publish,
+        ),
+        "external_evidence": _verify_evidence_case_matrix(
+            fixture,
+            "external_evidence_cases",
+            {
+                "managed_controller_publish",
+                "operator_root",
+                "repo_ancestor_overlap",
+                "writer_publish",
+                "target_not_accepting",
+                "publish_identity_drift",
+            },
+            _evaluate_external_evidence,
+        ),
+        "key_envelope": _verify_evidence_case_matrix(
+            fixture,
+            "key_envelope_cases",
+            {
+                "quarantine_envelope",
+                "integrity_envelope",
+                "purpose_mixed",
+                "machine_scope",
+                "plaintext_persisted",
+                "ordinary_key_hash",
+                "shared_key",
+            },
+            _evaluate_key_envelope,
+        ),
+        "backup_eligibility": _verify_evidence_case_matrix(
+            fixture,
+            "backup_eligibility_cases",
+            {
+                "suspended_stable",
+                "online_backup",
+                "generation_drift",
+                "resumed_after_publish",
+            },
+            _evaluate_backup_eligibility,
+        ),
+        "post_activity": _verify_evidence_case_matrix(
+            fixture,
+            "post_activity_cases",
+            {
+                "marker_before_mutation",
+                "mutation_first",
+                "marker_not_flushed",
+                "marker_only",
+                "partial_marker_without_mutation",
+            },
+            _evaluate_post_activity,
+        ),
+        "restore": _verify_evidence_case_matrix(
+            fixture,
+            "restore_cases",
+            {
+                "single_restore",
+                "missing_sidecar",
+                "copied_backup",
+                "post_activity_marker",
+                "generation_drift",
+                "intent_not_flushed",
+                "response_loss_same_intent",
+                "response_loss_second_intent",
+                "head_cas_conflict",
+                "marker_or_head_ambiguous",
+            },
+            _evaluate_restore,
+        ),
+    }
+    return {
+        "status": "pass",
+        "component": "evidence",
+        "artifact_version": "EvidenceContractSet.v1",
+        "artifact_byte_count": len(policy_raw),
+        "artifact_sha256": hashlib.sha256(policy_raw).hexdigest(),
+        "event_schema_sha256": hashlib.sha256(schema_raw).hexdigest(),
+        "event_catalog_sha256": hashlib.sha256(catalog_raw).hexdigest(),
+        "final_event_hash": previous_hash,
+        "fixture_counts": counts,
+    }
+
+
 def _parse_args(argv: list[str]) -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", type=Path, default=Path(__file__).resolve().parents[1])
@@ -3983,6 +5042,7 @@ def _parse_args(argv: list[str]) -> argparse.Namespace:
             "product-submission",
             "qualification",
             "execution-safety",
+            "evidence",
             "package",
         ],
     )
@@ -4010,6 +5070,9 @@ def main(argv: list[str] | None = None) -> int:
         elif args.component == "execution-safety":
             payload = verify_execution_safety_component(root)
             exit_code = 0
+        elif args.component == "evidence":
+            payload = verify_evidence_component(root)
+            exit_code = 0
         else:
             payload = {
                 "status": "incomplete",
@@ -4020,6 +5083,7 @@ def main(argv: list[str] | None = None) -> int:
                     "product_submission",
                     "qualification",
                     "execution_safety",
+                    "evidence",
                 ],
                 "requested_component": args.component or "package",
             }

@@ -170,7 +170,9 @@
       "kind": "events_journal_artifact_evidence_bundle",
       "artifact_version": "EvidenceContractSet.v1",
       "path": "docs/specs/local-ai-runtime-0.2/normative/EvidenceContractSet.v1.json",
-      "status": "missing",
+      "status": "present",
+      "byte_count": 9656,
+      "sha256": "d9cea69a4680a0229b5680ea0de503e9d6f9d24eb6232893b727e11c1e52e9e0",
       "required_for_approval": true,
       "producer_task_id": "LAR-P0A-007",
       "verification": "schema_event_matrix_secret_safe_fixtures"
@@ -257,7 +259,6 @@
     }
   ],
   "missing_artifact_ids": [
-    "P0A-EVIDENCE",
     "P0A-GIT",
     "P0A-STATE",
     "P0A-Q0",

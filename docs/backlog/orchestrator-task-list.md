@@ -4,7 +4,7 @@
 
 机器真源是 `docs/plans/local-ai-runtime-0.2-work-items.json`。本文件只作可读索引；状态、依赖、验收、命令、证据、回滚、停止条件和 prohibited actions 必须从机器真源读取。
 
-当前：`local-ai-runtime-0.2-v3.23` 为 `baseline_candidate`；队列 `LOCAL-AI-RUNTIME-0.2-BASELINE-CLOSURE`；唯一 selectable 项 `LAR-P0A-007`。机器图是 `local_ai_runtime_work_items.v3` 确定性 DAG，共 65 项，其中 P1A-P1F 的 35 项仍按 work-item 原子闭环；顶层 11 项 contract projection 机械绑定规范 producer、实现 consumer 与 acceptance consumer。`bounded continuation` 只允许完整 closeout 后同一 run 重新 selector，默认最多 3 项/180 分钟，不批量关闭状态，也不跨阶段或授权边界。
+当前：`local-ai-runtime-0.2-v3.23` 为 `baseline_candidate`；队列 `LOCAL-AI-RUNTIME-0.2-BASELINE-CLOSURE`；唯一 selectable 项 `LAR-P0A-008`。机器图是 `local_ai_runtime_work_items.v3` 确定性 DAG，共 65 项，其中 P1A-P1F 的 35 项仍按 work-item 原子闭环；顶层 11 项 contract projection 机械绑定规范 producer、实现 consumer 与 acceptance consumer。`bounded continuation` 只允许完整 closeout 后同一 run 重新 selector，默认最多 3 项/180 分钟，不批量关闭状态，也不跨阶段或授权边界。
 
 目标源码使用关闭布局：`approved_root_files=["__init__.py","__main__.py"]`；`approved_subpackages=["contracts","kernel","qualification","storage","execution","recovery","git_local","operations","compat"]`；`required_source_owners` 固定 bootstrap/marker 的唯一任务。`__main__.py` 只转发 contracts verifier；任务若计划其他包根功能模块、第十个首级子包、重复源码 owner 或缺失 marker，planning verifier 必须先阻断。
 
@@ -27,8 +27,8 @@
 - [x] `LAR-P0A-004` completed：Product/routing/template、`WorkDefinition`/`TaskFamily`、永久 ordinary replay、absent-only secret/admission、原子 resubmission。
 - [x] `LAR-P0A-005` completed：base-bound QualificationObservation、base-independent QualificationSensitiveInputSet、environment、opaque sandbox state/log、keyring-only auth、Authorization continuation、root/child effect grant。
 - [x] `LAR-P0A-006` completed：`EffectPlan`、`writer_effect_id`/`writer_launch_id`、Writer/StageJob、marker、JOB_LIST/HANDLE_LIST、精确 stdio/EOF、suspended execution barrier、Authorization/SafetyOnly authority union、fencing/adoption。
-- [ ] `LAR-P0A-007` ready：event/status matrix、journal、receipt、artifact、runtime-managed external evidence、key envelopes、anti-rollback backup/restore。
-- [ ] `LAR-P0A-008` pending：Git config/audit、`git_hybrid_materialization_v1`、claim time、no-reflog commit/finalize/ref/remove。
+- [x] `LAR-P0A-007` completed：event/status matrix、journal、receipt、artifact、runtime-managed external evidence、key envelopes、anti-rollback backup/restore。
+- [ ] `LAR-P0A-008` ready：Git config/audit、`git_hybrid_materialization_v1`、claim time、no-reflog commit/finalize/ref/remove。
 - [ ] `LAR-P0A-009` pending：SubmissionFamily/Task/Attempt/Platform/Repo/Template/Autonomy/Operator policies、durable action inbox、data-only portfolio。
 - [ ] `LAR-P0A-010` pending：`GateGraph`、三级演进、`Q0TriggerPolicy`、activation admission、feature/process/gate、mandatory write accounting、emergency reserve、optional hard quota 和 resource-limit catalogs。
 - [ ] `LAR-P0A-011` pending：cross-contract examples、negative/crash/limit fixtures。

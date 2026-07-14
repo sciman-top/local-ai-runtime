@@ -1074,7 +1074,7 @@
       "task_id": "LAR-P0A-007",
       "phase": "P0A",
       "priority": 0,
-      "status": "ready",
+      "status": "completed",
       "title": "Close event, journal, artifact, receipt and backup contracts",
       "goal": "Define secret-safe append-only evidence, runtime-managed external evidence, segment recovery, six-condition receipts, no-replace artifacts and anti-rollback state/evidence backup and restore.",
       "depends_on": [
@@ -1152,7 +1152,7 @@
       ],
       "phase": "P0A",
       "priority": 0,
-      "status": "pending",
+      "status": "ready",
       "title": "Close deterministic Git publication contracts",
       "goal": "Define audited Git environment, attempt-local object creation, canonical object promotion, worktree finalization, task-ref publication and cleanup ordering.",
       "depends_on": [
