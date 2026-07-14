@@ -1924,6 +1924,12 @@ def _verify_work_items(
             "BackupRestoreIntent",
             "runtime_external_v1",
         ],
+        "LAR-P0A-008": [
+            "GitConfigPolicy",
+            "claim_epoch_seconds",
+            "--no-create-reflog",
+            "historical success is durable",
+        ],
         "LAR-P0A-010": [
             "accounting_kill_audit",
             "EmergencyDiskReserve",

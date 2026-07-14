@@ -1152,7 +1152,7 @@
       ],
       "phase": "P0A",
       "priority": 0,
-      "status": "ready",
+      "status": "completed",
       "title": "Close deterministic Git publication contracts",
       "goal": "Define audited Git environment, attempt-local object creation, canonical object promotion, worktree finalization, task-ref publication and cleanup ordering.",
       "depends_on": [
@@ -1226,7 +1226,7 @@
       ],
       "phase": "P0A",
       "priority": 0,
-      "status": "pending",
+      "status": "ready",
       "title": "Materialize complete state, guard, autonomy and operator catalogs",
       "goal": "Write every legal transition row for submission families, tasks, attempts, platform lanes, repo maintenance/cutover, templates, autonomy and operator actions.",
       "depends_on": [

@@ -88,6 +88,18 @@ EVENT_STATUS_CATALOG_RELATIVE = Path(
 EVIDENCE_FIXTURE_RELATIVE = Path(
     "docs/specs/local-ai-runtime-0.2/fixtures/evidence/manifest.json"
 )
+DETERMINISTIC_GIT_POLICY_RELATIVE = Path(
+    "docs/specs/local-ai-runtime-0.2/normative/DeterministicGitContractSet.v1.json"
+)
+OBJECT_SET_SCHEMA_RELATIVE = Path(
+    "docs/specs/local-ai-runtime-0.2/schemas/ObjectSetManifest.v1.schema.json"
+)
+GIT_CONFIG_CATALOG_RELATIVE = Path(
+    "docs/specs/local-ai-runtime-0.2/catalogs/GitConfigPolicy.v1.json"
+)
+DETERMINISTIC_GIT_FIXTURE_RELATIVE = Path(
+    "docs/specs/local-ai-runtime-0.2/fixtures/git/manifest.json"
+)
 BASELINE_SPECIFICATION_ID = "local-ai-runtime-0.2-v3.23"
 BASELINE_FIXTURE_MANIFEST_ID = f"{BASELINE_SPECIFICATION_ID}-fixture"
 BOUND_ARTIFACTS = {
@@ -339,6 +351,24 @@ EXPECTED_EVIDENCE_IDENTITIES = {
     "fixture": {
         "byte_count": 22916,
         "sha256": "92c649b58d25391c5968fc0f64e6344e40933a91fa5957dcd346f052d67461aa",
+    },
+}
+EXPECTED_DETERMINISTIC_GIT_IDENTITIES = {
+    "policy": {
+        "byte_count": 7438,
+        "sha256": "c6ff21651cd525f1319fe0620f280e96db825086c2e8e98149340f4e08b11e26",
+    },
+    "object_set_schema": {
+        "byte_count": 2673,
+        "sha256": "7fd65d96d603dbad8940979c53ff2035ce0f27ae3e508b7f2da3621c0ef414a3",
+    },
+    "config_catalog": {
+        "byte_count": 4880,
+        "sha256": "a4598b05fe8432f3522f53bd7853d8acbdc8fc7859c4cd9b3cf54bd8cf4d9c65",
+    },
+    "fixture": {
+        "byte_count": 25839,
+        "sha256": "75a09c60ddeb38ce05a0aa5214790729a828822ab434a4dce8e9007a4a9ec1d3",
     },
 }
 FORBIDDEN_PARAMETER_IDS = {
@@ -5030,6 +5060,1241 @@ def verify_evidence_component(repo_root: Path) -> dict[str, Any]:
     }
 
 
+def _verify_deterministic_git_identity(
+    raw: bytes, identity_key: str, reason: str, label: str
+) -> None:
+    identity = EXPECTED_DETERMINISTIC_GIT_IDENTITIES[identity_key]
+    if (
+        len(raw) != identity["byte_count"]
+        or hashlib.sha256(raw).hexdigest() != identity["sha256"]
+    ):
+        raise ValidationFailure(reason, f"{label} identity mismatch")
+
+
+def _verify_deterministic_git_policy(
+    policy: dict[str, Any], raw: bytes
+) -> dict[str, Any]:
+    canonical = (
+        json.dumps(policy, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+        + "\n"
+    ).encode("utf-8")
+    _verify_deterministic_git_identity(
+        raw, "policy", "deterministic_git_policy_identity", "deterministic Git policy"
+    )
+    if raw != canonical:
+        raise ValidationFailure(
+            "deterministic_git_policy_identity",
+            "deterministic Git policy is not canonical",
+        )
+    envelope = _require_exact_fields(
+        policy,
+        {"domain", "payload", "schema_version"},
+        "deterministic Git policy",
+        reason="deterministic_git_policy_drift",
+    )
+    if (
+        envelope["domain"] != "local-ai-runtime/DeterministicGitContractSet/v1"
+        or envelope["schema_version"] != 1
+    ):
+        raise ValidationFailure(
+            "deterministic_git_policy_drift", "deterministic Git envelope mismatch"
+        )
+    payload = _require_exact_fields(
+        envelope["payload"],
+        {
+            "artifact_id",
+            "artifact_version",
+            "baseline_id",
+            "cleanup",
+            "commit_bytes",
+            "hardened_environment",
+            "object_materialization",
+            "object_planning",
+            "projection_id",
+            "protected_surface",
+            "publication",
+            "reconciliation",
+            "support_scope",
+        },
+        "deterministic Git payload",
+        reason="deterministic_git_policy_drift",
+    )
+    support = _require_object(
+        payload["support_scope"], "Git support scope", reason="deterministic_git_policy_drift"
+    )
+    environment = _require_object(
+        payload["hardened_environment"],
+        "Git hardened environment",
+        reason="deterministic_git_policy_drift",
+    )
+    protected = _require_object(
+        payload["protected_surface"],
+        "Git protected surface",
+        reason="deterministic_git_policy_drift",
+    )
+    planning = _require_object(
+        payload["object_planning"],
+        "Git object planning",
+        reason="deterministic_git_policy_drift",
+    )
+    materialization = _require_object(
+        payload["object_materialization"],
+        "Git object materialization",
+        reason="deterministic_git_policy_drift",
+    )
+    commit = _require_object(
+        payload["commit_bytes"], "Git commit bytes", reason="deterministic_git_policy_drift"
+    )
+    publication = _require_object(
+        payload["publication"], "Git publication", reason="deterministic_git_policy_drift"
+    )
+    finalize = _require_object(
+        publication.get("finalize_worktree"),
+        "Git finalize policy",
+        reason="deterministic_git_policy_drift",
+    )
+    task_ref = _require_object(
+        publication.get("task_ref"),
+        "Git task ref policy",
+        reason="deterministic_git_policy_drift",
+    )
+    reconciliation = _require_object(
+        payload["reconciliation"],
+        "Git reconciliation",
+        reason="deterministic_git_policy_drift",
+    )
+    cleanup = _require_object(
+        payload["cleanup"], "Git cleanup", reason="deterministic_git_policy_drift"
+    )
+    expected_fixed_variables = {
+        "GIT_CONFIG_NOSYSTEM": "1",
+        "GIT_CONFIG_GLOBAL": "NUL",
+        "GIT_CONFIG_SYSTEM": "NUL",
+        "GIT_ATTR_NOSYSTEM": "1",
+        "GIT_TERMINAL_PROMPT": "0",
+        "GIT_OPTIONAL_LOCKS": "0",
+        "GIT_NO_REPLACE_OBJECTS": "1",
+        "GIT_CONFIG_COUNT": "9",
+    }
+    expected_controller_config = [
+        ["core.hooksPath", "<attempt-managed-empty>"],
+        ["core.excludesFile", "NUL"],
+        ["core.attributesFile", "NUL"],
+        ["commit.gpgSign", "false"],
+        ["core.fsmonitor", "false"],
+        ["core.logAllRefUpdates", "false"],
+        ["gc.auto", "0"],
+        ["maintenance.auto", "false"],
+        ["core.autocrlf", "false"],
+    ]
+    expected_operation_scoped = {
+        "GIT_DIR",
+        "GIT_WORK_TREE",
+        "GIT_COMMON_DIR",
+        "GIT_INDEX_FILE",
+        "GIT_OBJECT_DIRECTORY",
+        "GIT_ALTERNATE_OBJECT_DIRECTORIES",
+        "GIT_EXEC_PATH",
+        "GIT_TEMPLATE_DIR",
+        "GIT_NAMESPACE",
+    }
+    expected_protected = {
+        ".git",
+        ".codex",
+        ".agents",
+        "skills",
+        ".local-ai-runtime",
+        "AGENTS_chain",
+        "gate_and_build_scripts",
+        "lockfiles",
+        "profiles_and_templates",
+        "git_policy",
+        "qualification_sensitive_inputs",
+    }
+    expected_forbidden_scope = {
+        "sha256_object_format",
+        "reftable",
+        "active_submodule",
+        "lfs_filter",
+        "external_filter_diff_or_merge_driver",
+        "replace_graft_or_alternate_substitution",
+        "remote_git",
+        "historical_detached_base",
+    }
+    expected_action_order = [
+        "promote_objects",
+        "verify_common_reachability",
+        "finalize_worktree_index",
+        "finalize_worktree_head",
+        "create_task_ref",
+        "publish_evidence",
+        "remove_worktree",
+    ]
+    if (
+        payload["artifact_id"] != "P0A-GIT"
+        or payload["artifact_version"] != "DeterministicGitContractSet.v1"
+        or payload["baseline_id"] != BASELINE_SPECIFICATION_ID
+        or payload["projection_id"] != "git_hybrid_materialization_v1"
+        or support.get("filesystem") != "local_fixed_ntfs"
+        or support.get("object_format") != "sha1"
+        or support.get("ref_storage") != "files"
+        or support.get("bare") is not False
+        or support.get("attempt_no_min") != 1
+        or support.get("attempt_no_max") != 3
+        or support.get("zero_oid") != "0" * 40
+        or set(support.get("forbidden", [])) != expected_forbidden_scope
+        or environment.get("start_from") != "empty_environment"
+        or environment.get("clear_inherited_prefix") != "GIT_"
+        or environment.get("fixed_variables") != expected_fixed_variables
+        or environment.get("ordered_controller_config") != expected_controller_config
+        or set(environment.get("operation_scoped_only", []))
+        != expected_operation_scoped
+        or environment.get("forbidden_variables") != ["GIT_REFLOG_ACTION"]
+        or environment.get("first_git_command")
+        != ["config", "--local", "--no-includes", "--null", "--name-only", "--list"]
+        or environment.get("config_policy_path")
+        != str(GIT_CONFIG_CATALOG_RELATIVE).replace("\\", "/")
+        or set(protected.get("entries", [])) != expected_protected
+        or protected.get("secret_path_access") != "deny_read_write"
+        or planning.get("record_type") != "GitObjectPlan.v1"
+        or planning.get("object_set_record_type") != "ObjectSetManifest.v1"
+        or planning.get("plan_hash_domain") != "local-ai-runtime/GitObjectPlan/v1"
+        or planning.get("object_set_hash_domain")
+        != "local-ai-runtime/ObjectSetManifest/v1"
+        or planning.get("git_add_allowed") is not False
+        or planning.get("closeout_clock_read_allowed") is not False
+        or materialization.get("attempt_local_write_command")
+        != ["hash-object", "-t", "<type>", "-w", "--stdin"]
+        or materialization.get("readback_command") != ["cat-file", "--batch"]
+        or materialization.get("controller_writes_loose_zlib") is not False
+        or materialization.get("existing_object_verification")
+        != ["canonical_type", "canonical_size", "canonical_payload_bytes", "git_oid"]
+        or materialization.get("loose_zlib_byte_comparison_allowed") is not False
+        or commit.get("header_order") != ["tree", "parent", "author", "committer"]
+        or commit.get("parent_count") != 1
+        or commit.get("terminal_lf_count") != 1
+        or publication.get("post_seal_action_order") != expected_action_order
+        or finalize.get("head_command")
+        != [
+            "update-ref",
+            "--no-create-reflog",
+            "--no-deref",
+            "HEAD",
+            "<expected-commit>",
+            "<expected-base>",
+        ]
+        or finalize.get("reset_hard_allowed") is not False
+        or task_ref.get("command")
+        != [
+            "update-ref",
+            "--no-create-reflog",
+            "<exact-task-ref>",
+            "<expected-commit>",
+            "<zero-oid>",
+        ]
+        or task_ref.get("cas_basis") != "zero_oid"
+        or task_ref.get("delete_allowed") is not False
+        or reconciliation.get("dangling_commit_search_allowed") is not False
+        or reconciliation.get("historical_success_is_durable") is not True
+        or cleanup.get("reset_hard_allowed") is not False
+        or cleanup.get("task_ref_delete_allowed") is not False
+    ):
+        raise ValidationFailure(
+            "deterministic_git_policy_drift", "deterministic Git boundary mismatch"
+        )
+    task_ref_pattern = support.get("task_ref_pattern")
+    if not isinstance(task_ref_pattern, str):
+        raise ValidationFailure(
+            "deterministic_git_policy_drift", "task ref pattern missing"
+        )
+    try:
+        compiled_ref_pattern = re.compile(task_ref_pattern)
+    except re.error as exc:
+        raise ValidationFailure(
+            "deterministic_git_policy_drift", "task ref pattern is invalid"
+        ) from exc
+    if (
+        compiled_ref_pattern.fullmatch(
+            "refs/heads/codex/batch/11111111-1111-4111-8111-111111111111-a1"
+        )
+        is None
+        or compiled_ref_pattern.fullmatch(
+            "refs/heads/codex/batch/11111111-1111-4111-8111-111111111111-a4"
+        )
+        is not None
+    ):
+        raise ValidationFailure(
+            "deterministic_git_policy_drift", "task ref pattern boundary mismatch"
+        )
+    return payload
+
+
+def _verify_object_set_schema_shape(schema: dict[str, Any]) -> None:
+    required = {
+        "schema_version",
+        "object_set_id",
+        "git_object_plan_sha256",
+        "resolved_attempt_manifest_sha256",
+        "claim_epoch_seconds",
+        "expected_base_commit",
+        "object_format",
+        "objects",
+        "set_sha256",
+        "sealed",
+    }
+    extension = schema.get("x-local-ai-runtime-set-hash")
+    if (
+        schema.get("$schema") != "https://json-schema.org/draft/2020-12/schema"
+        or schema.get("title") != "ObjectSetManifest.v1"
+        or schema.get("type") != "object"
+        or schema.get("additionalProperties") is not False
+        or set(schema.get("required", [])) != required
+        or not isinstance(schema.get("$defs"), dict)
+        or not isinstance(extension, dict)
+        or extension.get("domain") != "local-ai-runtime/ObjectSetManifest/v1"
+        or extension.get("input") != "canonical_manifest_excluding_set_sha256"
+    ):
+        raise ValidationFailure(
+            "deterministic_git_schema_drift", "ObjectSetManifest schema mismatch"
+        )
+
+
+def _verify_git_config_catalog(catalog: dict[str, Any]) -> dict[str, Any]:
+    catalog = _require_exact_fields(
+        catalog,
+        {
+            "catalog_id",
+            "schema_version",
+            "default_action",
+            "key_comparison",
+            "classification_order",
+            "duplicate_singleton_result",
+            "invalid_value_result",
+            "value_read_policy",
+            "allow_safe_value",
+            "allow_name_only",
+            "deny_exact",
+            "deny_prefixes",
+            "required_audit_surfaces",
+        },
+        "Git config catalog",
+        reason="git_config_catalog_schema",
+    )
+    safe_entries = _require_array(
+        catalog["allow_safe_value"],
+        "Git safe-value entries",
+        reason="git_config_catalog_schema",
+    )
+    name_entries = _require_array(
+        catalog["allow_name_only"],
+        "Git name-only entries",
+        reason="git_config_catalog_schema",
+    )
+    expected_safe_keys = {
+        "core.repositoryformatversion",
+        "extensions.objectformat",
+        "extensions.refstorage",
+        "extensions.worktreeconfig",
+        "core.bare",
+        "core.filemode",
+        "core.logallrefupdates",
+        "core.symlinks",
+        "core.ignorecase",
+        "core.protectntfs",
+        "core.protecthfs",
+        "core.longpaths",
+        "core.autocrlf",
+        "core.eol",
+        "core.safecrlf",
+        "core.precomposeunicode",
+        "core.sparsecheckout",
+        "core.sparsecheckoutcone",
+        "index.sparse",
+    }
+    expected_name_patterns = {
+        "remote.*.url",
+        "remote.*.pushurl",
+        "remote.*.fetch",
+        "remote.*.push",
+        "branch.*.remote",
+        "branch.*.merge",
+        "lfs.url",
+        "lfs.pushurl",
+        "lfs.*.access",
+        "remote.*.lfsurl",
+        "remote.*.lfspushurl",
+    }
+    safe_index: dict[str, dict[str, Any]] = {}
+    for raw_entry in safe_entries:
+        entry = _require_exact_fields(
+            raw_entry,
+            {"key", "multiplicity", "validator"},
+            "Git safe-value entry",
+            reason="git_config_catalog_schema",
+        )
+        key = entry["key"]
+        if (
+            not isinstance(key, str)
+            or key != key.lower()
+            or key in safe_index
+            or entry["multiplicity"] != "singleton"
+            or not isinstance(entry["validator"], dict)
+        ):
+            raise ValidationFailure(
+                "git_config_catalog_drift", "Git safe-value entry mismatch"
+            )
+        safe_index[key] = entry
+    name_index: dict[str, dict[str, Any]] = {}
+    for raw_entry in name_entries:
+        entry = _require_exact_fields(
+            raw_entry,
+            {"pattern", "pattern_kind", "multiplicity"},
+            "Git name-only entry",
+            reason="git_config_catalog_schema",
+        )
+        pattern = entry["pattern"]
+        if (
+            not isinstance(pattern, str)
+            or pattern != pattern.lower()
+            or pattern in name_index
+            or entry["pattern_kind"] not in {"exact", "one_segment_wildcard"}
+            or entry["multiplicity"] not in {"singleton", "multiple"}
+        ):
+            raise ValidationFailure(
+                "git_config_catalog_drift", "Git name-only entry mismatch"
+            )
+        name_index[pattern] = entry
+    deny_exact = _require_string_array(
+        catalog["deny_exact"], "Git deny exact", reason="git_config_catalog_schema"
+    )
+    deny_prefixes = _require_string_array(
+        catalog["deny_prefixes"],
+        "Git deny prefixes",
+        reason="git_config_catalog_schema",
+    )
+    if (
+        catalog["catalog_id"] != "GitConfigPolicy.v1"
+        or catalog["schema_version"] != 1
+        or catalog["default_action"] != "deny"
+        or catalog["key_comparison"]
+        != "ascii_case_insensitive_after_git_name_validation"
+        or catalog["classification_order"]
+        != [
+            "deny_exact",
+            "deny_prefix",
+            "allow_safe_value",
+            "allow_name_only",
+            "default_deny",
+        ]
+        or catalog["duplicate_singleton_result"] != "reject"
+        or catalog["invalid_value_result"] != "reject"
+        or set(safe_index) != expected_safe_keys
+        or set(name_index) != expected_name_patterns
+        or len(deny_exact) != len(set(deny_exact))
+        or len(deny_prefixes) != len(set(deny_prefixes))
+    ):
+        raise ValidationFailure(
+            "git_config_catalog_drift", "Git config catalog boundary mismatch"
+        )
+    lowered_exact = {value.lower() for value in deny_exact}
+    lowered_prefixes = [value.lower() for value in deny_prefixes]
+    for allowed in [*safe_index, *name_index]:
+        sample = allowed.replace("*", "sample")
+        if sample in lowered_exact or any(sample.startswith(prefix) for prefix in lowered_prefixes):
+            raise ValidationFailure(
+                "git_config_catalog_drift", f"allow rule is shadowed by deny: {allowed}"
+            )
+    return {
+        "safe": safe_index,
+        "name_only": name_index,
+        "deny_exact": lowered_exact,
+        "deny_prefixes": lowered_prefixes,
+    }
+
+
+def _git_name_pattern_matches(key: str, pattern: str, kind: str) -> bool:
+    if kind == "exact":
+        return key == pattern
+    key_parts = key.split(".")
+    pattern_parts = pattern.split(".")
+    return len(key_parts) == len(pattern_parts) and all(
+        expected == "*" or expected == actual
+        for actual, expected in zip(key_parts, pattern_parts)
+    )
+
+
+def _git_boolean_value(value: str) -> bool | None:
+    normalized = value.lower()
+    if normalized in {"true", "yes", "on", "1"}:
+        return True
+    if normalized in {"false", "no", "off", "0"}:
+        return False
+    return None
+
+
+def _git_config_value_matches(value: str, validator: dict[str, Any]) -> bool:
+    kind = validator.get("kind")
+    if kind == "boolean":
+        return _git_boolean_value(value) is not None
+    if kind == "boolean_enum":
+        parsed = _git_boolean_value(value)
+        return parsed is not None and parsed in validator.get("allowed", [])
+    if kind == "integer_enum":
+        try:
+            parsed_integer = int(value, 10)
+        except ValueError:
+            return False
+        return str(parsed_integer) == value and parsed_integer in validator.get("allowed", [])
+    if kind == "string_enum":
+        return value.lower() in validator.get("allowed", [])
+    return False
+
+
+def _evaluate_git_config_case(
+    case: dict[str, Any], catalog: dict[str, Any]
+) -> str:
+    case = _require_exact_fields(
+        case,
+        {
+            "case_id",
+            "key_name",
+            "candidate_value",
+            "occurrences",
+            "value_was_read",
+            "expected_result",
+        },
+        "Git config case",
+        reason="deterministic_git_fixture_schema",
+    )
+    key = case["key_name"]
+    if (
+        not isinstance(key, str)
+        or key != key.lower()
+        or not isinstance(case["candidate_value"], str)
+        or type(case["occurrences"]) is not int
+        or case["occurrences"] < 1
+        or not isinstance(case["value_was_read"], bool)
+    ):
+        raise ValidationFailure(
+            "deterministic_git_fixture_schema", "Git config case value mismatch"
+        )
+    denied = key in catalog["deny_exact"] or any(
+        key.startswith(prefix) for prefix in catalog["deny_prefixes"]
+    )
+    if denied:
+        return "value_read_forbidden" if case["value_was_read"] else "deny"
+    safe = catalog["safe"].get(key)
+    if safe is not None:
+        if case["occurrences"] != 1:
+            return "duplicate_singleton_reject"
+        if not case["value_was_read"]:
+            return "safe_value_read_required"
+        return (
+            "allow_safe_value"
+            if _git_config_value_matches(case["candidate_value"], safe["validator"])
+            else "invalid_value_reject"
+        )
+    for pattern, entry in catalog["name_only"].items():
+        if _git_name_pattern_matches(key, pattern, entry["pattern_kind"]):
+            return "value_read_forbidden" if case["value_was_read"] else "allow_name_only"
+    return "value_read_forbidden" if case["value_was_read"] else "deny"
+
+
+def _git_domain_sha256(domain: str, payload: dict[str, Any]) -> str:
+    envelope = {"domain": domain, "payload": payload, "schema_version": 1}
+    raw = (
+        json.dumps(envelope, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+        + "\n"
+    ).encode("utf-8")
+    return hashlib.sha256(raw).hexdigest()
+
+
+def _git_object_oid(object_type: str, payload: bytes) -> str:
+    header = f"{object_type} {len(payload)}".encode("ascii") + b"\0"
+    return hashlib.sha1(header + payload, usedforsecurity=False).hexdigest()
+
+
+def _validate_git_object_bundle(fixture: dict[str, Any]) -> dict[str, Any]:
+    binding = _require_exact_fields(
+        fixture["commit_binding"],
+        {"template_id", "task_uuid", "attempt_no", "resolved_attempt_manifest_sha256"},
+        "commit binding",
+        reason="deterministic_git_fixture_schema",
+    )
+    payload_entries = _require_array(
+        fixture["object_payloads"],
+        "Git object payloads",
+        reason="deterministic_git_fixture_schema",
+    )
+    if len(payload_entries) != 3:
+        raise ValidationFailure(
+            "git_object_fixture", "Git object fixture must contain blob/tree/commit"
+        )
+    objects: list[dict[str, Any]] = []
+    payloads: dict[str, bytes] = {}
+    expected_types = ["blob", "tree", "commit"]
+    for ordinal, raw_entry in enumerate(payload_entries, start=1):
+        entry = _require_exact_fields(
+            raw_entry,
+            {
+                "ordinal",
+                "object_type",
+                "payload_hex",
+                "byte_count",
+                "expected_oid",
+                "payload_sha256",
+                "reachability_edges",
+            },
+            "Git object payload",
+            reason="deterministic_git_fixture_schema",
+        )
+        object_type = entry["object_type"]
+        if entry["ordinal"] != ordinal or object_type != expected_types[ordinal - 1]:
+            raise ValidationFailure("git_object_fixture", "Git object order mismatch")
+        payload_hex = entry["payload_hex"]
+        if not isinstance(payload_hex, str) or re.fullmatch(r"[0-9a-f]*", payload_hex) is None:
+            raise ValidationFailure("git_object_fixture", "Git payload hex mismatch")
+        try:
+            payload_bytes = bytes.fromhex(payload_hex)
+        except ValueError as exc:
+            raise ValidationFailure("git_object_fixture", "Git payload hex invalid") from exc
+        if (
+            len(payload_bytes) != entry["byte_count"]
+            or _git_object_oid(object_type, payload_bytes) != entry["expected_oid"]
+            or hashlib.sha256(payload_bytes).hexdigest() != entry["payload_sha256"]
+        ):
+            raise ValidationFailure(
+                "git_object_fixture", f"canonical Git object mismatch: {object_type}"
+            )
+        edges = _require_array(
+            entry["reachability_edges"],
+            "Git reachability edges",
+            reason="deterministic_git_fixture_schema",
+        )
+        payloads[object_type] = payload_bytes
+        objects.append(
+            {
+                "ordinal": ordinal,
+                "object_type": object_type,
+                "byte_count": len(payload_bytes),
+                "oid": entry["expected_oid"],
+                "payload_sha256": entry["payload_sha256"],
+                "reachability_edges": edges,
+            }
+        )
+    plan = _require_exact_fields(
+        fixture["git_object_plan_input"],
+        {
+            "schema_version",
+            "resolved_attempt_manifest_sha256",
+            "claim_epoch_seconds",
+            "expected_base_commit",
+            "object_format",
+            "index_input_sha256",
+            "expected_tree_oid",
+            "expected_commit_oid",
+            "objects",
+        },
+        "Git object plan",
+        reason="deterministic_git_fixture_schema",
+    )
+    if (
+        plan["schema_version"] != 1
+        or plan["object_format"] != "sha1"
+        or plan["resolved_attempt_manifest_sha256"]
+        != binding["resolved_attempt_manifest_sha256"]
+        or plan["expected_tree_oid"] != objects[1]["oid"]
+        or plan["expected_commit_oid"] != objects[2]["oid"]
+        or plan["objects"] != objects
+    ):
+        raise ValidationFailure("git_plan_binding", "Git object plan binding mismatch")
+    claim_epoch = plan["claim_epoch_seconds"]
+    expected_commit_payload = (
+        f"tree {plan['expected_tree_oid']}\n"
+        f"parent {plan['expected_base_commit']}\n"
+        "author Local AI Runtime <local-ai-runtime@localhost.invalid> "
+        f"{claim_epoch} +0000\n"
+        "committer Local AI Runtime <local-ai-runtime@localhost.invalid> "
+        f"{claim_epoch} +0000\n\n"
+        f"batch({binding['template_id']}): {binding['task_uuid']} attempt "
+        f"{binding['attempt_no']}\n\n"
+        f"Manifest: sha256:{binding['resolved_attempt_manifest_sha256']}\n"
+    ).encode("utf-8")
+    if payloads["commit"] != expected_commit_payload:
+        raise ValidationFailure("git_commit_bytes", "canonical commit payload mismatch")
+    expected_edges = [
+        [],
+        [{"edge_kind": "tree_entry", "target_oid": objects[0]["oid"]}],
+        [
+            {"edge_kind": "commit_tree", "target_oid": objects[1]["oid"]},
+            {
+                "edge_kind": "commit_parent_external",
+                "target_oid": plan["expected_base_commit"],
+            },
+        ],
+    ]
+    if [item["reachability_edges"] for item in objects] != expected_edges:
+        raise ValidationFailure("git_object_graph", "Git reachability graph mismatch")
+    plan_sha256 = _git_domain_sha256("local-ai-runtime/GitObjectPlan/v1", plan)
+    if fixture["expected_git_object_plan_sha256"] != plan_sha256:
+        raise ValidationFailure("git_plan_hash", "Git object plan hash mismatch")
+    manifest = _require_exact_fields(
+        fixture["object_set_manifest_positive"],
+        {
+            "schema_version",
+            "object_set_id",
+            "git_object_plan_sha256",
+            "resolved_attempt_manifest_sha256",
+            "claim_epoch_seconds",
+            "expected_base_commit",
+            "object_format",
+            "objects",
+            "set_sha256",
+            "sealed",
+        },
+        "ObjectSetManifest",
+        reason="deterministic_git_fixture_schema",
+    )
+    expected_manifest_objects = [
+        {**item, "materialization_state": "verified_attempt_local"} for item in objects
+    ]
+    if (
+        manifest["schema_version"] != 1
+        or not isinstance(manifest["object_set_id"], str)
+        or IDENTIFIER_PATTERN.fullmatch(manifest["object_set_id"]) is None
+        or manifest["git_object_plan_sha256"] != plan_sha256
+        or manifest["resolved_attempt_manifest_sha256"]
+        != plan["resolved_attempt_manifest_sha256"]
+        or manifest["claim_epoch_seconds"] != plan["claim_epoch_seconds"]
+        or manifest["expected_base_commit"] != plan["expected_base_commit"]
+        or manifest["object_format"] != "sha1"
+        or manifest["objects"] != expected_manifest_objects
+        or manifest["sealed"] is not True
+    ):
+        raise ValidationFailure("object_set_binding", "ObjectSetManifest binding mismatch")
+    set_payload = dict(manifest)
+    actual_set_sha256 = set_payload.pop("set_sha256")
+    expected_set_sha256 = _git_domain_sha256(
+        "local-ai-runtime/ObjectSetManifest/v1", set_payload
+    )
+    if actual_set_sha256 != expected_set_sha256:
+        raise ValidationFailure("object_set_hash", "ObjectSetManifest hash mismatch")
+    return {
+        "blob_oid": objects[0]["oid"],
+        "tree_oid": objects[1]["oid"],
+        "commit_oid": objects[2]["oid"],
+        "plan_sha256": plan_sha256,
+        "set_sha256": expected_set_sha256,
+    }
+
+
+def _git_case(
+    value: Any, fields: set[str], bool_fields: set[str], label: str
+) -> dict[str, Any]:
+    case = _require_exact_fields(
+        value,
+        fields | {"case_id", "expected_result"},
+        label,
+        reason="deterministic_git_fixture_schema",
+    )
+    if (
+        not isinstance(case["case_id"], str)
+        or not isinstance(case["expected_result"], str)
+        or not all(isinstance(case[field], bool) for field in bool_fields)
+    ):
+        raise ValidationFailure(
+            "deterministic_git_fixture_schema", f"{label} value mismatch"
+        )
+    return case
+
+
+def _evaluate_git_environment(case: dict[str, Any]) -> str:
+    flags = {
+        "empty_start",
+        "inherited_git_variable",
+        "fixed_variables_exact",
+        "controller_config_order_exact",
+        "forbidden_variable_present",
+    }
+    case = _git_case(case, flags, flags, "Git environment case")
+    if not case["empty_start"] or case["inherited_git_variable"]:
+        return "inherited_environment_forbidden"
+    if case["forbidden_variable_present"]:
+        return "forbidden_variable"
+    if not case["fixed_variables_exact"]:
+        return "hardened_environment_required"
+    if not case["controller_config_order_exact"]:
+        return "controller_config_order_mismatch"
+    return "environment_accepted"
+
+
+def _evaluate_git_claim(case: dict[str, Any]) -> str:
+    flags = {
+        "claim_cas_generated",
+        "trusted_utc_floor_seconds",
+        "resolved_manifest_matches",
+        "plan_matches",
+        "closeout_clock_reread",
+    }
+    case = _git_case(case, flags, flags, "Git claim case")
+    if case["closeout_clock_reread"]:
+        return "closeout_clock_read_forbidden"
+    if all(
+        case[field]
+        for field in {
+            "claim_cas_generated",
+            "trusted_utc_floor_seconds",
+            "resolved_manifest_matches",
+            "plan_matches",
+        }
+    ):
+        return "claim_binding_accepted"
+    return "claim_binding_reject"
+
+
+def _evaluate_git_commit(case: dict[str, Any]) -> str:
+    flags = {
+        "header_order_exact",
+        "author_committer_time_match",
+        "identity_exact",
+        "subject_exact",
+        "manifest_trailer_exact",
+        "extra_header_present",
+    }
+    case = _git_case(
+        case,
+        flags | {"parent_count", "terminal_lf_count"},
+        flags,
+        "Git commit case",
+    )
+    if (
+        type(case["parent_count"]) is not int
+        or type(case["terminal_lf_count"]) is not int
+    ):
+        raise ValidationFailure(
+            "deterministic_git_fixture_schema", "Git commit count mismatch"
+        )
+    if case["parent_count"] != 1:
+        return "parent_count_reject"
+    if not case["header_order_exact"] or case["extra_header_present"]:
+        return "commit_header_reject"
+    if not case["author_committer_time_match"]:
+        return "claim_time_reject"
+    if not case["identity_exact"]:
+        return "commit_identity_reject"
+    if (
+        not case["subject_exact"]
+        or not case["manifest_trailer_exact"]
+        or case["terminal_lf_count"] != 1
+    ):
+        return "commit_message_reject"
+    return "commit_accepted"
+
+
+def _evaluate_git_object(case: dict[str, Any]) -> str:
+    flags = {
+        "plan_hash_matches",
+        "set_sealed",
+        "type_size_payload_oid_match",
+        "reachability_match",
+        "existing_object",
+        "loose_zlib_only_match",
+        "common_reachable_without_alternate",
+    }
+    case = _git_case(case, flags, flags, "Git object case")
+    if case["loose_zlib_only_match"]:
+        return "loose_zlib_oracle_forbidden"
+    if not case["plan_hash_matches"] or not case["reachability_match"]:
+        return "plan_set_mismatch"
+    if not case["set_sealed"]:
+        return "sealed_set_required"
+    if not case["type_size_payload_oid_match"]:
+        return "canonical_object_mismatch"
+    if not case["common_reachable_without_alternate"]:
+        return "common_reachability_required"
+    return "confirm_existing" if case["existing_object"] else "promote_create_if_absent"
+
+
+def _evaluate_create_worktree(case: dict[str, Any]) -> str:
+    flags = {
+        "prior_admin_present",
+        "prior_log_present",
+        "new_log_owned_by_intent",
+        "new_log_removed",
+        "absence_readback",
+        "unknown_path_touched",
+    }
+    case = _git_case(case, flags, flags, "create worktree case")
+    if case["unknown_path_touched"]:
+        return "unknown_path_cleanup_forbidden"
+    if case["prior_admin_present"] or case["prior_log_present"]:
+        return "prior_path_conflict"
+    if not case["new_log_owned_by_intent"]:
+        return "worktree_log_ownership_required"
+    if not case["new_log_removed"] or not case["absence_readback"]:
+        return "worktree_log_cleanup_required"
+    return "worktree_created"
+
+
+def _evaluate_git_finalize(case: dict[str, Any]) -> str:
+    flags = {
+        "path_equal",
+        "mode_equal",
+        "bytes_equal",
+        "clean_untracked_ignored",
+        "old_index_hash_matches",
+        "index_readback_matches",
+        "head_reflog_absent_before",
+        "head_cas_matches",
+        "head_reflog_absent_after",
+    }
+    case = _git_case(case, flags, flags, "Git finalize case")
+    if not all(
+        case[field]
+        for field in {"path_equal", "mode_equal", "bytes_equal", "clean_untracked_ignored"}
+    ):
+        return "worktree_equality_required"
+    if not case["old_index_hash_matches"]:
+        return "index_cas_required"
+    if not case["index_readback_matches"]:
+        return "index_integrity_reject"
+    if not case["head_reflog_absent_before"]:
+        return "head_reflog_forbidden"
+    if not case["head_cas_matches"]:
+        return "head_cas_required"
+    if not case["head_reflog_absent_after"]:
+        return "reconcile_required_no_delete"
+    return "finalize_complete"
+
+
+def _evaluate_task_ref(case: dict[str, Any]) -> str:
+    bool_fields = {
+        "reachability_passed",
+        "index_finalized",
+        "head_finalized",
+        "reflog_absent_before",
+        "zero_oid_cas",
+        "same_intent_replay",
+        "ref_oid_matches",
+        "reflog_absent_after",
+    }
+    case = _git_case(
+        case, bool_fields | {"collision_kind"}, bool_fields, "Git task-ref case"
+    )
+    collision_kind = case["collision_kind"]
+    if collision_kind not in {"absent", "exact", "case_alias", "file_directory_prefix"}:
+        raise ValidationFailure(
+            "deterministic_git_fixture_schema", "task-ref collision kind mismatch"
+        )
+    if not all(
+        case[field]
+        for field in {"reachability_passed", "index_finalized", "head_finalized"}
+    ):
+        return "publication_order_reject"
+    if (
+        case["same_intent_replay"]
+        and collision_kind == "exact"
+        and case["ref_oid_matches"]
+        and case["reflog_absent_before"]
+        and case["reflog_absent_after"]
+    ):
+        return "confirm_historical_success"
+    if collision_kind != "absent":
+        return "ref_collision_reject"
+    if not case["reflog_absent_before"]:
+        return "task_ref_reflog_forbidden"
+    if not case["zero_oid_cas"]:
+        return "zero_oid_cas_required"
+    if not case["ref_oid_matches"]:
+        return "task_ref_integrity_reject"
+    if not case["reflog_absent_after"]:
+        return "reconcile_required_no_delete"
+    return "task_ref_published"
+
+
+def _evaluate_git_action_order(case: dict[str, Any]) -> str:
+    case = _require_exact_fields(
+        case,
+        {"case_id", "actions", "expected_result"},
+        "Git action order case",
+        reason="deterministic_git_fixture_schema",
+    )
+    actions = _require_string_array(
+        case["actions"], "Git action order", reason="deterministic_git_fixture_schema"
+    )
+    expected = [
+        "promote_objects",
+        "verify_common_reachability",
+        "finalize_worktree_index",
+        "finalize_worktree_head",
+        "create_task_ref",
+        "publish_evidence",
+        "remove_worktree",
+    ]
+    return "action_order_accepted" if actions == expected else "action_order_reject"
+
+
+def _evaluate_git_cleanup(case: dict[str, Any]) -> str:
+    flags = {
+        "runtime_owned",
+        "job_zero_process",
+        "fence_current",
+        "actions_terminal",
+        "evidence_terminal",
+        "head_index_worktree_clean",
+        "authorization_current",
+        "uses_reset_hard",
+    }
+    case = _git_case(case, flags, flags, "Git cleanup case")
+    if case["uses_reset_hard"]:
+        return "reset_hard_forbidden"
+    required = flags - {"uses_reset_hard"}
+    return "remove_allowed" if all(case[field] for field in required) else "cleanup_required"
+
+
+def _verify_git_case_matrix(
+    fixture: dict[str, Any],
+    field: str,
+    expected_ids: set[str],
+    evaluator: Callable[[dict[str, Any]], str],
+) -> int:
+    cases = _fixture_cases(fixture, field, expected_ids)
+    for case in cases:
+        if evaluator(case) != case.get("expected_result"):
+            raise ValidationFailure(
+                "deterministic_git_fixture_result", str(case.get("case_id"))
+            )
+    return len(cases)
+
+
+def verify_deterministic_git_component(repo_root: Path) -> dict[str, Any]:
+    policy, policy_raw = _load_json_object(repo_root / DETERMINISTIC_GIT_POLICY_RELATIVE)
+    object_schema, schema_raw = _load_json_object(repo_root / OBJECT_SET_SCHEMA_RELATIVE)
+    config_catalog, catalog_raw = _load_json_object(repo_root / GIT_CONFIG_CATALOG_RELATIVE)
+    fixture, fixture_raw = _load_json_object(repo_root / DETERMINISTIC_GIT_FIXTURE_RELATIVE)
+    _verify_deterministic_git_policy(policy, policy_raw)
+    _verify_deterministic_git_identity(
+        schema_raw,
+        "object_set_schema",
+        "deterministic_git_schema_drift",
+        "ObjectSetManifest schema",
+    )
+    _verify_deterministic_git_identity(
+        catalog_raw,
+        "config_catalog",
+        "git_config_catalog_drift",
+        "Git config catalog",
+    )
+    _verify_deterministic_git_identity(
+        fixture_raw,
+        "fixture",
+        "deterministic_git_fixture_drift",
+        "deterministic Git fixture",
+    )
+    _verify_object_set_schema_shape(object_schema)
+    catalog = _verify_git_config_catalog(config_catalog)
+    fixture = _require_exact_fields(
+        fixture,
+        {
+            "fixture_id",
+            "schema_version",
+            "policy_path",
+            "object_set_schema_path",
+            "config_catalog_path",
+            "commit_binding",
+            "object_payloads",
+            "git_object_plan_input",
+            "expected_git_object_plan_sha256",
+            "object_set_manifest_positive",
+            "config_cases",
+            "environment_cases",
+            "claim_cases",
+            "commit_cases",
+            "object_cases",
+            "create_worktree_cases",
+            "finalize_cases",
+            "task_ref_cases",
+            "action_order_cases",
+            "cleanup_cases",
+        },
+        "deterministic Git fixture",
+        reason="deterministic_git_fixture_schema",
+    )
+    if (
+        fixture["fixture_id"] != "DeterministicGitContractSet.v1.contract-fixtures"
+        or fixture["schema_version"] != 1
+        or fixture["policy_path"]
+        != str(DETERMINISTIC_GIT_POLICY_RELATIVE).replace("\\", "/")
+        or fixture["object_set_schema_path"]
+        != str(OBJECT_SET_SCHEMA_RELATIVE).replace("\\", "/")
+        or fixture["config_catalog_path"]
+        != str(GIT_CONFIG_CATALOG_RELATIVE).replace("\\", "/")
+    ):
+        raise ValidationFailure(
+            "deterministic_git_fixture_schema", "deterministic Git fixture identity mismatch"
+        )
+    object_result = _validate_git_object_bundle(fixture)
+    config_cases = _fixture_cases(
+        fixture,
+        "config_cases",
+        {
+            "safe_boolean",
+            "invalid_safe_boolean",
+            "remote_name_only",
+            "remote_value_read",
+            "include_denied",
+            "include_value_read",
+            "unknown_denied",
+            "duplicate_singleton",
+            "submodule_prefix_denied",
+        },
+    )
+    for case in config_cases:
+        if _evaluate_git_config_case(case, catalog) != case.get("expected_result"):
+            raise ValidationFailure(
+                "deterministic_git_fixture_result", str(case.get("case_id"))
+            )
+    counts = {
+        "config": len(config_cases),
+        "environment": _verify_git_case_matrix(
+            fixture,
+            "environment_cases",
+            {
+                "exact_hardened",
+                "inherited_git_dir",
+                "fixed_variable_missing",
+                "controller_config_reordered",
+                "reflog_action_present",
+            },
+            _evaluate_git_environment,
+        ),
+        "claim": _verify_git_case_matrix(
+            fixture,
+            "claim_cases",
+            {
+                "claim_bound_once",
+                "claim_not_cas_generated",
+                "closeout_clock_reread",
+                "plan_claim_mismatch",
+            },
+            _evaluate_git_claim,
+        ),
+        "commit": _verify_git_case_matrix(
+            fixture,
+            "commit_cases",
+            {
+                "canonical_commit",
+                "missing_parent",
+                "two_parents",
+                "reordered_headers",
+                "extra_header",
+                "timestamp_mismatch",
+                "subject_mismatch",
+                "identity_mismatch",
+                "manifest_trailer_mismatch",
+                "missing_terminal_lf",
+            },
+            _evaluate_git_commit,
+        ),
+        "object": _verify_git_case_matrix(
+            fixture,
+            "object_cases",
+            {
+                "new_object_set",
+                "existing_canonical_match",
+                "loose_zlib_only",
+                "unsealed_set",
+                "plan_mismatch",
+                "payload_or_oid_mismatch",
+                "reachability_edge_mismatch",
+                "alternate_only_reachability",
+            },
+            _evaluate_git_object,
+        ),
+        "create_worktree": _verify_git_case_matrix(
+            fixture,
+            "create_worktree_cases",
+            {
+                "new_owned_admin",
+                "prior_admin_exists",
+                "unexpected_existing_log",
+                "log_remains",
+                "unknown_path_touched",
+            },
+            _evaluate_create_worktree,
+        ),
+        "finalize": _verify_git_case_matrix(
+            fixture,
+            "finalize_cases",
+            {
+                "finalize_exact",
+                "path_mismatch",
+                "mode_mismatch",
+                "bytes_mismatch",
+                "unapproved_untracked_or_ignored",
+                "index_old_hash_mismatch",
+                "index_readback_mismatch",
+                "head_reflog_present",
+                "head_cas_mismatch",
+            },
+            _evaluate_git_finalize,
+        ),
+        "task_ref": _verify_git_case_matrix(
+            fixture,
+            "task_ref_cases",
+            {
+                "zero_oid_create",
+                "exact_collision",
+                "case_collision",
+                "prefix_collision",
+                "task_reflog_exists",
+                "task_reflog_created",
+                "nonzero_cas",
+                "response_loss_same_intent",
+                "response_loss_wrong_oid",
+                "before_head_finalize",
+            },
+            _evaluate_task_ref,
+        ),
+        "action_order": _verify_git_case_matrix(
+            fixture,
+            "action_order_cases",
+            {
+                "complete_order",
+                "task_ref_before_head",
+                "evidence_before_ref",
+                "remove_before_evidence",
+                "reachability_missing",
+            },
+            _evaluate_git_action_order,
+        ),
+        "cleanup": _verify_git_case_matrix(
+            fixture,
+            "cleanup_cases",
+            {
+                "terminal_clean_remove",
+                "live_job",
+                "unknown_path",
+                "nonterminal_action",
+                "reset_hard",
+            },
+            _evaluate_git_cleanup,
+        ),
+    }
+    return {
+        "status": "pass",
+        "component": "deterministic-git",
+        "artifact_version": "DeterministicGitContractSet.v1",
+        "artifact_byte_count": len(policy_raw),
+        "artifact_sha256": hashlib.sha256(policy_raw).hexdigest(),
+        "object_set_schema_sha256": hashlib.sha256(schema_raw).hexdigest(),
+        "config_catalog_sha256": hashlib.sha256(catalog_raw).hexdigest(),
+        "fixture_sha256": hashlib.sha256(fixture_raw).hexdigest(),
+        **object_result,
+        "fixture_counts": counts,
+    }
+
+
 def _parse_args(argv: list[str]) -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", type=Path, default=Path(__file__).resolve().parents[1])
@@ -5043,6 +6308,7 @@ def _parse_args(argv: list[str]) -> argparse.Namespace:
             "qualification",
             "execution-safety",
             "evidence",
+            "deterministic-git",
             "package",
         ],
     )
@@ -5073,6 +6339,9 @@ def main(argv: list[str] | None = None) -> int:
         elif args.component == "evidence":
             payload = verify_evidence_component(root)
             exit_code = 0
+        elif args.component == "deterministic-git":
+            payload = verify_deterministic_git_component(root)
+            exit_code = 0
         else:
             payload = {
                 "status": "incomplete",
@@ -5084,6 +6353,7 @@ def main(argv: list[str] | None = None) -> int:
                     "qualification",
                     "execution_safety",
                     "evidence",
+                    "deterministic_git",
                 ],
                 "requested_component": args.component or "package",
             }

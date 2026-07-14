@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local-ai-runtime.invalid/schemas/ObjectSetManifest.v1.schema.json",
+  "title": "ObjectSetManifest.v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "object_set_id",
+    "git_object_plan_sha256",
+    "resolved_attempt_manifest_sha256",
+    "claim_epoch_seconds",
+    "expected_base_commit",
+    "object_format",
+    "objects",
+    "set_sha256",
+    "sealed"
+  ],
+  "properties": {
+    "schema_version": {"const": 1},
+    "object_set_id": {"$ref": "#/$defs/public_id"},
+    "git_object_plan_sha256": {"$ref": "#/$defs/sha256"},
+    "resolved_attempt_manifest_sha256": {"$ref": "#/$defs/sha256"},
+    "claim_epoch_seconds": {"type": "integer", "minimum": 0, "maximum": 9223372036854775807},
+    "expected_base_commit": {"$ref": "#/$defs/sha1"},
+    "object_format": {"const": "sha1"},
+    "objects": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 10000,
+      "items": {"$ref": "#/$defs/object_record"}
+    },
+    "set_sha256": {"$ref": "#/$defs/sha256"},
+    "sealed": {"const": true}
+  },
+  "$defs": {
+    "sha1": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "public_id": {"type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"},
+    "edge": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["edge_kind", "target_oid"],
+      "properties": {
+        "edge_kind": {"enum": ["tree_entry", "commit_tree", "commit_parent_external"]},
+        "target_oid": {"$ref": "#/$defs/sha1"}
+      }
+    },
+    "object_record": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ordinal",
+        "object_type",
+        "byte_count",
+        "oid",
+        "payload_sha256",
+        "reachability_edges",
+        "materialization_state"
+      ],
+      "properties": {
+        "ordinal": {"type": "integer", "minimum": 1, "maximum": 10000},
+        "object_type": {"enum": ["blob", "tree", "commit"]},
+        "byte_count": {"type": "integer", "minimum": 0, "maximum": 1073741824},
+        "oid": {"$ref": "#/$defs/sha1"},
+        "payload_sha256": {"$ref": "#/$defs/sha256"},
+        "reachability_edges": {
+          "type": "array",
+          "maxItems": 10000,
+          "items": {"$ref": "#/$defs/edge"}
+        },
+        "materialization_state": {"const": "verified_attempt_local"}
+      }
+    }
+  },
+  "x-local-ai-runtime-set-hash": {
+    "domain": "local-ai-runtime/ObjectSetManifest/v1",
+    "input": "canonical_manifest_excluding_set_sha256"
+  }
+}

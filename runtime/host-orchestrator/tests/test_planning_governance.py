@@ -340,8 +340,8 @@ def test_planning_verifier_accepts_truthful_candidate_state() -> None:
     assert payload["status"] == "pass"
     assert payload["baseline_id"] == "local-ai-runtime-0.2-v3.23"
     assert payload["approval_active"] is False
-    assert payload["missing_artifact_count"] == 8
-    assert payload["current_work_item_id"] == "LAR-P0A-008"
+    assert payload["missing_artifact_count"] == 7
+    assert payload["current_work_item_id"] == "LAR-P0A-009"
     work_items = json.loads(WORK_ITEMS_PATH.read_text(encoding="utf-8"))["work_items"]
     task_ids = {item["task_id"] for item in work_items}
     assert payload["work_item_count"] == len(work_items) == 65
@@ -364,7 +364,7 @@ def test_planning_selector_returns_baseline_closure_without_preflight() -> None:
     assert completed.returncode == 0, completed.stderr
     payload = json.loads(completed.stdout)
     assert payload["next_action"] == "close_baseline_normative_package_first"
-    assert payload["current_work_item_id"] == "LAR-P0A-008"
+    assert payload["current_work_item_id"] == "LAR-P0A-009"
     assert payload["side_effects_performed"] is False
     assert payload["preflight_run"] is False
 
@@ -376,10 +376,10 @@ def test_native_thin_path_evaluation_preserves_v323_and_seals_artifacts() -> Non
     assert evaluation["status"] == "preserve_v3_23_semantics"
     assert evaluation["decision"] == "preserve_v3_23_semantics"
     assert status["current_work_item"] == {
-        "task_id": "LAR-P0A-008",
+        "task_id": "LAR-P0A-009",
         "selector_action": "close_baseline_normative_package_first",
         "status": "ready",
-        "reason": "LAR-P0A-007 materialized and verified EvidenceContractSet.v1, an exhaustive event/status matrix, secret-safe projections, append-only journal ordering, six-condition receipt, no-replace artifacts, activation-bound external evidence, purpose-separated key envelopes and anti-rollback backup/restore fixtures without reading live data or performing backup/restore. Close deterministic Git publication contracts.",
+        "reason": "LAR-P0A-008 materialized and verified DeterministicGitContractSet.v1, hardened Git environment and config audit, controller-independent canonical blob/tree/commit framing, claim-time-bound single-parent commit, attempt-local canonical object verification and promotion, no-reflog HEAD/task-ref CAS and ordered finalization/evidence/cleanup without running Git against a real target repository. Materialize complete state, guard, autonomy and operator catalogs.",
     }
     assert evaluation["result_ref"].endswith("native-thin-path-capability-results.v1.json")
     assert evaluation["decision_ref"].endswith("native-thin-path-capability-decision.v1.json")
@@ -1034,6 +1034,7 @@ def test_baseline_verifier_skeleton_fails_closed_for_full_package() -> None:
         "qualification",
         "execution_safety",
         "evidence",
+        "deterministic_git",
     ]
 
 
@@ -1093,8 +1094,8 @@ def test_stable_baseline_entry_is_non_normative_and_targets_frozen_candidate() -
         "target_sha256": baseline["sha256"],
         "approval_input": False,
         "maximum_byte_count": 4096,
-        "byte_count": 3451,
-        "sha256": "222105f6dcfde91d849979fc7b0deec099dbde705a222be92d6b1c0b61a58599",
+        "byte_count": 3793,
+        "sha256": "7fea56d673212dd987cc6cedc2e298efd41194237b7f412d9a5790289dbf0214",
     }
     assert len(raw) <= entry["maximum_byte_count"]
     assert len(raw) == entry["byte_count"]
@@ -1109,7 +1110,7 @@ def test_stable_baseline_entry_is_non_normative_and_targets_frozen_candidate() -
         "BaselineManifest.v1",
         "BaselineApprovalRecord",
         "preserve_v3_23_semantics",
-        "LAR-P0A-007",
+        "LAR-P0A-008",
         "close_baseline_normative_package_first",
     ):
         assert marker in rendered
@@ -1611,6 +1612,18 @@ def test_inventory_versions_and_manifest_review_order_are_closed() -> None:
         "producer_task_id": "LAR-P0A-007",
         "verification": "schema_event_matrix_secret_safe_fixtures",
     }
+    assert by_id["P0A-GIT"] == {
+        "artifact_id": "P0A-GIT",
+        "kind": "deterministic_git_bundle",
+        "artifact_version": "DeterministicGitContractSet.v1",
+        "path": "docs/specs/local-ai-runtime-0.2/normative/DeterministicGitContractSet.v1.json",
+        "status": "present",
+        "byte_count": 7438,
+        "sha256": "c6ff21651cd525f1319fe0620f280e96db825086c2e8e98149340f4e08b11e26",
+        "required_for_approval": True,
+        "producer_task_id": "LAR-P0A-008",
+        "verification": "schema_action_graph_object_fixtures",
+    }
     assert by_id["P0A-MANIFEST"]["producer_task_id"] == "LAR-P0A-013"
     assert by_id["P0A-REVIEW"]["producer_task_id"] == "LAR-P0A-013"
     assert artifact_ids.index("P0A-VERIFIER") < artifact_ids.index("P0A-MANIFEST")
@@ -1661,7 +1674,8 @@ def test_machine_work_items_are_a_deterministic_v323_dag() -> None:
     assert by_id["LAR-P0A-002"]["depends_on"] == ["LAR-P0A-EVAL-002"]
     assert by_id["LAR-P0A-006"]["status"] == "completed"
     assert by_id["LAR-P0A-007"]["status"] == "completed"
-    assert by_id["LAR-P0A-008"]["status"] == "ready"
+    assert by_id["LAR-P0A-008"]["status"] == "completed"
+    assert by_id["LAR-P0A-009"]["status"] == "ready"
     assert by_id["LAR-P4-001"]["next_task_ids"] == ["LAR-P4-002", "LAR-P5-001"]
     assert by_id["LAR-P4-002"]["depends_on"] == ["LAR-P4-001"]
     assert by_id["LAR-P5-001"]["depends_on"] == ["LAR-P4-001"]
@@ -1677,6 +1691,7 @@ def test_machine_work_items_are_a_deterministic_v323_dag() -> None:
         "LAR-P0A-004": {"volatile existing-family lookup", "Existing-family replay remains stable"},
         "LAR-P0A-006": {"SafetyOnlyExecutionRecord", "execution_authority_kind"},
         "LAR-P0A-007": {"ExecutionReceipt", "BackupPostActivity", "BackupRestoreIntent"},
+        "LAR-P0A-008": {"GitConfigPolicy", "claim_epoch_seconds", "--no-create-reflog"},
         "LAR-P0A-010": {"accounting_kill_audit", "EmergencyDiskReserve", "OrdinalIgnoreCase"},
         "LAR-P0A-013": {"package_review_head", "approval_review_head"},
     }

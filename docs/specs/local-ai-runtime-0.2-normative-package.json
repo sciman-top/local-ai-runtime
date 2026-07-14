@@ -182,7 +182,9 @@
       "kind": "deterministic_git_bundle",
       "artifact_version": "DeterministicGitContractSet.v1",
       "path": "docs/specs/local-ai-runtime-0.2/normative/DeterministicGitContractSet.v1.json",
-      "status": "missing",
+      "status": "present",
+      "byte_count": 7438,
+      "sha256": "c6ff21651cd525f1319fe0620f280e96db825086c2e8e98149340f4e08b11e26",
       "required_for_approval": true,
       "producer_task_id": "LAR-P0A-008",
       "verification": "schema_action_graph_object_fixtures"
@@ -259,7 +261,6 @@
     }
   ],
   "missing_artifact_ids": [
-    "P0A-GIT",
     "P0A-STATE",
     "P0A-Q0",
     "P0A-MIGRATION",

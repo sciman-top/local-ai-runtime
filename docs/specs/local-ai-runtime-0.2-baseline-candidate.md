@@ -27,7 +27,7 @@ implementation.
 
 The v3.23 candidate remains **Request changes**. Its normative package is
 incomplete: the candidate source and v3.23-bound lineage are present, while
-eight required artifacts are still missing. The historical v3.17 and both
+seven required artifacts are still missing. The historical v3.17 and both
 conflicted v3.18 source bodies, plus the exact superseded v3.21 identity, are
 bound by `BaselineLineage.v2`. The sealed evaluation recorded an immutable
 `preserve_v3_23_semantics` decision without promoting either evaluated
@@ -39,9 +39,13 @@ without opening live runtime authority. `LAR-P0A-007` then closed the
 exhaustive event/status matrix, append-only journal and six-condition receipt,
 no-replace artifact and runtime-managed external evidence rules, purpose-bound
 key envelopes, and marker-before-mutation backup/restore anti-rollback protocol
-as `EvidenceContractSet.v1`. No raw output, DPAPI state, external evidence root,
-backup or restore was read or changed. The unique ready work item is now
-`LAR-P0A-008`, selected as
+as `EvidenceContractSet.v1`. `LAR-P0A-008` then closed the hardened Git
+environment/config audit, controller-independent canonical object framing,
+claim-time-bound single-parent commit, attempt-local object verification and
+promotion, no-reflog worktree/HEAD/task-ref publication and ordered cleanup as
+`DeterministicGitContractSet.v1`. Only offline fixtures and non-writing
+`git hash-object` cross-checks were used; no Git operation targeted a real
+repository. The unique ready work item is now `LAR-P0A-009`, selected as
 `close_baseline_normative_package_first`. Baseline Approval remains
 inactive; any later semantic change still requires a v3.24 successor instead
 of rewriting this frozen target.

@@ -21,8 +21,8 @@
     "target_sha256": "80562322ebc744eda2a87a17c45f73a11982f4947c9d10e8628bb6f73ee9d5c6",
     "approval_input": false,
     "maximum_byte_count": 4096,
-    "byte_count": 3451,
-    "sha256": "222105f6dcfde91d849979fc7b0deec099dbde705a222be92d6b1c0b61a58599"
+    "byte_count": 3793,
+    "sha256": "7fea56d673212dd987cc6cedc2e298efd41194237b7f412d9a5790289dbf0214"
   },
   "approval_state": {
     "active": false,
@@ -36,9 +36,8 @@
     "status": "incomplete",
     "approval_eligible": false,
     "required_artifact_count": 15,
-    "present_artifact_count": 7,
+    "present_artifact_count": 8,
     "missing_artifact_ids": [
-      "P0A-GIT",
       "P0A-STATE",
       "P0A-Q0",
       "P0A-MIGRATION",
@@ -129,13 +128,13 @@
     "source_work_items": "docs/plans/local-ai-runtime-0.2-work-items.json",
     "source_plan_id": "local-ai-runtime-0.2-v3.23-implementation-work-items",
     "work_item_count": 65,
-    "why_now": "The frozen Native thin-path comparison preserved v3.23 semantics and LAR-P0A-007 closed EvidenceContractSet.v1 using offline schemas and fixtures without reading raw output, DPAPI state or backup/restore roots. Baseline Approval remains blocked by eight missing normative artifacts."
+    "why_now": "The frozen Native thin-path comparison preserved v3.23 semantics and LAR-P0A-008 closed DeterministicGitContractSet.v1 using offline schema, catalog and fixtures plus non-writing Git OID cross-checks without running Git against a real target repository. Baseline Approval remains blocked by seven missing normative artifacts."
   },
   "current_work_item": {
-    "task_id": "LAR-P0A-008",
+    "task_id": "LAR-P0A-009",
     "selector_action": "close_baseline_normative_package_first",
     "status": "ready",
-    "reason": "LAR-P0A-007 materialized and verified EvidenceContractSet.v1, an exhaustive event/status matrix, secret-safe projections, append-only journal ordering, six-condition receipt, no-replace artifacts, activation-bound external evidence, purpose-separated key envelopes and anti-rollback backup/restore fixtures without reading live data or performing backup/restore. Close deterministic Git publication contracts."
+    "reason": "LAR-P0A-008 materialized and verified DeterministicGitContractSet.v1, hardened Git environment and config audit, controller-independent canonical blob/tree/commit framing, claim-time-bound single-parent commit, attempt-local canonical object verification and promotion, no-reflog HEAD/task-ref CAS and ordered finalization/evidence/cleanup without running Git against a real target repository. Materialize complete state, guard, autonomy and operator catalogs."
   },
   "planning_optimization": {
     "status": "active",
@@ -205,7 +204,7 @@
         "local-ai-runtime-0.2-v3.23",
         "LOCAL-AI-RUNTIME-0.2-BASELINE-CLOSURE",
         "LAR-P0A-EVAL-002",
-        "LAR-P0A-008",
+        "LAR-P0A-009",
         "planning_optimization_policy",
         "同一 session"
       ]
@@ -217,7 +216,7 @@
         "baseline_candidate",
         "LOCAL-AI-RUNTIME-0.2-BASELINE-CLOSURE",
         "LAR-P0A-EVAL-002",
-        "LAR-P0A-008",
+        "LAR-P0A-009",
         "planning_optimization_policy",
         "最多 3 个"
       ]
@@ -228,7 +227,7 @@
         "local-ai-runtime-0.2-v3.23",
         "blocking_stage=baseline_approval",
         "LAR-P0A-EVAL-002",
-        "LAR-P0A-008",
+        "LAR-P0A-009",
         "planning_optimization_policy",
         "最多 3 个"
       ]
@@ -370,7 +369,7 @@
         "docs/specs/local-ai-runtime-0.2-v3.23-baseline-candidate.md",
         "80562322ebc744eda2a87a17c45f73a11982f4947c9d10e8628bb6f73ee9d5c6",
         "BaselineManifest.v1",
-        "LAR-P0A-008"
+        "LAR-P0A-009"
       ]
     },
     {

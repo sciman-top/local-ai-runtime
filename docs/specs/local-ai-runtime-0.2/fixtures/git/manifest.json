@@ -1,0 +1,169 @@
+{
+  "fixture_id": "DeterministicGitContractSet.v1.contract-fixtures",
+  "schema_version": 1,
+  "policy_path": "docs/specs/local-ai-runtime-0.2/normative/DeterministicGitContractSet.v1.json",
+  "object_set_schema_path": "docs/specs/local-ai-runtime-0.2/schemas/ObjectSetManifest.v1.schema.json",
+  "config_catalog_path": "docs/specs/local-ai-runtime-0.2/catalogs/GitConfigPolicy.v1.json",
+  "commit_binding": {
+    "template_id": "docs",
+    "task_uuid": "11111111-1111-4111-8111-111111111111",
+    "attempt_no": 1,
+    "resolved_attempt_manifest_sha256": "4444444444444444444444444444444444444444444444444444444444444444"
+  },
+  "object_payloads": [
+    {
+      "ordinal": 1,
+      "object_type": "blob",
+      "payload_hex": "68656c6c6f0a",
+      "byte_count": 6,
+      "expected_oid": "ce013625030ba8dba906f756967f9e9ca394464a",
+      "payload_sha256": "5891b5b522d5df086d0ff0b110fbd9d21bb4fc7163af34d08286a2e846f6be03",
+      "reachability_edges": []
+    },
+    {
+      "ordinal": 2,
+      "object_type": "tree",
+      "payload_hex": "31303036343420524541444d452e6d6400ce013625030ba8dba906f756967f9e9ca394464a",
+      "byte_count": 37,
+      "expected_oid": "853694aae8816094a0d875fee7ea26278dbf5d0f",
+      "payload_sha256": "2ca22f91c254a31e1c8596076d7a364277abb8ca0c1aa78e491668d89e1b1b85",
+      "reachability_edges": [
+        {"edge_kind": "tree_entry", "target_oid": "ce013625030ba8dba906f756967f9e9ca394464a"}
+      ]
+    },
+    {
+      "ordinal": 3,
+      "object_type": "commit",
+      "payload_hex": "7472656520383533363934616165383831363039346130643837356665653765613236323738646266356430660a706172656e7420323232323232323232323232323232323232323232323232323232323232323232323232323232320a617574686f72204c6f63616c2041492052756e74696d65203c6c6f63616c2d61692d72756e74696d65406c6f63616c686f73742e696e76616c69643e2031373637323235363030202b303030300a636f6d6d6974746572204c6f63616c2041492052756e74696d65203c6c6f63616c2d61692d72756e74696d65406c6f63616c686f73742e696e76616c69643e2031373637323235363030202b303030300a0a626174636828646f6373293a2031313131313131312d313131312d343131312d383131312d31313131313131313131313120617474656d707420310a0a4d616e69666573743a207368613235363a343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434340a",
+      "byte_count": 397,
+      "expected_oid": "df2a0ef979213e41593cfa9e40a913f5493ec95f",
+      "payload_sha256": "17ab98b43d3d7cf7f3c0497edad418dcd0d0b0ad2270c5394034bd3a4b0ed4c0",
+      "reachability_edges": [
+        {"edge_kind": "commit_tree", "target_oid": "853694aae8816094a0d875fee7ea26278dbf5d0f"},
+        {"edge_kind": "commit_parent_external", "target_oid": "2222222222222222222222222222222222222222"}
+      ]
+    }
+  ],
+  "git_object_plan_input": {
+    "schema_version": 1,
+    "resolved_attempt_manifest_sha256": "4444444444444444444444444444444444444444444444444444444444444444",
+    "claim_epoch_seconds": 1767225600,
+    "expected_base_commit": "2222222222222222222222222222222222222222",
+    "object_format": "sha1",
+    "index_input_sha256": "5555555555555555555555555555555555555555555555555555555555555555",
+    "expected_tree_oid": "853694aae8816094a0d875fee7ea26278dbf5d0f",
+    "expected_commit_oid": "df2a0ef979213e41593cfa9e40a913f5493ec95f",
+    "objects": [
+      {"ordinal": 1, "object_type": "blob", "byte_count": 6, "oid": "ce013625030ba8dba906f756967f9e9ca394464a", "payload_sha256": "5891b5b522d5df086d0ff0b110fbd9d21bb4fc7163af34d08286a2e846f6be03", "reachability_edges": []},
+      {"ordinal": 2, "object_type": "tree", "byte_count": 37, "oid": "853694aae8816094a0d875fee7ea26278dbf5d0f", "payload_sha256": "2ca22f91c254a31e1c8596076d7a364277abb8ca0c1aa78e491668d89e1b1b85", "reachability_edges": [{"edge_kind": "tree_entry", "target_oid": "ce013625030ba8dba906f756967f9e9ca394464a"}]},
+      {"ordinal": 3, "object_type": "commit", "byte_count": 397, "oid": "df2a0ef979213e41593cfa9e40a913f5493ec95f", "payload_sha256": "17ab98b43d3d7cf7f3c0497edad418dcd0d0b0ad2270c5394034bd3a4b0ed4c0", "reachability_edges": [{"edge_kind": "commit_tree", "target_oid": "853694aae8816094a0d875fee7ea26278dbf5d0f"}, {"edge_kind": "commit_parent_external", "target_oid": "2222222222222222222222222222222222222222"}]}
+    ]
+  },
+  "expected_git_object_plan_sha256": "c58e841c2416c3751a467fdfa77b8c07d1f59d737237a0a471ad32039c2b1317",
+  "object_set_manifest_positive": {
+    "schema_version": 1,
+    "object_set_id": "git-set-1",
+    "git_object_plan_sha256": "c58e841c2416c3751a467fdfa77b8c07d1f59d737237a0a471ad32039c2b1317",
+    "resolved_attempt_manifest_sha256": "4444444444444444444444444444444444444444444444444444444444444444",
+    "claim_epoch_seconds": 1767225600,
+    "expected_base_commit": "2222222222222222222222222222222222222222",
+    "object_format": "sha1",
+    "objects": [
+      {"ordinal": 1, "object_type": "blob", "byte_count": 6, "oid": "ce013625030ba8dba906f756967f9e9ca394464a", "payload_sha256": "5891b5b522d5df086d0ff0b110fbd9d21bb4fc7163af34d08286a2e846f6be03", "reachability_edges": [], "materialization_state": "verified_attempt_local"},
+      {"ordinal": 2, "object_type": "tree", "byte_count": 37, "oid": "853694aae8816094a0d875fee7ea26278dbf5d0f", "payload_sha256": "2ca22f91c254a31e1c8596076d7a364277abb8ca0c1aa78e491668d89e1b1b85", "reachability_edges": [{"edge_kind": "tree_entry", "target_oid": "ce013625030ba8dba906f756967f9e9ca394464a"}], "materialization_state": "verified_attempt_local"},
+      {"ordinal": 3, "object_type": "commit", "byte_count": 397, "oid": "df2a0ef979213e41593cfa9e40a913f5493ec95f", "payload_sha256": "17ab98b43d3d7cf7f3c0497edad418dcd0d0b0ad2270c5394034bd3a4b0ed4c0", "reachability_edges": [{"edge_kind": "commit_tree", "target_oid": "853694aae8816094a0d875fee7ea26278dbf5d0f"}, {"edge_kind": "commit_parent_external", "target_oid": "2222222222222222222222222222222222222222"}], "materialization_state": "verified_attempt_local"}
+    ],
+    "set_sha256": "f249104f6e33913da606191263f22f61da6b17867cbc5f9535dd8553e74dfc96",
+    "sealed": true
+  },
+  "config_cases": [
+    {"case_id": "safe_boolean", "key_name": "core.bare", "candidate_value": "false", "occurrences": 1, "value_was_read": true, "expected_result": "allow_safe_value"},
+    {"case_id": "invalid_safe_boolean", "key_name": "core.bare", "candidate_value": "true", "occurrences": 1, "value_was_read": true, "expected_result": "invalid_value_reject"},
+    {"case_id": "remote_name_only", "key_name": "remote.origin.url", "candidate_value": "<not-read>", "occurrences": 1, "value_was_read": false, "expected_result": "allow_name_only"},
+    {"case_id": "remote_value_read", "key_name": "remote.origin.url", "candidate_value": "https://example.invalid/repo", "occurrences": 1, "value_was_read": true, "expected_result": "value_read_forbidden"},
+    {"case_id": "include_denied", "key_name": "include.path", "candidate_value": "<not-read>", "occurrences": 1, "value_was_read": false, "expected_result": "deny"},
+    {"case_id": "include_value_read", "key_name": "include.path", "candidate_value": "secret-path", "occurrences": 1, "value_was_read": true, "expected_result": "value_read_forbidden"},
+    {"case_id": "unknown_denied", "key_name": "core.untrackedcache", "candidate_value": "<not-read>", "occurrences": 1, "value_was_read": false, "expected_result": "deny"},
+    {"case_id": "duplicate_singleton", "key_name": "core.filemode", "candidate_value": "true", "occurrences": 2, "value_was_read": true, "expected_result": "duplicate_singleton_reject"},
+    {"case_id": "submodule_prefix_denied", "key_name": "submodule.recurse", "candidate_value": "<not-read>", "occurrences": 1, "value_was_read": false, "expected_result": "deny"}
+  ],
+  "environment_cases": [
+    {"case_id": "exact_hardened", "empty_start": true, "inherited_git_variable": false, "fixed_variables_exact": true, "controller_config_order_exact": true, "forbidden_variable_present": false, "expected_result": "environment_accepted"},
+    {"case_id": "inherited_git_dir", "empty_start": false, "inherited_git_variable": true, "fixed_variables_exact": true, "controller_config_order_exact": true, "forbidden_variable_present": false, "expected_result": "inherited_environment_forbidden"},
+    {"case_id": "fixed_variable_missing", "empty_start": true, "inherited_git_variable": false, "fixed_variables_exact": false, "controller_config_order_exact": true, "forbidden_variable_present": false, "expected_result": "hardened_environment_required"},
+    {"case_id": "controller_config_reordered", "empty_start": true, "inherited_git_variable": false, "fixed_variables_exact": true, "controller_config_order_exact": false, "forbidden_variable_present": false, "expected_result": "controller_config_order_mismatch"},
+    {"case_id": "reflog_action_present", "empty_start": true, "inherited_git_variable": false, "fixed_variables_exact": true, "controller_config_order_exact": true, "forbidden_variable_present": true, "expected_result": "forbidden_variable"}
+  ],
+  "claim_cases": [
+    {"case_id": "claim_bound_once", "claim_cas_generated": true, "trusted_utc_floor_seconds": true, "resolved_manifest_matches": true, "plan_matches": true, "closeout_clock_reread": false, "expected_result": "claim_binding_accepted"},
+    {"case_id": "claim_not_cas_generated", "claim_cas_generated": false, "trusted_utc_floor_seconds": true, "resolved_manifest_matches": true, "plan_matches": true, "closeout_clock_reread": false, "expected_result": "claim_binding_reject"},
+    {"case_id": "closeout_clock_reread", "claim_cas_generated": true, "trusted_utc_floor_seconds": true, "resolved_manifest_matches": true, "plan_matches": true, "closeout_clock_reread": true, "expected_result": "closeout_clock_read_forbidden"},
+    {"case_id": "plan_claim_mismatch", "claim_cas_generated": true, "trusted_utc_floor_seconds": true, "resolved_manifest_matches": true, "plan_matches": false, "closeout_clock_reread": false, "expected_result": "claim_binding_reject"}
+  ],
+  "commit_cases": [
+    {"case_id": "canonical_commit", "header_order_exact": true, "parent_count": 1, "author_committer_time_match": true, "identity_exact": true, "subject_exact": true, "manifest_trailer_exact": true, "terminal_lf_count": 1, "extra_header_present": false, "expected_result": "commit_accepted"},
+    {"case_id": "missing_parent", "header_order_exact": true, "parent_count": 0, "author_committer_time_match": true, "identity_exact": true, "subject_exact": true, "manifest_trailer_exact": true, "terminal_lf_count": 1, "extra_header_present": false, "expected_result": "parent_count_reject"},
+    {"case_id": "two_parents", "header_order_exact": true, "parent_count": 2, "author_committer_time_match": true, "identity_exact": true, "subject_exact": true, "manifest_trailer_exact": true, "terminal_lf_count": 1, "extra_header_present": false, "expected_result": "parent_count_reject"},
+    {"case_id": "reordered_headers", "header_order_exact": false, "parent_count": 1, "author_committer_time_match": true, "identity_exact": true, "subject_exact": true, "manifest_trailer_exact": true, "terminal_lf_count": 1, "extra_header_present": false, "expected_result": "commit_header_reject"},
+    {"case_id": "extra_header", "header_order_exact": true, "parent_count": 1, "author_committer_time_match": true, "identity_exact": true, "subject_exact": true, "manifest_trailer_exact": true, "terminal_lf_count": 1, "extra_header_present": true, "expected_result": "commit_header_reject"},
+    {"case_id": "timestamp_mismatch", "header_order_exact": true, "parent_count": 1, "author_committer_time_match": false, "identity_exact": true, "subject_exact": true, "manifest_trailer_exact": true, "terminal_lf_count": 1, "extra_header_present": false, "expected_result": "claim_time_reject"},
+    {"case_id": "subject_mismatch", "header_order_exact": true, "parent_count": 1, "author_committer_time_match": true, "identity_exact": true, "subject_exact": false, "manifest_trailer_exact": true, "terminal_lf_count": 1, "extra_header_present": false, "expected_result": "commit_message_reject"},
+    {"case_id": "identity_mismatch", "header_order_exact": true, "parent_count": 1, "author_committer_time_match": true, "identity_exact": false, "subject_exact": true, "manifest_trailer_exact": true, "terminal_lf_count": 1, "extra_header_present": false, "expected_result": "commit_identity_reject"},
+    {"case_id": "manifest_trailer_mismatch", "header_order_exact": true, "parent_count": 1, "author_committer_time_match": true, "identity_exact": true, "subject_exact": true, "manifest_trailer_exact": false, "terminal_lf_count": 1, "extra_header_present": false, "expected_result": "commit_message_reject"},
+    {"case_id": "missing_terminal_lf", "header_order_exact": true, "parent_count": 1, "author_committer_time_match": true, "identity_exact": true, "subject_exact": true, "manifest_trailer_exact": true, "terminal_lf_count": 0, "extra_header_present": false, "expected_result": "commit_message_reject"}
+  ],
+  "object_cases": [
+    {"case_id": "new_object_set", "plan_hash_matches": true, "set_sealed": true, "type_size_payload_oid_match": true, "reachability_match": true, "existing_object": false, "loose_zlib_only_match": false, "common_reachable_without_alternate": true, "expected_result": "promote_create_if_absent"},
+    {"case_id": "existing_canonical_match", "plan_hash_matches": true, "set_sealed": true, "type_size_payload_oid_match": true, "reachability_match": true, "existing_object": true, "loose_zlib_only_match": false, "common_reachable_without_alternate": true, "expected_result": "confirm_existing"},
+    {"case_id": "loose_zlib_only", "plan_hash_matches": true, "set_sealed": true, "type_size_payload_oid_match": false, "reachability_match": true, "existing_object": true, "loose_zlib_only_match": true, "common_reachable_without_alternate": true, "expected_result": "loose_zlib_oracle_forbidden"},
+    {"case_id": "unsealed_set", "plan_hash_matches": true, "set_sealed": false, "type_size_payload_oid_match": true, "reachability_match": true, "existing_object": false, "loose_zlib_only_match": false, "common_reachable_without_alternate": true, "expected_result": "sealed_set_required"},
+    {"case_id": "plan_mismatch", "plan_hash_matches": false, "set_sealed": true, "type_size_payload_oid_match": true, "reachability_match": true, "existing_object": false, "loose_zlib_only_match": false, "common_reachable_without_alternate": true, "expected_result": "plan_set_mismatch"},
+    {"case_id": "payload_or_oid_mismatch", "plan_hash_matches": true, "set_sealed": true, "type_size_payload_oid_match": false, "reachability_match": true, "existing_object": false, "loose_zlib_only_match": false, "common_reachable_without_alternate": true, "expected_result": "canonical_object_mismatch"},
+    {"case_id": "reachability_edge_mismatch", "plan_hash_matches": true, "set_sealed": true, "type_size_payload_oid_match": true, "reachability_match": false, "existing_object": false, "loose_zlib_only_match": false, "common_reachable_without_alternate": true, "expected_result": "plan_set_mismatch"},
+    {"case_id": "alternate_only_reachability", "plan_hash_matches": true, "set_sealed": true, "type_size_payload_oid_match": true, "reachability_match": true, "existing_object": false, "loose_zlib_only_match": false, "common_reachable_without_alternate": false, "expected_result": "common_reachability_required"}
+  ],
+  "create_worktree_cases": [
+    {"case_id": "new_owned_admin", "prior_admin_present": false, "prior_log_present": false, "new_log_owned_by_intent": true, "new_log_removed": true, "absence_readback": true, "unknown_path_touched": false, "expected_result": "worktree_created"},
+    {"case_id": "prior_admin_exists", "prior_admin_present": true, "prior_log_present": false, "new_log_owned_by_intent": true, "new_log_removed": true, "absence_readback": true, "unknown_path_touched": false, "expected_result": "prior_path_conflict"},
+    {"case_id": "unexpected_existing_log", "prior_admin_present": false, "prior_log_present": true, "new_log_owned_by_intent": false, "new_log_removed": false, "absence_readback": false, "unknown_path_touched": false, "expected_result": "prior_path_conflict"},
+    {"case_id": "log_remains", "prior_admin_present": false, "prior_log_present": false, "new_log_owned_by_intent": true, "new_log_removed": false, "absence_readback": false, "unknown_path_touched": false, "expected_result": "worktree_log_cleanup_required"},
+    {"case_id": "unknown_path_touched", "prior_admin_present": false, "prior_log_present": false, "new_log_owned_by_intent": true, "new_log_removed": true, "absence_readback": true, "unknown_path_touched": true, "expected_result": "unknown_path_cleanup_forbidden"}
+  ],
+  "finalize_cases": [
+    {"case_id": "finalize_exact", "path_equal": true, "mode_equal": true, "bytes_equal": true, "clean_untracked_ignored": true, "old_index_hash_matches": true, "index_readback_matches": true, "head_reflog_absent_before": true, "head_cas_matches": true, "head_reflog_absent_after": true, "expected_result": "finalize_complete"},
+    {"case_id": "path_mismatch", "path_equal": false, "mode_equal": true, "bytes_equal": true, "clean_untracked_ignored": true, "old_index_hash_matches": true, "index_readback_matches": true, "head_reflog_absent_before": true, "head_cas_matches": true, "head_reflog_absent_after": true, "expected_result": "worktree_equality_required"},
+    {"case_id": "mode_mismatch", "path_equal": true, "mode_equal": false, "bytes_equal": true, "clean_untracked_ignored": true, "old_index_hash_matches": true, "index_readback_matches": true, "head_reflog_absent_before": true, "head_cas_matches": true, "head_reflog_absent_after": true, "expected_result": "worktree_equality_required"},
+    {"case_id": "bytes_mismatch", "path_equal": true, "mode_equal": true, "bytes_equal": false, "clean_untracked_ignored": true, "old_index_hash_matches": true, "index_readback_matches": true, "head_reflog_absent_before": true, "head_cas_matches": true, "head_reflog_absent_after": true, "expected_result": "worktree_equality_required"},
+    {"case_id": "unapproved_untracked_or_ignored", "path_equal": true, "mode_equal": true, "bytes_equal": true, "clean_untracked_ignored": false, "old_index_hash_matches": true, "index_readback_matches": true, "head_reflog_absent_before": true, "head_cas_matches": true, "head_reflog_absent_after": true, "expected_result": "worktree_equality_required"},
+    {"case_id": "index_old_hash_mismatch", "path_equal": true, "mode_equal": true, "bytes_equal": true, "clean_untracked_ignored": true, "old_index_hash_matches": false, "index_readback_matches": false, "head_reflog_absent_before": true, "head_cas_matches": true, "head_reflog_absent_after": true, "expected_result": "index_cas_required"},
+    {"case_id": "index_readback_mismatch", "path_equal": true, "mode_equal": true, "bytes_equal": true, "clean_untracked_ignored": true, "old_index_hash_matches": true, "index_readback_matches": false, "head_reflog_absent_before": true, "head_cas_matches": true, "head_reflog_absent_after": true, "expected_result": "index_integrity_reject"},
+    {"case_id": "head_reflog_present", "path_equal": true, "mode_equal": true, "bytes_equal": true, "clean_untracked_ignored": true, "old_index_hash_matches": true, "index_readback_matches": true, "head_reflog_absent_before": false, "head_cas_matches": true, "head_reflog_absent_after": false, "expected_result": "head_reflog_forbidden"},
+    {"case_id": "head_cas_mismatch", "path_equal": true, "mode_equal": true, "bytes_equal": true, "clean_untracked_ignored": true, "old_index_hash_matches": true, "index_readback_matches": true, "head_reflog_absent_before": true, "head_cas_matches": false, "head_reflog_absent_after": true, "expected_result": "head_cas_required"}
+  ],
+  "task_ref_cases": [
+    {"case_id": "zero_oid_create", "reachability_passed": true, "index_finalized": true, "head_finalized": true, "collision_kind": "absent", "reflog_absent_before": true, "zero_oid_cas": true, "same_intent_replay": false, "ref_oid_matches": true, "reflog_absent_after": true, "expected_result": "task_ref_published"},
+    {"case_id": "exact_collision", "reachability_passed": true, "index_finalized": true, "head_finalized": true, "collision_kind": "exact", "reflog_absent_before": true, "zero_oid_cas": true, "same_intent_replay": false, "ref_oid_matches": true, "reflog_absent_after": true, "expected_result": "ref_collision_reject"},
+    {"case_id": "case_collision", "reachability_passed": true, "index_finalized": true, "head_finalized": true, "collision_kind": "case_alias", "reflog_absent_before": true, "zero_oid_cas": true, "same_intent_replay": false, "ref_oid_matches": true, "reflog_absent_after": true, "expected_result": "ref_collision_reject"},
+    {"case_id": "prefix_collision", "reachability_passed": true, "index_finalized": true, "head_finalized": true, "collision_kind": "file_directory_prefix", "reflog_absent_before": true, "zero_oid_cas": true, "same_intent_replay": false, "ref_oid_matches": true, "reflog_absent_after": true, "expected_result": "ref_collision_reject"},
+    {"case_id": "task_reflog_exists", "reachability_passed": true, "index_finalized": true, "head_finalized": true, "collision_kind": "absent", "reflog_absent_before": false, "zero_oid_cas": true, "same_intent_replay": false, "ref_oid_matches": true, "reflog_absent_after": false, "expected_result": "task_ref_reflog_forbidden"},
+    {"case_id": "task_reflog_created", "reachability_passed": true, "index_finalized": true, "head_finalized": true, "collision_kind": "absent", "reflog_absent_before": true, "zero_oid_cas": true, "same_intent_replay": false, "ref_oid_matches": true, "reflog_absent_after": false, "expected_result": "reconcile_required_no_delete"},
+    {"case_id": "nonzero_cas", "reachability_passed": true, "index_finalized": true, "head_finalized": true, "collision_kind": "absent", "reflog_absent_before": true, "zero_oid_cas": false, "same_intent_replay": false, "ref_oid_matches": true, "reflog_absent_after": true, "expected_result": "zero_oid_cas_required"},
+    {"case_id": "response_loss_same_intent", "reachability_passed": true, "index_finalized": true, "head_finalized": true, "collision_kind": "exact", "reflog_absent_before": true, "zero_oid_cas": false, "same_intent_replay": true, "ref_oid_matches": true, "reflog_absent_after": true, "expected_result": "confirm_historical_success"},
+    {"case_id": "response_loss_wrong_oid", "reachability_passed": true, "index_finalized": true, "head_finalized": true, "collision_kind": "exact", "reflog_absent_before": true, "zero_oid_cas": false, "same_intent_replay": true, "ref_oid_matches": false, "reflog_absent_after": true, "expected_result": "ref_collision_reject"},
+    {"case_id": "before_head_finalize", "reachability_passed": true, "index_finalized": true, "head_finalized": false, "collision_kind": "absent", "reflog_absent_before": true, "zero_oid_cas": true, "same_intent_replay": false, "ref_oid_matches": true, "reflog_absent_after": true, "expected_result": "publication_order_reject"}
+  ],
+  "action_order_cases": [
+    {"case_id": "complete_order", "actions": ["promote_objects", "verify_common_reachability", "finalize_worktree_index", "finalize_worktree_head", "create_task_ref", "publish_evidence", "remove_worktree"], "expected_result": "action_order_accepted"},
+    {"case_id": "task_ref_before_head", "actions": ["promote_objects", "verify_common_reachability", "finalize_worktree_index", "create_task_ref", "finalize_worktree_head", "publish_evidence", "remove_worktree"], "expected_result": "action_order_reject"},
+    {"case_id": "evidence_before_ref", "actions": ["promote_objects", "verify_common_reachability", "finalize_worktree_index", "finalize_worktree_head", "publish_evidence", "create_task_ref", "remove_worktree"], "expected_result": "action_order_reject"},
+    {"case_id": "remove_before_evidence", "actions": ["promote_objects", "verify_common_reachability", "finalize_worktree_index", "finalize_worktree_head", "create_task_ref", "remove_worktree", "publish_evidence"], "expected_result": "action_order_reject"},
+    {"case_id": "reachability_missing", "actions": ["promote_objects", "finalize_worktree_index", "finalize_worktree_head", "create_task_ref", "publish_evidence", "remove_worktree"], "expected_result": "action_order_reject"}
+  ],
+  "cleanup_cases": [
+    {"case_id": "terminal_clean_remove", "runtime_owned": true, "job_zero_process": true, "fence_current": true, "actions_terminal": true, "evidence_terminal": true, "head_index_worktree_clean": true, "authorization_current": true, "uses_reset_hard": false, "expected_result": "remove_allowed"},
+    {"case_id": "live_job", "runtime_owned": true, "job_zero_process": false, "fence_current": true, "actions_terminal": true, "evidence_terminal": true, "head_index_worktree_clean": true, "authorization_current": true, "uses_reset_hard": false, "expected_result": "cleanup_required"},
+    {"case_id": "unknown_path", "runtime_owned": false, "job_zero_process": true, "fence_current": true, "actions_terminal": true, "evidence_terminal": true, "head_index_worktree_clean": true, "authorization_current": true, "uses_reset_hard": false, "expected_result": "cleanup_required"},
+    {"case_id": "nonterminal_action", "runtime_owned": true, "job_zero_process": true, "fence_current": true, "actions_terminal": false, "evidence_terminal": true, "head_index_worktree_clean": true, "authorization_current": true, "uses_reset_hard": false, "expected_result": "cleanup_required"},
+    {"case_id": "reset_hard", "runtime_owned": true, "job_zero_process": true, "fence_current": true, "actions_terminal": true, "evidence_terminal": true, "head_index_worktree_clean": true, "authorization_current": true, "uses_reset_hard": true, "expected_result": "reset_hard_forbidden"}
+  ]
+}
