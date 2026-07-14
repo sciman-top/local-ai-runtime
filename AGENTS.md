@@ -1,6 +1,6 @@
 # AGENTS.md - Local AI Runtime
 **项目契约**: 2.0
-**全局规则复核**: 9.55
+**全局规则复核**: 9.56
 **仓库目录**: local-ai-dev-orchestrator
 **最后更新**: 2026-07-12
 
@@ -30,10 +30,10 @@
 ## C. 门禁、证据与回滚
 - fixed order：`build -> test -> contract/invariant -> hotspot`。
 - agent-rule contract CI：`.github/workflows/agent-rule-contract.yml` 只验证规则契约，不替代本仓产品门禁。
-- build：`gate_na`，`reason=当前切片是 candidate planning 且新包尚不存在`、`alternative_verification=uv run --project ./runtime/host-orchestrator python -m pytest`、`evidence_link=docs/specs/acceptance-and-gates.md`、`expires_at=LAR-P0D-001`。
+- build：`gate_na`，`reason=当前切片是 candidate planning 且新包尚不存在`、`alternative_verification=uv run --project ./runtime/host-orchestrator python -m pytest`、`evidence_link=docs/specs/acceptance-and-gates.md`、`expires_at=LAR-P0D-001`、`recovery_condition=LAR-P0D-001 建立新包 build 入口`。
 - test：`uv run --project ./runtime/host-orchestrator python -m pytest`
 - contract/invariant：`python scripts/verify-planning-status.py`
-- hotspot：`gate_na`，`reason=当前切片不改 runtime hot path`、`alternative_verification=planning tests + verifier + selector + git diff --check`、`evidence_link=docs/specs/acceptance-and-gates.md`、`expires_at=first executable slice after LAR-P0D-001`。
+- hotspot：`gate_na`，`reason=当前切片不改 runtime hot path`、`alternative_verification=planning tests + verifier + selector + git diff --check`、`evidence_link=docs/specs/acceptance-and-gates.md`、`expires_at=first executable slice after LAR-P0D-001`、`recovery_condition=首个 executable slice 建立并执行独立 hotspot gate`。
 - quick：`python scripts/select-next-work.py`；release-style：`pwsh -NoProfile -NonInteractive -File scripts/governance/preflight.ps1 -DisableAutoCommit`。
 - 触及 `snapshots/agentbridge-20260628/` 或 Hermes 兼容面时，补跑该目录的 contract/bringup/known-good/boundary 脚本。
 - 证据：repo-level 写 `docs/change-evidence/`，task-level 写 `.ai/runs/<run_id>/<task_id>/`；记录命令、exit code、关键输出、兼容、N/A 和回滚。
