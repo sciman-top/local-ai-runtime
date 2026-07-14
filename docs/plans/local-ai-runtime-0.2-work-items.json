@@ -1003,7 +1003,7 @@
       ],
       "phase": "P0A",
       "priority": 0,
-      "status": "ready",
+      "status": "completed",
       "title": "Close process, Job, marker, fencing and adoption contracts",
       "goal": "Define atomic Job join, exact stdio-only handle inheritance, launch-state irreversibility, same-name Job fail-closed behavior and append-only fenced adoption with a mutable CAS head.",
       "depends_on": [
@@ -1074,7 +1074,7 @@
       "task_id": "LAR-P0A-007",
       "phase": "P0A",
       "priority": 0,
-      "status": "pending",
+      "status": "ready",
       "title": "Close event, journal, artifact, receipt and backup contracts",
       "goal": "Define secret-safe append-only evidence, runtime-managed external evidence, segment recovery, six-condition receipts, no-replace artifacts and anti-rollback state/evidence backup and restore.",
       "depends_on": [

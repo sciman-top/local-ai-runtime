@@ -64,6 +64,18 @@ AUTHORIZATION_SCHEMA_RELATIVE = Path(
 QUALIFICATION_FIXTURE_RELATIVE = Path(
     "docs/specs/local-ai-runtime-0.2/fixtures/qualification/manifest.json"
 )
+EXECUTION_SAFETY_POLICY_RELATIVE = Path(
+    "docs/specs/local-ai-runtime-0.2/normative/ExecutionSafetyContractSet.v1.json"
+)
+JOB_IDENTITY_SCHEMA_RELATIVE = Path(
+    "docs/specs/local-ai-runtime-0.2/schemas/JobIdentity.v1.schema.json"
+)
+FENCED_ACTION_ADOPTION_SCHEMA_RELATIVE = Path(
+    "docs/specs/local-ai-runtime-0.2/schemas/FencedActionAdoption.v1.schema.json"
+)
+EXECUTION_SAFETY_FIXTURE_RELATIVE = Path(
+    "docs/specs/local-ai-runtime-0.2/fixtures/execution-safety/manifest.json"
+)
 BASELINE_SPECIFICATION_ID = "local-ai-runtime-0.2-v3.23"
 BASELINE_FIXTURE_MANIFEST_ID = f"{BASELINE_SPECIFICATION_ID}-fixture"
 BOUND_ARTIFACTS = {
@@ -279,6 +291,24 @@ EXPECTED_QUALIFICATION_IDENTITIES = {
     "fixture": {
         "byte_count": 13387,
         "sha256": "8074b2fa4a529190d2bb9bc8cc0b5c8020adc878b899e6a2676824468d046b68",
+    },
+}
+EXPECTED_EXECUTION_SAFETY_IDENTITIES = {
+    "policy": {
+        "byte_count": 7985,
+        "sha256": "a3e8692e691cfa90fba7fc945f4bb0fa55e5380cb9cbe9550857a053cd25cb12",
+    },
+    "job_identity_schema": {
+        "byte_count": 2426,
+        "sha256": "1177012523fa82caaedd528d1b127bea920869818032d9941b94d67712aae58c",
+    },
+    "fenced_action_adoption_schema": {
+        "byte_count": 1899,
+        "sha256": "14022c997b0435a6a844125f9d5c4a38e62327ac6150560b9b82349985175787",
+    },
+    "fixture": {
+        "byte_count": 11250,
+        "sha256": "560974384c6038e980867eab577ba81bd921687614ca5f3224129942b713e70d",
     },
 }
 FORBIDDEN_PARAMETER_IDS = {
@@ -3152,6 +3182,795 @@ def verify_qualification_component(repo_root: Path) -> dict[str, Any]:
     }
 
 
+def _verify_execution_safety_identity(
+    raw: bytes, identity_key: str, reason: str, label: str
+) -> None:
+    identity = EXPECTED_EXECUTION_SAFETY_IDENTITIES[identity_key]
+    if (
+        len(raw) != identity["byte_count"]
+        or hashlib.sha256(raw).hexdigest() != identity["sha256"]
+    ):
+        raise ValidationFailure(reason, f"{label} identity mismatch")
+
+
+def _verify_execution_safety_policy(
+    policy: dict[str, Any], raw: bytes
+) -> dict[str, Any]:
+    try:
+        canonical = (
+            json.dumps(policy, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+            + "\n"
+        ).encode("utf-8")
+    except (RecursionError, TypeError, UnicodeEncodeError) as exc:
+        raise ValidationFailure(
+            "execution_safety_policy_bytes",
+            "ExecutionSafetyContractSet is not canonical UTF-8 JSON",
+        ) from exc
+    _verify_execution_safety_identity(
+        raw, "policy", "execution_safety_policy_identity", "execution safety policy"
+    )
+    if raw != canonical:
+        raise ValidationFailure(
+            "execution_safety_policy_identity",
+            "execution safety policy is not canonical",
+        )
+    envelope = _require_exact_fields(
+        policy, {"domain", "payload", "schema_version"}, "execution safety policy"
+    )
+    if (
+        envelope["domain"] != "local-ai-runtime/ExecutionSafetyContractSet/v1"
+        or type(envelope["schema_version"]) is not int
+        or envelope["schema_version"] != 1
+    ):
+        raise ValidationFailure(
+            "execution_safety_policy_drift", "execution safety envelope mismatch"
+        )
+    payload = _require_exact_fields(
+        envelope["payload"],
+        {
+            "artifact_id",
+            "artifact_version",
+            "baseline_id",
+            "child_handle_manifest",
+            "crash_recovery",
+            "effect_plan",
+            "execution_authority_union",
+            "fenced_actions",
+            "job_identity",
+            "launch_protocol",
+            "named_object_policy",
+            "process_handle_policy",
+            "safety_only",
+            "stage_launch",
+            "writer_identity",
+        },
+        "execution safety payload",
+        reason="execution_safety_policy_drift",
+    )
+    if (
+        payload["artifact_id"] != "P0A-EXECUTION"
+        or payload["artifact_version"] != "ExecutionSafetyContractSet.v1"
+        or payload["baseline_id"] != BASELINE_SPECIFICATION_ID
+    ):
+        raise ValidationFailure(
+            "execution_safety_policy_drift", "execution safety identity mismatch"
+        )
+    effect_plan = _require_object(
+        payload["effect_plan"], "EffectPlan policy", reason="execution_safety_policy_drift"
+    )
+    child_manifest = _require_object(
+        payload["child_handle_manifest"],
+        "child handle manifest policy",
+        reason="execution_safety_policy_drift",
+    )
+    writer = _require_object(
+        payload["writer_identity"],
+        "writer identity policy",
+        reason="execution_safety_policy_drift",
+    )
+    launch = _require_object(
+        payload["launch_protocol"],
+        "launch protocol",
+        reason="execution_safety_policy_drift",
+    )
+    handles = _require_object(
+        payload["process_handle_policy"],
+        "process handle policy",
+        reason="execution_safety_policy_drift",
+    )
+    authority = _require_object(
+        payload["execution_authority_union"],
+        "execution authority union",
+        reason="execution_safety_policy_drift",
+    )
+    fenced = _require_object(
+        payload["fenced_actions"],
+        "fenced action policy",
+        reason="execution_safety_policy_drift",
+    )
+    safety = _require_object(
+        payload["safety_only"],
+        "safety-only policy",
+        reason="execution_safety_policy_drift",
+    )
+    named = _require_object(
+        payload["named_object_policy"],
+        "named object policy",
+        reason="execution_safety_policy_drift",
+    )
+    crash = _require_object(
+        payload["crash_recovery"],
+        "crash recovery policy",
+        reason="execution_safety_policy_drift",
+    )
+    job_identity = _require_object(
+        payload["job_identity"],
+        "JobIdentity policy",
+        reason="execution_safety_policy_drift",
+    )
+    stage_launch = _require_object(
+        payload["stage_launch"],
+        "stage launch policy",
+        reason="execution_safety_policy_drift",
+    )
+    if (
+        effect_plan.get("effect_kinds") != ["file", "process", "git", "evidence"]
+        or effect_plan.get("record_type") != "EffectPlan"
+        or effect_plan.get("pre_execution_required") is not True
+        or child_manifest.get("record_type") != "ChildHandleManifest.v1"
+        or job_identity.get("record_type") != "JobIdentity.v1"
+        or stage_launch.get("record_type") != "StageLaunchRecord.v1"
+        or writer.get("effect_formula")
+        != "stable(task_generation,resolved_writer_intent)"
+        or writer.get("effect_id_field") != "writer_effect_id"
+        or writer.get("launch_formula") != "unique(writer_effect_id,attempt_id)"
+        or writer.get("launch_id_field") != "writer_launch_id"
+        or writer.get("restart_after_execution_commit") is not False
+        or launch.get("mandatory_attributes")
+        != ["PROC_THREAD_ATTRIBUTE_JOB_LIST", "PROC_THREAD_ATTRIBUTE_HANDLE_LIST"]
+        or launch.get("resume_before_flush") is not False
+        or launch.get("db_transaction_during_create_process") is not False
+        or launch.get("writer_record_type") != "WriterLaunchRecord.v1"
+        or handles.get("policy_id") != "ProcessHandlePolicy.v1"
+        or handles.get("bInheritHandles") is not True
+        or handles.get("STARTF_USESTDHANDLES") is not True
+        or handles.get("stdio_must_exactly_match_handle_list") is not True
+        or authority.get("kinds")
+        != ["authorization_execution_grant", "safety_only_execution_record"]
+        or authority.get("record_types")
+        != {
+            "authorization_execution_grant": "AuthorizationExecutionGrant.v1",
+            "safety_only_execution_record": "SafetyOnlyExecutionRecord.v1",
+        }
+        or authority.get("single_authority_per_effect") is not True
+        or fenced.get("initial_head_kind") != "intent"
+        or fenced.get("record_types")
+        != {
+            "adoption": "FencedActionAdoption.v1",
+            "head": "FencedActionHead.v1",
+            "intent": "FencedActionIntent.v1",
+            "result": "FencedActionResult.v1",
+        }
+        or fenced.get("terminal_adoption_allowed") is not False
+        or safety.get("record_type") != "SafetyOnlyExecutionRecord.v1"
+        or safety.get("reserve_generation_exact") is not True
+        or named.get("policy_id") != "NamedObjectPolicy.v1"
+        or named.get("zero_process_reuse_allowed") is not False
+        or crash.get("authority_commit_before_resume") is not True
+        or crash.get("same_name_error_already_exists")
+        != "close_inspection_handle_and_park_job_handle_still_open"
+    ):
+        raise ValidationFailure(
+            "execution_safety_policy_drift", "execution safety boundary mismatch"
+        )
+    required_actions = {
+        "create_worktree",
+        "checkout_base",
+        "materialize_object_set",
+        "artifact_publish",
+        "promote_objects",
+        "finalize_worktree_index",
+        "finalize_worktree_head",
+        "create_task_ref",
+        "remove_worktree",
+        "terminate_job",
+        "release_emergency_reserve",
+        "rebuild_emergency_reserve",
+    }
+    if set(fenced.get("allowlist", [])) != required_actions:
+        raise ValidationFailure(
+            "execution_safety_policy_drift", "fenced action allowlist mismatch"
+        )
+    return payload
+
+
+def _content_addressed_record_id(
+    value: dict[str, Any], id_field: str, domain: str
+) -> str:
+    payload = dict(value)
+    actual = payload.pop(id_field)
+    envelope = {"domain": domain, "payload": payload, "schema_version": 1}
+    raw = (
+        json.dumps(envelope, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+        + "\n"
+    ).encode("utf-8")
+    expected = hashlib.sha256(raw).hexdigest()
+    if actual != expected:
+        raise ValidationFailure(
+            "execution_record_fingerprint", f"{id_field} does not match canonical record"
+        )
+    return expected
+
+
+JOB_IDENTITY_REQUIRED_FIELDS = {
+    "schema_version",
+    "job_identity_id",
+    "job_name",
+    "process_kind",
+    "security_policy_sha256",
+    "limit_policy_sha256",
+    "controller_pid",
+    "controller_creation_time_100ns",
+    "process_pid",
+    "process_creation_time_100ns",
+    "executable_identity_sha256",
+    "attempt_id",
+    "task_generation",
+    "fence",
+    "boot_identity_sha256",
+}
+
+
+def _validate_job_identity(value: Any) -> str:
+    if not isinstance(value, dict):
+        raise ValidationFailure("job_identity_schema", "JobIdentity must be an object")
+    fields = set(value)
+    if fields != JOB_IDENTITY_REQUIRED_FIELDS and fields != JOB_IDENTITY_REQUIRED_FIELDS | {
+        "run_uuid"
+    }:
+        raise ValidationFailure("job_identity_schema", "JobIdentity fields mismatch")
+    process_kinds = {
+        "writer",
+        "gate",
+        "git",
+        "probe",
+        "recovery_helper",
+        "controller_action_helper",
+        "safety_helper",
+    }
+    if (
+        type(value["schema_version"]) is not int
+        or value["schema_version"] != 1
+        or value["process_kind"] not in process_kinds
+        or any(
+            type(value[field]) is not int or value[field] < 1
+            for field in (
+                "controller_pid",
+                "controller_creation_time_100ns",
+                "process_pid",
+                "process_creation_time_100ns",
+                "task_generation",
+                "fence",
+            )
+        )
+        or any(
+            not _is_sha256(value[field])
+            for field in (
+                "job_identity_id",
+                "security_policy_sha256",
+                "limit_policy_sha256",
+                "executable_identity_sha256",
+                "boot_identity_sha256",
+            )
+        )
+        or not isinstance(value["attempt_id"], str)
+        or UUID_V4_PATTERN.fullmatch(value["attempt_id"]) is None
+    ):
+        raise ValidationFailure("job_identity_schema", "JobIdentity value mismatch")
+    sid_hash = r"[0-9a-f]{64}"
+    if value["process_kind"] == "writer":
+        if "run_uuid" in value:
+            raise ValidationFailure("job_identity_schema", "writer Job cannot have run UUID")
+        expected_name = re.compile(
+            rf"^Global\\LocalAIRuntime\.Job\.{sid_hash}\.{re.escape(value['attempt_id'])}\.v1$"
+        )
+    else:
+        run_uuid = value.get("run_uuid")
+        if not isinstance(run_uuid, str) or UUID_V4_PATTERN.fullmatch(run_uuid) is None:
+            raise ValidationFailure("job_identity_schema", "StageJob run UUID mismatch")
+        expected_name = re.compile(
+            rf"^Global\\LocalAIRuntime\.StageJob\.{sid_hash}\.{re.escape(value['attempt_id'])}\.{re.escape(run_uuid)}\.v1$"
+        )
+    if not isinstance(value["job_name"], str) or expected_name.fullmatch(value["job_name"]) is None:
+        raise ValidationFailure("job_identity_schema", "JobIdentity name mismatch")
+    return _content_addressed_record_id(
+        value, "job_identity_id", "local-ai-runtime/JobIdentity/v1"
+    )
+
+
+FENCED_ADOPTION_FIELDS = {
+    "schema_version",
+    "action_id",
+    "prior_head_kind",
+    "prior_head_hash",
+    "prior_fence",
+    "new_fence",
+    "takeover_proof_hash",
+    "effect_spec_hash",
+    "postcondition_verifier_id",
+    "created_at_utc",
+    "inherited_authority_kind",
+    "inherited_authority_id",
+    "inherited_authority_sha256",
+    "adoption_hash",
+}
+
+
+def _validate_fenced_action_adoption(value: Any) -> str:
+    value = _require_exact_fields(
+        value,
+        FENCED_ADOPTION_FIELDS,
+        "FencedActionAdoption",
+        reason="fenced_adoption_schema",
+    )
+    timestamp_pattern = re.compile(
+        r"^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}\.[0-9]{6}Z$"
+    )
+    if (
+        type(value["schema_version"]) is not int
+        or value["schema_version"] != 1
+        or value["prior_head_kind"] not in {"intent", "adoption"}
+        or type(value["prior_fence"]) is not int
+        or type(value["new_fence"]) is not int
+        or value["prior_fence"] < 1
+        or value["new_fence"] != value["prior_fence"] + 1
+        or value["inherited_authority_kind"]
+        not in {"authorization_execution_grant", "safety_only_execution_record"}
+        or any(
+            not isinstance(value[field], str)
+            or PUBLIC_ID_PATTERN.fullmatch(value[field]) is None
+            for field in (
+                "action_id",
+                "postcondition_verifier_id",
+                "inherited_authority_id",
+            )
+        )
+        or any(
+            not _is_sha256(value[field])
+            for field in (
+                "prior_head_hash",
+                "takeover_proof_hash",
+                "effect_spec_hash",
+                "inherited_authority_sha256",
+                "adoption_hash",
+            )
+        )
+        or not isinstance(value["created_at_utc"], str)
+        or timestamp_pattern.fullmatch(value["created_at_utc"]) is None
+    ):
+        raise ValidationFailure("fenced_adoption_schema", "adoption value mismatch")
+    try:
+        datetime.strptime(value["created_at_utc"], "%Y-%m-%dT%H:%M:%S.%fZ")
+    except ValueError as exc:
+        raise ValidationFailure(
+            "fenced_adoption_schema", "adoption timestamp is invalid"
+        ) from exc
+    return _content_addressed_record_id(
+        value, "adoption_hash", "local-ai-runtime/FencedActionAdoption/v1"
+    )
+
+
+def _evaluate_writer_identity(case: dict[str, Any]) -> str:
+    case = _require_exact_fields(
+        case,
+        {
+            "case_id",
+            "same_task_generation",
+            "same_resolved_intent",
+            "writer_execution_committed",
+            "fresh_attempt",
+            "prior_suspended_terminal",
+            "expected_result",
+        },
+        "writer identity case",
+        reason="execution_safety_fixture_schema",
+    )
+    flags = (
+        "same_task_generation",
+        "same_resolved_intent",
+        "writer_execution_committed",
+        "fresh_attempt",
+        "prior_suspended_terminal",
+    )
+    if not all(isinstance(case[field], bool) for field in flags):
+        raise ValidationFailure(
+            "execution_safety_fixture_schema", "writer identity flags must be bool"
+        )
+    if not case["same_task_generation"] or not case["same_resolved_intent"]:
+        return "new_effect_identity_required"
+    if case["writer_execution_committed"]:
+        return "writer_restart_forbidden"
+    if not case["fresh_attempt"]:
+        return "duplicate_launch_forbidden"
+    if not case["prior_suspended_terminal"]:
+        return "prior_process_unresolved"
+    return "reuse_effect_new_launch"
+
+
+def _evaluate_process_handles(case: dict[str, Any]) -> str:
+    case = _require_exact_fields(
+        case,
+        {
+            "case_id",
+            "create_suspended",
+            "inherit_handles",
+            "startf_use_std_handles",
+            "job_list_count",
+            "handle_roles",
+            "stdio_matches",
+            "parent_child_ends_closed",
+            "extra_handle_count",
+            "expected_result",
+        },
+        "process handle case",
+        reason="execution_safety_fixture_schema",
+    )
+    roles = _require_string_array(
+        case["handle_roles"],
+        "process handle roles",
+        reason="execution_safety_fixture_schema",
+    )
+    if (
+        not isinstance(case["create_suspended"], bool)
+        or not isinstance(case["inherit_handles"], bool)
+        or not isinstance(case["startf_use_std_handles"], bool)
+        or not isinstance(case["stdio_matches"], bool)
+        or not isinstance(case["parent_child_ends_closed"], bool)
+        or type(case["job_list_count"]) is not int
+        or type(case["extra_handle_count"]) is not int
+        or case["job_list_count"] < 0
+        or case["extra_handle_count"] < 0
+    ):
+        raise ValidationFailure(
+            "execution_safety_fixture_schema", "process handle case mismatch"
+        )
+    if not case["create_suspended"]:
+        return "create_suspended_required"
+    if case["job_list_count"] != 1:
+        return "atomic_job_join_required"
+    if not roles:
+        return "handle_list_required"
+    if not case["inherit_handles"]:
+        return "inherit_handles_required"
+    if not case["startf_use_std_handles"]:
+        return "startf_use_stdhandles_required"
+    if case["extra_handle_count"]:
+        return "ambient_handle_rejected"
+    if roles != ["stdin_read", "stdout_write", "stderr_write"] or not case[
+        "stdio_matches"
+    ]:
+        return "exact_stdio_rejected"
+    if not case["parent_child_ends_closed"]:
+        return "pre_resume_close_required"
+    return "launch_ready"
+
+
+def _evaluate_execution_authority(case: dict[str, Any]) -> str:
+    case = _require_exact_fields(
+        case,
+        {
+            "case_id",
+            "subject_kind",
+            "authority_kind",
+            "basis_kind",
+            "effect_exact",
+            "expected_result",
+        },
+        "execution authority case",
+        reason="execution_safety_fixture_schema",
+    )
+    if not isinstance(case["effect_exact"], bool):
+        raise ValidationFailure(
+            "execution_safety_fixture_schema", "authority effect_exact must be bool"
+        )
+    if case["authority_kind"] == "none":
+        return "unauthorized_side_effect"
+    if not case["effect_exact"]:
+        return "effect_identity_mismatch"
+    inherited_forbidden = {
+        "writer",
+        "gate_run",
+        "model_decision",
+        "qualification",
+        "auth_refresh",
+        "arbitrary_command",
+    }
+    if (
+        case["authority_kind"] == "authorization_execution_grant"
+        and case["basis_kind"] == "inherited_fenced_action"
+        and case["subject_kind"] in inherited_forbidden
+    ):
+        return "inherited_basis_forbidden"
+    safety_allowed = {
+        "terminate_job",
+        "drain_pipe",
+        "seal_journal",
+        "readonly_reconcile",
+        "durable_recovery_handoff",
+        "release_emergency_reserve",
+        "rebuild_emergency_reserve",
+        "host_preserving_helper",
+    }
+    if case["authority_kind"] == "safety_only_execution_record":
+        if case["basis_kind"] != "safety_only":
+            return "authority_basis_mismatch"
+        if case["subject_kind"] not in safety_allowed:
+            return "safety_effect_forbidden"
+        return "authority_accepted"
+    if case["authority_kind"] != "authorization_execution_grant" or case[
+        "basis_kind"
+    ] not in {"active_authorization", "inherited_fenced_action"}:
+        return "authority_basis_mismatch"
+    return "authority_accepted"
+
+
+def _evaluate_adoption(case: dict[str, Any]) -> str:
+    case = _require_exact_fields(
+        case,
+        {
+            "case_id",
+            "prior_head_kind",
+            "prior_head_present",
+            "head_matches",
+            "effect_matches",
+            "authority_matches",
+            "terminal",
+            "expected_result",
+        },
+        "adoption case",
+        reason="execution_safety_fixture_schema",
+    )
+    flags = (
+        "prior_head_present",
+        "head_matches",
+        "effect_matches",
+        "authority_matches",
+        "terminal",
+    )
+    if (
+        case["prior_head_kind"] not in {"intent", "adoption"}
+        or not all(isinstance(case[field], bool) for field in flags)
+    ):
+        raise ValidationFailure(
+            "execution_safety_fixture_schema", "adoption case mismatch"
+        )
+    if not case["prior_head_present"]:
+        return "prior_head_required"
+    if case["terminal"]:
+        return "terminal_adoption_forbidden"
+    if not case["head_matches"]:
+        return "head_cas_conflict"
+    if not case["effect_matches"]:
+        return "effect_mismatch_park"
+    if not case["authority_matches"]:
+        return "authority_mismatch_park"
+    return "adoption_cas_append"
+
+
+def _evaluate_crash_window(case: dict[str, Any]) -> str:
+    case = _require_exact_fields(
+        case,
+        {
+            "case_id",
+            "exit_kind",
+            "process_created_suspended",
+            "execution_committed",
+            "resume_attempted",
+            "same_name_error",
+            "stdout_eof",
+            "stderr_eof",
+            "expected_result",
+        },
+        "crash window case",
+        reason="execution_safety_fixture_schema",
+    )
+    flags = (
+        "process_created_suspended",
+        "execution_committed",
+        "resume_attempted",
+        "same_name_error",
+        "stdout_eof",
+        "stderr_eof",
+    )
+    if not all(isinstance(case[field], bool) for field in flags):
+        raise ValidationFailure(
+            "execution_safety_fixture_schema", "crash flags must be bool"
+        )
+    if case["exit_kind"] not in {
+        "pre_resume_crash",
+        "normal_exit",
+        "kill",
+        "response_loss",
+        "not_started",
+        "controller_crash",
+    }:
+        raise ValidationFailure(
+            "execution_safety_fixture_schema", "crash exit kind mismatch"
+        )
+    if case["same_name_error"]:
+        return "close_handle_and_park"
+    if case["process_created_suspended"] and not case["execution_committed"]:
+        if case["resume_attempted"]:
+            return "resume_before_commit_forbidden"
+        return "terminate_suspended_record_not_executed"
+    if case["execution_committed"] and case["resume_attempted"]:
+        if not case["stdout_eof"] or not case["stderr_eof"]:
+            return "recovery_pending_eof"
+        if case["exit_kind"] in {"normal_exit", "kill", "controller_crash"}:
+            return "terminal_eof_observed"
+        return "track_exact_process_no_restart"
+    return "park_ambiguous_launch"
+
+
+def _verify_execution_case_matrix(
+    fixture: dict[str, Any],
+    field: str,
+    expected_ids: set[str],
+    evaluator: Callable[[dict[str, Any]], str],
+) -> int:
+    cases = _fixture_cases(fixture, field, expected_ids)
+    for case in cases:
+        actual = evaluator(case)
+        if actual != case.get("expected_result"):
+            raise ValidationFailure("fixture_result_mismatch", str(case.get("case_id")))
+    return len(cases)
+
+
+def verify_execution_safety_component(repo_root: Path) -> dict[str, Any]:
+    policy, policy_raw = _load_json_object(repo_root / EXECUTION_SAFETY_POLICY_RELATIVE)
+    _, job_schema_raw = _load_json_object(repo_root / JOB_IDENTITY_SCHEMA_RELATIVE)
+    _, adoption_schema_raw = _load_json_object(
+        repo_root / FENCED_ACTION_ADOPTION_SCHEMA_RELATIVE
+    )
+    fixture, fixture_raw = _load_json_object(repo_root / EXECUTION_SAFETY_FIXTURE_RELATIVE)
+    _verify_execution_safety_policy(policy, policy_raw)
+    _verify_execution_safety_identity(
+        job_schema_raw,
+        "job_identity_schema",
+        "execution_safety_schema_drift",
+        "JobIdentity schema",
+    )
+    _verify_execution_safety_identity(
+        adoption_schema_raw,
+        "fenced_action_adoption_schema",
+        "execution_safety_schema_drift",
+        "FencedActionAdoption schema",
+    )
+    _verify_execution_safety_identity(
+        fixture_raw,
+        "fixture",
+        "execution_safety_fixture_drift",
+        "execution safety fixture",
+    )
+    fixture = _require_exact_fields(
+        fixture,
+        {
+            "fixture_id",
+            "schema_version",
+            "policy_path",
+            "job_identity_schema_path",
+            "fenced_action_adoption_schema_path",
+            "job_identity_positive",
+            "fenced_action_adoption_positive",
+            "writer_identity_cases",
+            "process_handle_cases",
+            "execution_authority_cases",
+            "adoption_cases",
+            "crash_window_cases",
+        },
+        "execution safety fixture",
+        reason="execution_safety_fixture_schema",
+    )
+    if (
+        fixture["fixture_id"] != "ExecutionSafetyContractSet.v1.contract-fixtures"
+        or type(fixture["schema_version"]) is not int
+        or fixture["schema_version"] != 1
+        or fixture["policy_path"]
+        != str(EXECUTION_SAFETY_POLICY_RELATIVE).replace("\\", "/")
+        or fixture["job_identity_schema_path"]
+        != str(JOB_IDENTITY_SCHEMA_RELATIVE).replace("\\", "/")
+        or fixture["fenced_action_adoption_schema_path"]
+        != str(FENCED_ACTION_ADOPTION_SCHEMA_RELATIVE).replace("\\", "/")
+    ):
+        raise ValidationFailure(
+            "execution_safety_fixture_schema", "execution fixture identity mismatch"
+        )
+    job_identity_id = _validate_job_identity(fixture["job_identity_positive"])
+    adoption_hash = _validate_fenced_action_adoption(
+        fixture["fenced_action_adoption_positive"]
+    )
+    counts = {
+        "writer_identity": _verify_execution_case_matrix(
+            fixture,
+            "writer_identity_cases",
+            {
+                "first_writer_launch",
+                "execution_committed_restart",
+                "same_attempt_second_launch",
+                "prior_suspended_unresolved",
+            },
+            _evaluate_writer_identity,
+        ),
+        "process_handle": _verify_execution_case_matrix(
+            fixture,
+            "process_handle_cases",
+            {
+                "exact_stdio",
+                "missing_create_suspended",
+                "missing_job_list",
+                "missing_handle_list",
+                "inherit_handles_false",
+                "startf_missing",
+                "duplicate_stdio_role",
+                "ambient_extra_handle",
+                "parent_child_end_open",
+            },
+            _evaluate_process_handles,
+        ),
+        "execution_authority": _verify_execution_case_matrix(
+            fixture,
+            "execution_authority_cases",
+            {
+                "writer_active_authorization",
+                "controller_inherited_grant",
+                "writer_inherited_forbidden",
+                "terminate_safety_record",
+                "cleanup_safety_forbidden",
+                "missing_authority",
+            },
+            _evaluate_execution_authority,
+        ),
+        "adoption": _verify_execution_case_matrix(
+            fixture,
+            "adoption_cases",
+            {
+                "first_adoption_from_intent",
+                "later_adoption_from_adoption",
+                "null_prior_head",
+                "forked_prior_head",
+                "effect_mismatch",
+                "authority_mismatch",
+                "terminal_action",
+            },
+            _evaluate_adoption,
+        ),
+        "crash_window": _verify_execution_case_matrix(
+            fixture,
+            "crash_window_cases",
+            {
+                "crash_before_authority_commit",
+                "normal_exit_eof",
+                "kill_exit_eof",
+                "response_lost_after_resume",
+                "same_name_job_collision",
+                "controller_crash_eof",
+                "controller_crash_pipe_not_drained",
+            },
+            _evaluate_crash_window,
+        ),
+    }
+    return {
+        "status": "pass",
+        "component": "execution-safety",
+        "artifact_version": "ExecutionSafetyContractSet.v1",
+        "artifact_byte_count": len(policy_raw),
+        "artifact_sha256": hashlib.sha256(policy_raw).hexdigest(),
+        "job_identity_fingerprint": job_identity_id,
+        "adoption_fingerprint": adoption_hash,
+        "fixture_counts": counts,
+    }
+
+
 def _parse_args(argv: list[str]) -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", type=Path, default=Path(__file__).resolve().parents[1])
@@ -3163,6 +3982,7 @@ def _parse_args(argv: list[str]) -> argparse.Namespace:
             "canonicalization",
             "product-submission",
             "qualification",
+            "execution-safety",
             "package",
         ],
     )
@@ -3187,6 +4007,9 @@ def main(argv: list[str] | None = None) -> int:
         elif args.component == "qualification":
             payload = verify_qualification_component(root)
             exit_code = 0
+        elif args.component == "execution-safety":
+            payload = verify_execution_safety_component(root)
+            exit_code = 0
         else:
             payload = {
                 "status": "incomplete",
@@ -3196,6 +4019,7 @@ def main(argv: list[str] | None = None) -> int:
                     "canonicalization",
                     "product_submission",
                     "qualification",
+                    "execution_safety",
                 ],
                 "requested_component": args.component or "package",
             }

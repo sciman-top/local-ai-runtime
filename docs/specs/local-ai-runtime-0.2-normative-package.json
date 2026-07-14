@@ -158,7 +158,9 @@
       "kind": "process_job_fencing_bundle",
       "artifact_version": "ExecutionSafetyContractSet.v1",
       "path": "docs/specs/local-ai-runtime-0.2/normative/ExecutionSafetyContractSet.v1.json",
-      "status": "missing",
+      "status": "present",
+      "byte_count": 7985,
+      "sha256": "a3e8692e691cfa90fba7fc945f4bb0fa55e5380cb9cbe9550857a053cd25cb12",
       "required_for_approval": true,
       "producer_task_id": "LAR-P0A-006",
       "verification": "schema_transition_crash_fixtures"
@@ -255,7 +257,6 @@
     }
   ],
   "missing_artifact_ids": [
-    "P0A-EXECUTION",
     "P0A-EVIDENCE",
     "P0A-GIT",
     "P0A-STATE",

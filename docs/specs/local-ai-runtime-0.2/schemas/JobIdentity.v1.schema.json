@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local-ai-runtime.invalid/schemas/JobIdentity.v1.schema.json",
+  "title": "JobIdentity.v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "job_identity_id",
+    "job_name",
+    "process_kind",
+    "security_policy_sha256",
+    "limit_policy_sha256",
+    "controller_pid",
+    "controller_creation_time_100ns",
+    "process_pid",
+    "process_creation_time_100ns",
+    "executable_identity_sha256",
+    "attempt_id",
+    "task_generation",
+    "fence",
+    "boot_identity_sha256"
+  ],
+  "properties": {
+    "schema_version": {"const": 1},
+    "job_identity_id": {"$ref": "#/$defs/sha256"},
+    "job_name": {"type": "string", "minLength": 1, "maxLength": 260, "pattern": "^Global\\\\LocalAIRuntime\\.(Job|StageJob)\\.[0-9a-f]{64}\\.[0-9a-f-]+(?:\\.[0-9a-f-]+)?\\.v1$"},
+    "process_kind": {"enum": ["writer", "gate", "git", "probe", "recovery_helper", "controller_action_helper", "safety_helper"]},
+    "run_uuid": {"$ref": "#/$defs/uuid_v4"},
+    "security_policy_sha256": {"$ref": "#/$defs/sha256"},
+    "limit_policy_sha256": {"$ref": "#/$defs/sha256"},
+    "controller_pid": {"type": "integer", "minimum": 1},
+    "controller_creation_time_100ns": {"type": "integer", "minimum": 1},
+    "process_pid": {"type": "integer", "minimum": 1},
+    "process_creation_time_100ns": {"type": "integer", "minimum": 1},
+    "executable_identity_sha256": {"$ref": "#/$defs/sha256"},
+    "attempt_id": {"$ref": "#/$defs/uuid_v4"},
+    "task_generation": {"type": "integer", "minimum": 1},
+    "fence": {"type": "integer", "minimum": 1},
+    "boot_identity_sha256": {"$ref": "#/$defs/sha256"}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"process_kind": {"const": "writer"}}, "required": ["process_kind"]},
+      "then": {"not": {"required": ["run_uuid"]}}
+    },
+    {
+      "if": {"properties": {"process_kind": {"not": {"const": "writer"}}}, "required": ["process_kind"]},
+      "then": {"required": ["run_uuid"]}
+    }
+  ],
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "uuid_v4": {"type": "string", "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"}
+  },
+  "x-local-ai-runtime-job-identity-id": {
+    "domain": "local-ai-runtime/JobIdentity/v1",
+    "hash": "lowercase_sha256_of_canonical_envelope_excluding_job_identity_id"
+  }
+}

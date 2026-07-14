@@ -340,8 +340,8 @@ def test_planning_verifier_accepts_truthful_candidate_state() -> None:
     assert payload["status"] == "pass"
     assert payload["baseline_id"] == "local-ai-runtime-0.2-v3.23"
     assert payload["approval_active"] is False
-    assert payload["missing_artifact_count"] == 10
-    assert payload["current_work_item_id"] == "LAR-P0A-006"
+    assert payload["missing_artifact_count"] == 9
+    assert payload["current_work_item_id"] == "LAR-P0A-007"
     work_items = json.loads(WORK_ITEMS_PATH.read_text(encoding="utf-8"))["work_items"]
     task_ids = {item["task_id"] for item in work_items}
     assert payload["work_item_count"] == len(work_items) == 65
@@ -364,7 +364,7 @@ def test_planning_selector_returns_baseline_closure_without_preflight() -> None:
     assert completed.returncode == 0, completed.stderr
     payload = json.loads(completed.stdout)
     assert payload["next_action"] == "close_baseline_normative_package_first"
-    assert payload["current_work_item_id"] == "LAR-P0A-006"
+    assert payload["current_work_item_id"] == "LAR-P0A-007"
     assert payload["side_effects_performed"] is False
     assert payload["preflight_run"] is False
 
@@ -376,10 +376,10 @@ def test_native_thin_path_evaluation_preserves_v323_and_seals_artifacts() -> Non
     assert evaluation["status"] == "preserve_v3_23_semantics"
     assert evaluation["decision"] == "preserve_v3_23_semantics"
     assert status["current_work_item"] == {
-        "task_id": "LAR-P0A-006",
+        "task_id": "LAR-P0A-007",
         "selector_action": "close_baseline_normative_package_first",
         "status": "ready",
-        "reason": "LAR-P0A-005 materialized and verified QualificationContractSet.v1, exhaustive sensitive input discovery, immutable environment/sandbox bindings, keyring-only auth, reusable Authorization, exact effect grants and continuation without touching live auth or sandbox state. Close execution, fencing, suspended process, handle and adoption contracts.",
+        "reason": "LAR-P0A-006 materialized and verified ExecutionSafetyContractSet.v1, stable writer effect/launch identity, suspended atomic Job join, exact stdio handles, execution-commit barriers, closed authority union and non-forking adoption without starting a process or opening a Job. Close secret-safe event, journal, artifact, receipt and anti-rollback backup contracts.",
     }
     assert evaluation["result_ref"].endswith("native-thin-path-capability-results.v1.json")
     assert evaluation["decision_ref"].endswith("native-thin-path-capability-decision.v1.json")
@@ -1032,6 +1032,7 @@ def test_baseline_verifier_skeleton_fails_closed_for_full_package() -> None:
         "canonicalization",
         "product_submission",
         "qualification",
+        "execution_safety",
     ]
 
 
@@ -1091,8 +1092,8 @@ def test_stable_baseline_entry_is_non_normative_and_targets_frozen_candidate() -
         "target_sha256": baseline["sha256"],
         "approval_input": False,
         "maximum_byte_count": 4096,
-        "byte_count": 3490,
-        "sha256": "246dc972db92b883584172bd273e4df01b6ed9b8e881a8e2111b95401b6ff53d",
+        "byte_count": 3927,
+        "sha256": "ba0f66a7104ab45c12fb795a55374d2bf234a4ea404f04d049752ce9e7fcd16a",
     }
     assert len(raw) <= entry["maximum_byte_count"]
     assert len(raw) == entry["byte_count"]
@@ -1585,6 +1586,18 @@ def test_inventory_versions_and_manifest_review_order_are_closed() -> None:
     assert by_id["P0A-SOURCE"]["byte_count"] == 188325
     assert by_id["P0A-LINEAGE"]["artifact_version"] == "BaselineLineage.v2"
     assert by_id["P0A-LINEAGE"]["producer_task_id"] == "LAR-P0A-REBASELINE-V323"
+    assert by_id["P0A-EXECUTION"] == {
+        "artifact_id": "P0A-EXECUTION",
+        "kind": "process_job_fencing_bundle",
+        "artifact_version": "ExecutionSafetyContractSet.v1",
+        "path": "docs/specs/local-ai-runtime-0.2/normative/ExecutionSafetyContractSet.v1.json",
+        "status": "present",
+        "byte_count": 7985,
+        "sha256": "a3e8692e691cfa90fba7fc945f4bb0fa55e5380cb9cbe9550857a053cd25cb12",
+        "required_for_approval": True,
+        "producer_task_id": "LAR-P0A-006",
+        "verification": "schema_transition_crash_fixtures",
+    }
     assert by_id["P0A-MANIFEST"]["producer_task_id"] == "LAR-P0A-013"
     assert by_id["P0A-REVIEW"]["producer_task_id"] == "LAR-P0A-013"
     assert artifact_ids.index("P0A-VERIFIER") < artifact_ids.index("P0A-MANIFEST")
@@ -1633,6 +1646,8 @@ def test_machine_work_items_are_a_deterministic_v323_dag() -> None:
     assert "releases LAR-P0A-002" in evaluation_acceptance
     assert "releases LAR-P0A-003" not in evaluation_acceptance
     assert by_id["LAR-P0A-002"]["depends_on"] == ["LAR-P0A-EVAL-002"]
+    assert by_id["LAR-P0A-006"]["status"] == "completed"
+    assert by_id["LAR-P0A-007"]["status"] == "ready"
     assert by_id["LAR-P4-001"]["next_task_ids"] == ["LAR-P4-002", "LAR-P5-001"]
     assert by_id["LAR-P4-002"]["depends_on"] == ["LAR-P4-001"]
     assert by_id["LAR-P5-001"]["depends_on"] == ["LAR-P4-001"]

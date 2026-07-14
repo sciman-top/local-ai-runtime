@@ -1,0 +1,83 @@
+{
+  "fixture_id": "ExecutionSafetyContractSet.v1.contract-fixtures",
+  "schema_version": 1,
+  "policy_path": "docs/specs/local-ai-runtime-0.2/normative/ExecutionSafetyContractSet.v1.json",
+  "job_identity_schema_path": "docs/specs/local-ai-runtime-0.2/schemas/JobIdentity.v1.schema.json",
+  "fenced_action_adoption_schema_path": "docs/specs/local-ai-runtime-0.2/schemas/FencedActionAdoption.v1.schema.json",
+  "job_identity_positive": {
+    "schema_version": 1,
+    "job_identity_id": "7772f4a67c399140f7e31e3f950d0e88434eaf4871a952335c7253e50e5a1d6e",
+    "job_name": "Global\\LocalAIRuntime.Job.1111111111111111111111111111111111111111111111111111111111111111.11111111-1111-4111-8111-111111111111.v1",
+    "process_kind": "writer",
+    "security_policy_sha256": "2222222222222222222222222222222222222222222222222222222222222222",
+    "limit_policy_sha256": "3333333333333333333333333333333333333333333333333333333333333333",
+    "controller_pid": 100,
+    "controller_creation_time_100ns": 1000,
+    "process_pid": 200,
+    "process_creation_time_100ns": 2000,
+    "executable_identity_sha256": "4444444444444444444444444444444444444444444444444444444444444444",
+    "attempt_id": "11111111-1111-4111-8111-111111111111",
+    "task_generation": 7,
+    "fence": 3,
+    "boot_identity_sha256": "5555555555555555555555555555555555555555555555555555555555555555"
+  },
+  "fenced_action_adoption_positive": {
+    "schema_version": 1,
+    "action_id": "action-1",
+    "prior_head_kind": "intent",
+    "prior_head_hash": "1111111111111111111111111111111111111111111111111111111111111111",
+    "prior_fence": 3,
+    "new_fence": 4,
+    "takeover_proof_hash": "2222222222222222222222222222222222222222222222222222222222222222",
+    "effect_spec_hash": "3333333333333333333333333333333333333333333333333333333333333333",
+    "postcondition_verifier_id": "verify-worktree-v1",
+    "created_at_utc": "2026-07-14T00:00:00.000000Z",
+    "inherited_authority_kind": "authorization_execution_grant",
+    "inherited_authority_id": "grant-1",
+    "inherited_authority_sha256": "4444444444444444444444444444444444444444444444444444444444444444",
+    "adoption_hash": "b985e15ade2b0bbeb4cfbbe9fd33e2c48785d8314bd6cd0f7a22cdc4dd0e7002"
+  },
+  "writer_identity_cases": [
+    {"case_id": "first_writer_launch", "same_task_generation": true, "same_resolved_intent": true, "writer_execution_committed": false, "fresh_attempt": true, "prior_suspended_terminal": true, "expected_result": "reuse_effect_new_launch"},
+    {"case_id": "execution_committed_restart", "same_task_generation": true, "same_resolved_intent": true, "writer_execution_committed": true, "fresh_attempt": true, "prior_suspended_terminal": true, "expected_result": "writer_restart_forbidden"},
+    {"case_id": "same_attempt_second_launch", "same_task_generation": true, "same_resolved_intent": true, "writer_execution_committed": false, "fresh_attempt": false, "prior_suspended_terminal": true, "expected_result": "duplicate_launch_forbidden"},
+    {"case_id": "prior_suspended_unresolved", "same_task_generation": true, "same_resolved_intent": true, "writer_execution_committed": false, "fresh_attempt": true, "prior_suspended_terminal": false, "expected_result": "prior_process_unresolved"}
+  ],
+  "process_handle_cases": [
+    {"case_id": "exact_stdio", "create_suspended": true, "inherit_handles": true, "startf_use_std_handles": true, "job_list_count": 1, "handle_roles": ["stdin_read", "stdout_write", "stderr_write"], "stdio_matches": true, "parent_child_ends_closed": true, "extra_handle_count": 0, "expected_result": "launch_ready"},
+    {"case_id": "missing_create_suspended", "create_suspended": false, "inherit_handles": true, "startf_use_std_handles": true, "job_list_count": 1, "handle_roles": ["stdin_read", "stdout_write", "stderr_write"], "stdio_matches": true, "parent_child_ends_closed": true, "extra_handle_count": 0, "expected_result": "create_suspended_required"},
+    {"case_id": "missing_job_list", "create_suspended": true, "inherit_handles": true, "startf_use_std_handles": true, "job_list_count": 0, "handle_roles": ["stdin_read", "stdout_write", "stderr_write"], "stdio_matches": true, "parent_child_ends_closed": true, "extra_handle_count": 0, "expected_result": "atomic_job_join_required"},
+    {"case_id": "missing_handle_list", "create_suspended": true, "inherit_handles": true, "startf_use_std_handles": true, "job_list_count": 1, "handle_roles": [], "stdio_matches": false, "parent_child_ends_closed": true, "extra_handle_count": 0, "expected_result": "handle_list_required"},
+    {"case_id": "inherit_handles_false", "create_suspended": true, "inherit_handles": false, "startf_use_std_handles": true, "job_list_count": 1, "handle_roles": ["stdin_read", "stdout_write", "stderr_write"], "stdio_matches": true, "parent_child_ends_closed": true, "extra_handle_count": 0, "expected_result": "inherit_handles_required"},
+    {"case_id": "startf_missing", "create_suspended": true, "inherit_handles": true, "startf_use_std_handles": false, "job_list_count": 1, "handle_roles": ["stdin_read", "stdout_write", "stderr_write"], "stdio_matches": true, "parent_child_ends_closed": true, "extra_handle_count": 0, "expected_result": "startf_use_stdhandles_required"},
+    {"case_id": "duplicate_stdio_role", "create_suspended": true, "inherit_handles": true, "startf_use_std_handles": true, "job_list_count": 1, "handle_roles": ["stdin_read", "stdout_write", "stdout_write"], "stdio_matches": false, "parent_child_ends_closed": true, "extra_handle_count": 0, "expected_result": "exact_stdio_rejected"},
+    {"case_id": "ambient_extra_handle", "create_suspended": true, "inherit_handles": true, "startf_use_std_handles": true, "job_list_count": 1, "handle_roles": ["stdin_read", "stdout_write", "stderr_write"], "stdio_matches": true, "parent_child_ends_closed": true, "extra_handle_count": 1, "expected_result": "ambient_handle_rejected"},
+    {"case_id": "parent_child_end_open", "create_suspended": true, "inherit_handles": true, "startf_use_std_handles": true, "job_list_count": 1, "handle_roles": ["stdin_read", "stdout_write", "stderr_write"], "stdio_matches": true, "parent_child_ends_closed": false, "extra_handle_count": 0, "expected_result": "pre_resume_close_required"}
+  ],
+  "execution_authority_cases": [
+    {"case_id": "writer_active_authorization", "subject_kind": "writer", "authority_kind": "authorization_execution_grant", "basis_kind": "active_authorization", "effect_exact": true, "expected_result": "authority_accepted"},
+    {"case_id": "controller_inherited_grant", "subject_kind": "controller_action_helper", "authority_kind": "authorization_execution_grant", "basis_kind": "inherited_fenced_action", "effect_exact": true, "expected_result": "authority_accepted"},
+    {"case_id": "writer_inherited_forbidden", "subject_kind": "writer", "authority_kind": "authorization_execution_grant", "basis_kind": "inherited_fenced_action", "effect_exact": true, "expected_result": "inherited_basis_forbidden"},
+    {"case_id": "terminate_safety_record", "subject_kind": "terminate_job", "authority_kind": "safety_only_execution_record", "basis_kind": "safety_only", "effect_exact": true, "expected_result": "authority_accepted"},
+    {"case_id": "cleanup_safety_forbidden", "subject_kind": "cleanup", "authority_kind": "safety_only_execution_record", "basis_kind": "safety_only", "effect_exact": true, "expected_result": "safety_effect_forbidden"},
+    {"case_id": "missing_authority", "subject_kind": "git", "authority_kind": "none", "basis_kind": "none", "effect_exact": true, "expected_result": "unauthorized_side_effect"}
+  ],
+  "adoption_cases": [
+    {"case_id": "first_adoption_from_intent", "prior_head_kind": "intent", "prior_head_present": true, "head_matches": true, "effect_matches": true, "authority_matches": true, "terminal": false, "expected_result": "adoption_cas_append"},
+    {"case_id": "later_adoption_from_adoption", "prior_head_kind": "adoption", "prior_head_present": true, "head_matches": true, "effect_matches": true, "authority_matches": true, "terminal": false, "expected_result": "adoption_cas_append"},
+    {"case_id": "null_prior_head", "prior_head_kind": "intent", "prior_head_present": false, "head_matches": true, "effect_matches": true, "authority_matches": true, "terminal": false, "expected_result": "prior_head_required"},
+    {"case_id": "forked_prior_head", "prior_head_kind": "adoption", "prior_head_present": true, "head_matches": false, "effect_matches": true, "authority_matches": true, "terminal": false, "expected_result": "head_cas_conflict"},
+    {"case_id": "effect_mismatch", "prior_head_kind": "intent", "prior_head_present": true, "head_matches": true, "effect_matches": false, "authority_matches": true, "terminal": false, "expected_result": "effect_mismatch_park"},
+    {"case_id": "authority_mismatch", "prior_head_kind": "intent", "prior_head_present": true, "head_matches": true, "effect_matches": true, "authority_matches": false, "terminal": false, "expected_result": "authority_mismatch_park"},
+    {"case_id": "terminal_action", "prior_head_kind": "adoption", "prior_head_present": true, "head_matches": true, "effect_matches": true, "authority_matches": true, "terminal": true, "expected_result": "terminal_adoption_forbidden"}
+  ],
+  "crash_window_cases": [
+    {"case_id": "crash_before_authority_commit", "exit_kind": "pre_resume_crash", "process_created_suspended": true, "execution_committed": false, "resume_attempted": false, "same_name_error": false, "stdout_eof": false, "stderr_eof": false, "expected_result": "terminate_suspended_record_not_executed"},
+    {"case_id": "normal_exit_eof", "exit_kind": "normal_exit", "process_created_suspended": true, "execution_committed": true, "resume_attempted": true, "same_name_error": false, "stdout_eof": true, "stderr_eof": true, "expected_result": "terminal_eof_observed"},
+    {"case_id": "kill_exit_eof", "exit_kind": "kill", "process_created_suspended": true, "execution_committed": true, "resume_attempted": true, "same_name_error": false, "stdout_eof": true, "stderr_eof": true, "expected_result": "terminal_eof_observed"},
+    {"case_id": "response_lost_after_resume", "exit_kind": "response_loss", "process_created_suspended": true, "execution_committed": true, "resume_attempted": true, "same_name_error": false, "stdout_eof": true, "stderr_eof": true, "expected_result": "track_exact_process_no_restart"},
+    {"case_id": "same_name_job_collision", "exit_kind": "not_started", "process_created_suspended": false, "execution_committed": false, "resume_attempted": false, "same_name_error": true, "stdout_eof": true, "stderr_eof": true, "expected_result": "close_handle_and_park"},
+    {"case_id": "controller_crash_eof", "exit_kind": "controller_crash", "process_created_suspended": true, "execution_committed": true, "resume_attempted": true, "same_name_error": false, "stdout_eof": true, "stderr_eof": true, "expected_result": "terminal_eof_observed"},
+    {"case_id": "controller_crash_pipe_not_drained", "exit_kind": "controller_crash", "process_created_suspended": true, "execution_committed": true, "resume_attempted": true, "same_name_error": false, "stdout_eof": false, "stderr_eof": true, "expected_result": "recovery_pending_eof"}
+  ]
+}

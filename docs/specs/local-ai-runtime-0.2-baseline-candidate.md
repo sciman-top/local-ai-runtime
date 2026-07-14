@@ -27,7 +27,7 @@ implementation.
 
 The v3.23 candidate remains **Request changes**. Its normative package is
 incomplete: the candidate source and v3.23-bound lineage are present, while
-ten required artifacts are still missing. The historical v3.17 and both
+nine required artifacts are still missing. The historical v3.17 and both
 conflicted v3.18 source bodies, plus the exact superseded v3.21 identity, are
 bound by `BaselineLineage.v2`. The sealed evaluation recorded an immutable
 `preserve_v3_23_semantics` decision without promoting either evaluated
@@ -41,7 +41,13 @@ TaskTemplate/BatchSubmission, permanent root replay and atomic resubmission as
 discovery, base-independent reusable qualification, immutable environment and
 sandbox binding, keyring-only auth, opaque diagnostics, reusable Authorization,
 exact effect grants and no-writer continuation as `QualificationContractSet.v1`.
-The unique ready work item is now `LAR-P0A-006`, selected as
+`LAR-P0A-006` then closed pre-execution `EffectPlan`, stable writer effect and
+attempt-scoped launch identity, suspended atomic Job join, exact stdio handle
+inheritance, execution-commit barriers, the closed Authorization/SafetyOnly
+authority union, same-name Job fail-closed behavior and non-forking fenced
+adoption as `ExecutionSafetyContractSet.v1`. No process was started and no Job
+or live runtime authority was opened or changed. The unique ready work item is
+now `LAR-P0A-007`, selected as
 `close_baseline_normative_package_first`. Baseline Approval remains
 inactive; any later semantic change still requires a v3.24 successor instead
 of rewriting this frozen target.
