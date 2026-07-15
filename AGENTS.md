@@ -1,8 +1,8 @@
 # AGENTS.md - Local AI Runtime
 **项目契约**: 2.0
-**全局规则复核**: 9.56
+**全局规则复核**: 9.57
 **仓库目录**: local-ai-dev-orchestrator
-**最后更新**: 2026-07-12
+**最后更新**: 2026-07-15
 
 ## 1. 当前落点与目标归宿
 - 当前落点：`runtime/host-orchestrator`、`.ai/state/control-plane.db` 与既有 evidence 仍是唯一现行运行事实；`local-ai-runtime-0.2-v3.23` 只是 `baseline_candidate`，尚未批准、Truth Reset 或实现。
