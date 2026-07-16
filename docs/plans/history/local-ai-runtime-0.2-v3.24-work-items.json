@@ -1,0 +1,4083 @@
+{
+  "schema_version": "local_ai_runtime_work_items.v4",
+  "plan_id": "local-ai-runtime-0.2-v3.24-implementation-work-items",
+  "baseline_id": "local-ai-runtime-0.2-v3.24",
+  "supersedes_plan": {
+    "plan_id": "local-ai-runtime-0.2-v3.23-implementation-work-items",
+    "path": "docs/plans/history/local-ai-runtime-0.2-v3.23-work-items.json",
+    "terminal_status": "superseded",
+    "last_commit": "010dede90545e71d634087c84aef75790f5949e9",
+    "byte_count": 220533,
+    "sha256": "4b146d79c0f99a9621a8f6a743e8ddab7e2eb6d19356d2152a1c7130c0adebfe"
+  },
+  "task_identity": "plan_id_plus_task_id",
+  "graph_policy": {
+    "kind": "deterministic_dag_v1",
+    "root_task_ids": [
+      "LAR-P0A-REBASELINE-V324"
+    ],
+    "ready_order": [
+      "priority_ascending",
+      "task_id_utf8_ascending"
+    ],
+    "single_selected_ready_task": true,
+    "real_writer_requires": [
+      "LAR-P1G-001",
+      "LAR-Q0-001"
+    ]
+  },
+  "planning_optimization_policy": {
+    "kind": "bounded_minimum_operator_planning_v1",
+    "execution": {
+      "atomic_closeout_unit": "one_selector_selected_work_item",
+      "selector_cardinality": 1,
+      "continuation_mode": "same_run_reselect_after_verified_atomic_closeout",
+      "default_budget": {
+        "max_completed_work_items": 3,
+        "max_elapsed_minutes": 180,
+        "stop_after_failed_closeout": true
+      },
+      "closeout_requirements": [
+        "task_acceptance_and_declared_verification_green",
+        "repo_evidence_and_planning_status_synchronized",
+        "one_rollbackable_local_commit_for_the_work_item",
+        "clean_worktree_after_commit",
+        "fresh_selector_returns_exactly_one_next_work_item"
+      ],
+      "hard_stop_conditions": [
+        "budget_exhausted",
+        "selector_not_unique_or_gate_red",
+        "dependency_or_required_authorization_missing",
+        "approval_or_phase_transition_boundary",
+        "baseline_successor_or_frozen_semantic_change_required",
+        "live_auth_provider_remote_destructive_or_external_write_boundary",
+        "unresolved_failure_or_non_current_worktree_diff"
+      ],
+      "cross_phase_continuation": false
+    },
+    "complexity": {
+      "measurement_basis": "repository_bytes_and_line_counts_v1",
+      "warning_ratio": 0.8,
+      "hard_caps": {
+        "authoritative_docs": 14,
+        "work_items": 65,
+        "contract_projections": 11,
+        "normative_artifacts": 15,
+        "root_agents_bytes": 8192,
+        "machine_plan_bytes": 230000,
+        "planning_verifier_lines": 4200,
+        "planning_governance_test_lines": 2600
+      },
+      "growth_rule": "at_or_above_warning_ratio_requires_equal_or_greater_removal_in_the_same_slice",
+      "new_surface_rule": "replace_an_existing_surface_or_create_a_successor_baseline",
+      "mechanism_rule": "require_a_reproduced_failure_and_an_existing_machine_enforcement_gap",
+      "preferred_reductions": [
+        "delete_duplicate_prose_before_adding_verifier_branches",
+        "reuse_current_authoritative_surfaces",
+        "keep_selector_policy_coarse_and_deterministic"
+      ]
+    },
+    "model_routing": {
+      "scope": "repo_agent_work_not_v324_runtime_authority",
+      "routing_key": [
+        "role",
+        "risk_tier",
+        "task_family",
+        "execution_surface",
+        "profile_generation"
+      ],
+      "active_profile_change": "none",
+      "candidate_roles": {
+        "controller_high_risk_writer": "flagship_capability_candidate",
+        "independent_reviewer": "high_reasoning_candidate",
+        "read_heavy_explorer": "fast_efficient_candidate",
+        "closed_repeatable_transform": "high_volume_candidate"
+      },
+      "qualification_rule": "candidate_guidance_never_becomes_an_active_route_without_declared_paired_evaluation_and_generation_qualification",
+      "promotion_requirements": [
+        "representative_paired_cohort",
+        "quality_security_evidence_hard_floors",
+        "task_success_and_downstream_outcome",
+        "human_minutes_p50_p95_tokens_cost_and_rework",
+        "surface_and_generation_qualification"
+      ],
+      "fallback_policy": "fail_closed_no_silent_dynamic_model_effort_or_provider_fallback",
+      "official_candidate_guidance": [
+        "gpt-5.6-sol_for_complex_open_ended_high_value_work",
+        "gpt-5.6-terra_for_everyday_or_read_heavy_speed_cost_work",
+        "gpt-5.6-luna_for_clear_repeatable_high_volume_work"
+      ]
+    },
+    "outcome_metrics": {
+      "goal_order": [
+        "safety_effect_correctness_and_evidence_hard_floors",
+        "minimize_net_operator_minutes",
+        "increase_unattended_verified_closeout_rate",
+        "reduce_native_latency_and_batch_cycle_time",
+        "reduce_attributable_token_cost_and_rework"
+      ],
+      "required_metrics": [
+        "completed_work_items_per_operator_kickoff",
+        "unattended_verified_closeout_rate",
+        "net_operator_minutes_per_success",
+        "native_latency_p50_p95",
+        "batch_verified_cycle_time_p50_p95",
+        "task_success_and_downstream_outcome_rate",
+        "token_cost_and_rework_per_success",
+        "recovery_and_rollback_success_rate",
+        "prequalified_host_to_first_dry_run_operator_minutes",
+        "first_commit_ready_pilot_operator_minutes",
+        "template_qualification_lead_time",
+        "eligible_template_coverage",
+        "operator_action_age",
+        "policy_false_block_review_rate",
+        "template_maintenance_minutes_per_success"
+      ],
+      "missing_value_rule": "unknown_or_unavailable_never_zero",
+      "generation_rule": "cross_generation_results_must_be_stratified_and_cannot_promote_a_profile",
+      "optimality_scope": "declared_role_task_family_surface_profile_generation_and_cohort_only"
+    }
+  },
+  "contract_projection_policy": {
+    "kind": "closed_contract_projection_v1",
+    "projection_identity": "plan_id_plus_projection_id",
+    "rules": [
+      "Every projection has exactly one current-plan normative producer or explicit successor carry-forward producer and at least one implementation or acceptance consumer.",
+      "Every referenced task exists in this plan generation and mechanically contains every required contract token.",
+      "A superseded-plan task result cannot satisfy a v3.24 projection unless BaselineLineage.v3 lists the exact artifact bytes in compatible_predecessor_artifacts.",
+      "Profile generation can select only capabilities jointly admitted by one RuntimeActivationBundle; unsupported capability or architecture changes cannot be enabled by configuration."
+    ],
+    "projections": [
+      {
+        "projection_id": "work_definition_task_family_v1",
+        "required_contract_tokens": [
+          "WorkDefinition",
+          "TaskFamily",
+          "FirstRunExperiencePolicy",
+          "LaunchTemplateCatalog",
+          "OperatorPresentationCatalog"
+        ],
+        "normative_producer_task_id": "LAR-P0A-004",
+        "implementation_task_ids": [
+          "LAR-P1A-002",
+          "LAR-P1F-003"
+        ],
+        "acceptance_task_ids": [
+          "LAR-P1G-001",
+          "LAR-P4-001"
+        ]
+      },
+      {
+        "projection_id": "effect_plan_v1",
+        "required_contract_tokens": [
+          "EffectPlan"
+        ],
+        "normative_producer_task_id": "LAR-P0A-REBASELINE-V324",
+        "implementation_task_ids": [
+          "LAR-P1A-002",
+          "LAR-P1B-003",
+          "LAR-P1D-003"
+        ],
+        "acceptance_task_ids": [
+          "LAR-P1G-001"
+        ]
+      },
+      {
+        "projection_id": "gate_graph_v1",
+        "required_contract_tokens": [
+          "GateGraph"
+        ],
+        "normative_producer_task_id": "LAR-P0A-010",
+        "implementation_task_ids": [
+          "LAR-P1D-006"
+        ],
+        "acceptance_task_ids": [
+          "LAR-P1E-007",
+          "LAR-P1G-001"
+        ]
+      },
+      {
+        "projection_id": "three_level_evolution_v1",
+        "required_contract_tokens": [
+          "profile_generation",
+          "capability_generation",
+          "architecture_epoch"
+        ],
+        "normative_producer_task_id": "LAR-P0A-010",
+        "implementation_task_ids": [
+          "LAR-P1A-002",
+          "LAR-P1C-001",
+          "LAR-P1C-006"
+        ],
+        "acceptance_task_ids": [
+          "LAR-P1G-001",
+          "LAR-Q0-001"
+        ]
+      },
+      {
+        "projection_id": "writer_effect_launch_identity_v1",
+        "required_contract_tokens": [
+          "writer_effect_id",
+          "writer_launch_id"
+        ],
+        "normative_producer_task_id": "LAR-P0A-REBASELINE-V324",
+        "implementation_task_ids": [
+          "LAR-P1B-003",
+          "LAR-P1D-002"
+        ],
+        "acceptance_task_ids": [
+          "LAR-P1G-001"
+        ]
+      },
+      {
+        "projection_id": "durable_operator_action_inbox_v1",
+        "required_contract_tokens": [
+          "durable_local_status_v1",
+          "qualified_windows_toast_v1"
+        ],
+        "normative_producer_task_id": "LAR-P0A-009",
+        "implementation_task_ids": [
+          "LAR-P1F-005"
+        ],
+        "acceptance_task_ids": [
+          "LAR-P1G-001"
+        ]
+      },
+      {
+        "projection_id": "git_hybrid_materialization_v1",
+        "required_contract_tokens": [
+          "git_hybrid_materialization_v1",
+          "hash-object -w",
+          "cat-file"
+        ],
+        "normative_producer_task_id": "LAR-P0A-REBASELINE-V324",
+        "implementation_task_ids": [
+          "LAR-P1E-003"
+        ],
+        "acceptance_task_ids": [
+          "LAR-P1E-007",
+          "LAR-P1G-001"
+        ]
+      },
+      {
+        "projection_id": "q0_trigger_policy_v1",
+        "required_contract_tokens": [
+          "Q0TriggerPolicy"
+        ],
+        "normative_producer_task_id": "LAR-P0A-010",
+        "implementation_task_ids": [
+          "LAR-P1C-006"
+        ],
+        "acceptance_task_ids": [
+          "LAR-P1G-001",
+          "LAR-Q0-001"
+        ]
+      },
+      {
+        "projection_id": "controlled_baseline_approval_v1",
+        "required_contract_tokens": [
+          "BaselineApprovalCommandPolicy",
+          "anti_replay_challenge"
+        ],
+        "normative_producer_task_id": "LAR-P0A-013",
+        "implementation_task_ids": [],
+        "acceptance_task_ids": [
+          "LAR-GOV-001"
+        ]
+      },
+      {
+        "projection_id": "activation_admission_chain_v1",
+        "required_contract_tokens": [
+          "RuntimeCompositionManifest",
+          "SelectedRuntimeIdentity",
+          "ActiveRuntimeIdentity"
+        ],
+        "normative_producer_task_id": "LAR-P0A-010",
+        "implementation_task_ids": [
+          "LAR-P1C-001"
+        ],
+        "acceptance_task_ids": [
+          "LAR-P1G-001",
+          "LAR-Q0-001"
+        ]
+      },
+      {
+        "projection_id": "exact_toolchain_gate_v1",
+        "required_contract_tokens": [
+          "RuntimeToolchainManifest",
+          "VerificationExecutionProfile",
+          "uv sync default exact; --inexact forbidden",
+          "--no-python-downloads",
+          "--build-constraint",
+          "--require-hashes"
+        ],
+        "normative_producer_task_id": "LAR-P0A-005",
+        "implementation_task_ids": [
+          "LAR-P0D-001",
+          "LAR-P1C-002"
+        ],
+        "acceptance_task_ids": [
+          "LAR-P1G-001",
+          "LAR-Q0-001"
+        ]
+      }
+    ]
+  },
+  "baseline_status": "baseline_candidate",
+  "blocking_stage": "baseline_approval",
+  "updated_on": "2026-07-16",
+  "status_catalog": [
+    "completed",
+    "ready",
+    "pending",
+    "blocked",
+    "in_progress",
+    "cancelled",
+    "superseded"
+  ],
+  "global_constraints": [
+    "Do not create a BaselineApprovalRecord until the v3.24 normative package is complete and a consistency review is green.",
+    "Do not change runtime/host-orchestrator behavior during P0A planning or normative closure tasks.",
+    "Do not create runtime/local-ai-runtime before Baseline Approval and the P0B Truth Reset.",
+    "Do not claim Implementation Acceptance Full Q0 P2 admission live acceptance or cutover without their durable records.",
+    "Treat every work-item result as identified by plan_id plus task_id; superseded v3.23 results transfer only through BaselineLineage.v3 compatible_predecessor_artifacts.",
+    "ProductContract.v2 must close the launch templates first-run journey and operator presentation contract before state/Q0 closure.",
+    "QualificationContractSet.v2 must prove exact sync manifest-pinned Python no Python downloads and hash-pinned build backend before implementation.",
+    "CLI App Server SDK managed Worktree and Automations are independent capability surfaces; qualification never transfers across surfaces.",
+    "Epoch 1 global capacity remains exactly one; no work item may enable a second writer or same-effect-domain concurrency.",
+    "B3 portfolio scheduling is deferred beyond 0.2; P4 remains B2/per-repo and proceeds directly to P5.",
+    "Keep each implementation slice reviewable; five primary files is a target not a mechanical failure gate.",
+    "Keep runtime source closed to approved_root_files and approved_subpackages; package-root files are bootstrap-only and all functional modules belong to approved subpackages.",
+    "Preserve user changes and roll back only the current task diff."
+  ],
+  "verification_profiles": {
+    "planning": [
+      "uv run --project ./runtime/host-orchestrator python -m pytest",
+      "python scripts/verify-planning-status.py",
+      "python scripts/select-next-work.py",
+      "pwsh -NoProfile -NonInteractive -File scripts/governance/preflight.ps1 -DisableAutoCommit",
+      "git diff --check"
+    ],
+    "new_runtime_exact_v1": {
+      "environment_preparation": [
+        "& <uv.absolute_path> sync --locked --offline --no-python-downloads --python <python.absolute_path> --project runtime/local-ai-runtime"
+      ],
+      "fixed_gate_order": [
+        "supply_chain_identity",
+        "build",
+        "test",
+        "contract_invariant",
+        "hotspot"
+      ],
+      "commands": {
+        "supply_chain_identity": [
+          "& <uv.absolute_path> lock --check --offline --no-python-downloads --python <python.absolute_path> --project runtime/local-ai-runtime",
+          "& <python.absolute_path> -I -s -E -m local_ai_runtime toolchain verify-environment --profile new_runtime_exact_v1 --json"
+        ],
+        "build": [
+          "& <uv.absolute_path> build --offline --no-python-downloads --python <python.absolute_path> --build-constraint <hashed_build_constraints.absolute_path> --require-hashes --project runtime/local-ai-runtime runtime/local-ai-runtime"
+        ],
+        "test": [
+          "& <uv.absolute_path> run --no-sync --offline --no-python-downloads --python <python.absolute_path> --project runtime/local-ai-runtime python -I -s -E -m pytest"
+        ],
+        "contract_invariant": [
+          "& <uv.absolute_path> run --no-sync --offline --no-python-downloads --python <python.absolute_path> --project runtime/local-ai-runtime python -I -s -E -m local_ai_runtime contracts verify",
+          "python scripts/verify-planning-status.py",
+          "python scripts/select-next-work.py"
+        ],
+        "hotspot": [
+          "& <uv.absolute_path> run --no-sync --offline --no-python-downloads --python <python.absolute_path> --project runtime/local-ai-runtime ruff check runtime/local-ai-runtime",
+          "& <uv.absolute_path> run --no-sync --offline --no-python-downloads --python <python.absolute_path> --project runtime/local-ai-runtime pyright --project runtime/local-ai-runtime",
+          "git diff --check"
+        ]
+      },
+      "invariants": [
+        "environment preparation is explicit, relies on uv sync default exact behavior, forbids --inexact, and is never hidden inside a validation gate",
+        "child sys.executable patch path file identity and sha256 match RuntimeToolchainManifest",
+        "installed distributions and pytest plugins contain no extraneous package",
+        "build backend is constrained by manifest-bound hashes",
+        "uv automatic Python download and PATH fallback are denied",
+        "two clean-root builds with the same SOURCE_DATE_EPOCH produce matching member manifest and artifact hashes"
+      ]
+    }
+  },
+  "runtime_source_layout": {
+    "source_root": "runtime/local-ai-runtime/src/local_ai_runtime/",
+    "approved_root_files": [
+      "__init__.py",
+      "__main__.py"
+    ],
+    "approved_subpackages": [
+      "contracts",
+      "kernel",
+      "qualification",
+      "storage",
+      "execution",
+      "recovery",
+      "git_local",
+      "operations",
+      "compat"
+    ],
+    "required_source_owners": {
+      "__init__.py": "LAR-P0D-001",
+      "__main__.py": "LAR-P0D-001",
+      "contracts/__init__.py": "LAR-P1A-001",
+      "kernel/__init__.py": "LAR-P1A-003",
+      "storage/__init__.py": "LAR-P1B-001",
+      "operations/__init__.py": "LAR-P1C-001",
+      "qualification/__init__.py": "LAR-P1C-002",
+      "execution/__init__.py": "LAR-P1D-001",
+      "recovery/__init__.py": "LAR-P1D-005",
+      "git_local/__init__.py": "LAR-P1E-001",
+      "compat/__init__.py": "LAR-P1F-006"
+    }
+  },
+  "work_items": [
+    {
+      "task_id": "LAR-P0A-REBASELINE-V324",
+      "contract_projections": {
+        "produces": [
+          "effect_plan_v1",
+          "writer_effect_launch_identity_v1",
+          "git_hybrid_materialization_v1"
+        ],
+        "implements": [],
+        "accepts": []
+      },
+      "contract_projection_tokens": [
+        "EffectPlan",
+        "writer_effect_id",
+        "writer_launch_id",
+        "git_hybrid_materialization_v1",
+        "hash-object -w",
+        "cat-file"
+      ],
+      "phase": "P0A",
+      "priority": 0,
+      "status": "completed",
+      "title": "Create and mechanically project the v3.24 product/toolchain successor",
+      "goal": "Freeze v3.23 candidate/package/plan bytes, create the self-contained v3.24 candidate and BaselineLineage.v3, carry forward only four exact compatible artifacts, replace repeated inexact uv gates with one exact verification profile, and project the successor across every authoritative planning surface without approval or runtime effects.",
+      "depends_on": [],
+      "preconditions": [
+        "v3.23 candidate bytes equal 188325 and SHA-256 80562322ebc744eda2a87a17c45f73a11982f4947c9d10e8628bb6f73ee9d5c6",
+        "v3.23 package and work-item plan archives match their frozen hashes",
+        "No active BaselineApprovalRecord exists",
+        "runtime/local-ai-runtime does not exist"
+      ],
+      "scope": {
+        "in": [
+          "v3.24 self-contained candidate and stable entry",
+          "BaselineLineage.v3 successor trigger and explicit compatible predecessor artifacts",
+          "v3.23 package/plan historical archives",
+          "PRD architecture roadmap plan backlog acceptance status selector verifier tests",
+          "Exact uv/Python/build verification profile and first-launch product design"
+        ],
+        "out": [
+          "Creating ProductContract.v2 or QualificationContractSet.v2 normative bytes",
+          "Baseline Approval Truth Reset or runtime/local-ai-runtime",
+          "Live auth provider sandbox DPAPI Batch Git publication remote push or CI retrieval"
+        ],
+        "primary_files": [
+          "docs/specs/local-ai-runtime-0.2-v3.24-baseline-candidate.md",
+          "docs/specs/local-ai-runtime-0.2/normative/BaselineLineage.v3.json",
+          "docs/specs/local-ai-runtime-0.2-normative-package.json",
+          "docs/plans/local-ai-runtime-0.2-work-items.json",
+          "docs/architecture/planning-status.json"
+        ]
+      },
+      "acceptance": [
+        "v3.23 candidate inventory and work-item plan exact bytes remain unchanged and archived",
+        "v3.24 candidate is UTF-8 no-BOM LF-only with one final LF and exact byte/hash bindings",
+        "BaselineLineage.v3 lists exactly four carried artifacts and validates their bytes with focused component verifiers",
+        "ProductContract.v1 and QualificationContractSet.v1 remain frozen v3.23 inputs and are missing for v3.24",
+        "The machine graph has at most 65 items one ready item no P4 B3 activation and a P0C/P0D join before P1",
+        "No active authoritative surface uses the predecessor inexact uv run or unconstrained cached build form",
+        "Planning verifier and selector return v3.24 plus LAR-P0A-004 with no side effects",
+        "No approval implementation Q0 P2 or live evidence is created"
+      ],
+      "verification": [
+        "python scripts/verify-local-ai-runtime-baseline.py --component canonicalization",
+        "python scripts/verify-local-ai-runtime-baseline.py --component execution-safety",
+        "python scripts/verify-local-ai-runtime-baseline.py --component evidence",
+        "python scripts/verify-local-ai-runtime-baseline.py --component deterministic-git",
+        "python scripts/verify-planning-status.py",
+        "python scripts/select-next-work.py",
+        "uv run --project ./runtime/host-orchestrator python -m pytest",
+        "pwsh -NoProfile -NonInteractive -File scripts/governance/preflight.ps1 -DisableAutoCommit",
+        "git diff --check"
+      ],
+      "evidence_path": "docs/change-evidence/20260716-local-ai-runtime-v3.24-product-toolchain-rebaseline.md",
+      "rollback": "Revert only v3.24 candidate/lineage/control-plane projections and retain the immutable v3.23 archives; never rewrite v3.23 bytes.",
+      "stop_conditions": [
+        "Any v3.23 frozen byte/hash changes",
+        "A carry-forward artifact is affected by v3.24 semantics or fails its component verifier",
+        "The successor would create approval runtime state live evidence or a second planning authority"
+      ],
+      "prohibited_actions": [
+        "Do not edit v3.23 candidate or existing v1 artifact bytes",
+        "Do not create ProductContract.v2 QualificationContractSet.v2 or final BaselineManifest in this task",
+        "Do not create runtime/local-ai-runtime or execute live probes"
+      ],
+      "next_task_ids": [
+        "LAR-P0A-004"
+      ]
+    },
+    {
+      "task_id": "LAR-P0A-004",
+      "contract_projections": {
+        "produces": [
+          "work_definition_task_family_v1"
+        ],
+        "implements": [],
+        "accepts": []
+      },
+      "contract_projection_tokens": [
+        "WorkDefinition",
+        "TaskFamily",
+        "FirstRunExperiencePolicy",
+        "LaunchTemplateCatalog",
+        "OperatorPresentationCatalog"
+      ],
+      "phase": "P0A",
+      "priority": 0,
+      "status": "completed",
+      "title": "Materialize ProductContract.v2 and the launch product experience",
+      "goal": "Create the v3.24-bound product contract for the first usable CLI journey, four closed launch templates, template promotion, human/JSON presentation, operator action inbox and product metrics while preserving the Native/Batch authority boundary.",
+      "depends_on": [
+        "LAR-P0A-REBASELINE-V324"
+      ],
+      "preconditions": [
+        "v3.24 successor projection is verified",
+        "P0A-PRODUCT is missing",
+        "No active BaselineApprovalRecord exists"
+      ],
+      "scope": {
+        "in": [
+          "FirstRunExperiencePolicy.v1",
+          "LaunchTemplateCatalog.v1 with four templates",
+          "OperatorPresentationCatalog.v1",
+          "WorkDefinition TaskFamily TaskTemplate and BatchSubmission v2 bindings",
+          "positive and negative product fixtures"
+        ],
+        "out": [
+          "Runtime implementation",
+          "Automatic template promotion",
+          "Free prompt Batch",
+          "SDK App Server managed Worktree or Automations admission"
+        ],
+        "primary_files": [
+          "docs/specs/local-ai-runtime-0.2/normative/ProductContract.v2.json",
+          "docs/specs/local-ai-runtime-0.2/schemas/FirstRunExperience.v1.schema.json",
+          "docs/specs/local-ai-runtime-0.2/catalogs/LaunchTemplateCatalog.v1.json",
+          "docs/specs/local-ai-runtime-0.2/catalogs/OperatorPresentationCatalog.v1.json",
+          "docs/specs/local-ai-runtime-0.2/fixtures/product-v2/manifest.json"
+        ]
+      },
+      "acceptance": [
+        "ProductContract.v2 binds local-ai-runtime-0.2-v3.24 and does not rewrite ProductContract.v1",
+        "The first-run journey has explicit commands inputs outputs exit codes authorities rollback and evidence locators",
+        "Exactly four launch templates define closed parameters path/effect envelope required and forbidden gates stop reasons recovery and evaluation denominator",
+        "Native Spec can create only a template candidate; promotion requires a controlled operator action",
+        "Human output is catalog-rendered from public machine state and raw model/tool output is never persisted or interpolated",
+        "Product metrics define denominator unknown handling and collection point without claiming unmeasured targets",
+        "Positive fixtures validate and every free-prompt effect-expansion promotion-bypass or secret-bearing negative fixture fails"
+      ],
+      "verification": [
+        "python scripts/verify-local-ai-runtime-baseline.py --component product-submission",
+        "python scripts/verify-planning-status.py",
+        "python scripts/select-next-work.py",
+        "git diff --check"
+      ],
+      "evidence_path": "docs/change-evidence/20260716-lar-p0a-004-product-v2-launch-experience.md",
+      "rollback": "Revert only ProductContract.v2 its new schemas/catalogs/fixtures evidence and status projection; keep ProductContract.v1 and v3.24 candidate immutable.",
+      "stop_conditions": [
+        "A launch template requires free text dynamic commands dependency install remote effects or more than the approved path envelope",
+        "Human presentation requires raw output or secret-derived metadata",
+        "The task would create runtime code or promote a template"
+      ],
+      "prohibited_actions": [
+        "Do not edit ProductContract.v1",
+        "Do not implement CLI handlers",
+        "Do not promote or authorize a real template"
+      ],
+      "next_task_ids": [
+        "LAR-P0A-005"
+      ]
+    },
+    {
+      "task_id": "LAR-P0A-005",
+      "phase": "P0A",
+      "priority": 0,
+      "status": "completed",
+      "title": "Materialize QualificationContractSet.v2 and exact toolchain gates",
+      "goal": "Create the v3.24 qualification contract that proves exact uv environment synchronization manifest-pinned Python identity no Python downloads hash-pinned build backend and clean-root repeatable builds before any implementation can be accepted.",
+      "depends_on": [
+        "LAR-P0A-004"
+      ],
+      "preconditions": [
+        "ProductContract.v2 is present and verified",
+        "P0A-QUALIFICATION is missing",
+        "v3.24 VerificationExecutionProfile command projection is planning-verified"
+      ],
+      "scope": {
+        "in": [
+          "QualificationContractSet.v2",
+          "RuntimeToolchainManifest.v1 exact interpreter and uv bindings",
+          "VerificationExecutionProfile.v1",
+          "hashed build constraints and SOURCE_DATE_EPOCH policy",
+          "extraneous package wrong interpreter download and backend negative fixtures"
+        ],
+        "out": [
+          "Preparing a live environment",
+          "Downloading Python or dependencies",
+          "Changing Codex capability surface",
+          "Runtime implementation"
+        ],
+        "primary_files": [
+          "docs/specs/local-ai-runtime-0.2/normative/QualificationContractSet.v2.json",
+          "docs/specs/local-ai-runtime-0.2/schemas/RuntimeToolchainManifest.v1.schema.json",
+          "docs/specs/local-ai-runtime-0.2/catalogs/VerificationExecutionProfile.v1.json",
+          "docs/specs/local-ai-runtime-0.2/fixtures/toolchain-v2/manifest.json",
+          "scripts/verify-local-ai-runtime-baseline.py"
+        ]
+      },
+      "acceptance": [
+        "QualificationContractSet.v2 binds v3.24 and leaves QualificationContractSet.v1 unchanged",
+        "Environment preparation uses exact locked offline sync with explicit manifest Python and no Python downloads",
+        "Daily validation uses no-sync and read-backs child interpreter distribution and pytest-plugin identity before build/test",
+        "Build backend dependencies are constrained by manifest-bound hashes and unconstrained cached backend selection is rejected",
+        "Two clean roots with one SOURCE_DATE_EPOCH must produce equal normalized member manifest and final hashes",
+        "Negative fixtures cover extraneous package plugin wrong patch download request multi-backend cache missing hashes and repeat-build mismatch",
+        "Verifier rejects every predecessor inexact gate form in active authoritative surfaces"
+      ],
+      "verification": [
+        "python scripts/verify-local-ai-runtime-baseline.py --component qualification",
+        "python scripts/verify-planning-status.py",
+        "python scripts/select-next-work.py",
+        "git diff --check"
+      ],
+      "evidence_path": "docs/change-evidence/20260716-lar-p0a-005-qualification-v2-exact-toolchain.md",
+      "rollback": "Revert only QualificationContractSet.v2 new schemas/catalogs/fixtures verifier branch evidence and status projection; never edit QualificationContractSet.v1.",
+      "stop_conditions": [
+        "uv or build behavior cannot be bound to exact official/local help semantics",
+        "A fixture requires network or live installation",
+        "The exact profile cannot prove interpreter or backend identity"
+      ],
+      "prohibited_actions": [
+        "Do not edit QualificationContractSet.v1",
+        "Do not run environment preparation against production roots",
+        "Do not download Python packages or build dependencies"
+      ],
+      "next_task_ids": [
+        "LAR-P0A-009"
+      ],
+      "contract_projections": {
+        "produces": [
+          "exact_toolchain_gate_v1"
+        ],
+        "implements": [],
+        "accepts": []
+      },
+      "contract_projection_tokens": [
+        "RuntimeToolchainManifest",
+        "VerificationExecutionProfile",
+        "uv sync default exact; --inexact forbidden",
+        "--no-python-downloads",
+        "--build-constraint",
+        "--require-hashes"
+      ]
+    },
+    {
+      "task_id": "LAR-P0A-009",
+      "contract_projections": {
+        "produces": [
+          "durable_operator_action_inbox_v1"
+        ],
+        "implements": [],
+        "accepts": []
+      },
+      "contract_projection_tokens": [
+        "durable_local_status_v1",
+        "qualified_windows_toast_v1"
+      ],
+      "phase": "P0A",
+      "priority": 0,
+      "status": "completed",
+      "title": "Materialize complete state, guard, autonomy and operator catalogs",
+      "goal": "Materialize complete state guard autonomy and operator catalogs including the SQLite-authority/journal-observation boundary deterministic recovery replay explicit cleanup finalizers first-launch operator inbox and B3-deferred autonomy rows.",
+      "depends_on": [
+        "LAR-P0A-005"
+      ],
+      "preconditions": [
+        "All domain contracts referenced by guards are fixed"
+      ],
+      "scope": {
+        "in": [
+          "Seven state policy tables",
+          "GuardCatalog precedence and acyclic dependencies",
+          "OperatorActionCatalog",
+          "Capacity and scheduler disposition"
+        ],
+        "out": [
+          "Hidden handler branches",
+          "One cartesian-product state table"
+        ],
+        "primary_files": [
+          "docs/specs/local-ai-runtime-0.2/normative/StatePolicyCatalog.v1.json",
+          "docs/specs/local-ai-runtime-0.2/catalogs/GuardCatalog.v1.json",
+          "docs/specs/local-ai-runtime-0.2/catalogs/OperatorActionCatalog.v1.json",
+          "docs/specs/local-ai-runtime-0.2/fixtures/state-policy/manifest.json"
+        ]
+      },
+      "acceptance": [
+        "Every row has source, operation/event, guards, allowed effects, target, exit, capacity, priority and retry policy",
+        "Unknown combinations exit 2",
+        "Guard dependency graph is acyclic and has fixed precedence",
+        "Recovery-eligible attempts outrank new work",
+        "Global resume cannot clear repo/template qualification blocks",
+        "SQLite is the only policy/transition authority and journal replay cannot create state outside the accepted cursor current fence and immutable action history",
+        "Equal accepted history under one policy generation produces the same recovery decision independent of observation time or restart count",
+        "Cleanup finalizers cannot be bypassed by deleting guards rows markers or journal segments",
+        "B3 is declared deferred and no 0.2 state row or operator action can activate it"
+      ],
+      "verification": [
+        "python scripts/verify-local-ai-runtime-baseline.py --component state-policy",
+        "python scripts/verify-planning-status.py",
+        "git diff --check"
+      ],
+      "evidence_path": "docs/change-evidence/20260716-lar-p0a-009-state-policy.md",
+      "rollback": "Revert only state/guard/operator catalogs and manifest references.",
+      "stop_conditions": [
+        "A legal CLI operation has no transition row",
+        "Guard dependencies contain a cycle"
+      ],
+      "prohibited_actions": [
+        "Do not encode transition policy only in prose",
+        "Do not merge independent state domains"
+      ],
+      "next_task_ids": [
+        "LAR-P0A-010"
+      ]
+    },
+    {
+      "task_id": "LAR-P0A-010",
+      "contract_projections": {
+        "produces": [
+          "gate_graph_v1",
+          "three_level_evolution_v1",
+          "q0_trigger_policy_v1",
+          "activation_admission_chain_v1"
+        ],
+        "implements": [],
+        "accepts": []
+      },
+      "contract_projection_tokens": [
+        "GateGraph",
+        "profile_generation",
+        "capability_generation",
+        "architecture_epoch",
+      "Q0TriggerPolicy",
+      "RuntimeCompositionManifest",
+      "SelectedRuntimeIdentity",
+      "ActiveRuntimeIdentity"
+      ],
+      "phase": "P0A",
+      "priority": 0,
+      "status": "ready",
+      "title": "Close Q0, gate, feature and resource-limit catalogs",
+      "goal": "Materialize Full/quick/daily qualification matrices, exact offline gates, effective feature inventory and all resource boundary fixtures.",
+      "depends_on": [
+        "LAR-P0A-009"
+      ],
+      "preconditions": [
+        "State and guard scopes are fixed"
+      ],
+      "scope": {
+        "in": [
+          "CodexFeaturePolicy",
+          "ProcessEnvironmentPolicy",
+          "ProcessHandlePolicy Q0 probes",
+          "GatePolicy",
+          "ResourceLimitPolicy",
+          "Full/quick/daily Q0"
+        ],
+        "out": [
+          "Live provider qualification",
+          "Runtime installation"
+        ],
+        "primary_files": [
+          "docs/specs/local-ai-runtime-0.2/normative/QualificationGateCatalog.v1.json",
+          "docs/specs/local-ai-runtime-0.2/catalogs/CodexFeaturePolicy.v1.json",
+          "docs/specs/local-ai-runtime-0.2/catalogs/ResourceLimitPolicy.v1.json",
+          "docs/specs/local-ai-runtime-0.2/fixtures/q0/manifest.json"
+        ]
+      },
+      "acceptance": [
+        "Every gate stores exact executable, argv, env digest, cwd, timeout and expected report",
+        "Every sandbox gate/Git argv includes --include-managed-config",
+        "ProcessEnvironmentPolicy uses OrdinalIgnoreCase uniqueness for ASCII catalog keys, rejects aliases, hidden =X: entries and NUL, emits one sorted UTF-16 block with an exact double-NUL terminator and verifies the child-observed block before resume",
+        "Q0 proves JOB_LIST plus HANDLE_LIST atomic spawn, exact STARTF_USESTDHANDLES stdio roles, no ambient sensitive handles and bounded EOF after exit, kill, crash and response loss",
+        "Q0 proves runtime-managed external evidence root isolation, purpose-separated DPAPI key envelopes and suspended-only single-consumption restore eligibility",
+        "Every bounded field has limit-1/limit/limit+1 fixtures",
+        "Write limits cover single file, aggregate changed bytes, gate cache/output, attempt growth and object-store promotion",
+        "Mandatory accounting_kill_audit binds pre-spawn snapshots, continuous watcher, no slower than 500 ms fallback, durable limit+1 kill intent and final no-follow audit",
+        "A controller-only fully allocated 1 GiB EmergencyDiskReserve has fenced release/rebuild lifecycle and release leaves the platform suspended",
+        "HardWriteQuotaCapability is optional and enabled only after Full Q0 proves an applicable per-root or per-sandbox-user primitive",
+        "Low disk enters disk_pressure/resource_exhausted and never needs_environment",
+        "Unknown effective capability fails incompatible",
+        "Q0 covers sandbox mutable/secret state identity, opaque sandbox diagnostic behavior and alias-aware NTFS 8.3 handle identity",
+        "Q0 triggers include binary/model/profile/policy/adapter/environment/schema changes",
+        "Failure scope distinguishes attempt, template, repo and platform"
+      ],
+      "verification": [
+        "python scripts/verify-local-ai-runtime-baseline.py --component q0-gates-limits",
+        "python scripts/verify-planning-status.py",
+        "git diff --check"
+      ],
+      "evidence_path": "docs/change-evidence/<date>-lar-p0a-010-q0.md",
+      "rollback": "Revert only Q0/gate/limit artifacts and manifest references.",
+      "stop_conditions": [
+        "A gate command contains a shell placeholder or ellipsis",
+        "An effective capability is uncataloged"
+      ],
+      "prohibited_actions": [
+        "Do not run a live Q0 while authoring the contract",
+        "Do not broaden failure scope without a guard reason"
+      ],
+      "next_task_ids": [
+        "LAR-P0A-011"
+      ]
+    },
+    {
+      "task_id": "LAR-P0A-011",
+      "phase": "P0A",
+      "priority": 0,
+      "status": "pending",
+      "title": "Assemble migration specifications, cross-contract examples and negative fixtures",
+      "goal": "Define persistence migrations and create a closed example inventory covering happy paths, response loss, crash windows, invalid states, secret-safe evidence and limit boundaries across every normative schema.",
+      "depends_on": [
+        "LAR-P0A-010"
+      ],
+      "preconditions": [
+        "All normative schemas and catalogs are present"
+      ],
+      "scope": {
+        "in": [
+          "Positive examples",
+          "Negative fixtures with expected reason codes",
+          "Cross-object reference closure",
+          "Forward migration, rollback, compatibility window and crash fixtures"
+        ],
+        "out": [
+          "Runtime simulations presented as live evidence"
+        ],
+        "primary_files": [
+          "docs/specs/local-ai-runtime-0.2/examples/manifest.json",
+          "docs/specs/local-ai-runtime-0.2/fixtures/manifest.json",
+          "docs/specs/local-ai-runtime-0.2/fixtures/cross-contract/manifest.json",
+          "docs/specs/local-ai-runtime-0.2/normative/PersistenceMigrationSpecification.v1.json",
+          "docs/change-evidence/<date>-lar-p0a-011-fixtures.md"
+        ]
+      },
+      "acceptance": [
+        "Every Tier A schema has at least one positive and one negative example",
+        "Every crash boundary has a pre/post fixture",
+        "Every expected rejection carries a stable reason code",
+        "Fixture manifest has no dangling paths or duplicate IDs",
+        "Every persistence schema change has forward, rollback, compatibility and interrupted-migration fixtures",
+        "Fixtures cover exact stdio HANDLE_LIST/STARTF mappings, parent-end close and EOF, environment case aliases/hidden entries, external-evidence root overlap, wrong-purpose key unwrap, post-backup mutation and restore-intent response loss"
+      ],
+      "verification": [
+        "python scripts/verify-local-ai-runtime-baseline.py --component examples --self-test",
+        "python scripts/verify-planning-status.py",
+        "git diff --check"
+      ],
+      "evidence_path": "docs/change-evidence/<date>-lar-p0a-011-fixtures.md",
+      "rollback": "Revert only examples/fixtures and their manifest references.",
+      "stop_conditions": [
+        "A normative schema has no executable example",
+        "A negative fixture has implementation-dependent expected behavior"
+      ],
+      "prohibited_actions": [
+        "Do not label fixtures as implementation evidence",
+        "Do not omit limit+1 cases"
+      ],
+      "next_task_ids": [
+        "LAR-P0A-012"
+      ]
+    },
+    {
+      "task_id": "LAR-P0A-012",
+      "phase": "P0A",
+      "priority": 0,
+      "status": "pending",
+      "title": "Implement the standalone normative package verifier",
+      "goal": "Implement a fail-closed verifier for bytes, manifest closure, schemas, catalogs, transitions, guards, examples, fixtures and hash references.",
+      "depends_on": [
+        "LAR-P0A-011"
+      ],
+      "preconditions": [
+        "All required normative artifacts are available"
+      ],
+      "scope": {
+        "in": [
+          "Standalone verifier",
+          "Verifier contract tests",
+          "Tamper and response-loss cases"
+        ],
+        "out": [
+          "Runtime implementation",
+          "Approval issuance"
+        ],
+        "primary_files": [
+          "scripts/verify-local-ai-runtime-baseline.py",
+          "runtime/host-orchestrator/tests/test_local_ai_runtime_baseline_contract.py",
+          "docs/specs/local-ai-runtime-0.2-normative-package.json",
+          "docs/change-evidence/<date>-lar-p0a-012-verifier.md"
+        ]
+      },
+      "acceptance": [
+        "Verifier output is stable JSON and exit 0 only for a closed package",
+        "Tampering any byte, hash, schema, transition or fixture fails",
+        "Missing, extra and cyclic references fail",
+        "Verifier never rewrites input",
+        "All package inventory entries become present only after verification"
+      ],
+      "verification": [
+        "python scripts/verify-local-ai-runtime-baseline.py --self-test",
+        "uv run --project ./runtime/host-orchestrator python -m pytest runtime/host-orchestrator/tests/test_local_ai_runtime_baseline_contract.py",
+        "python scripts/verify-planning-status.py",
+        "git diff --check"
+      ],
+      "evidence_path": "docs/change-evidence/<date>-lar-p0a-012-verifier.md",
+      "rollback": "Revert only the verifier, its tests and package inventory updates.",
+      "stop_conditions": [
+        "Verifier depends on network or unpinned packages",
+        "Verifier can pass an incomplete package"
+      ],
+      "prohibited_actions": [
+        "Do not create approval records",
+        "Do not auto-fix malformed artifacts"
+      ],
+      "next_task_ids": [
+        "LAR-P0A-013"
+      ]
+    },
+    {
+      "task_id": "LAR-P0A-013",
+      "contract_projections": {
+        "produces": [
+          "controlled_baseline_approval_v1"
+        ],
+        "implements": [],
+        "accepts": []
+      },
+      "contract_projection_tokens": [
+        "BaselineApprovalCommandPolicy",
+        "anti_replay_challenge"
+      ],
+      "phase": "P0A",
+      "priority": 0,
+      "status": "pending",
+      "title": "Freeze the review head, create the final manifest and close consistency review",
+      "goal": "Build ReviewEvidenceIndex.v1, run the preliminary consistency review, freeze package_review_head, create the one-time final BaselineManifest, append the manifest-closure review and produce an approval-ready package without self-approving it.",
+      "depends_on": [
+        "LAR-P0A-012"
+      ],
+      "preconditions": [
+        "Standalone baseline verifier passes",
+        "All artifacts except P0A-MANIFEST and P0A-REVIEW are present"
+      ],
+      "scope": {
+        "in": [
+          "Append-only review evidence index",
+          "Preliminary consistency findings and dispositions",
+          "Frozen package_review_head and one-time final BaselineManifest.v1 instance",
+          "Manifest-closure review and approval_review_head successor proof",
+          "Approval readiness report"
+        ],
+        "out": [
+          "Implicit approval",
+          "Runtime implementation"
+        ],
+        "primary_files": [
+          "docs/reviews/local-ai-runtime-0.2/ReviewEvidenceIndex.v1.json",
+          "docs/reviews/local-ai-runtime-0.2/<review-id>.md",
+          "docs/specs/local-ai-runtime-0.2/normative/BaselineManifest.v1.json",
+          "docs/specs/local-ai-runtime-0.2-normative-package.json",
+          "docs/change-evidence/<date>-lar-p0a-013-review.md"
+        ]
+      },
+      "acceptance": [
+        "Preliminary review covers every narrative clause, schema, catalog, transition row, example, fixture and verifier and freezes package_review_head",
+        "Final BaselineManifest is created exactly once after every other normative artifact is present and binds package_review_head without self-reference",
+        "Manifest-closure review is appended after manifest creation and proves bytes, dependency closure, artifact versions and verifier results",
+        "Review index hash chain verifies and approval_review_head is a successor of package_review_head",
+        "No P0 or P1 normative finding remains open",
+        "P0A-MANIFEST and P0A-REVIEW become present and package approval_eligible becomes true only after the final verifier and closure review are green",
+        "Approval remains inactive until a separately authorized BaselineApprovalRecord is written"
+      ],
+      "verification": [
+        "python scripts/verify-local-ai-runtime-baseline.py",
+        "python scripts/verify-planning-status.py",
+        "python scripts/select-next-work.py",
+        "git diff --check"
+      ],
+      "evidence_path": "docs/change-evidence/<date>-lar-p0a-013-review.md",
+      "rollback": "Before publication, remove only an unaccepted manifest attempt; after review acceptance, append a correction/revocation entry and issue a new baseline/artifact version rather than rewriting accepted bytes.",
+      "stop_conditions": [
+        "Any blocking finding remains",
+        "Review evidence and baseline manifest hashes disagree",
+        "Creating the manifest would require changing an already-present normative artifact"
+      ],
+      "prohibited_actions": [
+        "Do not modify prior review records or any present normative artifact",
+        "Do not create the final manifest before package_review_head is frozen",
+        "Do not issue approval without explicit authority"
+      ],
+      "next_task_ids": [
+        "LAR-GOV-001"
+      ]
+    },
+    {
+      "task_id": "LAR-GOV-001",
+      "contract_projections": {
+        "produces": [],
+        "implements": [],
+        "accepts": [
+          "controlled_baseline_approval_v1"
+        ]
+      },
+      "contract_projection_tokens": [
+        "BaselineApprovalCommandPolicy",
+        "anti_replay_challenge"
+      ],
+      "phase": "Governance",
+      "priority": 0,
+      "status": "blocked",
+      "title": "Authorize or reject the v3.24 baseline through the controlled approval entrypoint",
+      "goal": "After package closure and a preserve_v3_23_semantics evaluation decision, require an explicitly authorized interactive operator to invoke the hash-pinned approval command, validate authority and anti-replay inputs, and create one immutable BaselineApprovalRecord or rejection result without changing normative bytes.",
+      "depends_on": [
+        "LAR-P0A-013"
+      ],
+      "preconditions": [
+        "Normative package is complete and approval_eligible",
+        "Standalone verifier and consistency review are green",
+        "No active approval or unresolved revocation exists",
+        "The approving operator has explicit external authority, an allowed InteractiveToken/session and a fresh one-time challenge"
+      ],
+      "scope": {
+        "in": [
+          "BaselineApprovalRequest and BaselineApprovalCommandResult",
+          "Hash-pinned scripts/approve-local-ai-runtime-baseline.py governance entrypoint",
+          "BaselineApprovalRecord or rejection record",
+          "Active approval generation CAS",
+          "Approved review head and manifest hash"
+        ],
+        "out": [
+          "Normative byte changes",
+          "Truth Reset",
+          "Runtime implementation"
+        ],
+        "primary_files": [
+          "docs/approvals/local-ai-runtime-0.2/BaselineApprovalRecord.v1.json",
+          "scripts/approve-local-ai-runtime-baseline.py",
+          "docs/architecture/planning-status.json",
+          "docs/specs/local-ai-runtime-0.2-normative-package.json",
+          "docs/change-evidence/<date>-lar-gov-001-baseline-approval.md"
+        ]
+      },
+      "acceptance": [
+        "The command validates InteractiveToken/session, operator SID, command envelope hash, manifest/review head, expected inactive generation, fresh challenge and expiry before mutation",
+        "Approval record binds baseline bytes, BaselineManifest, review head, approval authority, approver SID hash, request ID, generation and UTC time",
+        "UNIQUE approval_request_id plus active-head expected-generation CAS permits at most one terminal command result",
+        "Repeated approval response loss returns the same immutable result before checking first-use challenge/current guards",
+        "Verifier rejects scheduled/service token, expired or reused challenge, authority mismatch, generation drift and direct approval-file injection",
+        "A rejection leaves approval inactive and requires a new baseline version for semantic changes",
+        "No Truth Reset or implementation side effect occurs"
+      ],
+      "verification": [
+        "python scripts/verify-local-ai-runtime-baseline.py",
+        "python -I -s -E scripts/approve-local-ai-runtime-baseline.py verify --json",
+        "python scripts/verify-planning-status.py",
+        "python scripts/select-next-work.py",
+        "git diff --check"
+      ],
+      "evidence_path": "docs/change-evidence/<date>-lar-gov-001-baseline-approval.md",
+      "rollback": "Never delete or edit an approval; append BaselineApprovalRevocationRecord or SupersessionRecord and CAS the active generation.",
+      "stop_conditions": [
+        "Explicit approval authority is absent",
+        "Interactive session, one-time challenge or expected inactive generation cannot be proven",
+        "Any package/review hash differs",
+        "A blocking finding is open"
+      ],
+      "prohibited_actions": [
+        "AI must not self-authorize approval",
+        "Do not create an approval file outside the controlled entrypoint",
+        "Do not modify normative artifacts",
+        "Do not perform Truth Reset in the approval transaction"
+      ],
+      "next_task_ids": [
+        "LAR-P0B-001"
+      ]
+    },
+    {
+      "task_id": "LAR-P0B-001",
+      "phase": "P0B",
+      "priority": 0,
+      "status": "blocked",
+      "title": "Perform the approved Truth Reset",
+      "goal": "After active Baseline Approval, atomically make the approved v3.23 package identity the implementation source of truth across root rules, docs, planning status, selector and verifier.",
+      "depends_on": [
+        "LAR-GOV-001"
+      ],
+      "preconditions": [
+        "Active, non-revoked BaselineApprovalRecord exists",
+        "Approved baseline and manifest hashes verify"
+      ],
+      "scope": {
+        "in": [
+          "AGENTS.md project truth",
+          "README/docs/PRD/architecture/roadmap/plan/backlog/acceptance",
+          "planning queue and selectors",
+          "Legacy-document demotion markers"
+        ],
+        "out": [
+          "Runtime behavior changes",
+          "Legacy writer guard implementation"
+        ],
+        "primary_files": [
+          "AGENTS.md",
+          "docs/architecture/planning-status.json",
+          "docs/architecture/next-work-selection-policy.json",
+          "scripts/verify-planning-status.py",
+          "docs/change-evidence/<date>-lar-p0b-001-truth-reset.md"
+        ]
+      },
+      "acceptance": [
+        "Queue becomes MINIMUM-OPERATOR-COMMIT-ONLY-TRANSITION",
+        "Selector returns implement_legacy_guard_first",
+        "Existing host-orchestrator remains current executable truth until cutover",
+        "No document claims new runtime implementation exists"
+      ],
+      "verification": [
+        "uv run --project ./runtime/host-orchestrator python -m pytest",
+        "python scripts/verify-planning-status.py",
+        "python scripts/select-next-work.py",
+        "pwsh -NoProfile -NonInteractive -File scripts/governance/preflight.ps1 -DisableAutoCommit",
+        "git diff --check"
+      ],
+      "evidence_path": "docs/change-evidence/<date>-lar-p0b-001-truth-reset.md",
+      "rollback": "Revert the Truth Reset change set only; do not revoke the approved baseline unless its semantics are invalid.",
+      "stop_conditions": [
+        "Approval is absent, revoked or hash-mismatched",
+        "Any authoritative surface still selects the old implementation queue"
+      ],
+      "prohibited_actions": [
+        "Do not start new runtime code",
+        "Do not alter .ai/config or live state"
+      ],
+      "next_task_ids": [
+        "LAR-P0C-001",
+        "LAR-P0D-001"
+      ]
+    },
+    {
+      "task_id": "LAR-P0C-001",
+      "phase": "P0C",
+      "priority": 0,
+      "status": "blocked",
+      "title": "Implement ownership wire contract and legacy entrypoint inventory",
+      "goal": "Create the shared repo ownership wire contract and enumerate every legacy path capable of claim, worktree, writer, Git, closeout or cleanup side effects.",
+      "depends_on": [
+        "LAR-P0B-001"
+      ],
+      "preconditions": [
+        "Truth Reset is complete"
+      ],
+      "scope": {
+        "in": [
+          "Ownership schema/catalog",
+          "Repo identity and mutex naming",
+          "Legacy mutation entrypoint inventory"
+        ],
+        "out": [
+          "New Batch claims",
+          "Legacy default cutover"
+        ],
+        "primary_files": [
+          "runtime/host-orchestrator/src/host_orchestrator/ownership.py",
+          "runtime/host-orchestrator/tests/test_ownership_contract.py",
+          "docs/specs/local-ai-runtime-0.2/implementation/legacy-entrypoints.json",
+          "docs/change-evidence/<date>-lar-p0c-001-ownership.md"
+        ]
+      },
+      "acceptance": [
+        "Legacy and new runtimes compute identical repo mutex names",
+        "Existing repositories are registered legacy-owned without mutation",
+        "Unknown/corrupt ownership fails closed",
+        "Inventory covers all mutation-capable legacy entrypoints"
+      ],
+      "verification": [
+        "uv run --project ./runtime/host-orchestrator python -m pytest runtime/host-orchestrator/tests/test_ownership_contract.py",
+        "python scripts/verify-planning-status.py",
+        "git diff --check"
+      ],
+      "evidence_path": "docs/change-evidence/<date>-lar-p0c-001-ownership.md",
+      "rollback": "Revert ownership adapter code and leave preexisting repos legacy-owned.",
+      "stop_conditions": [
+        "Any mutation entrypoint cannot be identified",
+        "Repo identity differs across adapters"
+      ],
+      "prohibited_actions": [
+        "Do not enable new Batch claims",
+        "Do not migrate legacy DB"
+      ],
+      "next_task_ids": [
+        "LAR-P0C-002"
+      ]
+    },
+    {
+      "task_id": "LAR-P0C-002",
+      "phase": "P0C",
+      "priority": 0,
+      "status": "blocked",
+      "title": "Guard every legacy writer and repository side-effect path",
+      "goal": "Require valid ownership generation and repo mutex acquisition before every legacy side effect, with fail-closed tests for stale or mismatched ownership.",
+      "depends_on": [
+        "LAR-P0C-001"
+      ],
+      "preconditions": [
+        "Legacy entrypoint inventory is complete"
+      ],
+      "scope": {
+        "in": [
+          "Claim/lease/worktree/writer/Git/commit/closeout/cleanup guards",
+          "Cross-entrypoint conformance tests"
+        ],
+        "out": [
+          "New runtime implementation"
+        ],
+        "primary_files": [
+          "runtime/host-orchestrator/src/host_orchestrator/ownership.py",
+          "runtime/host-orchestrator/src/host_orchestrator/runner.py",
+          "runtime/host-orchestrator/tests/test_ownership_contract.py",
+          "docs/change-evidence/<date>-lar-p0c-002-legacy-guard.md"
+        ]
+      },
+      "acceptance": [
+        "No inventoried side-effect path bypasses ownership",
+        "Generation drift blocks before side effect",
+        "Cross-process mutex tests prove serialization",
+        "Legacy behavior is unchanged when validly legacy-owned"
+      ],
+      "verification": [
+        "uv run --project ./runtime/host-orchestrator python -m pytest",
+        "python scripts/verify-planning-status.py",
+        "git diff --check"
+      ],
+      "evidence_path": "docs/change-evidence/<date>-lar-p0c-002-legacy-guard.md",
+      "rollback": "Revert the guard wiring as one slice; retain the ownership schema only if it remains non-enforcing.",
+      "stop_conditions": [
+        "Any existing test regresses without an approved contract change",
+        "A guard is checked after a side effect"
+      ],
+      "prohibited_actions": [
+        "Do not weaken legacy evidence contracts",
+        "Do not dual-write databases"
+      ],
+      "next_task_ids": [
+        "LAR-P0C-003"
+      ]
+    },
+    {
+      "task_id": "LAR-P0C-003",
+      "phase": "P0C",
+      "priority": 0,
+      "status": "blocked",
+      "title": "Prove legacy/new ownership conformance and rollback",
+      "goal": "Add cross-runtime wire, crash, takeover, cutover and rollback drills before any new runtime can claim a repository.",
+      "depends_on": [
+        "LAR-P0C-002"
+      ],
+      "preconditions": [
+        "All legacy side-effect paths are guarded"
+      ],
+      "scope": {
+        "in": [
+          "Cross-runtime fixtures",
+          "Crash/takeover tests",
+          "Cutover/rollback no-side-effect drill"
+        ],
+        "out": [
+          "Production cutover"
+        ],
+        "primary_files": [
+          "runtime/host-orchestrator/tests/test_ownership_conformance.py",
+          "docs/specs/local-ai-runtime-0.2/implementation/ownership-conformance.json",
+          "docs/change-evidence/<date>-lar-p0c-003-conformance.md"
+        ]
+      },
+      "acceptance": [
+        "Legacy/new names, bytes and generations match",
+        "Concurrent claims produce one owner",
+        "Crash windows never permit two writers",
+        "Rollback restores guarded legacy ownership without deleting evidence"
+      ],
+      "verification": [
+        "uv run --project ./runtime/host-orchestrator python -m pytest",
+        "python scripts/verify-planning-status.py",
+        "pwsh -NoProfile -NonInteractive -File scripts/governance/preflight.ps1 -DisableAutoCommit",
+        "git diff --check"
+      ],
+      "evidence_path": "docs/change-evidence/<date>-lar-p0c-003-conformance.md",
+      "rollback": "Revert only conformance harness changes; keep runtime claims disabled.",
+      "stop_conditions": [
+        "Any double-owner trace appears",
+        "Rollback requires destructive state rewrite"
+      ],
+      "prohibited_actions": [
+        "Do not enable scheduler claims",
+        "Do not call this live acceptance"
+      ],
+      "next_task_ids": [
+        "LAR-P1A-001"
+      ]
+    },
+    {
+      "task_id": "LAR-P0D-001",
+      "contract_projections": {
+        "produces": [],
+        "implements": [
+          "exact_toolchain_gate_v1"
+        ],
+        "accepts": []
+      },
+      "contract_projection_tokens": [
+        "RuntimeToolchainManifest",
+        "VerificationExecutionProfile",
+        "uv sync default exact; --inexact forbidden",
+        "--no-python-downloads",
+        "--build-constraint",
+        "--require-hashes"
+      ],
+      "phase": "P0D",
+      "priority": 0,
+      "status": "blocked",
+      "title": "Create the isolated local-ai-runtime package and acceptance harness",
+      "goal": "Create the modular-monolith skeleton with RuntimeToolchainManifest-pinned Python 3.11.x exact offline environment preparation hash-pinned build backend contracts CLI and no-side-effect harness without importing or touching host_orchestrator state.",
+      "depends_on": [
+        "LAR-P0B-001"
+      ],
+      "preconditions": [
+        "Baseline Approval remains active",
+        "Truth Reset is complete",
+        "P0D no-side-effect boundary is planning-verified"
+      ],
+      "scope": {
+        "in": [
+          "runtime/local-ai-runtime package",
+          "contracts/kernel/qualification/storage/execution/recovery/git_local/operations/compat modules",
+          "Closed source layout with approved_root_files=[__init__.py,__main__.py], the required_source_owners map and the nine approved_subpackages",
+          "Offline development gates"
+        ],
+        "out": [
+          "Writer execution",
+          "Repo claims"
+        ],
+        "primary_files": [
+          "runtime/local-ai-runtime/pyproject.toml",
+          "runtime/local-ai-runtime/uv.lock",
+          "runtime/local-ai-runtime/src/local_ai_runtime/__init__.py",
+          "runtime/local-ai-runtime/src/local_ai_runtime/__main__.py",
+          "runtime/local-ai-runtime/tests/test_scaffold.py"
+        ]
+      },
+      "acceptance": [
+        "profile:new_runtime_exact_v1 supply-chain build test contract and hotspot stages pass",
+        "Environment read-back proves the exact Python distribution plugin and build-backend identities with no extraneous package",
+        "Two clean-root builds have matching member manifests and artifact hashes",
+        "Import scan proves no host_orchestrator dependency",
+        "The package root contains only __init__.py plus a thin __main__.py contracts-verifier bootstrap and all functional modules belong to approved subpackages",
+        "No executable Batch path repo claim ownership mutation production state or evidence exists"
+      ],
+      "verification": [
+        "profile:new_runtime_exact_v1",
+        "git diff --check"
+      ],
+      "evidence_path": "docs/change-evidence/<date>-lar-p0d-001-scaffold.md",
+      "rollback": "Remove only the new package skeleton and its planning/evidence references.",
+      "stop_conditions": [
+        "Exact offline dependency or build-backend identity is not reproducible",
+        "New package imports legacy implementation or opens legacy state",
+        "A planned source path falls outside the closed runtime source layout",
+        "Any claim writer Git publication or production evidence path becomes reachable"
+      ],
+      "prohibited_actions": [
+        "Do not copy legacy runtime code wholesale",
+        "Do not activate the package"
+      ],
+      "next_task_ids": [
+        "LAR-P1A-001"
+      ]
+    },
+    {
+      "task_id": "LAR-P1A-001",
+      "phase": "P1A",
+      "priority": 1,
+      "status": "blocked",
+      "title": "Implement canonical bytes, hashes and path primitives",
+      "goal": "Implement only the approved canonical JSON envelope, normative byte validator, domain-separated hashing, Git path validator and Windows collision/identity primitives.",
+      "depends_on": [
+        "LAR-P0C-003",
+        "LAR-P0D-001"
+      ],
+      "preconditions": [
+        "Package skeleton exact gates pass",
+        "Legacy ownership guard/conformance is green",
+        "Approved canonicalization artifacts and fixtures are available read-only"
+      ],
+      "scope": {
+        "in": [
+          "Canonical JSON parse/serialize and duplicate-key rejection",
+          "Normative byte and Unicode validation",
+          "Git path, Windows collision key and alias-aware identity primitives"
+        ],
+        "out": [
+          "Schema model generation",
+          "State policy evaluation",
+          "Persistent storage"
+        ],
+        "primary_files": [
+          "runtime/local-ai-runtime/src/local_ai_runtime/contracts/__init__.py",
+          "runtime/local-ai-runtime/src/local_ai_runtime/contracts/canonical.py",
+          "runtime/local-ai-runtime/src/local_ai_runtime/contracts/paths.py",
+          "runtime/local-ai-runtime/tests/contracts/test_canonical.py",
+          "runtime/local-ai-runtime/tests/contracts/test_paths.py"
+        ]
+      },
+      "acceptance": [
+        "Canonical serialization preserves ordinary array order and rejects duplicate JSON keys and duplicate set keys",
+        "Every approved byte, Unicode, Git path, NTFS collision and alias fixture returns the cataloged reason code",
+        "Domain separators make equal payloads of different artifact types hash differently",
+        "No function rewrites Git spelling, source bytes or already-present normative artifacts"
+      ],
+      "verification": [
+        "profile:new_runtime_exact_v1 focus=\"python -m pytest runtime/local-ai-runtime/tests/contracts/test_canonical.py runtime/local-ai-runtime/tests/contracts/test_paths.py\"",
+        "git diff --check"
+      ],
+      "evidence_path": "docs/change-evidence/<date>-lar-p1a-001-canonical-primitives.md",
+      "rollback": "Revert only canonical.py, paths.py, their tests and this task evidence.",
+      "stop_conditions": [
+        "A fixture requires locale-dependent behavior",
+        "A required Windows identity primitive cannot be tested without broadening privileges"
+      ],
+      "prohibited_actions": [
+        "Do not normalize input bytes or Git path spelling",
+        "Do not add storage, CLI or process behavior"
+      ],
+      "next_task_ids": [
+        "LAR-P1A-002"
+      ]
+    },
+    {
+      "task_id": "LAR-P1A-002",
+      "contract_projections": {
+        "produces": [],
+        "implements": [
+          "work_definition_task_family_v1",
+          "effect_plan_v1",
+          "three_level_evolution_v1"
+        ],
+        "accepts": []
+      },
+      "contract_projection_tokens": [
+      "WorkDefinition",
+      "TaskFamily",
+      "FirstRunExperiencePolicy",
+      "LaunchTemplateCatalog",
+      "OperatorPresentationCatalog",
+      "EffectPlan",
+        "profile_generation",
+        "capability_generation",
+        "architecture_epoch"
+      ],
+      "phase": "P1A",
+      "priority": 1,
+      "status": "blocked",
+      "title": "Implement the schema registry and typed contract models",
+      "goal": "Load approved schemas and catalogs as immutable resources and expose typed models without inventing implementation-only fields or defaults.",
+      "depends_on": [
+        "LAR-P1A-001"
+      ],
+      "preconditions": [
+        "Canonical primitives pass",
+        "Every referenced artifact ID/version/hash exists in the approved BaselineManifest"
+      ],
+      "scope": {
+        "in": [
+          "Schema/catalog registry",
+          "Typed Tier A and Tier B contract models",
+          "Approved example and negative-fixture loading"
+        ],
+        "out": [
+          "State transitions",
+          "Database persistence",
+          "Process launch"
+        ],
+        "primary_files": [
+          "runtime/local-ai-runtime/src/local_ai_runtime/contracts/registry.py",
+          "runtime/local-ai-runtime/src/local_ai_runtime/contracts/models.py",
+          "runtime/local-ai-runtime/tests/contracts/test_registry.py",
+          "runtime/local-ai-runtime/tests/contracts/test_models.py"
+        ]
+      },
+      "acceptance": [
+        "Registry rejects unknown artifact versions, hash drift, duplicate IDs and undeclared defaults",
+        "All approved positive examples round-trip to identical canonical bytes",
+        "All approved negative fixtures fail with their exact cataloged reason codes",
+        "Nullable, required and forbidden fields are enforced per event and record schema"
+      ],
+      "verification": [
+        "profile:new_runtime_exact_v1 focus=\"python -m pytest runtime/local-ai-runtime/tests/contracts/test_registry.py runtime/local-ai-runtime/tests/contracts/test_models.py\"",
+        "profile:new_runtime_exact_v1 focus=\"python -m local_ai_runtime contracts verify --scope models\"",
+        "git diff --check"
+      ],
+      "evidence_path": "docs/change-evidence/<date>-lar-p1a-002-contract-models.md",
+      "rollback": "Revert only registry/models, focused tests and this task evidence.",
+      "stop_conditions": [
+        "Implementation requires a field absent from an approved schema",
+        "Generated or parsed output is nondeterministic"
+      ],
+      "prohibited_actions": [
+        "Do not patch approved schemas or examples",
+        "Do not add permissive unknown-field handling"
+      ],
+      "next_task_ids": [
+        "LAR-P1A-003"
+      ]
+    },
+    {
+      "task_id": "LAR-P1A-003",
+      "phase": "P1A",
+      "priority": 1,
+      "status": "blocked",
+      "title": "Implement state, guard and operator catalog evaluation",
+      "goal": "Evaluate the approved SubmissionFamily, BatchTask, Attempt, Platform, Repo, Template, Autonomy and OperatorAction transition rows with deterministic guard precedence.",
+      "depends_on": [
+        "LAR-P1A-002"
+      ],
+      "preconditions": [
+        "Typed models and catalog registry pass"
+      ],
+      "scope": {
+        "in": [
+          "Transition row lookup",
+          "Guard precedence, scope and reason-code resolution",
+          "Capacity disposition and scheduler priority outputs"
+        ],
+        "out": [
+          "Database mutation",
+          "Process or Git side effects",
+          "CLI rendering"
+        ],
+        "primary_files": [
+          "runtime/local-ai-runtime/src/local_ai_runtime/kernel/__init__.py",
+          "runtime/local-ai-runtime/src/local_ai_runtime/kernel/state_policy.py",
+          "runtime/local-ai-runtime/src/local_ai_runtime/kernel/guards.py",
+          "runtime/local-ai-runtime/tests/kernel/test_state_policy.py",
+          "runtime/local-ai-runtime/tests/kernel/test_guards.py"
+        ]
+      },
+      "acceptance": [
+        "Every approved source/operation/guard combination resolves to exactly one transition row",
+        "Unknown state, operation, resolution, guard or illegal cross-domain dependency exits 2 without side effects",
+        "Guard dependency graph is acyclic and precedence is stable",
+        "Safety-only guards cannot authorize ordinary execution effects"
+      ],
+      "verification": [
+        "profile:new_runtime_exact_v1 focus=\"python -m pytest runtime/local-ai-runtime/tests/kernel/test_state_policy.py runtime/local-ai-runtime/tests/kernel/test_guards.py\"",
+        "profile:new_runtime_exact_v1 focus=\"python -m local_ai_runtime contracts verify --scope state\"",
+        "git diff --check"
+      ],
+      "evidence_path": "docs/change-evidence/<date>-lar-p1a-003-state-guard-evaluator.md",
+      "rollback": "Revert only state/guard evaluators, focused tests and this task evidence.",
+      "stop_conditions": [
+        "Two rows can match the same input",
+        "A cross-domain guard cycle exists"
+      ],
+      "prohibited_actions": [
+        "Do not hard-code hidden transition branches",
+        "Do not mutate state from the evaluator"
+      ],
+      "next_task_ids": [
+        "LAR-P1A-004"
+      ]
+    },
+    {
+      "task_id": "LAR-P1A-004",
+      "phase": "P1A",
+      "priority": 1,
+      "status": "blocked",
+      "title": "Implement cross-contract policy bundle verification",
+      "goal": "Bind artifact generations into one immutable policy bundle and mechanically verify cross-contract references, limits, action allowlists and execution-authority unions.",
+      "depends_on": [
+        "LAR-P1A-003"
+      ],
+      "preconditions": [
+        "Canonical, model and state evaluators pass"
+      ],
+      "scope": {
+        "in": [
+          "Policy bundle loading and generation identity",
+          "Cross-contract foreign-key and hash checks",
+          "Catalog completeness and authority-union invariants"
+        ],
+        "out": [
+          "Runtime activation",
+          "Persistent database state",
+          "External effects"
+        ],
+        "primary_files": [
+          "runtime/local-ai-runtime/src/local_ai_runtime/kernel/policy_bundle.py",
+          "runtime/local-ai-runtime/src/local_ai_runtime/contracts/verifier.py",
+          "runtime/local-ai-runtime/tests/kernel/test_policy_bundle.py",
+          "runtime/local-ai-runtime/tests/contracts/test_cross_contracts.py"
+        ]
+      },
+      "acceptance": [
+        "Every foreign artifact/catalog/reason/guard/action ID resolves at the declared version and hash",
+        "Every StageLaunchRecord and terminal result schema admits exactly one approved execution authority kind",
+        "All bounded fields have limit-1, limit and limit+1 fixtures",
+        "The complete approved package passes and every tamper fixture fails closed"
+      ],
+      "verification": [
+        "profile:new_runtime_exact_v1 focus=\"python -m pytest runtime/local-ai-runtime/tests/kernel/test_policy_bundle.py runtime/local-ai-runtime/tests/contracts/test_cross_contracts.py\"",
+        "profile:new_runtime_exact_v1 focus=\"python -m local_ai_runtime contracts verify\"",
+        "git diff --check"
+      ],
+      "evidence_path": "docs/change-evidence/<date>-lar-p1a-004-policy-bundle.md",
+      "rollback": "Revert only policy-bundle verification, focused tests and this task evidence.",
+      "stop_conditions": [
+        "A cross-contract reference is ambiguous",
+        "Verifier acceptance depends on artifact load order"
+      ],
+      "prohibited_actions": [
+        "Do not add implicit compatibility fallbacks",
+        "Do not modify normative artifacts"
+      ],
+      "next_task_ids": [
+        "LAR-P1B-001",
+        "LAR-P1F-001"
+      ]
+    },
+    {
+      "task_id": "LAR-P1B-001",
+      "phase": "P1B",
+      "priority": 1,
+      "status": "blocked",
+      "title": "Implement SQLite bootstrap and schema migrations",
+      "goal": "Create the isolated runtime database with approved pragmas, initial tables, foreign keys and reversible versioned migrations without touching the legacy control plane.",
+      "depends_on": [
+        "LAR-P1A-004"
+      ],
+      "preconditions": [
+        "Cross-contract policy bundle passes",
+        "PersistenceMigrationSpecification is approved and read-only"
+      ],
+      "scope": {
+        "in": [
+          "SQLite connection/bootstrap",
+          "Initial approved schema and migration ledger",
+          "Forward, rollback and interrupted-migration tests"
+        ],
+        "out": [
+          "Domain repositories and CAS operations",
+          "Process execution",
+          "Backup file copying"
+        ],
+        "primary_files": [
+          "runtime/local-ai-runtime/src/local_ai_runtime/storage/__init__.py",
+          "runtime/local-ai-runtime/src/local_ai_runtime/storage/database.py",
+          "runtime/local-ai-runtime/src/local_ai_runtime/storage/migrations.py",
+          "runtime/local-ai-runtime/tests/storage/test_database.py",
+          "runtime/local-ai-runtime/tests/storage/test_migrations.py"
+        ]
+      },
+      "acceptance": [
+        "Connections enforce journal_mode=DELETE, foreign_keys=ON, synchronous=FULL and busy_timeout=5000",
+        "Fresh create, each forward step, rollback and interrupted migration are deterministic in isolated roots",
+        "Schema contains every approved table/index/unique constraint and no undeclared table",
+        "The code refuses .ai/state/control-plane.db and any path outside the supplied isolated runtime root"
+      ],
+      "verification": [
+        "profile:new_runtime_exact_v1 focus=\"python -m pytest runtime/local-ai-runtime/tests/storage/test_database.py runtime/local-ai-runtime/tests/storage/test_migrations.py\"",
+        "git diff --check"
+      ],
+      "evidence_path": "docs/change-evidence/<date>-lar-p1b-001-database-bootstrap.md",
+      "rollback": "Revert only database bootstrap/migrations and delete only test databases in isolated temporary roots.",
+      "stop_conditions": [
+        "A migration cannot round-trip",
+        "An approved uniqueness or foreign-key invariant cannot be represented"
+      ],
+      "prohibited_actions": [
+        "Do not touch .ai/state control planes",
+        "Do not share or migrate a DB with host-orchestrator"
+      ],
+      "next_task_ids": [
+        "LAR-P1B-002"
+      ]
+    },
+    {
+      "task_id": "LAR-P1B-002",
+      "phase": "P1B",
+      "priority": 1,
+      "status": "blocked",
+      "title": "Implement submission-family and resubmission transactions",
+      "goal": "Implement permanent ordinary-submit replay and the one-transaction TaskResubmission relation with response-loss idempotency.",
+      "depends_on": [
+        "LAR-P1B-001"
+      ],
+      "preconditions": [
+        "Database bootstrap and migration tests pass",
+        "Product/submission schemas and secret-safe admission ordering are approved"
+      ],
+      "scope": {
+        "in": [
+          "Volatile existing-family lookup and authorized replay",
+          "Absent-family transactional recheck/create",
+          "TaskResolution and TaskResubmission CAS transactions"
+        ],
+        "out": [
+          "Attempt claiming",
+          "Process execution",
+          "Git task-ref creation"
+        ],
+        "primary_files": [
+          "runtime/local-ai-runtime/src/local_ai_runtime/storage/submissions.py",
+          "runtime/local-ai-runtime/src/local_ai_runtime/kernel/submission_service.py",
+          "runtime/local-ai-runtime/tests/storage/test_submission_families.py",
+          "runtime/local-ai-runtime/tests/storage/test_resubmission.py"
+        ]
+      },
+      "acceptance": [
+        "Ordinary duplicate submit always returns immutable generation-0 root_task_id even after resubmission",
+        "Existing-family replay occurs before current catalog/secret/qualification admission and persists no new oracle",
+        "One source task creates at most one successor across response loss and future resolution code versions",
+        "Historical task-ref success, stale base, non-current source and nonterminal source fail with exact reason codes when no prior successor exists"
+      ],
+      "verification": [
+        "profile:new_runtime_exact_v1 focus=\"python -m pytest runtime/local-ai-runtime/tests/storage/test_submission_families.py runtime/local-ai-runtime/tests/storage/test_resubmission.py\"",
+        "git diff --check"
+      ],
+      "evidence_path": "docs/change-evidence/<date>-lar-p1b-002-submission-replay.md",
+      "rollback": "Revert only submission repositories/service, focused tests and this task evidence.",
+      "stop_conditions": [
+        "A response-loss path can create a second family or successor",
+        "Rejected absent-family input leaves parameters, digest or stable oracle"
+      ],
+      "prohibited_actions": [
+        "Do not add ResubmissionPermit",
+        "Do not revalidate current admission before returning an existing authorized family"
+      ],
+      "next_task_ids": [
+        "LAR-P1B-003"
+      ]
+    },
+    {
+      "task_id": "LAR-P1B-003",
+      "contract_projections": {
+        "produces": [],
+        "implements": [
+          "effect_plan_v1",
+          "writer_effect_launch_identity_v1"
+        ],
+        "accepts": []
+      },
+      "contract_projection_tokens": [
+        "EffectPlan",
+        "writer_effect_id",
+        "writer_launch_id"
+      ],
+      "phase": "P1B",
+      "priority": 1,
+      "status": "blocked",
+      "title": "Implement leases, fences and execution-authority CAS",
+      "goal": "Persist capacity/repo/attempt leases, fence generations, immutable action/authority records and mutable heads with one deterministic lock and transaction order.",
+      "depends_on": [
+        "LAR-P1B-002"
+      ],
+      "preconditions": [
+        "Submission transactions pass",
+        "Execution authority and fenced-action schemas are approved"
+      ],
+      "scope": {
+        "in": [
+          "Lease and fence repositories",
+          "AuthorizationExecutionGrant and SafetyOnlyExecutionRecord persistence",
+          "FencedAction intent/adoption/head/result CAS",
+          "Authorization continuation heads"
+        ],
+        "out": [
+          "Win32 mutex or Job operations",
+          "Process launch",
+          "Git side effects"
+        ],
+        "primary_files": [
+          "runtime/local-ai-runtime/src/local_ai_runtime/storage/leases.py",
+          "runtime/local-ai-runtime/src/local_ai_runtime/storage/fenced_actions.py",
+          "runtime/local-ai-runtime/tests/storage/test_leases.py",
+          "runtime/local-ai-runtime/tests/storage/test_fenced_actions.py"
+        ]
+      },
+      "acceptance": [
+        "Lease takeover requires expected generation/fence CAS and cannot regress generation",
+        "Root grant and revoke transactions use the approved global lock order and serialize on the same active map",
+        "Each effect has exactly one authority kind and each action prior head has at most one adoption",
+        "Terminal result is unique and binds current head kind/hash/fence/version"
+      ],
+      "verification": [
+        "profile:new_runtime_exact_v1 focus=\"python -m pytest runtime/local-ai-runtime/tests/storage/test_leases.py runtime/local-ai-runtime/tests/storage/test_fenced_actions.py\"",
+        "git diff --check"
+      ],
+      "evidence_path": "docs/change-evidence/<date>-lar-p1b-003-lease-fence-authority.md",
+      "rollback": "Revert only lease/fenced-action repositories, focused tests and this task evidence.",
+      "stop_conditions": [
+        "A head can fork or a terminal result can duplicate",
+        "Grant and revoke can acquire locks in opposite order"
+      ],
+      "prohibited_actions": [
+        "Do not mutate immutable intent, adoption, authority or result rows",
+        "Do not implement OS side effects in storage repositories"
+      ],
+      "next_task_ids": [
+        "LAR-P1B-004"
+      ]
+    },
+    {
+      "task_id": "LAR-P1B-004",
+      "phase": "P1B",
+      "priority": 1,
+      "status": "blocked",
+      "title": "Implement event, journal, outbox and artifact cursors",
+      "goal": "Persist append-only normalized event metadata, journal segment cursors, artifact/outbox intents and terminal receipts while keeping raw output and secret oracles out of the database.",
+      "depends_on": [
+        "LAR-P1B-003"
+      ],
+      "preconditions": [
+        "Lease/fence/authority CAS tests pass",
+        "Evidence and journal schemas are approved"
+      ],
+      "scope": {
+        "in": [
+          "Event and segment metadata repositories",
+          "Journal accepted-offset cursor",
+          "Artifact/outbox intent and terminal records",
+          "Receipt and quarantine metadata"
+        ],
+        "out": [
+          "Stream parsing",
+          "Filesystem publication",
+          "Evidence file creation"
+        ],
+        "primary_files": [
+          "runtime/local-ai-runtime/src/local_ai_runtime/storage/journal.py",
+          "runtime/local-ai-runtime/src/local_ai_runtime/storage/outbox.py",
+          "runtime/local-ai-runtime/tests/storage/test_journal_cursor.py",
+          "runtime/local-ai-runtime/tests/storage/test_outbox.py"
+        ]
+      },
+      "acceptance": [
+        "DB accepted offset can lag but never lead a flushed journal segment",
+        "Events are append-only and retain no raw stdout/stderr, unknown path digest or unscanned content hash",
+        "Outbox logical name and terminal result uniqueness survive response loss",
+        "Random quarantine IDs are independent of path and content"
+      ],
+      "verification": [
+        "profile:new_runtime_exact_v1 focus=\"python -m pytest runtime/local-ai-runtime/tests/storage/test_journal_cursor.py runtime/local-ai-runtime/tests/storage/test_outbox.py\"",
+        "git diff --check"
+      ],
+      "evidence_path": "docs/change-evidence/<date>-lar-p1b-004-journal-outbox-storage.md",
+      "rollback": "Revert only journal/outbox repositories, focused tests and this task evidence.",
+      "stop_conditions": [
+        "A DB transaction can acknowledge unflushed bytes",
+        "A schema requires storing prohibited raw output or digest"
+      ],
+      "prohibited_actions": [
+        "Do not parse process output in the storage layer",
+        "Do not publish artifacts or evidence"
+      ],
+      "next_task_ids": [
+        "LAR-P1B-005"
+      ]
+    },
+    {
+      "task_id": "LAR-P1B-005",
+      "phase": "P1B",
+      "priority": 1,
+      "status": "blocked",
+      "title": "Prove persistence crash recovery and response-loss replay",
+      "goal": "Run the storage-level crash matrix across migrations, CAS, family creation, resubmission, grants, adoption, journal cursors and outbox terminalization.",
+      "depends_on": [
+        "LAR-P1B-004"
+      ],
+      "preconditions": [
+        "All P1B repositories and focused tests pass"
+      ],
+      "scope": {
+        "in": [
+          "Deterministic failpoint harness",
+          "Power-loss-equivalent reopen checks",
+          "Response-loss replay and invariant audit"
+        ],
+        "out": [
+          "OS process crashes",
+          "Git or filesystem publication",
+          "Production backup"
+        ],
+        "primary_files": [
+          "runtime/local-ai-runtime/src/local_ai_runtime/storage/failpoints.py",
+          "runtime/local-ai-runtime/tests/storage/test_crash_matrix.py",
+          "runtime/local-ai-runtime/tests/storage/test_response_loss.py",
+          "docs/change-evidence/<date>-lar-p1b-005-storage-crash-matrix.md"
+        ]
+      },
+      "acceptance": [
+        "Every approved storage failpoint reopens to one valid pre-effect or post-effect state",
+        "Response loss returns the same family, task, successor, grant, action and outbox IDs",
+        "Integrity audit detects every tampered head, cursor, checksum and generation fixture",
+        "Test teardown deletes only isolated temporary roots"
+      ],
+      "verification": [
+        "profile:new_runtime_exact_v1 focus=\"python -m pytest runtime/local-ai-runtime/tests/storage/test_crash_matrix.py runtime/local-ai-runtime/tests/storage/test_response_loss.py\"",
+        "git diff --check"
+      ],
+      "evidence_path": "docs/change-evidence/<date>-lar-p1b-005-storage-crash-matrix.md",
+      "rollback": "Revert only failpoint harness/tests/evidence; retain the already-verified P1B storage implementation.",
+      "stop_conditions": [
+        "Any failpoint produces an ambiguous or unverifiable state",
+        "A replay depends on wall-clock timing"
+      ],
+      "prohibited_actions": [
+        "Do not inject failures into legacy or live databases",
+        "Do not weaken synchronous or foreign-key settings for test speed"
+      ],
+      "next_task_ids": [
+        "LAR-P1C-001"
+      ]
+    },
+    {
+      "task_id": "LAR-P1C-001",
+      "contract_projections": {
+        "produces": [],
+        "implements": [
+          "three_level_evolution_v1",
+          "activation_admission_chain_v1"
+        ],
+        "accepts": []
+      },
+      "contract_projection_tokens": [
+        "profile_generation",
+        "capability_generation",
+        "architecture_epoch",
+        "RuntimeCompositionManifest",
+        "SelectedRuntimeIdentity",
+        "ActiveRuntimeIdentity"
+      ],
+      "phase": "P1C",
+      "priority": 1,
+      "status": "blocked",
+      "title": "Implement immutable installation and activation rollback",
+      "goal": "Install content-addressed runtime versions and atomically activate or roll back current.json with generation, checksum, flush and schema-compatibility guards in isolated roots.",
+      "depends_on": [
+        "LAR-P1B-005"
+      ],
+      "preconditions": [
+        "P1B crash and response-loss matrix passes",
+        "RuntimeActivationRecord and filesystem atomicity contracts are approved"
+      ],
+      "scope": {
+        "in": [
+          "Content-addressed version installation",
+          "Activation record and current.json CAS",
+          "Compatible rollback and activation crash probes"
+        ],
+        "out": [
+          "Production activation",
+          "Toolchain/environment qualification",
+          "Provider login mutation"
+        ],
+        "primary_files": [
+          "runtime/local-ai-runtime/src/local_ai_runtime/operations/__init__.py",
+          "runtime/local-ai-runtime/src/local_ai_runtime/operations/installer.py",
+          "runtime/local-ai-runtime/src/local_ai_runtime/operations/activation.py",
+          "runtime/local-ai-runtime/tests/platform/test_installation.py",
+          "runtime/local-ai-runtime/tests/platform/test_activation.py"
+        ]
+      },
+      "acceptance": [
+        "Install is content-addressed and immutable",
+        "Activation uses expected generation/checksum and atomic replace",
+        "Rollback never crosses schema incompatibility",
+        "Every install/replace/flush failpoint resolves to the previous or new verified generation"
+      ],
+      "verification": [
+        "profile:new_runtime_exact_v1 focus=\"python -m pytest runtime/local-ai-runtime/tests/platform/test_installation.py runtime/local-ai-runtime/tests/platform/test_activation.py\"",
+        "git diff --check"
+      ],
+      "evidence_path": "docs/change-evidence/<date>-lar-p1c-001-install-activation.md",
+      "rollback": "Revert only installer/activation code and delete only isolated test roots and versions created by this task.",
+      "stop_conditions": [
+        "Activation cannot be crash-tested",
+        "The filesystem cannot prove the approved replace/flush behavior"
+      ],
+      "prohibited_actions": [
+        "Do not activate into the production LOCALAPPDATA root",
+        "Do not create or modify provider credentials"
+      ],
+      "next_task_ids": [
+        "LAR-P1C-002"
+      ]
+    },
+    {
+      "task_id": "LAR-P1C-002",
+      "contract_projections": {
+        "produces": [],
+        "implements": [
+          "exact_toolchain_gate_v1"
+        ],
+        "accepts": []
+      },
+      "contract_projection_tokens": [
+        "RuntimeToolchainManifest",
+        "VerificationExecutionProfile",
+        "uv sync default exact; --inexact forbidden",
+        "--no-python-downloads",
+        "--build-constraint",
+        "--require-hashes"
+      ],
+      "phase": "P1C",
+      "priority": 1,
+      "status": "blocked",
+      "title": "Implement toolchain and qualified environment bindings",
+      "goal": "Discover and verify pinned executable/file identities and immutable dependency environments without installing, restoring or bootstrapping during Batch.",
+      "depends_on": [
+        "LAR-P1C-001"
+      ],
+      "preconditions": [
+        "Installation and activation crash tests pass",
+        "Toolchain/environment schemas and absolute command contracts are approved"
+      ],
+      "scope": {
+        "in": [
+          "RuntimeToolchainManifest generation and verification",
+          "QualifiedEnvironmentBinding registration and identity audit",
+          "Absolute executable/PATH and offline dependency checks"
+        ],
+        "out": [
+          "Dependency installation",
+          "Provider authentication",
+          "Repo/template qualification"
+        ],
+        "primary_files": [
+          "runtime/local-ai-runtime/src/local_ai_runtime/qualification/__init__.py",
+          "runtime/local-ai-runtime/src/local_ai_runtime/qualification/toolchain.py",
+          "runtime/local-ai-runtime/src/local_ai_runtime/qualification/environment.py",
+          "runtime/local-ai-runtime/tests/qualification/test_toolchain.py",
+          "runtime/local-ai-runtime/tests/qualification/test_environment.py"
+        ]
+      },
+      "acceptance": [
+        "Every executable and wrapper binds absolute final path, file identity, version and SHA-256",
+        "Environment roots are immutable, no-follow verified and disjoint from writable attempt roots",
+        "Unknown, missing or drifted tools fail with scoped catalog reason codes",
+        "Verification performs no package install, restore, network access or production activation"
+      ],
+      "verification": [
+        "profile:new_runtime_exact_v1 focus=\"python -m pytest runtime/local-ai-runtime/tests/qualification/test_toolchain.py runtime/local-ai-runtime/tests/qualification/test_environment.py\"",
+        "git diff --check"
+      ],
+      "evidence_path": "docs/change-evidence/<date>-lar-p1c-002-toolchain-environment.md",
+      "rollback": "Revert only toolchain/environment qualification code, focused tests and this task evidence.",
+      "stop_conditions": [
+        "A required identity cannot be reproduced without network or install side effects",
+        "Environment mutability cannot be excluded"
+      ],
+      "prohibited_actions": [
+        "Do not install dependencies",
+        "Do not trust PATH lookup without final identity verification"
+      ],
+      "next_task_ids": [
+        "LAR-P1C-003"
+      ]
+    },
+    {
+      "task_id": "LAR-P1C-003",
+      "phase": "P1C",
+      "priority": 1,
+      "status": "blocked",
+      "title": "Implement repo/template qualification, auth state and Authorization",
+      "goal": "Recompute qualification-sensitive input closure, register repo/template qualification, track keyring-only global AuthState and activate/revoke Authorizations with exact generation bindings.",
+      "depends_on": [
+        "LAR-P1C-002"
+      ],
+      "preconditions": [
+        "Toolchain and environment bindings pass",
+        "Qualification resolver/catalog and Authorization contracts are approved"
+      ],
+      "scope": {
+        "in": [
+          "Repo identity and base-tree qualification",
+          "Present/absent/expanded/blocked sensitive input closure",
+          "Template qualification and Authorization activation/revocation",
+          "Keyring-only AuthState classification without credential persistence"
+        ],
+        "out": [
+          "Interactive login/logout",
+          "Live provider calls",
+          "Process execution"
+        ],
+        "primary_files": [
+          "runtime/local-ai-runtime/src/local_ai_runtime/qualification/repository.py",
+          "runtime/local-ai-runtime/src/local_ai_runtime/qualification/authorization.py",
+          "runtime/local-ai-runtime/tests/qualification/test_repository.py",
+          "runtime/local-ai-runtime/tests/qualification/test_authorization.py"
+        ]
+      },
+      "acceptance": [
+        "QualificationObservation is independently reproducible from the current expected base tree, resolver catalog, negative discovery and alias probes",
+        "The reusable sensitive-set fingerprint excludes ordinary base commit/tree identity, and a byte-identical set refreshes observation without invalidating qualification or Authorization",
+        "Dirty, staged, untracked, blocked external, collision or ambiguous discovery inputs fail closed",
+        "Authorization binds every approved generation and revoke serializes with root effect grants",
+        "AuthState stores only generation/store/status/qualified time and needs_auth stops all new provider claims"
+      ],
+      "verification": [
+        "profile:new_runtime_exact_v1 focus=\"python -m pytest runtime/local-ai-runtime/tests/qualification/test_repository.py runtime/local-ai-runtime/tests/qualification/test_authorization.py\"",
+        "git diff --check"
+      ],
+      "evidence_path": "docs/change-evidence/<date>-lar-p1c-003-repo-auth-authorization.md",
+      "rollback": "Revert only repo/template/auth/Authorization qualification code, focused tests and this task evidence.",
+      "stop_conditions": [
+        "Qualification input closure is ambiguous",
+        "A test requires reading or persisting real credentials"
+      ],
+      "prohibited_actions": [
+        "Do not perform login/logout",
+        "Do not hash dirty working-tree content into Authorization"
+      ],
+      "next_task_ids": [
+        "LAR-P1C-004"
+      ]
+    },
+    {
+      "task_id": "LAR-P1C-004",
+      "phase": "P1C",
+      "priority": 1,
+      "status": "blocked",
+      "title": "Implement Codex sandbox state and effective-config qualification",
+      "goal": "Compile the pinned untrusted-project overlay, verify immutable/mutable/secret sandbox roots and treat sandbox diagnostics as opaque bounded state.",
+      "depends_on": [
+        "LAR-P1C-003"
+      ],
+      "preconditions": [
+        "Repo/template/Auth qualification passes",
+        "Codex feature, environment and sandbox-state policies are approved"
+      ],
+      "scope": {
+        "in": [
+          "Attempt permission overlay compiler",
+          "Effective config and model-visible tool inventory verification",
+          "CodexSandboxStateBinding and opaque entry catalog",
+          "sandbox.log size/rotation/export guards"
+        ],
+        "out": [
+          "Live Codex execution",
+          "Interactive diagnostic export",
+          "Credential access"
+        ],
+        "primary_files": [
+          "runtime/local-ai-runtime/src/local_ai_runtime/qualification/overlay.py",
+          "runtime/local-ai-runtime/src/local_ai_runtime/qualification/sandbox_state.py",
+          "runtime/local-ai-runtime/tests/qualification/test_overlay.py",
+          "runtime/local-ai-runtime/tests/qualification/test_sandbox_state.py"
+        ]
+      },
+      "acceptance": [
+        "Effective config always contains projects.<canonical-worktree>.trust_level=untrusted",
+        "Unknown effective feature/tool or opaque sandbox entry triggers the approved scoped failure",
+        "Task process access to sandbox mutable/secret roots is denied by the generated policy",
+        "sandbox.log content and content hash never enter ordinary records, evidence or backup"
+      ],
+      "verification": [
+        "profile:new_runtime_exact_v1 focus=\"python -m pytest runtime/local-ai-runtime/tests/qualification/test_overlay.py runtime/local-ai-runtime/tests/qualification/test_sandbox_state.py\"",
+        "git diff --check"
+      ],
+      "evidence_path": "docs/change-evidence/<date>-lar-p1c-004-sandbox-overlay.md",
+      "rollback": "Revert only overlay/sandbox-state code, focused tests and this task evidence.",
+      "stop_conditions": [
+        "Effective behavior cannot be bound to pinned input and probe IDs",
+        "Sandbox secrets or opaque log bytes would enter a durable ordinary record"
+      ],
+      "prohibited_actions": [
+        "Do not parse undocumented sandbox.log fields",
+        "Do not run live Codex or export diagnostics"
+      ],
+      "next_task_ids": [
+        "LAR-P1C-005",
+        "LAR-P1D-001"
+      ]
+    },
+    {
+      "task_id": "LAR-P1C-005",
+      "phase": "P1C",
+      "priority": 1,
+      "status": "blocked",
+      "title": "Implement write accounting and emergency reserve lifecycle",
+      "goal": "Implement mandatory accounting_kill_audit, immutable snapshots, disk-pressure classification and the fenced 1 GiB controller-only emergency reserve; keep hard quota optional.",
+      "depends_on": [
+        "LAR-P1C-004"
+      ],
+      "preconditions": [
+        "Sandbox state qualification passes",
+        "ResourceLimitPolicy and emergency-reserve contracts are approved"
+      ],
+      "scope": {
+        "in": [
+          "No-follow logical/allocated byte and entry-count snapshots",
+          "ReadDirectoryChangesW watcher plus bounded monotonic fallback",
+          "Emergency reserve create/verify/release/rebuild state machine",
+          "Optional HardWriteQuotaCapability adapter interface"
+        ],
+        "out": [
+          "Process termination implementation",
+          "Production reserve creation",
+          "Assumed NTFS/FSRM quota support"
+        ],
+        "primary_files": [
+          "runtime/local-ai-runtime/src/local_ai_runtime/qualification/write_accounting.py",
+          "runtime/local-ai-runtime/src/local_ai_runtime/qualification/emergency_reserve.py",
+          "runtime/local-ai-runtime/tests/qualification/test_write_accounting.py",
+          "runtime/local-ai-runtime/tests/qualification/test_emergency_reserve.py"
+        ]
+      },
+      "acceptance": [
+        "Snapshots bind root identities, logical/allocated bytes, entry count, free-space floor and reserve generation",
+        "Fallback recomputation interval never exceeds 500 ms and final audit detects missed notifications",
+        "Reserve is non-sparse, non-compressed, fully allocated, task-inaccessible and released only by exact safety action",
+        "Release keeps platform suspended; rebuild requires zero active attempts and advances generation by CAS",
+        "Hard quota remains disabled unless an applicable primitive passes the complete Q0 bypass matrix"
+      ],
+      "verification": [
+        "profile:new_runtime_exact_v1 focus=\"python -m pytest runtime/local-ai-runtime/tests/qualification/test_write_accounting.py runtime/local-ai-runtime/tests/qualification/test_emergency_reserve.py\"",
+        "git diff --check"
+      ],
+      "evidence_path": "docs/change-evidence/<date>-lar-p1c-005-accounting-reserve.md",
+      "rollback": "Revert only accounting/reserve code and tests; delete only task-created reserve files in isolated test roots after identity verification.",
+      "stop_conditions": [
+        "A test can release or rebuild a reserve without exact identity/generation",
+        "Implementation claims atomic hard quota without a qualified primitive"
+      ],
+      "prohibited_actions": [
+        "Do not create the production reserve",
+        "Do not treat post-run scanning as pre-effect denial"
+      ],
+      "next_task_ids": [
+        "LAR-P1C-006"
+      ]
+    },
+    {
+      "task_id": "LAR-P1C-006",
+      "contract_projections": {
+        "produces": [],
+        "implements": [
+          "three_level_evolution_v1",
+          "q0_trigger_policy_v1"
+        ],
+        "accepts": []
+      },
+      "contract_projection_tokens": [
+        "profile_generation",
+        "capability_generation",
+        "architecture_epoch",
+        "Q0TriggerPolicy"
+      ],
+      "phase": "P1C",
+      "priority": 1,
+      "status": "blocked",
+      "title": "Implement Full, quick and daily qualification probes",
+      "goal": "Run exact offline Full/quick/daily probe matrices in isolated fixtures and emit scoped immutable reports without performing production activation or provider login.",
+      "depends_on": [
+        "LAR-P1C-005"
+      ],
+      "preconditions": [
+        "All P1C qualification components pass",
+        "QualificationGateCatalog declares every probe ID, input, expected report and failure scope"
+      ],
+      "scope": {
+        "in": [
+          "Probe dispatcher and report builder",
+          "Full/quick/daily trigger matrix",
+          "Alias, sandbox, network, Job, filesystem, accounting and reserve probes"
+        ],
+        "out": [
+          "Production Full Q0 record",
+          "Provider login mutation",
+          "P2 admission"
+        ],
+        "primary_files": [
+          "runtime/local-ai-runtime/src/local_ai_runtime/qualification/probes.py",
+          "runtime/local-ai-runtime/src/local_ai_runtime/qualification/reports.py",
+          "runtime/local-ai-runtime/tests/qualification/test_probe_matrix.py",
+          "runtime/local-ai-runtime/tests/qualification/test_reports.py"
+        ]
+      },
+      "acceptance": [
+        "Every required probe executes once in deterministic catalog order with exact timeout and input identity",
+        "Reports bind toolchain/environment/policy/probe generations and contain no credential, raw output or opaque log content hash",
+        "Failure scope distinguishes attempt, template, repo and platform according to GuardCatalog",
+        "Missing, unknown or behavior-drifted probes fail closed"
+      ],
+      "verification": [
+        "profile:new_runtime_exact_v1 focus=\"python -m pytest runtime/local-ai-runtime/tests/qualification/test_probe_matrix.py runtime/local-ai-runtime/tests/qualification/test_reports.py\"",
+        "git diff --check"
+      ],
+      "evidence_path": "docs/change-evidence/<date>-lar-p1c-006-q0-harness.md",
+      "rollback": "Revert only probe/report harness, focused tests and this task evidence.",
+      "stop_conditions": [
+        "A probe requires live credentials or unapproved network",
+        "A failure cannot be assigned an approved scope"
+      ],
+      "prohibited_actions": [
+        "Do not create a FullQ0Approval or P2Admission record",
+        "Do not mutate production platform state"
+      ],
+      "next_task_ids": [
+        "LAR-P1C-007"
+      ]
+    },
+    {
+      "task_id": "LAR-P1D-001",
+      "phase": "P1D",
+      "priority": 1,
+      "status": "blocked",
+      "title": "Implement named-object identity and empty Job lifecycle",
+      "goal": "Create and verify global capacity, repo, attempt and Job named objects with canonical names, exact SDDL, limits and same-name fail-closed handling before launching any payload.",
+      "depends_on": [
+        "LAR-P1C-004"
+      ],
+      "preconditions": [
+        "P1C offline qualification harness passes",
+        "Named-object, JobIdentity and ownership contracts are approved"
+      ],
+      "scope": {
+        "in": [
+          "SID/repo/attempt canonical named-object names",
+          "Mutex and empty Job create/open/inspect/close",
+          "Owner/DACL/type/limit/process-list verification",
+          "ERROR_ALREADY_EXISTS parking classification"
+        ],
+        "out": [
+          "Process creation or ResumeThread",
+          "Writer marker",
+          "Git or artifact effects"
+        ],
+        "primary_files": [
+          "runtime/local-ai-runtime/src/local_ai_runtime/execution/__init__.py",
+          "runtime/local-ai-runtime/src/local_ai_runtime/execution/named_objects.py",
+          "runtime/local-ai-runtime/src/local_ai_runtime/execution/job.py",
+          "runtime/local-ai-runtime/tests/execution/test_named_objects.py",
+          "runtime/local-ai-runtime/tests/execution/test_job_lifecycle.py"
+        ]
+      },
+      "acceptance": [
+        "Every name exactly matches the approved SID/repo/attempt hash grammar",
+        "Opened objects verify type, owner, DACL and Job limits before use",
+        "Inspection handle is closed while attempt mutex remains held before CreateJobObject",
+        "ERROR_ALREADY_EXISTS closes the returned handle and parks without rename, reuse or process launch",
+        "Tests terminate only processes proven runtime-owned by executable hash, PID and creation time"
+      ],
+      "verification": [
+        "profile:new_runtime_exact_v1 focus=\"python -m pytest runtime/local-ai-runtime/tests/execution/test_named_objects.py runtime/local-ai-runtime/tests/execution/test_job_lifecycle.py\"",
+        "git diff --check"
+      ],
+      "evidence_path": "docs/change-evidence/<date>-lar-p1d-001-named-job.md",
+      "rollback": "Revert only named-object/Job helper code; close only handles created by tests and terminate only identity-proven test processes.",
+      "stop_conditions": [
+        "An object cannot be fully verified through its handle",
+        "Test cleanup cannot prove process ownership"
+      ],
+      "prohibited_actions": [
+        "Do not kill unknown processes",
+        "Do not launch or resume a writer, gate or Git process"
+      ],
+      "next_task_ids": [
+        "LAR-P1D-002"
+      ]
+    },
+    {
+      "task_id": "LAR-P1D-002",
+      "contract_projections": {
+        "produces": [],
+        "implements": [
+          "writer_effect_launch_identity_v1"
+        ],
+        "accepts": []
+      },
+      "contract_projection_tokens": [
+        "writer_effect_id",
+        "writer_launch_id"
+      ],
+      "phase": "P1D",
+      "priority": 1,
+      "status": "blocked",
+      "title": "Implement writer marker and atomic suspended launch",
+      "goal": "Implement the writer launch-intent, durable CREATE_NEW marker, atomic Job/handle-list spawn, exact environment and stdio inheritance, persisted PID identity and pre-ResumeThread execution-commit barrier.",
+      "depends_on": [
+        "LAR-P1D-001"
+      ],
+      "preconditions": [
+        "Named-object and empty Job tests pass",
+        "Writer launch state and AttemptProcessEnvironment contracts are approved"
+      ],
+      "scope": {
+        "in": [
+          "Attempt-local environment materialization and identity recheck",
+          "Durable writer-start marker",
+          "CREATE_SUSPENDED plus PROC_THREAD_ATTRIBUTE_JOB_LIST and PROC_THREAD_ATTRIBUTE_HANDLE_LIST launch",
+          "ProcessHandlePolicy, ChildHandleManifest and exact STARTF_USESTDHANDLES stdio mapping",
+          "writer_execution_committed and resume outcome persistence"
+        ],
+        "out": [
+          "Live Codex/model execution",
+          "Gate and Git StageJobs",
+          "Post-process journal parsing"
+        ],
+        "primary_files": [
+          "runtime/local-ai-runtime/src/local_ai_runtime/execution/writer_launch.py",
+          "runtime/local-ai-runtime/src/local_ai_runtime/execution/process_environment.py",
+          "runtime/local-ai-runtime/tests/execution/test_writer_marker.py",
+          "runtime/local-ai-runtime/tests/execution/test_writer_launch.py"
+        ]
+      },
+      "acceptance": [
+        "Marker uses CREATE_NEW, write-through, flush and exact task/attempt/fence/intent checksum",
+        "Environment construction rejects case-insensitive aliases, hidden =X: entries, duplicate/invalid keys and NUL, then serializes the canonical sorted UTF-16 block with an exact final double NUL",
+        "Child starts suspended and is atomically assigned to the pre-created no-breakaway Job",
+        "The only inherited handles are the role-correct stdin/stdout/stderr child ends named by STARTF_USESTDHANDLES and HANDLE_LIST; all controller-sensitive handles remain non-inheritable",
+        "Controller copies of child pipe ends close before resume and ChildHandleManifest read-back proves handle type, access, ownership and expected EOF",
+        "PID/creation time/executable/authority are durable before writer_execution_committed",
+        "writer_execution_committed is durable before ResumeThread and permanently blocks another writer for that task generation",
+        "Every marker/spawn/barrier/resume response-loss failpoint has one allowed recovery state"
+      ],
+      "verification": [
+        "profile:new_runtime_exact_v1 focus=\"python -m pytest runtime/local-ai-runtime/tests/execution/test_writer_marker.py runtime/local-ai-runtime/tests/execution/test_writer_launch.py\"",
+        "git diff --check"
+      ],
+      "evidence_path": "docs/change-evidence/<date>-lar-p1d-002-writer-launch.md",
+      "rollback": "Revert only writer-launch/environment code; terminate and remove only identity-proven suspended test Jobs and roots.",
+      "stop_conditions": [
+        "A child can execute before durable writer_execution_committed",
+        "A crash permits a second writer for one task generation"
+      ],
+      "prohibited_actions": [
+        "Do not run live Codex",
+        "Do not infer non-execution from zero tool or mutation events"
+      ],
+      "next_task_ids": [
+        "LAR-P1D-003"
+      ]
+    },
+    {
+      "task_id": "LAR-P1D-003",
+      "contract_projections": {
+        "produces": [],
+        "implements": [
+          "effect_plan_v1"
+        ],
+        "accepts": []
+      },
+      "contract_projection_tokens": [
+        "EffectPlan"
+      ],
+      "phase": "P1D",
+      "priority": 1,
+      "status": "blocked",
+      "title": "Implement StageJobs and execution-authority enforcement",
+      "goal": "Launch gate, Git, probe and recovery helpers through suspended StageJobs with exact environment/stdio handle inheritance while enforcing the closed root, inherited-fenced-action and safety-only authority union.",
+      "depends_on": [
+        "LAR-P1D-002"
+      ],
+      "preconditions": [
+        "Writer launch crash matrix passes",
+        "AuthorizationExecutionGrant and SafetyOnlyExecutionRecord persistence passes"
+      ],
+      "scope": {
+        "in": [
+          "StageLaunchRecord and StageJob identity",
+          "Shared ProcessHandlePolicy and per-run ChildHandleManifest",
+          "Active-Authorization root grant enforcement",
+          "Inherited fenced-action child grant derivation",
+          "Safety-only helper authority and durable kill intent"
+        ],
+        "out": [
+          "Git protocol semantics",
+          "Gate report interpretation",
+          "Arbitrary command execution"
+        ],
+        "primary_files": [
+          "runtime/local-ai-runtime/src/local_ai_runtime/execution/stage_launch.py",
+          "runtime/local-ai-runtime/src/local_ai_runtime/execution/authority.py",
+          "runtime/local-ai-runtime/tests/execution/test_stage_launch.py",
+          "runtime/local-ai-runtime/tests/execution/test_execution_authority.py"
+        ]
+      },
+      "acceptance": [
+        "Each StageLaunchRecord references exactly one authority kind/ID/hash and one JobIdentity",
+        "Every StageJob uses JOB_LIST plus a non-empty exact HANDLE_LIST, STARTF_USESTDHANDLES and no ambient inherited controller/auth/DB/evidence handle",
+        "Each run closes parent copies of child ends before resume and reaches EOF or a terminal recovery disposition without reusing the process identity",
+        "Inherited grant binds parent action grant, current fenced head, exact argv/StageJob and next checkpoint",
+        "Writer, GateRun, model decision, qualification, auth refresh and arbitrary commands reject inherited basis",
+        "Safety-only helper effects are limited to exact terminate/drain/seal/reconcile/handoff/reserve operations",
+        "limit+1 and emergency kill persist operator/action/safety/terminate intent before Job termination"
+      ],
+      "verification": [
+        "profile:new_runtime_exact_v1 focus=\"python -m pytest runtime/local-ai-runtime/tests/execution/test_stage_launch.py runtime/local-ai-runtime/tests/execution/test_execution_authority.py\"",
+        "git diff --check"
+      ],
+      "evidence_path": "docs/change-evidence/<date>-lar-p1d-003-stage-authority.md",
+      "rollback": "Revert only StageJob/authority enforcement and focused tests; terminate only identity-proven test Jobs.",
+      "stop_conditions": [
+        "A process can run without exactly one execution authority",
+        "Inherited or safety authority can widen the logical effect"
+      ],
+      "prohibited_actions": [
+        "Do not add an uncataloged authority kind",
+        "Do not use Authorization expiry to block required safety closeout"
+      ],
+      "next_task_ids": [
+        "LAR-P1D-004"
+      ]
+    },
+    {
+      "task_id": "LAR-P1D-004",
+      "phase": "P1D",
+      "priority": 1,
+      "status": "blocked",
+      "title": "Implement bounded stream draining and normalized journals",
+      "goal": "Continuously drain stdout/stderr without deadlock, parse complete JSONL into append-only secret-safe events and seal hash-linked journal segments.",
+      "depends_on": [
+        "LAR-P1D-003"
+      ],
+      "preconditions": [
+        "StageJob authority tests pass",
+        "Event matrix, reason catalog and JournalSegmentManifest are approved"
+      ],
+      "scope": {
+        "in": [
+          "Independent asynchronous stdout/stderr readers",
+          "Bounded JSONL framing and adapter validation",
+          "Normalized event hash chain and segment seal",
+          "Secret-safe mutation/content validation event staging"
+        ],
+        "out": [
+          "Gate business decisions",
+          "Artifact publication",
+          "Git mutation"
+        ],
+        "primary_files": [
+          "runtime/local-ai-runtime/src/local_ai_runtime/execution/streams.py",
+          "runtime/local-ai-runtime/src/local_ai_runtime/execution/journal.py",
+          "runtime/local-ai-runtime/tests/execution/test_stream_limits.py",
+          "runtime/local-ai-runtime/tests/execution/test_journal.py"
+        ]
+      },
+      "acceptance": [
+        "Readers continuously drain both pipes and close the Job only after durable limit+1 intent",
+        "Reader completion requires the ChildHandleManifest expected EOF condition and detects an unexpected surviving inheritor without waiting unboundedly",
+        "Raw output text and content hash are discarded; durable records keep only approved counts/codes/reports",
+        "Complete invalid lines classify adapter incompatibility while abnormal EOF partial buffers classify attempt recovery",
+        "Pre-scan unknown paths store no path/content digest; validated events append rather than mutate earlier events",
+        "DB cursor never leads the flushed segment and continuation preserves prev_hash/sequence"
+      ],
+      "verification": [
+        "profile:new_runtime_exact_v1 focus=\"python -m pytest runtime/local-ai-runtime/tests/execution/test_stream_limits.py runtime/local-ai-runtime/tests/execution/test_journal.py\"",
+        "git diff --check"
+      ],
+      "evidence_path": "docs/change-evidence/<date>-lar-p1d-004-stream-journal.md",
+      "rollback": "Revert only stream/journal code, focused tests and this task evidence.",
+      "stop_conditions": [
+        "A pipe can deadlock or grow unbounded",
+        "A durable record would retain prohibited raw output or pre-scan digest"
+      ],
+      "prohibited_actions": [
+        "Do not rewrite accepted events or truncate corrupt journals",
+        "Do not classify all partial EOF as platform incompatible"
+      ],
+      "next_task_ids": [
+        "LAR-P1C-007"
+      ]
+    },
+    {
+      "task_id": "LAR-P1C-007",
+      "phase": "P1C",
+      "priority": 1,
+      "status": "blocked",
+      "title": "Implement the Codex CapabilityAdapter and run the no-write adapter smoke",
+      "goal": "Bind the pinned Codex CLI generation to a fail-closed CapabilityAdapter, then run adapter_no_write_smoke_v1 in a runtime-owned disposable repository without creating a Batch task, writer grant, writer process, Git publication or durable raw model output.",
+      "depends_on": [
+        "LAR-P1C-006",
+        "LAR-P1D-004"
+      ],
+      "preconditions": [
+        "Overlay, effective-config, feature/tool inventory and qualification probe contracts pass",
+        "StageJob launch, exact handle inheritance and bounded stream normalization pass",
+        "The smoke uses a fixture-scoped AuthorizationExecutionGrant for adapter_no_write_smoke_v1 and never a writer effect identity"
+      ],
+      "scope": {
+        "in": [
+          "Versioned Codex CapabilityAdapter framing and event normalization",
+          "Pinned codex exec --json --ephemeral --output-schema invocation in a disposable repo",
+          "Effective config, model-visible tool inventory, provider-control-plane network and task-path deny observations",
+          "Before/after worktree, Git common-store and runtime-root mutation proof"
+        ],
+        "out": [
+          "BatchTask, ResolvedAttemptManifest or writer execution grant creation",
+          "Production repo, production Authorization or production task-ref mutation",
+          "Implementation Acceptance, Full Q0 or P2 evidence"
+        ],
+        "primary_files": [
+          "runtime/local-ai-runtime/src/local_ai_runtime/qualification/codex_adapter.py",
+          "runtime/local-ai-runtime/src/local_ai_runtime/qualification/adapter_smoke.py",
+          "runtime/local-ai-runtime/tests/qualification/test_codex_adapter.py",
+          "runtime/local-ai-runtime/tests/qualification/test_adapter_no_write_smoke.py"
+        ]
+      },
+      "acceptance": [
+        "The adapter accepts only the pinned CLI/config/event/output-schema generation and fails incompatible on unknown effective capabilities or event shapes",
+        "The smoke uses one StageLaunchRecord and one fixture-scoped non-writer AuthorizationExecutionGrant; writer_effect_id, writer_launch_id and writer_execution_committed remain absent",
+        "The exact exec invocation proves JSON framing, ephemeral history, output-schema validation, untrusted-project overlay and model-visible inventory",
+        "Before/after identity and byte snapshots prove zero target worktree, Git common-store, task-ref, controller state and evidence mutation",
+        "Task-side path/network deny observations pass, raw stdout/stderr/reasoning/agent text/tool I/O and their content hashes are discarded",
+        "A missing credential, unavailable provider or incompatible adapter reports a scoped smoke failure and cannot be promoted to live acceptance"
+      ],
+      "verification": [
+        "profile:new_runtime_exact_v1 focus=\"python -m pytest runtime/local-ai-runtime/tests/qualification/test_codex_adapter.py runtime/local-ai-runtime/tests/qualification/test_adapter_no_write_smoke.py\"",
+        "profile:new_runtime_exact_v1 focus=\"python -m local_ai_runtime platform model-probe --mode adapter-no-write-smoke --disposable --json\"",
+        "git diff --check"
+      ],
+      "evidence_path": "docs/change-evidence/<date>-lar-p1c-007-adapter-no-write-smoke.md",
+      "rollback": "Revert only the CapabilityAdapter/smoke harness and focused tests; remove only the identity-proven disposable repo after its zero-mutation report is sealed.",
+      "stop_conditions": [
+        "The smoke needs a writer grant, real Batch task or registered target repository",
+        "Any unaccounted mutation, unauthorized egress, raw output persistence or inventory drift occurs"
+      ],
+      "prohibited_actions": [
+        "Do not call the smoke Implementation Acceptance, Full Q0, P2 or live Batch evidence",
+        "Do not retain prompt, raw process output, reasoning, agent text, tool I/O or their content hashes"
+      ],
+      "next_task_ids": [
+        "LAR-P1D-005"
+      ]
+    },
+    {
+      "task_id": "LAR-P1D-005",
+      "phase": "P1D",
+      "priority": 1,
+      "status": "blocked",
+      "title": "Implement adoption, continuation and recovery handoff",
+      "goal": "Recover crashed controller attempts through immutable adoption chains, Authorization continuation and checkpoint-specific recovery without replaying writer or ambiguous StageJobs.",
+      "depends_on": [
+        "LAR-P1C-007"
+      ],
+      "preconditions": [
+        "Stream/journal crash tests pass",
+        "Fenced action and continuation repositories pass"
+      ],
+      "scope": {
+        "in": [
+          "Controller takeover proof and fence CAS",
+          "Fenced action adoption/reconcile/result",
+          "AttemptAuthorizationContinuation chain",
+          "Recovery eligibility, priority and capacity release"
+        ],
+        "out": [
+          "New writer launch after execution commit",
+          "Git action implementations",
+          "Interactive repair automation"
+        ],
+        "primary_files": [
+          "runtime/local-ai-runtime/src/local_ai_runtime/recovery/__init__.py",
+          "runtime/local-ai-runtime/src/local_ai_runtime/recovery/takeover.py",
+          "runtime/local-ai-runtime/src/local_ai_runtime/recovery/actions.py",
+          "runtime/local-ai-runtime/tests/recovery/test_adoption.py",
+          "runtime/local-ai-runtime/tests/recovery/test_continuation.py"
+        ]
+      },
+      "acceptance": [
+        "Takeover proves old mutex release, PID/creation death, TTL, Job state and fence CAS",
+        "Adoption can only advance the current head of an approved deterministic action and cannot fork",
+        "Continuation binds old/new Authorization, fence, manifest, marker/receipt, environment and exact allowed phase",
+        "writer_execution_committed permanently forbids another writer; ambiguous StageJob outcomes park",
+        "Recoverable attempts outrank new tasks and parked external waits release capacity"
+      ],
+      "verification": [
+        "profile:new_runtime_exact_v1 focus=\"python -m pytest runtime/local-ai-runtime/tests/recovery/test_adoption.py runtime/local-ai-runtime/tests/recovery/test_continuation.py\"",
+        "git diff --check"
+      ],
+      "evidence_path": "docs/change-evidence/<date>-lar-p1d-005-recovery.md",
+      "rollback": "Revert only recovery orchestration/tests/evidence; preserve immutable test records for the evidence fixture set.",
+      "stop_conditions": [
+        "A takeover cannot explain the prior Job/process outcome",
+        "A continuation can authorize writer or an undeclared phase"
+      ],
+      "prohibited_actions": [
+        "Do not mutate prior intent/adoption/continuation records",
+        "Do not infer non-execution from missing events"
+      ],
+      "next_task_ids": [
+        "LAR-P1D-006"
+      ]
+    },
+    {
+      "task_id": "LAR-P1D-006",
+      "contract_projections": {
+        "produces": [],
+        "implements": [
+          "gate_graph_v1"
+        ],
+        "accepts": []
+      },
+      "contract_projection_tokens": [
+        "GateGraph"
+      ],
+      "phase": "P1D",
+      "priority": 1,
+      "status": "blocked",
+      "title": "Implement the exact offline gate runner",
+      "goal": "Execute only cataloged absolute gate commands through authorized StageJobs and produce bounded schema-whitelisted GateReports with deterministic timeout/cancel behavior.",
+      "depends_on": [
+        "LAR-P1D-005"
+      ],
+      "preconditions": [
+        "Recovery/adoption matrix passes",
+        "GatePolicy contains exact executable/argv/env/cwd/timeout/report contracts"
+      ],
+      "scope": {
+        "in": [
+          "GateRun orchestration and StageJob launch",
+          "Exact command/environment verification",
+          "Bounded report parsing and aggregate deadlines",
+          "Gate cancel/timeout/resource failure mapping"
+        ],
+        "out": [
+          "Shell command composition",
+          "Git publication",
+          "Production target repositories"
+        ],
+        "primary_files": [
+          "runtime/local-ai-runtime/src/local_ai_runtime/execution/gates.py",
+          "runtime/local-ai-runtime/src/local_ai_runtime/execution/gate_reports.py",
+          "runtime/local-ai-runtime/tests/execution/test_gates.py",
+          "runtime/local-ai-runtime/tests/execution/test_gate_failures.py"
+        ]
+      },
+      "acceptance": [
+        "Only exact catalog executable/argv/environment/cwd combinations run and all include managed config as required",
+        "Gate stdout/stderr body and content hash are discarded after bounded report extraction",
+        "Per-gate, aggregate and attempt deadlines enforce the approved limit and limit+1 outcomes",
+        "Unknown report fields, shell placeholders, network attempts and environment drift fail closed with scoped reason codes"
+      ],
+      "verification": [
+        "profile:new_runtime_exact_v1 focus=\"python -m pytest runtime/local-ai-runtime/tests/execution/test_gates.py runtime/local-ai-runtime/tests/execution/test_gate_failures.py\"",
+        "git diff --check"
+      ],
+      "evidence_path": "docs/change-evidence/<date>-lar-p1d-006-gate-runner.md",
+      "rollback": "Revert only gate runner/report code, focused tests and this task evidence.",
+      "stop_conditions": [
+        "A gate requires shell interpolation or undeclared environment",
+        "A report cannot be validated without retaining raw output"
+      ],
+      "prohibited_actions": [
+        "Do not run gates against a registered real repository",
+        "Do not add dynamic command fallback"
+      ],
+      "next_task_ids": [
+        "LAR-P1E-001"
+      ]
+    },
+    {
+      "task_id": "LAR-P1E-001",
+      "phase": "P1E",
+      "priority": 1,
+      "status": "blocked",
+      "title": "Implement hardened Git identity and preflight audit",
+      "goal": "Resolve the original repository/common-dir by no-follow handles and reject every unapproved Git config, attribute, hook, driver, ref, object-format and protected-surface input before any worktree or object write.",
+      "depends_on": [
+        "LAR-P1D-006"
+      ],
+      "preconditions": [
+        "P1D gate runner and recovery invariants pass",
+        "GitConfigPolicy, RepoProfile and protected-surface catalogs are approved"
+      ],
+      "scope": {
+        "in": [
+          "Repository/common-dir/admin identity resolution",
+          "Fixed Git environment and config audit",
+          "Attributes/excludes/hooks/alternates/replace/grafts/protected-surface audit",
+          "SHA-1/files/local-base-ref support checks"
+        ],
+        "out": [
+          "Worktree creation",
+          "Git object or ref writes",
+          "Remote Git"
+        ],
+        "primary_files": [
+          "runtime/local-ai-runtime/src/local_ai_runtime/git_local/__init__.py",
+          "runtime/local-ai-runtime/src/local_ai_runtime/git_local/identity.py",
+          "runtime/local-ai-runtime/src/local_ai_runtime/git_local/audit.py",
+          "runtime/local-ai-runtime/tests/git_local/test_identity.py",
+          "runtime/local-ai-runtime/tests/git_local/test_audit.py"
+        ]
+      },
+      "acceptance": [
+        "First Git invocation is the exact sandboxed audit command with absolute executable/argv and fixed environment",
+        "Git common/admin/worktree identities are no-follow verified and cannot overlap forbidden runtime/evidence roots",
+        "Unknown config, include, filter, driver, hook, attribute, exclude, alternate, replacement, submodule/LFS or protocol surface fails closed",
+        "Only local fixed-NTFS SHA-1/files repositories with one exact local_base_ref pass",
+        "Audit performs no repository write and retains no sensitive config values"
+      ],
+      "verification": [
+        "profile:new_runtime_exact_v1 focus=\"python -m pytest runtime/local-ai-runtime/tests/git_local/test_identity.py runtime/local-ai-runtime/tests/git_local/test_audit.py\"",
+        "git diff --check"
+      ],
+      "evidence_path": "docs/change-evidence/<date>-lar-p1e-001-git-audit.md",
+      "rollback": "Revert only Git identity/audit code, focused tests and this task evidence; remove only temporary repos created by tests.",
+      "stop_conditions": [
+        "A Git execution surface cannot be enumerated",
+        "An audit requires reading or storing credential-bearing values"
+      ],
+      "prohibited_actions": [
+        "Do not run against registered real repositories",
+        "Do not issue any Git write command"
+      ],
+      "next_task_ids": [
+        "LAR-P1E-002"
+      ]
+    },
+    {
+      "task_id": "LAR-P1E-002",
+      "phase": "P1E",
+      "priority": 1,
+      "status": "blocked",
+      "title": "Implement fenced worktree setup and mutation closure",
+      "goal": "Create/checkout the isolated worktree through adoptable controller actions, verify attempt roots and close the writer mutation set through path policy, protected-surface audit and secret scan.",
+      "depends_on": [
+        "LAR-P1E-001"
+      ],
+      "preconditions": [
+        "Git identity/preflight audit passes in temporary repositories",
+        "create_worktree and checkout_base action contracts are approved"
+      ],
+      "scope": {
+        "in": [
+          "Fenced create_worktree and checkout_base actions",
+          "Attempt worktree/index/object root setup",
+          "Post-writer path/mode/protected-surface audit",
+          "Secret scan and approved changed-path closure"
+        ],
+        "out": [
+          "Commit object creation",
+          "Common-store promotion",
+          "Task-ref creation"
+        ],
+        "primary_files": [
+          "runtime/local-ai-runtime/src/local_ai_runtime/git_local/worktree.py",
+          "runtime/local-ai-runtime/src/local_ai_runtime/git_local/mutations.py",
+          "runtime/local-ai-runtime/tests/git_local/test_worktree.py",
+          "runtime/local-ai-runtime/tests/git_local/test_mutation_closure.py"
+        ]
+      },
+      "acceptance": [
+        "Worktree and checkout actions are idempotent/adoptable only through current fenced head and exact authority",
+        "All writable roots and ancestors pass identity/ACL/reparse/hardlink checks before and after each process",
+        "Unknown, denied, collision, protected or secret-bearing mutations fail without storing path/content oracle",
+        "Accepted changed paths, modes and bytes form one immutable input/index plan"
+      ],
+      "verification": [
+        "profile:new_runtime_exact_v1 focus=\"python -m pytest runtime/local-ai-runtime/tests/git_local/test_worktree.py runtime/local-ai-runtime/tests/git_local/test_mutation_closure.py\"",
+        "git diff --check"
+      ],
+      "evidence_path": "docs/change-evidence/<date>-lar-p1e-002-worktree-mutations.md",
+      "rollback": "Revert only worktree/mutation code; remove only runtime-owned temporary worktrees after proving base-clean state and admin-record ownership.",
+      "stop_conditions": [
+        "A worktree side effect cannot be assigned to one fenced action",
+        "Mutation closure cannot exclude an unknown or protected path"
+      ],
+      "prohibited_actions": [
+        "Do not use reset --hard",
+        "Do not write common Git objects or refs"
+      ],
+      "next_task_ids": [
+        "LAR-P1E-003"
+      ]
+    },
+    {
+      "task_id": "LAR-P1E-003",
+      "contract_projections": {
+        "produces": [],
+        "implements": [
+          "git_hybrid_materialization_v1"
+        ],
+        "accepts": []
+      },
+      "contract_projection_tokens": [
+        "git_hybrid_materialization_v1",
+        "hash-object -w",
+        "cat-file"
+      ],
+      "phase": "P1E",
+      "priority": 1,
+      "status": "blocked",
+      "title": "Implement deterministic object planning and promotion",
+      "goal": "Create blobs, trees and the single-parent commit in an attempt-local object store, seal GitObjectPlan/ObjectSetManifest and promote canonical objects without loose-byte assumptions.",
+      "depends_on": [
+        "LAR-P1E-002"
+      ],
+      "preconditions": [
+        "Mutation closure produces an immutable accepted input/index plan",
+        "Deterministic commit grammar and object action graph are approved"
+      ],
+      "scope": {
+        "in": [
+          "Attempt-local index and object directory",
+          "Deterministic blob/tree/commit generation",
+          "GitObjectPlan and ObjectSetManifest seal",
+          "Fenced create-if-absent common-store promotion and reachability"
+        ],
+        "out": [
+          "Real worktree index/HEAD update",
+          "Task-ref creation",
+          "Evidence publication"
+        ],
+        "primary_files": [
+          "runtime/local-ai-runtime/src/local_ai_runtime/git_local/objects.py",
+          "runtime/local-ai-runtime/src/local_ai_runtime/git_local/commit.py",
+          "runtime/local-ai-runtime/tests/git_local/test_object_plan.py",
+          "runtime/local-ai-runtime/tests/git_local/test_promotion.py"
+        ]
+      },
+      "acceptance": [
+        "Commit has exact tree, one expected parent, author, committer order, identity, UTC claim time and message bytes with no extra header",
+        "ObjectSetManifest binds every object type, size, OID, canonical payload hash and reachability edge before common-store write",
+        "Existing objects are verified by canonical type/size/payload/OID rather than compressed loose bytes",
+        "Promotion is create-if-absent, fenced, response-loss idempotent and followed by clear-alternates reachability proof"
+      ],
+      "verification": [
+        "profile:new_runtime_exact_v1 focus=\"python -m pytest runtime/local-ai-runtime/tests/git_local/test_object_plan.py runtime/local-ai-runtime/tests/git_local/test_promotion.py\"",
+        "git diff --check"
+      ],
+      "evidence_path": "docs/change-evidence/<date>-lar-p1e-003-objects-promotion.md",
+      "rollback": "Revert only object/commit implementation and tests; delete only isolated attempt stores and never delete promoted common objects.",
+      "stop_conditions": [
+        "Commit bytes differ across identical isolated runs",
+        "An existing object cannot be canonically verified"
+      ],
+      "prohibited_actions": [
+        "Do not compare loose zlib file bytes",
+        "Do not update worktree HEAD or any ref"
+      ],
+      "next_task_ids": [
+        "LAR-P1E-004"
+      ]
+    },
+    {
+      "task_id": "LAR-P1E-004",
+      "phase": "P1E",
+      "priority": 1,
+      "status": "blocked",
+      "title": "Implement finalize-index, finalize-HEAD and task-ref publication",
+      "goal": "After common-store reachability, atomically finalize the real worktree index, then detached HEAD, then the exact zero-old-value task ref as three ordered fenced actions.",
+      "depends_on": [
+        "LAR-P1E-003"
+      ],
+      "preconditions": [
+        "Object plan, promotion and reachability tests pass",
+        "Expected tree/worktree equality proof is available"
+      ],
+      "scope": {
+        "in": [
+          "Expected-tree path/mode/byte and untracked/ignored proof",
+          "Temporary expected index and old-index hash CAS replace",
+          "Detached HEAD old-base CAS",
+          "Exact task-ref zero-OID CAS and durable history"
+        ],
+        "out": [
+          "Target/base branch update",
+          "Remote push",
+          "Evidence and cleanup"
+        ],
+        "primary_files": [
+          "runtime/local-ai-runtime/src/local_ai_runtime/git_local/finalize.py",
+          "runtime/local-ai-runtime/src/local_ai_runtime/git_local/refs.py",
+          "runtime/local-ai-runtime/tests/git_local/test_finalize.py",
+          "runtime/local-ai-runtime/tests/git_local/test_task_ref.py"
+        ]
+      },
+      "acceptance": [
+        "Index action runs only after exact working-tree equality and replaces by expected old-index hash",
+        "HEAD action runs only after index read-back and CASes expected base to expected commit",
+        "Task ref runs only after index, HEAD and common reachability and uses zero old OID",
+        "Each action is independently adoptable/idempotent and crash checkpoints never reorder effects",
+        "Any historical successful task-ref record permanently blocks resubmission even if the ref is externally deleted"
+      ],
+      "verification": [
+        "profile:new_runtime_exact_v1 focus=\"python -m pytest runtime/local-ai-runtime/tests/git_local/test_finalize.py runtime/local-ai-runtime/tests/git_local/test_task_ref.py\"",
+        "git diff --check"
+      ],
+      "evidence_path": "docs/change-evidence/<date>-lar-p1e-004-finalize-ref.md",
+      "rollback": "Revert only finalize/ref code and tests; never delete a successfully created task ref automatically.",
+      "stop_conditions": [
+        "A ref can appear before index and HEAD finalization",
+        "Extra worktree content can be hidden by finalization"
+      ],
+      "prohibited_actions": [
+        "Do not use reset --hard",
+        "Do not update target/base refs or delete task refs"
+      ],
+      "next_task_ids": [
+        "LAR-P1E-005"
+      ]
+    },
+    {
+      "task_id": "LAR-P1E-005",
+      "phase": "P1E",
+      "priority": 1,
+      "status": "blocked",
+      "title": "Implement artifact, external evidence and receipt closeout",
+      "goal": "Publish scanned immutable artifacts and runtime-managed runtime_external_v1 evidence after task-ref success, then issue ExecutionReceipt and CloseoutBundle only when all mechanical terminal conditions verify.",
+      "depends_on": [
+        "LAR-P1E-004"
+      ],
+      "preconditions": [
+        "Finalize/ref crash matrix passes",
+        "External evidence root is identity-qualified and disjoint from all forbidden roots"
+      ],
+      "scope": {
+        "in": [
+          "Artifact spool/outbox/no-replace publication",
+          "EvidenceProjectionAcceptance plus activation-bound runtime_external_v1 root qualification",
+          "External EvidenceIndex and CloseoutBundle linking",
+          "ExecutionReceipt six-condition verifier",
+          "Commit/ref/evidence association without hash cycle"
+        ],
+        "out": [
+          "Worktree removal",
+          "Backup copying",
+          "Remote delivery"
+        ],
+        "primary_files": [
+          "runtime/local-ai-runtime/src/local_ai_runtime/storage/artifacts.py",
+          "runtime/local-ai-runtime/src/local_ai_runtime/storage/evidence.py",
+          "runtime/local-ai-runtime/tests/evidence/test_artifact_publish.py",
+          "runtime/local-ai-runtime/tests/evidence/test_receipt.py"
+        ]
+      },
+      "acceptance": [
+        "Artifact publish is fenced no-replace and existing final validates only for the same intent/hash/size",
+        "Evidence root identity/ancestry/ACL/alias is rechecked before every publish and task processes cannot access it",
+        "The evidence root is the activation-bound runtime-managed root or allocated descendant and is disjoint from repo, Git, worktree, attempt, state, authorization, ownership, backup, quarantine, reserve and temp roots",
+        "Receipt requires process exit, EOF, final schema, limits, complete journal seal and zero Job processes",
+        "Evidence contains no raw output, secret-bearing hash, opaque log content or commit/evidence content-addressing cycle",
+        "Every response-loss checkpoint returns the same artifact/evidence/receipt identity"
+      ],
+      "verification": [
+        "profile:new_runtime_exact_v1 focus=\"python -m pytest runtime/local-ai-runtime/tests/evidence/test_artifact_publish.py runtime/local-ai-runtime/tests/evidence/test_receipt.py\"",
+        "git diff --check"
+      ],
+      "evidence_path": "docs/change-evidence/<date>-lar-p1e-005-evidence-closeout.md",
+      "rollback": "Revert only artifact/evidence code and tests; never rewrite published immutable evidence or delete a task ref.",
+      "stop_conditions": [
+        "Evidence root separation cannot be proven",
+        "Receipt can publish without all terminal conditions"
+      ],
+      "prohibited_actions": [
+        "Do not publish evidence before task-ref success",
+        "Do not persist raw process output or unconditional content hashes"
+      ],
+      "next_task_ids": [
+        "LAR-P1E-006"
+      ]
+    },
+    {
+      "task_id": "LAR-P1E-006",
+      "phase": "P1E",
+      "priority": 1,
+      "status": "blocked",
+      "title": "Implement safe cleanup and anti-rollback backup/restore",
+      "goal": "Remove only fully proven runtime-owned worktrees, create/verify state-and-evidence backups under global/repo locks, run isolated restore drills and implement the suspended-only single-consumption production-restore state machine without invoking it on live state.",
+      "depends_on": [
+        "LAR-P1E-005"
+      ],
+      "preconditions": [
+        "Artifact/evidence/receipt closeout passes",
+        "Cleanup and backup catalogs are approved"
+      ],
+      "scope": {
+        "in": [
+          "Fenced remove_worktree proof and admin-record verification",
+          "cleanup_required parking",
+          "Quiescent state/evidence backup lock ordering and contents",
+          "QuarantineKeyEnvelope and RuntimeIntegrityKeyEnvelope backup dependencies",
+          "BackupRestoreEligibility, BackupPostActivity and BackupRestoreIntent state machine",
+          "Restore verification in a new isolated root and production-restore core against a disposable production-like fixture"
+        ],
+        "out": [
+          "Task-ref deletion",
+          "Uncontrolled production-root overwrite or live production restore",
+          "Credential/environment/worktree backup"
+        ],
+        "primary_files": [
+          "runtime/local-ai-runtime/src/local_ai_runtime/recovery/cleanup.py",
+          "runtime/local-ai-runtime/src/local_ai_runtime/recovery/backup.py",
+          "runtime/local-ai-runtime/tests/recovery/test_cleanup.py",
+          "runtime/local-ai-runtime/tests/recovery/test_backup_restore.py"
+        ]
+      },
+      "acceptance": [
+        "Cleanup proves ownership, zero Job, current fence, terminal actions/evidence and clean expected tree before removal",
+        "Removal verifies both directory and common-dir worktree admin record disappearance",
+        "Unprovable cleanup parks and preserves worktree/task ref rather than hiding files",
+        "Backup locks every referenced repo in canonical identity order and contains only approved state/evidence/sealed terminal quarantine",
+        "Required DPAPI-wrapped key envelopes are copied and same-SID drills reject missing, wrong-purpose, wrong-generation or tampered envelopes",
+        "Only a backup captured under an unchanged pre-existing suspended control generation becomes eligible; every later authoritative mutation durably marks it stale before that mutation",
+        "Production-restore core accepts one immutable intent, atomically consumes eligible-to-restoring-to-consumed once, remains suspended and rejects marker deletion, stale copies, generation drift and response-loss duplication",
+        "Restore drill never overwrites production root and detects every tamper fixture"
+      ],
+      "verification": [
+        "profile:new_runtime_exact_v1 focus=\"python -m pytest runtime/local-ai-runtime/tests/recovery/test_cleanup.py runtime/local-ai-runtime/tests/recovery/test_backup_restore.py\"",
+        "git diff --check"
+      ],
+      "evidence_path": "docs/change-evidence/<date>-lar-p1e-006-cleanup-backup.md",
+      "rollback": "Revert only cleanup/backup code and tests; retain immutable evidence/task refs and delete only verified isolated restore roots.",
+      "stop_conditions": [
+        "A cleanup path can delete an unproven file or admin record",
+        "Backup can race an active lease/outbox or include forbidden content",
+        "Any post-backup activity or copied sidecar state can regain production-restore eligibility"
+      ],
+      "prohibited_actions": [
+        "Do not delete task refs",
+        "Do not restore over production or back up auth/environment/worktrees"
+      ],
+      "next_task_ids": [
+        "LAR-P1E-007"
+      ]
+    },
+    {
+      "task_id": "LAR-P1E-007",
+      "contract_projections": {
+        "produces": [],
+        "implements": [],
+        "accepts": [
+          "gate_graph_v1",
+          "git_hybrid_materialization_v1"
+        ]
+      },
+      "contract_projection_tokens": [
+        "GateGraph",
+        "git_hybrid_materialization_v1",
+        "hash-object -w",
+        "cat-file"
+      ],
+      "phase": "P1E",
+      "priority": 1,
+      "status": "blocked",
+      "title": "Run the provider-free fixture closeout rehearsal",
+      "goal": "Drive fixture_closeout_rehearsal_v1 through the complete fenced GateGraph, canonical Git object materialization, local publication, external evidence and cleanup chain in a disposable repository without a provider, model, writer process, live Batch claim or production task ref.",
+      "depends_on": [
+        "LAR-P1E-006"
+      ],
+      "preconditions": [
+        "Deterministic Git, artifact/evidence, receipt, cleanup and backup focused tests pass",
+        "The checked-in fixture mutation, expected EffectPlan, GateGraph, object payloads and expected OIDs are immutable",
+        "The rehearsal root and ref namespace are disposable and identity-disjoint from all registered repositories"
+      ],
+      "scope": {
+        "in": [
+          "Checked-in deterministic fixture mutation and expected tree",
+          "Offline GateGraph and controller-computed canonical blob/tree/commit payloads and expected OIDs",
+          "Pinned Git hash-object -w materialization plus cat-file type/size/payload read-back",
+          "Attempt-local objects, finalize index/HEAD, rehearsal-only ref, external evidence, receipt and remove_worktree"
+        ],
+        "out": [
+          "Provider, model, Codex writer or live Batch claim",
+          "Registered target repository, production task ref or remote Git",
+          "Implementation Acceptance, Full Q0 or P2 evidence"
+        ],
+        "primary_files": [
+          "runtime/local-ai-runtime/src/local_ai_runtime/operations/closeout_rehearsal.py",
+          "runtime/local-ai-runtime/tests/fixtures/closeout/manifest.json",
+          "runtime/local-ai-runtime/tests/integration/test_fixture_closeout_rehearsal.py",
+          "docs/change-evidence/<date>-lar-p1e-007-fixture-closeout-rehearsal.md"
+        ]
+      },
+      "acceptance": [
+        "The rehearsal performs no provider/model/Codex writer call and creates no BatchTask, production Authorization, writer grant or writer process",
+        "Controller canonical payload and expected OID are computed before Git; pinned Git hash-object -w writes only the attempt-local object directory and returns the exact expected OID",
+        "Git cat-file read-back matches controller type, size and payload bytes for every blob, tree and commit",
+        "The fenced chain preserves promote, reachability, index, HEAD, rehearsal-only ref, evidence, receipt and cleanup ordering across every injected response-loss checkpoint",
+        "Before/after proofs show zero registered-repo, common-store, production task-ref, activation, Authorization or control-plane mutation",
+        "Rehearsal evidence is labeled fixture_only and cannot satisfy Implementation Acceptance, Full Q0, P2 or live cohort gates"
+      ],
+      "verification": [
+        "profile:new_runtime_exact_v1 focus=\"python -m pytest runtime/local-ai-runtime/tests/integration/test_fixture_closeout_rehearsal.py\"",
+        "profile:new_runtime_exact_v1 focus=\"python -m local_ai_runtime gates run --profile fixture-closeout-rehearsal --offline --json\"",
+        "git diff --check"
+      ],
+      "evidence_path": "docs/change-evidence/<date>-lar-p1e-007-fixture-closeout-rehearsal.md",
+      "rollback": "Revert only the rehearsal orchestrator, checked-in fixture and focused test; remove only the identity-proven disposable repository and preserve any immutable failure evidence.",
+      "stop_conditions": [
+        "Any provider, model, writer, registered repo, production ref or remote effect is required",
+        "Controller and pinned Git disagree on any object payload, OID or read-back",
+        "A response-loss checkpoint can reorder or duplicate an externally observable effect"
+      ],
+      "prohibited_actions": [
+        "Do not call fixture evidence live, accepted, Q0 or pilot evidence",
+        "Do not use a real target repository or production task-ref namespace"
+      ],
+      "next_task_ids": [
+        "LAR-P1F-002"
+      ]
+    },
+    {
+      "task_id": "LAR-P1F-001",
+      "phase": "P1F",
+      "priority": 1,
+      "status": "blocked",
+      "title": "Implement the stable CLI kernel and JSON envelope",
+      "goal": "Expose the approved command tree, strict argument parsing, stable JSON response envelope and exit/reason-code mapping without enabling scheduled or production side effects.",
+      "depends_on": [
+        "LAR-P1A-004"
+      ],
+      "preconditions": [
+        "Cross-contract policy bundle and CLI/reason catalogs pass",
+        "CLI command and reason-code catalogs are approved"
+      ],
+      "scope": {
+        "in": [
+          "Top-level command tree and strict parser",
+          "Stable --json response envelope",
+          "Exit 0/2/3/4/5/6 and reason-code mapping",
+          "Read-only dependency injection for command handlers"
+        ],
+        "out": [
+          "Scheduler installation",
+          "Managed Native execution",
+          "Production activation or cutover"
+        ],
+        "primary_files": [
+          "runtime/local-ai-runtime/src/local_ai_runtime/operations/cli.py",
+          "runtime/local-ai-runtime/src/local_ai_runtime/operations/cli_output.py",
+          "runtime/local-ai-runtime/tests/cli/test_command_tree.py",
+          "runtime/local-ai-runtime/tests/cli/test_json_exit_contract.py"
+        ]
+      },
+      "acceptance": [
+        "Every approved command/subcommand exists and every undeclared option exits 2",
+        "JSON responses have stable schema, reason code, evidence locator and at most one suggested command",
+        "Exit-code mapping exactly matches the approved catalog",
+        "Parsing and read-only status commands perform no external side effect",
+        "Raw argv, env, prompt and secrets never enter durable CLI diagnostics"
+      ],
+      "verification": [
+        "profile:new_runtime_exact_v1 focus=\"python -m pytest runtime/local-ai-runtime/tests/cli/test_command_tree.py runtime/local-ai-runtime/tests/cli/test_json_exit_contract.py\"",
+        "git diff --check"
+      ],
+      "evidence_path": "docs/change-evidence/<date>-lar-p1f-001-cli-kernel.md",
+      "rollback": "Revert only CLI parser/output code, focused tests and this task evidence.",
+      "stop_conditions": [
+        "A command or reason code lacks an approved catalog entry",
+        "A read-only command requires a mutation"
+      ],
+      "prohibited_actions": [
+        "Do not install the scheduler",
+        "Do not invoke runtime effects from parser/output tests"
+      ],
+      "next_task_ids": [
+        "LAR-P1F-002"
+      ]
+    },
+    {
+      "task_id": "LAR-P1F-002",
+      "phase": "P1F",
+      "priority": 1,
+      "status": "blocked",
+      "title": "Implement Batch prepare, submit, status and recovery commands",
+      "goal": "Wire Batch prepare/submit/drain/status/cancel/retry/reconcile/resolve/doctor handlers to the approved kernel while preserving permanent replay and state-policy guards.",
+      "depends_on": [
+        "LAR-P1E-007",
+        "LAR-P1F-001"
+      ],
+      "preconditions": [
+        "CLI parser/JSON contract passes",
+        "All handler dependencies expose tested service interfaces"
+      ],
+      "scope": {
+        "in": [
+          "Batch command handlers and service orchestration",
+          "Ordinary submit and create_resubmission_v1 replay output",
+          "Cancel/retry/reconcile/resolve transition enforcement",
+          "Doctor read-only diagnostics"
+        ],
+        "out": [
+          "Scheduled task installation",
+          "Automatic login or environment preparation",
+          "Live target-repo execution"
+        ],
+        "primary_files": [
+          "runtime/local-ai-runtime/src/local_ai_runtime/operations/batch.py",
+          "runtime/local-ai-runtime/src/local_ai_runtime/operations/doctor.py",
+          "runtime/local-ai-runtime/tests/cli/test_batch_commands.py",
+          "runtime/local-ai-runtime/tests/cli/test_batch_replay.py"
+        ]
+      },
+      "acceptance": [
+        "Ordinary submit replay always returns root_task_id and resolve response loss returns the same successor",
+        "Every mutation is preceded by the exact policy guard and state transition",
+        "Reconcile is read-only and retry cannot bypass writer_execution_committed or task-ref history",
+        "All blocked states return the cataloged exit/reason/evidence/suggested-command tuple"
+      ],
+      "verification": [
+        "profile:new_runtime_exact_v1 focus=\"python -m pytest runtime/local-ai-runtime/tests/cli/test_batch_commands.py runtime/local-ai-runtime/tests/cli/test_batch_replay.py\"",
+        "git diff --check"
+      ],
+      "evidence_path": "docs/change-evidence/<date>-lar-p1f-002-batch-commands.md",
+      "rollback": "Revert only Batch/doctor handlers, focused tests and this task evidence.",
+      "stop_conditions": [
+        "A handler needs a hidden state transition",
+        "A replay path performs a new side effect"
+      ],
+      "prohibited_actions": [
+        "Do not run against registered real repositories",
+        "Do not add free-prompt Batch or dynamic fallback"
+      ],
+      "next_task_ids": [
+        "LAR-P1F-003"
+      ]
+    },
+    {
+      "task_id": "LAR-P1F-003",
+      "contract_projections": {
+        "produces": [],
+        "implements": [
+          "work_definition_task_family_v1"
+        ],
+        "accepts": []
+      },
+      "contract_projection_tokens": [
+      "WorkDefinition",
+      "TaskFamily",
+      "FirstRunExperiencePolicy",
+      "LaunchTemplateCatalog",
+      "OperatorPresentationCatalog"
+      ],
+      "phase": "P1F",
+      "priority": 1,
+      "status": "blocked",
+      "title": "Implement single-capacity scheduling and parking",
+      "goal": "Select one due recovery or explicitly eligible B2/per-repo promoted task at a time park external waits without consuming capacity and expose scheduler install definitions without installing them.",
+      "depends_on": [
+        "LAR-P1F-002"
+      ],
+      "preconditions": [
+        "Batch command handlers pass",
+        "Scheduler priority, retry and capacity dispositions are approved"
+      ],
+      "scope": {
+        "in": [
+          "Read-only due-work selection",
+          "Global capacity lease and recovery-first ordering",
+          "needs_auth/environment/authorization parking and notification dedupe",
+          "Windows Task Scheduler definition rendering/verification"
+        ],
+        "out": [
+          "Installing or starting a scheduled task",
+          "Login/logout",
+          "Cutover"
+        ],
+        "primary_files": [
+          "runtime/local-ai-runtime/src/local_ai_runtime/operations/scheduler.py",
+          "runtime/local-ai-runtime/src/local_ai_runtime/operations/task_definition.py",
+          "runtime/local-ai-runtime/tests/operations/test_scheduler.py",
+          "runtime/local-ai-runtime/tests/operations/test_task_definition.py"
+        ]
+      },
+      "acceptance": [
+        "Global capacity never exceeds one and due recovery outranks every new claim",
+        "Parked auth/environment/Authorization waits release capacity and dedupe notifications by approved key",
+        "Scheduled runtime definition is Limited/Hidden/IgnoreNew/StartWhenAvailable with exact five-minute cadence and deadline",
+        "Scheduled command allowlist excludes login, prepare, repair, cutover, maintenance and kill-current"
+      ],
+      "verification": [
+        "profile:new_runtime_exact_v1 focus=\"python -m pytest runtime/local-ai-runtime/tests/operations/test_scheduler.py runtime/local-ai-runtime/tests/operations/test_task_definition.py\"",
+        "git diff --check"
+      ],
+      "evidence_path": "docs/change-evidence/<date>-lar-p1f-003-scheduler.md",
+      "rollback": "Revert only scheduler/definition code and tests; no scheduled task should exist from this slice.",
+      "stop_conditions": [
+        "Two claims can hold capacity concurrently",
+        "A parked wait blocks unrelated repo work"
+      ],
+      "prohibited_actions": [
+        "Do not install or run a Windows scheduled task",
+        "Do not perform login/logout or environment preparation"
+      ],
+      "next_task_ids": [
+        "LAR-P1F-004"
+      ]
+    },
+    {
+      "task_id": "LAR-P1F-004",
+      "phase": "P1F",
+      "priority": 1,
+      "status": "blocked",
+      "title": "Implement managed Native maintenance and emergency kill",
+      "goal": "Provide the durable drain-to-maintenance Native launcher and a separate emergency kill-current path with intent-before-termination ordering and scoped requalification.",
+      "depends_on": [
+        "LAR-P1F-003"
+      ],
+      "preconditions": [
+        "Scheduler/capacity/parking tests pass",
+        "Repo maintenance and operator action transition tables are approved"
+      ],
+      "scope": {
+        "in": [
+          "maintenance_drain_requested and natural terminal wait",
+          "Repo maintenance begin/end and managed Native launcher",
+          "Post-maintenance scan/quick verify/requalification",
+          "Emergency kill-current durable intent and recovery handoff"
+        ],
+        "out": [
+          "Bare Codex/Git interception",
+          "Global hooks",
+          "Automatic TTL maintenance release"
+        ],
+        "primary_files": [
+          "runtime/local-ai-runtime/src/local_ai_runtime/operations/maintenance.py",
+          "runtime/local-ai-runtime/src/local_ai_runtime/operations/native.py",
+          "runtime/local-ai-runtime/tests/operations/test_maintenance.py",
+          "runtime/local-ai-runtime/tests/operations/test_emergency_kill.py"
+        ]
+      },
+      "acceptance": [
+        "Normal maintenance stops new claims and waits for the active attempt; it never invokes kill-current",
+        "Native launch occurs only after durable repo maintenance under global capacity and repo mutex",
+        "Post-maintenance failure blocks only the affected repo/template while unaffected scheduling resumes",
+        "kill-current flushes OperatorWorkSession, OperatorAction, terminate intent and SafetyOnlyExecutionRecord before Job termination",
+        "A crash during emergency kill adopts the same terminate action and completes drain/seal/handoff"
+      ],
+      "verification": [
+        "profile:new_runtime_exact_v1 focus=\"python -m pytest runtime/local-ai-runtime/tests/operations/test_maintenance.py runtime/local-ai-runtime/tests/operations/test_emergency_kill.py\"",
+        "git diff --check"
+      ],
+      "evidence_path": "docs/change-evidence/<date>-lar-p1f-004-native-maintenance.md",
+      "rollback": "Revert only managed Native/maintenance code and tests; leave any durable test maintenance record for fixture verification and clean only isolated roots.",
+      "stop_conditions": [
+        "Normal maintenance can terminate a writer",
+        "Emergency termination can occur before durable intent"
+      ],
+      "prohibited_actions": [
+        "Do not install global hooks or auto-release maintenance",
+        "Do not run Native against a registered real repository"
+      ],
+      "next_task_ids": [
+        "LAR-P1F-005"
+      ]
+    },
+    {
+      "task_id": "LAR-P1F-005",
+      "contract_projections": {
+        "produces": [],
+        "implements": [
+          "durable_operator_action_inbox_v1"
+        ],
+        "accepts": []
+      },
+      "contract_projection_tokens": [
+        "durable_local_status_v1",
+        "qualified_windows_toast_v1"
+      ],
+      "phase": "P1F",
+      "priority": 1,
+      "status": "blocked",
+      "title": "Implement operator actions, runbooks and work-session metrics",
+      "goal": "Render deduplicated operator actions with one safe command and provide exact runbooks for every external/manual recovery state while measuring net operator minutes without prompts or secrets.",
+      "depends_on": [
+        "LAR-P1F-004"
+      ],
+      "preconditions": [
+        "Managed Native and emergency-kill tests pass",
+        "OperatorActionCatalog and runbook inventory are approved"
+      ],
+      "scope": {
+        "in": [
+          "OperatorAction creation/deduplication/terminalization",
+          "OperatorWorkSession timing and overlap normalization",
+          "needs_auth/environment/recovery/repair/maintenance/rollback/backup/cutover runbooks",
+          "Runbook command verifier"
+        ],
+        "out": [
+          "Notification transport integration",
+          "Credential or prompt persistence",
+          "Automatic repair beyond approved commands"
+        ],
+        "primary_files": [
+          "runtime/local-ai-runtime/src/local_ai_runtime/operations/operator_actions.py",
+          "runtime/local-ai-runtime/tests/operations/test_operator_actions.py",
+          "docs/runbooks/local-ai-runtime-0.2/README.md",
+          "runtime/local-ai-runtime/tests/operations/test_runbook_commands.py"
+        ]
+      },
+      "acceptance": [
+        "Every operator state has one versioned reason, scope, dedupe key and suggested command",
+        "Runbooks state exact preconditions, stop conditions, evidence and rollback-only-current-action command",
+        "Backup runbooks distinguish online restore-drill-only backups from already-suspended eligible backups and provide no force, marker deletion or stale-sidecar recovery path",
+        "Work sessions bind SID hash/scope/generation/reason/start/end and never save prompt or secret content",
+        "Overlapping operator intervals count once and all failure/cancel/recovery/maintenance minutes enter the numerator"
+      ],
+      "verification": [
+        "profile:new_runtime_exact_v1 focus=\"python -m pytest runtime/local-ai-runtime/tests/operations/test_operator_actions.py runtime/local-ai-runtime/tests/operations/test_runbook_commands.py\"",
+        "git diff --check"
+      ],
+      "evidence_path": "docs/change-evidence/<date>-lar-p1f-005-operator-runbooks.md",
+      "rollback": "Revert only operator-action code, runbooks, tests and this task evidence.",
+      "stop_conditions": [
+        "A manual state has no unique safe command or stop condition",
+        "Metrics require prompt, credential or free-text reason persistence"
+      ],
+      "prohibited_actions": [
+        "Do not send notifications",
+        "Do not store free-text cancel/operator reasons"
+      ],
+      "next_task_ids": [
+        "LAR-P1F-006"
+      ]
+    },
+    {
+      "task_id": "LAR-P1F-006",
+      "phase": "P1F",
+      "priority": 1,
+      "status": "blocked",
+      "title": "Implement compat, cutover and evaluation command surfaces",
+      "goal": "Expose read-only legacy compatibility verification, guarded per-repo cutover/rollback planning and fixed efficiency/reliability evaluation without performing production cutover.",
+      "depends_on": [
+        "LAR-P1F-005"
+      ],
+      "preconditions": [
+        "Operator action/runbook verification passes",
+        "Legacy ownership adapter, cutover policy and evaluation formulas are approved"
+      ],
+      "scope": {
+        "in": [
+          "compat verify and legacy evidence readers",
+          "Cutover/rollback guard evaluation and dry-run records",
+          "12-pair efficiency and 30-task cohort evaluators",
+          "Profile canary rollback eligibility"
+        ],
+        "out": [
+          "Changing repo ownership",
+          "Installing scheduler",
+          "Running live cohort or production cutover"
+        ],
+        "primary_files": [
+          "runtime/local-ai-runtime/src/local_ai_runtime/compat/__init__.py",
+          "runtime/local-ai-runtime/src/local_ai_runtime/compat/commands.py",
+          "runtime/local-ai-runtime/src/local_ai_runtime/operations/evaluation.py",
+          "runtime/local-ai-runtime/tests/compat/test_commands.py",
+          "runtime/local-ai-runtime/tests/operations/test_evaluation.py"
+        ]
+      },
+      "acceptance": [
+        "Compat readers never write legacy DB/evidence and distinguish legacy from new-runtime proof",
+        "Cutover/rollback dry run checks zero active/closing work, ownership generation and rollback drill without changing owner",
+        "Efficiency evaluator uses fixed paired-case denominator/numerator rules and overlap normalization",
+        "Cohort evaluator enforces safety zeros, task composition, unattended/operator thresholds and no unresolved terminal state",
+        "Canary rollback requires still-valid prior profile, qualification and Authorization and never dynamically falls back"
+      ],
+      "verification": [
+        "profile:new_runtime_exact_v1 focus=\"python -m pytest runtime/local-ai-runtime/tests/compat/test_commands.py runtime/local-ai-runtime/tests/operations/test_evaluation.py\"",
+        "git diff --check"
+      ],
+      "evidence_path": "docs/change-evidence/<date>-lar-p1f-006-compat-evaluation.md",
+      "rollback": "Revert only compat/evaluation command code, focused tests and this task evidence; no ownership or live state should change.",
+      "stop_conditions": [
+        "A dry-run command can mutate repo ownership or live state",
+        "An evaluation metric permits excluding failed operator effort"
+      ],
+      "prohibited_actions": [
+        "Do not cut over a repository or install a scheduler",
+        "Do not run live pilots/cohorts"
+      ],
+      "next_task_ids": [
+        "LAR-P1G-001"
+      ]
+    },
+    {
+      "task_id": "LAR-P1G-001",
+      "contract_projections": {
+        "produces": [],
+        "implements": [],
+        "accepts": [
+          "work_definition_task_family_v1",
+          "effect_plan_v1",
+          "gate_graph_v1",
+          "three_level_evolution_v1",
+          "writer_effect_launch_identity_v1",
+          "durable_operator_action_inbox_v1",
+          "git_hybrid_materialization_v1",
+        "q0_trigger_policy_v1",
+        "activation_admission_chain_v1",
+        "exact_toolchain_gate_v1"
+        ]
+      },
+      "contract_projection_tokens": [
+      "WorkDefinition",
+      "TaskFamily",
+      "FirstRunExperiencePolicy",
+      "LaunchTemplateCatalog",
+      "OperatorPresentationCatalog",
+      "EffectPlan",
+        "GateGraph",
+        "profile_generation",
+        "capability_generation",
+        "architecture_epoch",
+        "writer_effect_id",
+        "writer_launch_id",
+        "durable_local_status_v1",
+        "qualified_windows_toast_v1",
+        "git_hybrid_materialization_v1",
+        "hash-object -w",
+        "cat-file",
+        "Q0TriggerPolicy",
+      "RuntimeCompositionManifest",
+      "SelectedRuntimeIdentity",
+      "ActiveRuntimeIdentity",
+      "RuntimeToolchainManifest",
+      "VerificationExecutionProfile",
+      "uv sync default exact; --inexact forbidden",
+      "--no-python-downloads",
+      "--build-constraint",
+      "--require-hashes"
+      ],
+      "phase": "P1G",
+      "priority": 1,
+      "status": "blocked",
+      "title": "Complete Implementation Acceptance",
+      "goal": "Freeze RuntimeCompositionManifest C, run all fixed development gates, migrations, conformance, crash tests, backup/restore and runbook drills, then create an append-only ImplementationAcceptanceRecord I that binds C without activating it.",
+      "depends_on": [
+        "LAR-P1F-006"
+      ],
+      "preconditions": [
+        "All P1 implementation slices are complete",
+        "Baseline Approval remains active"
+      ],
+      "scope": {
+        "in": [
+          "Full offline development gate",
+          "Crash/conformance matrix",
+          "RuntimeCompositionManifest C",
+          "ImplementationAcceptanceRecord I(C)"
+        ],
+        "out": [
+          "Full Q0",
+          "P2 admission"
+        ],
+        "primary_files": [
+          "docs/acceptance/local-ai-runtime-0.2/ImplementationAcceptanceRecord.v1.json",
+          "docs/acceptance/local-ai-runtime-0.2/RuntimeCompositionManifest.v1.json",
+          "docs/change-evidence/<date>-lar-p1g-001-implementation-acceptance.md"
+        ]
+      },
+      "acceptance": [
+        "Every fixed offline gate passes",
+        "RuntimeCompositionManifest binds architecture epoch, approved normative baseline, capability set, ExecutionProfile, staged installation identity and implementation/toolchain/adapter/schema/probe hashes",
+        "All crash and at-most-once invariants pass",
+        "Backup restore drill passes in a new root with same-SID key-envelope unwrap and tamper rejection",
+        "Disposable production-like tests prove post-activity staling, immutable restore intent replay and one eligible-to-restoring-to-consumed production restore without touching live state",
+        "ImplementationAcceptanceRecord binds the exact RuntimeCompositionManifest hash and all acceptance evidence without a FullQ0 or activation self-reference",
+        "P2 remains blocked"
+      ],
+      "verification": [
+        "profile:new_runtime_exact_v1 stage=supply_chain_identity",
+        "profile:new_runtime_exact_v1 stage=build",
+        "profile:new_runtime_exact_v1 focus=\"python -m pytest\"",
+        "profile:new_runtime_exact_v1 focus=\"python -m local_ai_runtime contracts verify\"",
+        "profile:new_runtime_exact_v1 focus=\"ruff check runtime/local-ai-runtime\"",
+        "profile:new_runtime_exact_v1 focus=\"pyright --project runtime/local-ai-runtime\"",
+        "python scripts/verify-planning-status.py",
+        "git diff --check"
+      ],
+      "evidence_path": "docs/change-evidence/<date>-lar-p1g-001-implementation-acceptance.md",
+      "rollback": "Append an acceptance revocation record if later invalidated; never rewrite the acceptance record.",
+      "stop_conditions": [
+        "Any gate, crash invariant or restore drill fails",
+        "Evidence cannot be independently verified"
+      ],
+      "prohibited_actions": [
+        "Do not run a live writer",
+        "Do not mark Full Q0 passed"
+      ],
+      "next_task_ids": [
+        "LAR-Q0-001"
+      ]
+    },
+    {
+      "task_id": "LAR-Q0-001",
+      "contract_projections": {
+        "produces": [],
+        "implements": [],
+        "accepts": [
+          "three_level_evolution_v1",
+        "q0_trigger_policy_v1",
+        "activation_admission_chain_v1",
+        "exact_toolchain_gate_v1"
+        ]
+      },
+      "contract_projection_tokens": [
+        "profile_generation",
+        "capability_generation",
+        "architecture_epoch",
+        "Q0TriggerPolicy",
+      "RuntimeCompositionManifest",
+      "SelectedRuntimeIdentity",
+      "ActiveRuntimeIdentity",
+      "RuntimeToolchainManifest",
+      "VerificationExecutionProfile",
+      "uv sync default exact; --inexact forbidden",
+      "--no-python-downloads",
+      "--build-constraint",
+      "--require-hashes"
+      ],
+      "phase": "Q0",
+      "priority": 2,
+      "status": "blocked",
+      "title": "Run staged Full Q0, atomically activate the admitted runtime and open P2 Admission",
+      "goal": "Qualify the staged immutable Codex/Git/Windows/sandbox/adapter/model/profile/keyring/network/filesystem composition, create Q(C,I,staged), then atomically select and admit one RuntimeActivationBundle through current.json CAS plus immediate quick preflight before any live writer is allowed.",
+      "depends_on": [
+        "LAR-P1G-001"
+      ],
+      "preconditions": [
+        "Implementation Acceptance is active",
+        "Interactive operator is available for login and platform qualification",
+        "RuntimeCompositionManifest C, ImplementationAcceptanceRecord I and staged installation identity verify",
+        "No nonterminal RuntimeActivationIntent exists and the expected previous current.json head is current"
+      ],
+      "scope": {
+        "in": [
+          "Full Q0",
+          "Real effective-config and capability probes",
+          "RuntimeActivationBundle B(C,I,Q,expected_previous_active)",
+          "Activation named mutex, durable intent, pointer CAS/read-back and immediate quick preflight",
+          "SelectedRuntimeIdentity and terminal ActiveRuntimeIdentity",
+          "P2 Admission activation"
+        ],
+        "out": [
+          "Any writer execution",
+          "Batch task submission or claim"
+        ],
+        "primary_files": [
+          "docs/acceptance/local-ai-runtime-0.2/FullQ0Record.v1.json",
+          "docs/acceptance/local-ai-runtime-0.2/RuntimeActivationBundle.v1.json",
+          "docs/acceptance/local-ai-runtime-0.2/RuntimeActivationRecord.v1.json",
+          "docs/architecture/planning-status.json",
+          "docs/change-evidence/<date>-lar-q0-001-full-q0.md"
+        ]
+      },
+      "acceptance": [
+        "Full Q0 passes with pinned toolchain/profile",
+        "FullQ0Record binds C, I and the staged installation identity while current.json still selects the prior runtime; it does not bind B or A",
+        "Every required capability, deny probe and inventory hash is present",
+        "Real Windows probes prove case-clean environment construction, JOB_LIST plus exact HANDLE_LIST stdio inheritance, parent-end close/EOF and no ambient controller-sensitive handles",
+        "Real filesystem/DPAPI probes prove runtime-managed external evidence separation, purpose-bound key-envelope unwrap and suspended-only restore eligibility behavior",
+        "RuntimeActivationBundle binds C, I, Q and expected previous active head without hash self-reference",
+        "Activation holds the dedicated named mutex, writes and flushes one durable intent, revalidates staged identity and expected head, atomically replaces current.json, then read-backs generation/checksum",
+        "SelectedRuntimeIdentity exists after pointer selection; ActiveRuntimeIdentity exists only when one immutable RuntimeActivationRecord terminal result is activated_and_preflight_passed",
+        "A selected_not_admitted or nonterminal activation intent suspends the platform and forbids production qualification, Authorization, claim and P2 Admission until recovery",
+        "P2 Admission binds the terminal ActiveRuntimeIdentity and is false for every other activation outcome",
+        "No writer, Git publication or task ref is created",
+        "Q0, activation or immediate-preflight failure leaves P2 Admission false and produces one scoped OperatorAction"
+      ],
+      "verification": [
+        "profile:new_runtime_exact_v1 focus=\"python -m local_ai_runtime platform qualify --full --json\"",
+        "profile:new_runtime_exact_v1 focus=\"python -m local_ai_runtime evidence verify --record FullQ0Record.v1 --json\"",
+        "profile:new_runtime_exact_v1 focus=\"python -m local_ai_runtime runtime activate --bundle docs/acceptance/local-ai-runtime-0.2/RuntimeActivationBundle.v1.json --expected-generation <n> --json\"",
+        "profile:new_runtime_exact_v1 focus=\"python -m local_ai_runtime platform doctor --quick --json\"",
+        "python scripts/verify-planning-status.py",
+        "python scripts/select-next-work.py",
+        "git diff --check"
+      ],
+      "evidence_path": "docs/change-evidence/<date>-lar-q0-001-full-q0.md",
+      "rollback": "Append a FullQ0/activation revocation as applicable, keep claims suspended, and create a new rollback RuntimeActivationBundle/Record against a still-compatible prior composition; preserve all qualification evidence and never rewrite current records.",
+      "stop_conditions": [
+        "Any Full Q0 probe fails or is ambiguous",
+        "Toolchain/profile/effective config drifts during qualification",
+        "Activation mutex/intent/current-head/read-back or immediate preflight cannot be proven",
+        "Qualification would require a task writer"
+      ],
+      "prohibited_actions": [
+        "Do not run a pilot writer",
+        "Do not substitute repo-side simulation or legacy probes",
+        "Do not admit P2 on partial Q0, selected_not_admitted or an unrecovered activation intent"
+      ],
+      "next_task_ids": [
+        "LAR-P2-001"
+      ]
+    },
+    {
+      "task_id": "LAR-P2-001",
+      "phase": "P2",
+      "priority": 2,
+      "status": "blocked",
+      "title": "Run one low-risk self-host pilot",
+      "goal": "After Full Q0/P2 Admission, activate B1 and execute exactly one approved low-risk commit-only self-host task under human initiation.",
+      "depends_on": [
+        "LAR-Q0-001"
+      ],
+      "preconditions": [
+        "Full Q0 and P2 Admission are active",
+        "Pilot repo and template qualification/Authorization are valid",
+        "Interactive operator explicitly starts the pilot"
+      ],
+      "scope": {
+        "in": [
+          "Single B1 pilot",
+          "Commit/ref/evidence verification"
+        ],
+        "out": [
+          "Scheduled claims",
+          "Multiple repositories"
+        ],
+        "primary_files": [
+          "docs/evaluations/local-ai-runtime-0.2/p2-pilot.json",
+          "docs/change-evidence/<date>-lar-p2-001-pilot.md"
+        ]
+      },
+      "acceptance": [
+        "Exactly one writer execution is committed",
+        "Task becomes commit-ready with all evidence verified",
+        "No unauthorized write, egress, duplicate writer or cleanup error occurs"
+      ],
+      "verification": [
+        "profile:new_runtime_exact_v1 focus=\"python -m local_ai_runtime evidence verify --task <task-id> --json\"",
+        "git show --no-patch --format=raw <task-ref>",
+        "git diff --check"
+      ],
+      "evidence_path": "docs/change-evidence/<date>-lar-p2-001-pilot.md",
+      "rollback": "Suspend the platform, preserve evidence/ref, and roll back activation; never delete the task ref automatically.",
+      "stop_conditions": [
+        "Full Q0/P2 Admission becomes inactive",
+        "Any security hard gate fires",
+        "Operator intervention is needed after writer start outside an approved recovery runbook"
+      ],
+      "prohibited_actions": [
+        "Do not schedule the pilot",
+        "Do not merge or push"
+      ],
+      "next_task_ids": [
+        "LAR-P3-001"
+      ]
+    },
+    {
+      "task_id": "LAR-P3-001",
+      "phase": "P3",
+      "priority": 3,
+      "status": "blocked",
+      "title": "Run five scheduled self-host observations",
+      "goal": "Activate B2 for one promoted template and collect five scheduled commit-ready self-host observations with zero unresolved state.",
+      "depends_on": [
+        "LAR-P2-001"
+      ],
+      "preconditions": [
+        "B1 pilot passed",
+        "Template canary and Authorization are current"
+      ],
+      "scope": {
+        "in": [
+          "Current-user scheduled task",
+          "Five observations",
+          "Operator time measurement"
+        ],
+        "out": [
+          "Cross-repo scheduling",
+          "Autonomous template changes"
+        ],
+        "primary_files": [
+          "docs/evaluations/local-ai-runtime-0.2/p3-self-host-observations.json",
+          "docs/change-evidence/<date>-lar-p3-001-scheduled-self-host.md"
+        ]
+      },
+      "acceptance": [
+        "Five tasks are commit-ready or the phase fails",
+        "No unresolved recovery/reconcile/cleanup remains",
+        "Security hard gates remain zero",
+        "OperatorWorkSession data covers every manual minute"
+      ],
+      "verification": [
+        "profile:new_runtime_exact_v1 focus=\"python -m local_ai_runtime schedule status --json\"",
+        "profile:new_runtime_exact_v1 focus=\"python -m local_ai_runtime eval baseline --cohort p3 --json\"",
+        "profile:new_runtime_exact_v1 focus=\"python -m local_ai_runtime evidence verify --cohort p3 --json\"",
+        "git diff --check"
+      ],
+      "evidence_path": "docs/change-evidence/<date>-lar-p3-001-scheduled-self-host.md",
+      "rollback": "Remove the scheduled task, suspend B2 and preserve all refs/evidence.",
+      "stop_conditions": [
+        "Any security hard gate fires",
+        "A new failure class or unplanned operator intervention appears"
+      ],
+      "prohibited_actions": [
+        "Do not add a second writer",
+        "Do not expand to another repo"
+      ],
+      "next_task_ids": [
+        "LAR-P4-001"
+      ]
+    },
+    {
+      "task_id": "LAR-P4-001",
+      "contract_projections": {
+        "produces": [],
+        "implements": [],
+        "accepts": [
+          "work_definition_task_family_v1"
+        ]
+      },
+      "contract_projection_tokens": [
+      "WorkDefinition",
+      "TaskFamily",
+      "FirstRunExperiencePolicy",
+      "LaunchTemplateCatalog",
+      "OperatorPresentationCatalog"
+      ],
+      "phase": "P4",
+      "priority": 4,
+      "status": "blocked",
+      "title": "Qualify two target repositories and run the 30-task cohort",
+      "goal": "Under B2/per-repo scheduling, qualify two real repositories and measure safety, reliability, unattended success and operator efficiency over the fixed cohort without activating B3 portfolio scheduling.",
+      "depends_on": [
+        "LAR-P3-001"
+      ],
+      "preconditions": [
+        "Five scheduled self-host observations pass",
+        "Two target repos and templates pass independent qualification/Authorization",
+        "Autonomy remains B2 and each repository is selected explicitly under per-repo scheduling"
+      ],
+      "scope": {
+        "in": [
+          "At least 25 commit-ready writer tasks",
+          "At most five probe-only tasks",
+          "Twelve paired efficiency cases",
+          "Two target repos plus self-host",
+          "evidence_scope=declared_profile_pilot"
+        ],
+        "out": [
+          "Automatic merge/push",
+          "Unsupported repo formats",
+          "B3 portfolio activation or cross-repo automatic selection"
+        ],
+        "primary_files": [
+          "docs/evaluations/local-ai-runtime-0.2/p4-cohort.json",
+          "docs/evaluations/local-ai-runtime-0.2/p4-efficiency-pairs.json",
+          "docs/change-evidence/<date>-lar-p4-001-cohort.md"
+        ]
+      },
+      "acceptance": [
+        "All security hard gates are zero",
+        "At least 25 tasks are commit-ready",
+        "Unattended success is at least 80 percent and manual intervention at most 20 percent",
+        "Mandatory gates/evidence/backup/recovery are 100 percent",
+        "Net operator minutes per success improves at least 50 percent",
+        "No unresolved state remains",
+        "Every cohort record is labeled evidence_scope=declared_profile_pilot and does not claim cross-profile or general optimality",
+        "Autonomy remains B2 for the entire cohort"
+      ],
+      "verification": [
+        "profile:new_runtime_exact_v1 focus=\"python -m local_ai_runtime eval compare --baseline <id> --cohort p4 --json\"",
+        "profile:new_runtime_exact_v1 focus=\"python -m local_ai_runtime evidence verify --cohort p4 --json\"",
+        "profile:new_runtime_exact_v1 focus=\"python -m local_ai_runtime backup restore-drill --cohort p4 --json\"",
+        "git diff --check"
+      ],
+      "evidence_path": "docs/change-evidence/<date>-lar-p4-001-cohort.md",
+      "rollback": "Keep B2 active, preserve refs/evidence, suspend the affected repo/template scope and revert a profile generation only when its prior qualification and Authorization remain valid.",
+      "stop_conditions": [
+        "Any security hard gate fires",
+        "Any target repo leaves qualification",
+        "A new failure type or new manual intervention appears"
+      ],
+      "prohibited_actions": [
+        "Do not dynamically fall back model/profile",
+        "Do not waive safety gates",
+        "Do not activate or implement B3 in 0.2"
+      ],
+      "next_task_ids": [
+        "LAR-P5-001"
+      ]
+    },
+    {
+      "task_id": "LAR-P5-001",
+      "phase": "P5",
+      "priority": 5,
+      "status": "blocked",
+      "title": "Cut over repositories one at a time and retire legacy writers",
+      "goal": "Perform per-repo CAS cutover with rollback drills, then make legacy state read-only and remove legacy writers only after the 30-day zero-use window.",
+      "depends_on": [
+        "LAR-P4-001"
+      ],
+      "preconditions": [
+        "P4 cohort passes",
+        "Per-repo zero-active and rollback guards pass"
+      ],
+      "scope": {
+        "in": [
+          "Per-repo cutover",
+          "Rollback",
+          "Legacy read-only transition",
+          "30-day retirement observation"
+        ],
+        "out": [
+          "Deleting historical evidence",
+          "Deleting task refs",
+          "Bulk unguarded cutover"
+        ],
+        "primary_files": [
+          "docs/migrations/local-ai-runtime-0.2/repo-cutover-ledger.json",
+          "docs/migrations/local-ai-runtime-0.2/legacy-retirement-record.json",
+          "docs/change-evidence/<date>-lar-p5-001-cutover-retirement.md"
+        ]
+      },
+      "acceptance": [
+        "Each repo changes owner by generation CAS",
+        "Rollback drill passes before each cutover",
+        "Legacy DB becomes read-only only after all target repos cut over and no active/closing work remains",
+        "Legacy writer removal occurs only after 30 days of zero legacy calls",
+        "Compatibility reader, historical evidence and task refs remain readable"
+      ],
+      "verification": [
+        "profile:new_runtime_exact_v1 focus=\"python -m local_ai_runtime repo ownership-status --all --json\"",
+        "profile:new_runtime_exact_v1 focus=\"python -m local_ai_runtime repo rollback --drill --all --json\"",
+        "profile:new_runtime_exact_v1 focus=\"python -m local_ai_runtime compat verify --json\"",
+        "git diff --check"
+      ],
+      "evidence_path": "docs/change-evidence/<date>-lar-p5-001-cutover-retirement.md",
+      "rollback": "CAS each affected repo back to guarded_legacy while preserving all new-runtime state/evidence for audit.",
+      "stop_conditions": [
+        "Any repo has active/nonterminal work",
+        "Rollback drill fails",
+        "A legacy call occurs during the retirement window"
+      ],
+      "prohibited_actions": [
+        "Do not bulk cut over repositories",
+        "Do not delete legacy evidence or task refs"
+      ],
+      "next_task_ids": []
+    }
+  ]
+}
