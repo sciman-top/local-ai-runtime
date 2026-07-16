@@ -1,0 +1,145 @@
+{
+  "catalog_version": "CodexFeaturePolicy.v1",
+  "baseline_id": "local-ai-runtime-0.2-v3.25",
+  "policy_status": "normative_preimplementation_contract",
+  "generation_axes": [
+    "profile_generation",
+    "capability_generation",
+    "architecture_epoch"
+  ],
+  "required_runtime_surfaces": [
+    {
+      "surface_id": "cli_execution_interface",
+      "capability_id": "ExecutionInterfaceCapability.v1",
+      "qualification": "independent_full_q0",
+      "composition_probe_required": true
+    },
+    {
+      "surface_id": "app_server_client_protocol",
+      "capability_id": "ClientProtocolCapability.v1",
+      "qualification": "independent_full_q0",
+      "composition_probe_required": true
+    },
+    {
+      "surface_id": "managed_worktree_isolation",
+      "capability_id": "WorkspaceIsolationCapability.v1",
+      "qualification": "independent_full_q0",
+      "composition_probe_required": true
+    },
+    {
+      "surface_id": "automations_scheduling",
+      "capability_id": "SchedulingCapability.v1",
+      "qualification": "independent_full_q0",
+      "composition_probe_required": true
+    }
+  ],
+  "effective_features": [
+    {
+      "feature_id": "strict_config",
+      "required_state": "enabled",
+      "failure_scope": "platform"
+    },
+    {
+      "feature_id": "untrusted_repo_profile",
+      "required_state": "enabled",
+      "failure_scope": "platform"
+    },
+    {
+      "feature_id": "project_config_hooks_rules",
+      "required_state": "skipped",
+      "failure_scope": "platform"
+    },
+    {
+      "feature_id": "managed_global_agents",
+      "required_state": "content_addressed_read_only",
+      "failure_scope": "platform"
+    },
+    {
+      "feature_id": "repo_skills",
+      "required_state": "disabled_unless_exactly_authorized",
+      "failure_scope": "template"
+    },
+    {
+      "feature_id": "task_network",
+      "required_state": "denied",
+      "failure_scope": "platform_on_successful_egress"
+    },
+    {
+      "feature_id": "gate_network",
+      "required_state": "denied",
+      "failure_scope": "platform_on_successful_egress"
+    },
+    {
+      "feature_id": "git_network",
+      "required_state": "denied",
+      "failure_scope": "platform_on_successful_egress"
+    },
+    {
+      "feature_id": "provider_control_plane_network",
+      "required_state": "minimum_qualified_connectivity",
+      "failure_scope": "availability_or_auth"
+    },
+    {
+      "feature_id": "sandbox_mutable_state",
+      "required_state": "opaque_cataloged_bounded",
+      "failure_scope": "platform"
+    },
+    {
+      "feature_id": "sandbox_secret_state",
+      "required_state": "broker_only_never_projected",
+      "failure_scope": "platform"
+    },
+    {
+      "feature_id": "hard_write_quota",
+      "required_state": "optional_full_q0_qualified",
+      "failure_scope": "platform_requalification"
+    }
+  ],
+  "include_managed_config_contract": {
+    "required_for_profiles": [
+      "batch-gate",
+      "batch-git-audit",
+      "batch-git-local"
+    ],
+    "required_argv_token": "--include-managed-config",
+    "omission_result": "platform_incompatible"
+  },
+  "inventory_contract": {
+    "inputs": [
+      "pinned_help_sha256",
+      "config_schema_sha256",
+      "model_visible_tool_inventory_sha256",
+      "effective_config_sha256",
+      "surface_behavior_probe_ids"
+    ],
+    "unknown_or_removed_feature_result": "platform_incompatible",
+    "dynamic_fallback": false,
+    "cross_surface_inference": false
+  },
+  "unknown_effective_capability": "fail_incompatible",
+  "q0_trigger_classes": [
+    "binary_or_tool_version",
+    "model_or_effort",
+    "profile_or_permission",
+    "feature_or_config_key",
+    "adapter_or_execution_surface",
+    "environment_or_toolchain",
+    "schema_or_persistence",
+    "windows_or_git_capability",
+    "unknown_structured_diff"
+  ],
+  "production_binding": {
+    "manifest": "RuntimeCompositionManifest.v1",
+    "selected_identity": "SelectedRuntimeIdentity.v1",
+    "active_identity": "ActiveRuntimeIdentity.v1",
+    "capability_set": "CodexPlatformCapabilitySet.v1",
+    "runtime_selection_may_override_inventory": false
+  },
+  "deferred_beyond_0_2": [
+    "portfolio_scheduler",
+    "multi_writer",
+    "remote_publication",
+    "dynamic_model_or_effort_fallback",
+    "subagent_batch"
+  ]
+}

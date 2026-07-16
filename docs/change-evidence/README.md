@@ -44,7 +44,7 @@
 
 - v3.25 是 `baseline_candidate`，不是 approved baseline；v3.24 candidate/package/plan 与更早版本只作为精确 superseded history。
 - 当前队列是 `LOCAL-AI-RUNTIME-0.2-BASELINE-CLOSURE`。
-- `LAR-P0A-REBASELINE-V325` 已完成；v3.24 的 Product/Qualification/State producer tasks 只保留在 archive。当前 selector 是 `close_baseline_normative_package_first`，唯一 selectable task 是 `LAR-P0A-010`。规范包为 15 required / 9 present / 6 non-present；下一步创建含两阶段 environment proof 的 Q0/gate/effective-feature/process/resource-limit catalogs 与边界 fixtures。baseline 仍未批准。
+- `LAR-P0A-010` 已完成离线 contract closure：`QualificationGateCatalog.v1`、Codex feature/resource catalogs、Q0 fixture manifest 与 component verifier 已绑定精确 identity；未运行 live Q0。当前 selector 是 `close_baseline_normative_package_first`，唯一 selectable task 是 `LAR-P0A-011`。规范包为 15 required / 10 present / 5 non-present；下一步创建 migration specification 与 cross-contract examples/negative/crash fixtures。baseline 仍未批准。
 - v3.23 Native thin-path comparison 仅为 non-normative predecessor evidence，不 promotion profile、不参与当前 selector，也不向 SDK/App Server/managed Worktree/Automations 外推。
 - `runtime/host-orchestrator` 仍是现行内核；没有 Truth Reset、新 Batch、Implementation Acceptance、Full Q0 或 P2 admission。
 - 下方 2026-07-06 至 2026-07-10 的 Phase 1/runtime_v2 selector 结论是历史 evidence，不再是 next-work truth。

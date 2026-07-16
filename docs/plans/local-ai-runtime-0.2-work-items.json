@@ -568,7 +568,7 @@
       ],
       "phase": "P0A",
       "priority": 0,
-      "status": "ready",
+      "status": "completed",
       "title": "Close Q0, gate, feature and resource-limit catalogs",
       "goal": "Materialize Full/quick/daily qualification matrices, exact offline gates, effective feature inventory and all resource boundary fixtures.",
       "depends_on": [
@@ -643,7 +643,7 @@
       "task_id": "LAR-P0A-011",
       "phase": "P0A",
       "priority": 0,
-      "status": "pending",
+      "status": "ready",
       "title": "Assemble migration specifications, cross-contract examples and negative fixtures",
       "goal": "Define persistence migrations and create a closed example inventory covering happy paths, response loss, crash windows, invalid states, secret-safe evidence and limit boundaries across every normative schema.",
       "depends_on": [

@@ -4,7 +4,7 @@
 
 当前候选为 `local-ai-runtime-0.2-v3.25`，`blocking_stage=baseline_approval`。它是 v3.24 的最小 successor，不是已批准基线；原因是 predecessor 要求不可实现的 pre-resume child environment observation，并使用不存在的 exact-option sync spelling。v3.24 candidate/package/plan 仅作为冻结历史；产品、架构、容量与 launch experience 保持不变。
 
-当前 package 是 `9/15 present, 6 non-present`。`ProductContract.v2`、`QualificationContractSet.v2` 与 `StatePolicyCatalog.v1` 已创建并通过 component verifiers；Q0/migration/examples/verifier/final manifest/review 尚未闭合，`runtime/local-ai-runtime` 不存在。当前唯一 machine work item 是 `LAR-P0A-010`；selector action 是 `close_baseline_normative_package_first`。
+当前 package 是 `10/15 present, 5 non-present`。`ProductContract.v2`、`QualificationContractSet.v2`、`StatePolicyCatalog.v1` 与 `QualificationGateCatalog.v1` 均已通过 component verifiers；后者把 Q0/gate/feature/process/environment/resource-limit contracts 与离线边界 fixtures 物化，但没有运行 live Q0。migration/examples/verifier/final manifest/review 尚未闭合，`runtime/local-ai-runtime` 不存在。当前唯一 machine work item 是 `LAR-P0A-011`；selector action 是 `close_baseline_normative_package_first`。
 
 `planning_optimization_policy` 使用 `one_selector_selected_work_item` 和 `same_run_reselect_after_verified_atomic_closeout`：一个 work item 必须 acceptance、verification、evidence、status、local commit、clean worktree 全闭合后，同一 run 才能继续；默认最多 3 个或 180 分钟，阶段/批准/successor/live 边界停止。
 

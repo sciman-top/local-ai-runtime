@@ -1,0 +1,90 @@
+{
+  "fixture_id": "QualificationGateCatalog.v1.contract-fixtures",
+  "schema_version": 1,
+  "baseline_id": "local-ai-runtime-0.2-v3.25",
+  "qualification_gate_catalog_path": "docs/specs/local-ai-runtime-0.2/normative/QualificationGateCatalog.v1.json",
+  "feature_policy_path": "docs/specs/local-ai-runtime-0.2/catalogs/CodexFeaturePolicy.v1.json",
+  "resource_limit_policy_path": "docs/specs/local-ai-runtime-0.2/catalogs/ResourceLimitPolicy.v1.json",
+  "resource_boundary_cases": [
+    {"limit_id": "writer_wall_time_ms", "limit_minus_one": 3599999, "limit": 3600000, "limit_plus_one": 3600001, "expected": ["accepted", "accepted", "resource_limit_exceeded"]},
+    {"limit_id": "gate_wall_time_ms", "limit_minus_one": 1799999, "limit": 1800000, "limit_plus_one": 1800001, "expected": ["accepted", "accepted", "resource_limit_exceeded"]},
+    {"limit_id": "all_gates_cumulative_wall_time_ms", "limit_minus_one": 7199999, "limit": 7200000, "limit_plus_one": 7200001, "expected": ["accepted", "accepted", "resource_limit_exceeded"]},
+    {"limit_id": "deterministic_closeout_wall_time_ms", "limit_minus_one": 899999, "limit": 900000, "limit_plus_one": 900001, "expected": ["accepted", "accepted", "resource_limit_exceeded"]},
+    {"limit_id": "attempt_wall_time_ms", "limit_minus_one": 11699999, "limit": 11700000, "limit_plus_one": 11700001, "expected": ["accepted", "accepted", "resource_limit_exceeded"]},
+    {"limit_id": "scheduled_invocation_wall_time_ms", "limit_minus_one": 12599999, "limit": 12600000, "limit_plus_one": 12600001, "expected": ["accepted", "accepted", "resource_limit_exceeded"]},
+    {"limit_id": "writer_jsonl_stdout_aggregate_bytes", "limit_minus_one": 8388607, "limit": 8388608, "limit_plus_one": 8388609, "expected": ["accepted", "accepted", "resource_limit_exceeded"]},
+    {"limit_id": "writer_stderr_bytes", "limit_minus_one": 8388607, "limit": 8388608, "limit_plus_one": 8388609, "expected": ["accepted", "accepted", "resource_limit_exceeded"]},
+    {"limit_id": "jsonl_line_before_lf_bytes", "limit_minus_one": 262143, "limit": 262144, "limit_plus_one": 262145, "expected": ["accepted", "accepted", "resource_limit_exceeded"]},
+    {"limit_id": "normalized_journal_aggregate_bytes", "limit_minus_one": 8388607, "limit": 8388608, "limit_plus_one": 8388609, "expected": ["accepted", "accepted", "resource_limit_exceeded"]},
+    {"limit_id": "normalized_event_bytes", "limit_minus_one": 16383, "limit": 16384, "limit_plus_one": 16385, "expected": ["accepted", "accepted", "resource_limit_exceeded"]},
+    {"limit_id": "writer_final_result_bytes", "limit_minus_one": 1048575, "limit": 1048576, "limit_plus_one": 1048577, "expected": ["accepted", "accepted", "resource_limit_exceeded"]},
+    {"limit_id": "non_writer_stream_bytes", "limit_minus_one": 8388607, "limit": 8388608, "limit_plus_one": 8388609, "expected": ["accepted", "accepted", "resource_limit_exceeded"]},
+    {"limit_id": "validated_diff_representation_bytes", "limit_minus_one": 16777215, "limit": 16777216, "limit_plus_one": 16777217, "expected": ["accepted", "accepted", "resource_limit_exceeded"]},
+    {"limit_id": "changed_paths", "limit_minus_one": 199, "limit": 200, "limit_plus_one": 201, "expected": ["accepted", "accepted", "resource_limit_exceeded"]},
+    {"limit_id": "validated_changed_regular_file_bytes", "limit_minus_one": 33554431, "limit": 33554432, "limit_plus_one": 33554433, "expected": ["accepted", "accepted", "resource_limit_exceeded"]},
+    {"limit_id": "validated_changed_file_aggregate_bytes", "limit_minus_one": 268435455, "limit": 268435456, "limit_plus_one": 268435457, "expected": ["accepted", "accepted", "resource_limit_exceeded"]},
+    {"limit_id": "published_artifact_aggregate_bytes", "limit_minus_one": 268435455, "limit": 268435456, "limit_plus_one": 268435457, "expected": ["accepted", "accepted", "resource_limit_exceeded"]},
+    {"limit_id": "gate_run_writable_cache_output_bytes", "limit_minus_one": 536870911, "limit": 536870912, "limit_plus_one": 536870913, "expected": ["accepted", "accepted", "resource_limit_exceeded"]},
+    {"limit_id": "gate_run_writable_entries", "limit_minus_one": 19999, "limit": 20000, "limit_plus_one": 20001, "expected": ["accepted", "accepted", "resource_limit_exceeded"]},
+    {"limit_id": "attempt_writable_growth_bytes", "limit_minus_one": 2147483647, "limit": 2147483648, "limit_plus_one": 2147483649, "expected": ["accepted", "accepted", "resource_limit_exceeded"]},
+    {"limit_id": "attempt_writable_entries", "limit_minus_one": 49999, "limit": 50000, "limit_plus_one": 50001, "expected": ["accepted", "accepted", "resource_limit_exceeded"]},
+    {"limit_id": "attempt_local_git_object_store_growth_bytes", "limit_minus_one": 536870911, "limit": 536870912, "limit_plus_one": 536870913, "expected": ["accepted", "accepted", "resource_limit_exceeded"]},
+    {"limit_id": "common_store_promoted_object_growth_bytes", "limit_minus_one": 536870911, "limit": 536870912, "limit_plus_one": 536870913, "expected": ["accepted", "accepted", "resource_limit_exceeded"]},
+    {"limit_id": "attempts_per_task_generation", "limit_minus_one": 2, "limit": 3, "limit_plus_one": 4, "expected": ["accepted", "accepted", "resource_limit_exceeded"]},
+    {"limit_id": "process_tree_active_processes", "limit_minus_one": 63, "limit": 64, "limit_plus_one": 65, "expected": ["accepted", "accepted", "resource_limit_exceeded"]},
+    {"limit_id": "per_process_committed_memory_bytes", "limit_minus_one": 4294967295, "limit": 4294967296, "limit_plus_one": 4294967297, "expected": ["accepted", "accepted", "resource_limit_exceeded"]},
+    {"limit_id": "process_bearing_job_committed_memory_bytes", "limit_minus_one": 8589934591, "limit": 8589934592, "limit_plus_one": 8589934593, "expected": ["accepted", "accepted", "resource_limit_exceeded"]}
+  ],
+  "process_input_boundary_cases": [
+    {"limit_id": "environment_value_utf16_code_units", "limit_minus_one": 8190, "limit": 8191, "limit_plus_one": 8192, "expected": ["accepted", "accepted", "resource_limit_exceeded"]},
+    {"limit_id": "environment_block_utf16_code_units", "limit_minus_one": 32766, "limit": 32767, "limit_plus_one": 32768, "expected": ["accepted", "accepted", "resource_limit_exceeded"]},
+    {"limit_id": "create_process_command_line_utf16_code_units", "limit_minus_one": 32765, "limit": 32766, "limit_plus_one": 32767, "expected": ["accepted", "accepted", "resource_limit_exceeded"]},
+    {"limit_id": "permission_overlay_assignment_count", "limit_minus_one": 63, "limit": 64, "limit_plus_one": 65, "expected": ["accepted", "accepted", "resource_limit_exceeded"]},
+    {"limit_id": "permission_overlay_aggregate_utf16_code_units", "limit_minus_one": 16383, "limit": 16384, "limit_plus_one": 16385, "expected": ["accepted", "accepted", "resource_limit_exceeded"]},
+    {"limit_id": "pipe_eof_after_job_terminal_ms", "limit_minus_one": 4999, "limit": 5000, "limit_plus_one": 5001, "expected": ["accepted", "accepted", "resource_limit_exceeded"]}
+  ],
+  "environment_cases": [
+    {"case_id": "empty_environment", "input_kind": "empty", "expected": "canonical_double_nul_parent_proof"},
+    {"case_id": "one_entry", "input_kind": "one_entry", "expected": "parent_and_child_digest_match"},
+    {"case_id": "case_collision", "input_kind": "duplicate_ordinal_ignore_case", "expected": "reject_before_resume"},
+    {"case_id": "invalid_key", "input_kind": "equals_or_nul_or_hidden_key", "expected": "reject_before_resume"},
+    {"case_id": "value_limit_minus_one", "input_kind": "limit_minus_one", "expected": "accepted"},
+    {"case_id": "value_limit", "input_kind": "limit", "expected": "accepted"},
+    {"case_id": "value_limit_plus_one", "input_kind": "limit_plus_one", "expected": "reject_before_resume"},
+    {"case_id": "invalid_double_nul", "input_kind": "missing_or_extra_terminal_nul", "expected": "reject_before_resume"},
+    {"case_id": "create_process_flag_mismatch", "input_kind": "missing_required_flag", "expected": "terminate_suspended_job_before_resume"}
+  ],
+  "process_handle_eof_cases": [
+    {"case_id": "normal_exit", "close_all_writer_handles": true, "job_zero_processes": true, "expected": "bounded_eof"},
+    {"case_id": "job_kill", "close_all_writer_handles": true, "job_zero_processes": true, "expected": "bounded_eof_after_drain"},
+    {"case_id": "controller_crash_recovery", "close_all_writer_handles": true, "job_zero_processes": true, "expected": "recover_then_bounded_eof"},
+    {"case_id": "response_loss_with_open_writer", "close_all_writer_handles": false, "job_zero_processes": true, "expected": "eof_not_proven"}
+  ],
+  "external_evidence_dpapi_cases": [
+    {"case_id": "external_root_disjoint", "expected": "qualified"},
+    {"case_id": "ntfs_8_3_alias_overlap", "expected": "platform_or_repo_requalification"},
+    {"case_id": "purpose_separated_envelopes", "expected": "qualified"},
+    {"case_id": "purpose_mixed_envelope", "expected": "hard_integrity_error"},
+    {"case_id": "restore_second_consumption", "expected": "denied_consumed"}
+  ],
+  "trigger_cases": [
+    {"case_id": "binary_changed", "expected": "full_q0"},
+    {"case_id": "model_effort_changed", "expected": "full_q0"},
+    {"case_id": "same_profile_budget_narrowed", "expected": "scoped_requalification"},
+    {"case_id": "unknown_structured_diff", "expected": "full_q0"}
+  ],
+  "negative_mutations": [
+    {"case_id": "gate_shell_placeholder", "mutation": "gate_shell_placeholder", "expected_reason": "q0_gate_command"},
+    {"case_id": "gate_missing_managed_config", "mutation": "gate_missing_managed_config", "expected_reason": "q0_gate_command"},
+    {"case_id": "unknown_effective_capability_ignored", "mutation": "unknown_effective_capability_ignored", "expected_reason": "q0_feature_policy"},
+    {"case_id": "environment_case_sensitive_uniqueness", "mutation": "environment_case_sensitive_uniqueness", "expected_reason": "q0_environment_policy"},
+    {"case_id": "child_pre_resume_observation_claim", "mutation": "child_pre_resume_observation_claim", "expected_reason": "q0_environment_proof"},
+    {"case_id": "job_termination_implies_eof", "mutation": "job_termination_implies_eof", "expected_reason": "q0_process_handle_policy"},
+    {"case_id": "dpapi_proves_purpose_separation", "mutation": "dpapi_proves_purpose_separation", "expected_reason": "q0_external_evidence_dpapi"},
+    {"case_id": "restore_multi_consumption", "mutation": "restore_multi_consumption", "expected_reason": "q0_external_evidence_dpapi"},
+    {"case_id": "resource_boundary_removed", "mutation": "resource_boundary_removed", "expected_reason": "q0_fixture_resource_boundaries"},
+    {"case_id": "hard_quota_made_mandatory", "mutation": "hard_quota_made_mandatory", "expected_reason": "q0_resource_limits"},
+    {"case_id": "accounting_fallback_too_slow", "mutation": "accounting_fallback_too_slow", "expected_reason": "q0_write_accounting"},
+    {"case_id": "disk_pressure_maps_environment", "mutation": "disk_pressure_maps_environment", "expected_reason": "q0_disk_pressure"}
+  ]
+}

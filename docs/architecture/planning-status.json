@@ -21,24 +21,23 @@
     "target_sha256": "39ec0479a6ba0a0bf099f9d3f2410abb078ec3a3de4c3fe414ea76819f3834e0",
     "approval_input": false,
     "maximum_byte_count": 4096,
-    "byte_count": 3242,
-    "sha256": "64b1abdd652ddad763b6b790287fa03a54cc8c192426aa15b1fb04d01b3904b7"
+    "byte_count": 3358,
+    "sha256": "8872fa0269d1e16023443f5c2c6abbcb12a4e66e86bbf3137a88631406856120"
   },
   "approval_state": {
     "active": false,
     "generation": 0,
     "approval_record": null,
     "revocation_record": null,
-    "reason": "v3.25 source/lineage plus seven exact compatible v3.24 artifacts are present; six later closure artifacts remain non-present."
+    "reason": "v3.25 source/lineage, seven exact compatible v3.24 artifacts and the v3.25 Q0/gate/limit bundle are present; five later closure artifacts remain non-present."
   },
   "normative_package": {
     "inventory_ref": "docs/specs/local-ai-runtime-0.2-normative-package.json",
     "status": "incomplete",
     "approval_eligible": false,
     "required_artifact_count": 15,
-    "present_artifact_count": 9,
+    "present_artifact_count": 10,
     "missing_artifact_ids": [
-      "P0A-Q0",
       "P0A-MIGRATION",
       "P0A-EXAMPLES",
       "P0A-VERIFIER",
@@ -54,13 +53,13 @@
     "source_work_items": "docs/plans/local-ai-runtime-0.2-work-items.json",
     "source_plan_id": "local-ai-runtime-0.2-v3.25-implementation-work-items",
     "work_item_count": 52,
-    "why_now": "v3.25 replaces the unsupported pre-resume child environment observation and invalid uv --exact spelling while preserving nine verified artifacts; it must next materialize Q0/gate/feature/resource-limit catalogs with the two-stage environment proof."
+    "why_now": "v3.25 now has ten verified artifacts including the two-stage environment-proof Q0 bundle; it must next close persistence migrations and cross-contract examples before freezing the standalone verifier."
   },
   "current_work_item": {
-    "task_id": "LAR-P0A-010",
+    "task_id": "LAR-P0A-011",
     "selector_action": "close_baseline_normative_package_first",
     "status": "ready",
-    "reason": "Materialize exact Q0, gate, effective-feature, two-stage process/environment and resource-limit catalogs with limit fixtures, without running a live Q0 or creating the runtime."
+    "reason": "Assemble persistence migration specifications, cross-contract positive/negative examples and crash fixtures against all present normative artifacts, without runtime simulation or live evidence."
   },
   "planning_optimization": {
     "status": "active",
@@ -106,7 +105,7 @@
     "p5_cutover_complete": false,
     "legacy_writer_retired": false
   },
-  "current_evidence_ref": "docs/change-evidence/20260716-local-ai-runtime-v3.25-environment-proof-rebaseline.md",
+  "current_evidence_ref": "docs/change-evidence/20260716-lar-p0a-010-q0.md",
   "authoritative_docs": [
     "AGENTS.md",
     "README.md",
@@ -129,7 +128,7 @@
       "required_strings": [
         "local-ai-runtime-0.2-v3.25",
         "LOCAL-AI-RUNTIME-0.2-BASELINE-CLOSURE",
-        "LAR-P0A-010",
+        "LAR-P0A-011",
         "planning_optimization_policy",
         "new_runtime_exact_v1",
         "B3 portfolio scheduling",
@@ -142,7 +141,7 @@
         "local-ai-runtime-0.2-v3.25",
         "baseline_candidate",
         "LOCAL-AI-RUNTIME-0.2-BASELINE-CLOSURE",
-        "LAR-P0A-010",
+        "LAR-P0A-011",
         "planning_optimization_policy",
         "最多 3 项",
         "docs_contract_sync_v1",
@@ -154,7 +153,7 @@
       "required_strings": [
         "local-ai-runtime-0.2-v3.25",
         "blocking_stage=baseline_approval",
-        "LAR-P0A-010",
+        "LAR-P0A-011",
         "planning_optimization_policy",
         "最多 3 个",
         "ProductContract.v2",
@@ -306,7 +305,7 @@
         "docs/specs/local-ai-runtime-0.2-v3.25-baseline-candidate.md",
         "39ec0479a6ba0a0bf099f9d3f2410abb078ec3a3de4c3fe414ea76819f3834e0",
         "BaselineManifest.v1",
-        "LAR-P0A-010"
+        "LAR-P0A-011"
       ]
     },
     {

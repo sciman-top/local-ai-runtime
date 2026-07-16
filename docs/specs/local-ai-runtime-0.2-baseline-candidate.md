@@ -32,14 +32,16 @@ uses `pre_resume_parent_environment_proof` plus a dedicated no-write
 and machine plan remain exact frozen history.
 
 The v3.25 package is still **Request changes**: 15 artifacts are required,
-9 are present and 6 are non-present. Source and `BaselineLineage.v4` are
+10 are present and 5 are non-present. Source and `BaselineLineage.v4` are
 present. The seven existing `CanonicalizationPolicy.v1`, `ProductContract.v2`,
 `QualificationContractSet.v2`, `ExecutionSafetyContractSet.v1`,
 `EvidenceContractSet.v1`, `DeterministicGitContractSet.v1` and
 `StatePolicyCatalog.v1` artifacts are present only through the lineage's
-explicit v3.24 byte/hash carry-forward. The next ready work item is
-`LAR-P0A-010`, which must create Q0, gate, effective-feature and resource-limit
-catalogs without running a live Q0.
+explicit v3.24 byte/hash carry-forward. The new v3.25
+`QualificationGateCatalog.v1` is also present and closes Q0/gate/feature,
+two-stage environment, process/EOF and resource-limit contracts without
+claiming a live Q0 result. The next ready work item is `LAR-P0A-011`, which
+must create migration specifications and cross-contract examples/fixtures.
 The selector action is `close_baseline_normative_package_first`.
 
 Baseline Approval, Truth Reset, `runtime/local-ai-runtime`, Implementation
@@ -51,8 +53,8 @@ Acceptance, Full Q0, P2 and live rollout remain inactive.
   artifact closure, carry-forward and approval eligibility.
 - [Machine work items](../plans/local-ai-runtime-0.2-work-items.json): bounded
   AI execution scopes, dependencies, acceptance, verification and rollback.
-- [v3.25 rebaseline evidence](../change-evidence/20260716-local-ai-runtime-v3.25-environment-proof-rebaseline.md):
-  successor trigger, frozen predecessor identities and verification evidence.
+- [P0A-010 evidence](../change-evidence/20260716-lar-p0a-010-q0.md):
+  Q0 bundle identities, offline verifier results and non-live boundary.
 
 `python scripts/verify-planning-status.py` verifies this entry's binding to
 the frozen target. A passing planning verifier proves only internal

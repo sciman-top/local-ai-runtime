@@ -1,0 +1,207 @@
+{
+  "domain": "local-ai-runtime/QualificationGateCatalog/v1",
+  "payload": {
+    "artifact_version": "QualificationGateCatalog.v1",
+    "baseline_id": "local-ai-runtime-0.2-v3.25",
+    "status": "normative_preimplementation_contract",
+    "authorities": {
+      "feature_policy": "docs/specs/local-ai-runtime-0.2/catalogs/CodexFeaturePolicy.v1.json",
+      "resource_limit_policy": "docs/specs/local-ai-runtime-0.2/catalogs/ResourceLimitPolicy.v1.json",
+      "fixture_manifest": "docs/specs/local-ai-runtime-0.2/fixtures/q0/manifest.json",
+      "toolchain_contract": "docs/specs/local-ai-runtime-0.2/normative/QualificationContractSet.v2.json",
+      "execution_contract": "docs/specs/local-ai-runtime-0.2/normative/ExecutionSafetyContractSet.v1.json",
+      "evidence_contract": "docs/specs/local-ai-runtime-0.2/normative/EvidenceContractSet.v1.json",
+      "state_policy": "docs/specs/local-ai-runtime-0.2/normative/StatePolicyCatalog.v1.json"
+    },
+    "validation_classes": [
+      {
+        "class_id": "full_q0",
+        "trigger": "new_or_behaviorally_changed_runtime_composition",
+        "scope": "staged_immutable_installation_and_clean_managed_probe_repositories",
+        "admission_effect": "produce_qualification_record_without_activation",
+        "live_execution_allowed_during_contract_authoring": false
+      },
+      {
+        "class_id": "quick_preflight",
+        "trigger": "every_drain_claim_continuation_and_native_maintenance_exit",
+        "scope": "bounded_identity_config_auth_network_path_clock_disk_ownership_subset",
+        "admission_effect": "block_current_scope_only",
+        "replaces_full_q0": false
+      },
+      {
+        "class_id": "daily_canary",
+        "trigger": "first_scheduled_run_per_day_for_b2_or_b3",
+        "scope": "runtime_owned_disposable_repository",
+        "admission_effect": "one_retry_then_reason_scoped_suspension",
+        "uses_real_task_parameters": false
+      }
+    ],
+    "gate_graph": {
+      "graph_id": "GateGraph.v1",
+      "fixed_stage_order": [
+        "supply_chain_identity",
+        "build",
+        "test",
+        "contract_invariant",
+        "hotspot"
+      ],
+      "qualification_precedes_activation": true,
+      "stage_failure_is_terminal_for_run": true,
+      "fresh_gate_run_roots": true,
+      "rerun_requires_new_gate_run_id_and_unchanged_source": true,
+      "environment_preparation_is_gate": false
+    },
+    "gate_runs": [
+      {
+        "gate_id": "q0_contract_catalog_verify",
+        "profile": "controller",
+        "executable_ref": "RuntimeToolchainManifest.v1.executables.python.absolute_path",
+        "argv": ["-I", "-s", "-E", "scripts/verify-local-ai-runtime-baseline.py", "--component", "q0-gates-limits", "--json"],
+        "environment_digest_ref": "ProcessEnvironmentManifest.v1.controller.sha256",
+        "cwd_ref": "RuntimeCompositionManifest.v1.repo_root_final_identity",
+        "timeout_ms": 30000,
+        "expected_report": "QualificationGateCatalogVerifierReport.v1",
+        "failure_scope": "platform"
+      },
+      {
+        "gate_id": "q0_codex_sandbox_probe",
+        "profile": "batch-gate",
+        "executable_ref": "RuntimeToolchainManifest.v1.executables.codex.absolute_path",
+        "argv": ["exec", "--profile", "batch-gate", "--include-managed-config", "--json", "--", "contracts", "probe", "codex_sandbox_state_v1"],
+        "environment_digest_ref": "ProcessEnvironmentManifest.v1.batch_gate.sha256",
+        "cwd_ref": "QualifiedProbeRepository.v1.empty_attempt_root_final_identity",
+        "timeout_ms": 120000,
+        "expected_report": "CodexSandboxStateProbeReport.v1",
+        "failure_scope": "platform"
+      },
+      {
+        "gate_id": "q0_process_environment_probe",
+        "profile": "probe",
+        "executable_ref": "RuntimeToolchainManifest.v1.executables.q0_probe_helper.absolute_path",
+        "argv": ["--probe-id", "process_environment_two_stage_v1", "--report-json"],
+        "environment_digest_ref": "ProcessEnvironmentManifest.v1.q0_probe.sha256",
+        "cwd_ref": "QualifiedProbeRepository.v1.empty_attempt_root_final_identity",
+        "timeout_ms": 30000,
+        "expected_report": "TwoStageEnvironmentProofReport.v1",
+        "failure_scope": "platform"
+      },
+      {
+        "gate_id": "q0_process_handle_eof_probe",
+        "profile": "probe",
+        "executable_ref": "RuntimeToolchainManifest.v1.executables.q0_probe_helper.absolute_path",
+        "argv": ["--probe-id", "process_handle_job_stdio_eof_v1", "--report-json"],
+        "environment_digest_ref": "ProcessEnvironmentManifest.v1.q0_probe.sha256",
+        "cwd_ref": "QualifiedProbeRepository.v1.empty_attempt_root_final_identity",
+        "timeout_ms": 120000,
+        "expected_report": "ProcessHandleEofProbeReport.v1",
+        "failure_scope": "platform"
+      },
+      {
+        "gate_id": "q0_resource_boundary_probe",
+        "profile": "probe",
+        "executable_ref": "RuntimeToolchainManifest.v1.executables.q0_probe_helper.absolute_path",
+        "argv": ["--probe-id", "resource_boundary_enforcement_v1", "--report-json"],
+        "environment_digest_ref": "ProcessEnvironmentManifest.v1.q0_probe.sha256",
+        "cwd_ref": "QualifiedProbeRepository.v1.empty_attempt_root_final_identity",
+        "timeout_ms": 120000,
+        "expected_report": "ResourceBoundaryProbeReport.v1",
+        "failure_scope": "attempt_or_platform_on_enforcement_drift"
+      },
+      {
+        "gate_id": "q0_git_managed_config_probe",
+        "profile": "batch-git-audit",
+        "executable_ref": "RuntimeToolchainManifest.v1.executables.q0_probe_helper.absolute_path",
+        "argv": ["--probe-id", "git_managed_config_v1", "--profile", "batch-git-audit", "--include-managed-config", "--report-json"],
+        "environment_digest_ref": "ProcessEnvironmentManifest.v1.batch_git_audit.sha256",
+        "cwd_ref": "QualifiedProbeRepository.v1.empty_attempt_root_final_identity",
+        "timeout_ms": 30000,
+        "expected_report": "ManagedGitConfigProbeReport.v1",
+        "failure_scope": "repo"
+      }
+    ],
+    "q0_trigger_policy": {
+      "policy_id": "Q0TriggerPolicy.v1",
+      "structured_diff_inputs": ["RuntimeCompositionManifest.v1.old", "RuntimeCompositionManifest.v1.new"],
+      "full_q0_triggers": ["cli_or_sdk_execution_interface", "app_server_client_protocol", "managed_worktree_isolation", "automations_scheduling", "provider_or_runtime_engine", "sandbox_token_or_permission", "model_visible_tool_inventory", "git_object_or_ref_capability", "network_or_delivery_protocol", "windows_helper", "canonicalization_persistence_schema_migration_or_probe", "binary_model_effort_profile_feature_config_or_tool_version", "unknown_diff"],
+      "scoped_requalification_only_when": ["same_execution_profile_envelope", "only_narrows_timeout_resource_path_gate_or_template_parameters", "capability_adapter_and_effect_protocol_unchanged"],
+      "operator_override_allowed": false,
+      "unknown_classification": "full_q0"
+    },
+    "activation_admission_chain": {
+      "chain_id": "activation_admission_chain_v1",
+      "ordered_records": ["RuntimeCompositionManifest.v1", "ImplementationAcceptanceRecord.v1", "FullQ0Record.v1", "SelectedRuntimeIdentity.v1", "RuntimeActivationBundle.v1", "activation_pointer_cas", "immediate_quick_preflight", "ActiveRuntimeIdentity.v1"],
+      "active_terminal_result": "activated_and_preflight_passed",
+      "activate_before_full_q0": false,
+      "full_q0_selects_runtime": false,
+      "pointer_cas_rollback_required": true
+    },
+    "q0_probe_sets": [
+      {"set_id": "binary_toolchain", "probe_ids": ["binary_absolute_identity_v1", "authenticode_and_dll_search_v1", "exact_toolchain_gate_evaluation_v1"]},
+      {"set_id": "codex_capability_surface", "probe_ids": ["codex_strict_config_inventory_v1", "surface_independence_v1", "managed_config_argv_v1"]},
+      {"set_id": "sandbox_auth", "probe_ids": ["sandbox_token_role_split_v1", "sandbox_secret_deny_read_v1", "sandbox_opaque_log_v1", "keyring_generation_v1"]},
+      {"set_id": "permission_network", "probe_ids": ["profile_path_matrix_v1", "provider_task_network_split_v1", "unauthorized_egress_v1"]},
+      {"set_id": "process_isolation", "probe_ids": ["process_environment_two_stage_v1", "process_handle_job_stdio_eof_v1", "safe_dll_and_empty_home_v1"]},
+      {"set_id": "windows_objects", "probe_ids": ["named_object_sddl_collision_v1", "job_limit_readback_v1", "authorization_linearization_v1"]},
+      {"set_id": "filesystem_resource", "probe_ids": ["filesystem_alias_escape_v1", "ntfs_8_3_handle_identity_v1", "external_evidence_isolation_v1", "resource_boundary_enforcement_v1", "write_accounting_reserve_v1"]},
+      {"set_id": "stream_adapter", "probe_ids": ["jsonl_framing_matrix_v1", "pipe_backpressure_limit_v1", "receipt_six_condition_v1"]},
+      {"set_id": "gate_environment", "probe_ids": ["offline_gate_binding_v1", "fresh_gate_root_v1", "gate_timeout_kill_drain_v1"]},
+      {"set_id": "git", "probe_ids": ["git_config_protected_surface_v1", "deterministic_object_ref_v1", "no_reflog_finalize_v1"]},
+      {"set_id": "recovery", "probe_ids": ["writer_marker_crash_v1", "fenced_action_response_loss_v1", "publication_recovery_v1"]},
+      {"set_id": "operations", "probe_ids": ["native_maintenance_v1", "backup_restore_eligibility_v1", "activation_rollback_v1"]},
+      {"set_id": "platform_capability_composition", "probe_ids": ["surface_no_write_no_unowned_effect_v1", "surface_state_resume_rollback_v1", "multi_surface_effect_protocol_v1"]}
+    ],
+    "process_environment_policy": {
+      "policy_id": "ProcessEnvironmentPolicy.v1",
+      "construction": "from_empty_environment",
+      "public_allowlist": ["CODEX_HOME", "CODEX_SQLITE_HOME", "HOME", "USERPROFILE", "APPDATA", "LOCALAPPDATA", "XDG_CONFIG_HOME", "TEMP", "TMP", "SYSTEMROOT", "WINDIR", "COMSPEC", "PATHEXT", "PATH"],
+      "key_contract": {"catalog_spelling": "ascii", "uniqueness": "OrdinalIgnoreCase", "reject": ["empty_key", "equals_in_key", "nul_in_key", "nul_in_value", "case_alias", "duplicate_key", "hidden_equals_prefixed_entry", "drive_current_directory_pseudo_variable"]},
+      "serialization": {"encoding": "UTF-16LE", "sort": "Windows_OrdinalIgnoreCase", "entry_form": "key_equals_value_then_utf16_nul", "terminal_form": "exactly_two_trailing_utf16_nul_code_units", "inherited_block_allowed": false, "digest": "sha256_full_serialized_bytes"},
+      "resource_limit_refs": ["environment_value_utf16_code_units", "environment_block_utf16_code_units", "create_process_command_line_utf16_code_units", "permission_overlay_assignment_count", "permission_overlay_aggregate_utf16_code_units"],
+      "create_process_flags": ["CREATE_UNICODE_ENVIRONMENT", "CREATE_SUSPENDED", "EXTENDED_STARTUPINFO_PRESENT"],
+      "two_stage_proof": {
+        "pre_resume_parent_environment_proof": {"timing": "before_CreateProcessW_or_while_child_suspended", "claim_scope": "parent_input_only", "binds": ["canonical_utf16_bytes", "key_grammar", "ordinal_ignore_case_uniqueness", "ordering", "per_value_and_aggregate_limits", "double_nul_terminator", "sha256", "create_process_flags"], "mismatch_action": "terminate_suspended_job_before_resume"},
+        "post_resume_q0_child_environment_observation": {"actor": "dedicated_no_write_q0_child", "timing": "first_application_action_after_resume", "api": "GetEnvironmentStringsW", "report_channel": "qualified_stdout", "comparison": "child_canonical_digest_equals_parent_proof_digest", "mismatch_result": "platform_incompatible"},
+        "forbidden_claim": "child_observed_or_reported_its_environment_before_ResumeThread",
+        "production_launch": {"per_launch_parent_proof": true, "per_child_q0_probe": false, "requires_same_runtime_composition_profile_and_capability_generation": true, "never_claim_per_child_pre_resume_environment_read_back": true}
+      }
+    },
+    "process_handle_policy": {
+      "policy_id": "ProcessHandlePolicy.v1",
+      "creation": {"suspended": true, "attribute_list": ["PROC_THREAD_ATTRIBUTE_JOB_LIST", "PROC_THREAD_ATTRIBUTE_HANDLE_LIST"], "attribute_application": "single_UpdateProcThreadAttribute_list_before_CreateProcessW", "startup_flag": "STARTF_USESTDHANDLES", "inherit_handles": true},
+      "child_handle_manifest": {"manifest_version": "ChildHandleManifest.v1", "allowed_roles": ["stdin_read", "stdout_write", "stderr_write", "required_control_handle"], "ambient_sensitive_handles": "deny", "parent_child_pipe_ends_closed_before_resume": true},
+      "job_contract": {"kill_on_job_close": true, "no_breakaway": true, "no_silent_breakaway": true, "die_on_unhandled_exception": true, "active_process_limit": true, "memory_limits": true, "cpu_time_job_limit": false},
+      "eof_proof": {"scenarios": ["normal_exit", "job_kill", "controller_crash_recovery", "response_loss"], "required_conditions": ["all_parent_and_descendant_writer_handles_closed", "job_zero_processes", "all_pipes_observed_eof", "stage_launch_record_terminal"], "bounded_after_job_terminal_ms": 5000, "resource_limit_ref": "pipe_eof_after_job_terminal_ms", "job_termination_alone_implies_eof": false, "last_job_handle_closed_required_for_kill_on_close": true}
+    },
+    "external_evidence_and_dpapi": {
+      "external_evidence_policy": {"mode": "runtime_external_v1", "root_ref": "ActiveRuntimeIdentity.v1.runtime_managed_evidence_root", "operator_absolute_path_allowed": false, "identity_isolation": ["target_repo", "git_common_or_admin", "worktree", "runtime_state", "authorization", "ownership", "backup", "quarantine", "emergency_reserve", "temp", "attempt_writable_roots"], "alias_checks": ["reparse", "hardlink", "ntfs_8_3", "case_alias", "ancestor_descendant"], "task_process_access": "deny_read_write"},
+      "dpapi_envelopes": {"scope": "current_user", "quarantine": {"version": "QuarantineKeyEnvelope.v1", "purpose": "quarantine_encryption", "key_bits": 256}, "runtime_integrity": {"version": "RuntimeIntegrityKeyEnvelope.v1", "purpose": "runtime_integrity", "key_bits": 256}, "purpose_separation_required": true, "plaintext_or_plaintext_hash_persisted": false, "dpapi_alone_proves_application_invariants": false},
+      "restore_eligibility": {"head": "BackupRestoreEligibility.v1", "states": ["eligible", "stale", "restoring", "consumed"], "eligible_only_if_suspended_for_entire_capture": true, "post_activity_marker": "BackupPostActivity.v1", "restore_intent": "BackupRestoreIntent.v1", "single_consumption": true, "same_sid_unwrap_required": true, "post_restore_state": "suspended"}
+    },
+    "failure_scope_policy": {
+      "policy_id": "QualificationFailureScopePolicy.v1",
+      "mappings": [
+        {"failure_class": "binary_config_permission_sandbox_feature_job_adapter_or_successful_unauthorized_egress", "scope": "platform", "outcome": "platform_incompatible", "exit_code": 6},
+        {"failure_class": "provider_transient", "scope": "platform_availability", "outcome": "platform_unavailable", "exit_code": 5},
+        {"failure_class": "credential_interaction_required", "scope": "provider_global", "outcome": "needs_auth", "exit_code": 5},
+        {"failure_class": "repo_path_config_or_protected_surface", "scope": "repo", "outcome": "repo_requalification_required", "exit_code": 3},
+        {"failure_class": "template_gate_denied_network_or_new_mutation_class", "scope": "template", "outcome": "template_suspended", "exit_code": 4},
+        {"failure_class": "attempt_timeout_output_memory_or_disk_budget", "scope": "attempt", "outcome": "attempt_failed_or_recovery", "exit_code": 4}
+      ],
+      "successful_unauthorized_egress_never_scoped_to_template": true,
+      "enforcement_mechanism_drift_escalates_to_platform": true,
+      "unknown_scope": "platform_incompatible"
+    },
+    "invariants": [
+      "Live Q0 is not executed while authoring this contract.",
+      "Every gate command is structured and contains no shell placeholder or ellipsis.",
+      "Every effective capability is cataloged; unknown capability fails incompatible.",
+      "Full Q0 produces qualification evidence but never activates or selects a runtime.",
+      "The parent proof and post-resume child observation are distinct records and generations cannot be mixed.",
+      "A Job termination is not evidence of EOF until all pipe writers are closed and EOF is observed.",
+      "HardWriteQuotaCapability is optional; accounting_kill_audit remains mandatory.",
+      "Disk pressure never maps to needs_environment.",
+      "B3 portfolio scheduling remains deferred beyond 0.2."
+    ]
+  },
+  "schema_version": 1
+}

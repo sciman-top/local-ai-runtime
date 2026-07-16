@@ -2,7 +2,7 @@
 
 ## 1. 目标、当前落点与真值
 
-目标是在 Baseline Approval 后，把现行 `runtime/host-orchestrator` 逐步迁移到 `runtime/local-ai-runtime`：Windows-local、single-operator、Python modular monolith、Unified Native + global capacity=1 deterministic commit-only Batch。当前仍是 v3.25 preapproval planning：package `9/15 present, 6 non-present`，唯一 task 为 `LAR-P0A-010`，不得创建 runtime、approval、claim 或 live evidence。
+目标是在 Baseline Approval 后，把现行 `runtime/host-orchestrator` 逐步迁移到 `runtime/local-ai-runtime`：Windows-local、single-operator、Python modular monolith、Unified Native + global capacity=1 deterministic commit-only Batch。当前仍是 v3.25 preapproval planning：package `10/15 present, 5 non-present`，唯一 task 为 `LAR-P0A-011`，不得创建 runtime、approval、claim 或 live evidence。
 
 机器执行真源是 [local-ai-runtime-0.2-work-items.json](D:/CODE/local-ai-dev-orchestrator/docs/plans/local-ai-runtime-0.2-work-items.json)。本文件说明如何执行；若 task scope/acceptance/dependency/status 与 machine plan 冲突，以 verifier 通过的 machine plan 为准并先修正文档漂移。
 
@@ -59,9 +59,9 @@ SQLite 是唯一 policy/transition authority；journal 只提供 accepted-cursor
 
 状态域保持独立表，GuardCatalog precedence/DAG 固定；每行含 source、operation/event、guards、effects、target、exit、capacity、priority、retry。`durable_local_status_v1` 必需，`qualified_windows_toast_v1` 可选。B3 状态与 operator action 均 deferred。
 
-### 3.5 `LAR-P0A-010..013`（当前 `010` ready）
+### 3.5 `LAR-P0A-010..013`（`010` completed，当前 `011` ready）
 
-- `010`：GateGraph、three-level evolution、Q0TriggerPolicy、RuntimeCompositionManifest/SelectedRuntimeIdentity/ActiveRuntimeIdentity、ProcessHandlePolicy/ChildHandleManifest、`PROC_THREAD_ATTRIBUTE_HANDLE_LIST`、`STARTF_USESTDHANDLES`、Windows `OrdinalIgnoreCase` environment、resource/write accounting、emergency reserve、exact toolchain gate evaluation。
+- `010`（已完成）：GateGraph、three-level evolution、Q0TriggerPolicy、RuntimeCompositionManifest/SelectedRuntimeIdentity/ActiveRuntimeIdentity、ProcessHandlePolicy/ChildHandleManifest、`PROC_THREAD_ATTRIBUTE_HANDLE_LIST`、`STARTF_USESTDHANDLES`、Windows `OrdinalIgnoreCase` environment、resource/write accounting、emergency reserve、exact toolchain gate evaluation；component verifier 与 84 个 resource boundary cases 已绿，未运行 live Q0。
 - `011`：完整 positive/cross-contract/negative/crash/limit fixtures，覆盖 BackupRestoreEligibility、BackupPostActivity、BackupRestoreIntent、QuarantineKeyEnvelope、RuntimeIntegrityKeyEnvelope、`runtime_external_v1` 与 EvidenceProjectionAcceptance。
 - `012`：standalone verifier，验证 bytes/domain/schema/dependency/carry-forward/projection/fixtures/tamper；不得改写输入。
 - `013`：preliminary review -> `package_review_head` -> 一次性 final `BaselineManifest.v1.json` -> manifest-closure review -> successor `approval_review_head`；只有 15/15 present + review green 才 approval eligible。
@@ -123,4 +123,4 @@ Implementation Acceptance 覆盖 code/migration/CLI/first-run/templates/crash/ba
 
 ## 9. 当前下一步
 
-执行 `LAR-P0A-010`，只创建 Q0/gate/feature/process/resource-limit catalog artifacts 与边界 fixtures。不得运行 live Q0，创建 final manifest、approval、Truth Reset、`runtime/local-ai-runtime`、真实 Git publication，修改 `.ai` live state，读取 live auth/DPAPI/sandbox state，remote push 或 CI retrieval。
+执行 `LAR-P0A-011`，只创建 persistence migration specification、cross-contract examples 与 negative/crash fixtures，并闭合每个 Tier A schema 的正负例和 crash boundary。不得运行 runtime simulation/live Q0，创建 final manifest、approval、Truth Reset、`runtime/local-ai-runtime`、真实 Git publication，修改 `.ai` live state，读取 live auth/DPAPI/sandbox state，remote push 或 CI retrieval。

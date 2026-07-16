@@ -2,7 +2,7 @@
 
 ## 1. 路线真值与总原则
 
-当前 baseline candidate 是 `local-ai-runtime-0.2-v3.25`；package 为 `9/15 present, 6 non-present`；唯一 selectable work item 是 `LAR-P0A-010`。机器图总计 52 项，schema 为 `local_ai_runtime_work_items.v4`，含 11 个 closed contract projections，以 [work items](D:/CODE/local-ai-dev-orchestrator/docs/plans/local-ai-runtime-0.2-work-items.json) 为任务真源。
+当前 baseline candidate 是 `local-ai-runtime-0.2-v3.25`；package 为 `10/15 present, 5 non-present`；唯一 selectable work item 是 `LAR-P0A-011`。机器图总计 52 项，schema 为 `local_ai_runtime_work_items.v4`，含 11 个 closed contract projections，以 [work items](D:/CODE/local-ai-dev-orchestrator/docs/plans/local-ai-runtime-0.2-work-items.json) 为任务真源。
 
 产品目标是 Windows-local single-operator 的 Unified Native + global capacity=1 deterministic commit-only Batch。首发以首次安全 commit-ready 体验和 operator minutes 为中心，不追求并发吞吐。`same_run_reselect_after_verified_atomic_closeout` 允许一次 kickoff 在每项完整 closeout 后继续，默认最多 3 项/180 分钟；不跨阶段、批准、successor 或 live 外部写边界。
 
@@ -30,6 +30,7 @@ flowchart LR
 已完成：
 
 - `LAR-P0A-REBASELINE-V325`：冻结 v3.24 candidate/package/plan，创建 v3.25 与 `BaselineLineage.v4`；carry forward 七个精确兼容 artifact；把不可实现的 pre-resume child observation 拆成 parent pre-resume proof 与 post-resume no-write Q0 child observation；保持 0.2 B3 deferred。
+- `LAR-P0A-010`：创建 `QualificationGateCatalog.v1`、Codex feature/resource catalogs 与 Q0 fixture manifest；关闭 GateGraph、Q0 triggers、activation chain、两阶段 environment proof、process/EOF、external evidence/DPAPI 和 28 项资源边界，但未运行 live Q0。
 - v3.24 product/toolchain/state closure 与 v3.23 Native comparative evaluation均保留为 non-normative predecessor evidence，不 promotion profile，也不参与当前 selector。
 
 剩余关键序列：
@@ -37,8 +38,8 @@ flowchart LR
 1. `LAR-P0A-004` — `ProductContract.v2`、`FirstRunExperiencePolicy`、`LaunchTemplateCatalog`、`OperatorPresentationCatalog`、四模板 positive/negative fixtures；已完成并验证。
 2. `LAR-P0A-005` — `QualificationContractSet.v2`、`RuntimeToolchainManifest`、`VerificationExecutionProfile`、hashed build constraints、wrong-interpreter/extraneous-package/backend-cache/repeatability fixtures；已完成并验证。
 3. `LAR-P0A-009` — SQLite-authority/journal-observation state policy、GuardCatalog、cleanup finalizers、durable operator inbox、B3 deferred rows；已完成并验证。
-4. `LAR-P0A-010` — GateGraph、Q0 triggers、activation chain、resource/process/Windows probes、exact toolchain gate evaluation；当前 ready。
-5. `LAR-P0A-011` — cross-contract examples、negative/crash/limit fixtures。
+4. `LAR-P0A-010` — GateGraph、Q0 triggers、activation chain、resource/process/Windows probes、exact toolchain gate evaluation；已完成并验证。
+5. `LAR-P0A-011` — migration specification、cross-contract examples、negative/crash fixtures；当前 ready。
 6. `LAR-P0A-012` — standalone package verifier 与 tamper tests。
 7. `LAR-P0A-013` — preliminary review、`package_review_head`、一次性 final manifest、manifest-closure review、`approval_review_head`。
 

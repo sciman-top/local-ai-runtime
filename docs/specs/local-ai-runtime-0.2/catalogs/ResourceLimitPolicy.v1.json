@@ -1,0 +1,107 @@
+{
+  "catalog_version": "ResourceLimitPolicy.v1",
+  "baseline_id": "local-ai-runtime-0.2-v3.25",
+  "policy_status": "normative_preimplementation_contract",
+  "unit_definitions": {
+    "MiB": 1048576,
+    "GiB": 1073741824,
+    "duration_unit": "milliseconds",
+    "size_unit": "bytes",
+    "count_unit": "integer"
+  },
+  "limits": [
+    {"limit_id": "writer_wall_time_ms", "ceiling": 3600000, "unit": "milliseconds", "enforcement_class": "controller_deadline", "failure_scope": "attempt"},
+    {"limit_id": "gate_wall_time_ms", "ceiling": 1800000, "unit": "milliseconds", "enforcement_class": "controller_deadline", "failure_scope": "attempt"},
+    {"limit_id": "all_gates_cumulative_wall_time_ms", "ceiling": 7200000, "unit": "milliseconds", "enforcement_class": "controller_deadline", "failure_scope": "attempt"},
+    {"limit_id": "deterministic_closeout_wall_time_ms", "ceiling": 900000, "unit": "milliseconds", "enforcement_class": "controller_deadline", "failure_scope": "attempt"},
+    {"limit_id": "attempt_wall_time_ms", "ceiling": 11700000, "unit": "milliseconds", "enforcement_class": "controller_deadline", "failure_scope": "attempt"},
+    {"limit_id": "scheduled_invocation_wall_time_ms", "ceiling": 12600000, "unit": "milliseconds", "enforcement_class": "controller_deadline", "failure_scope": "platform_invocation"},
+    {"limit_id": "writer_jsonl_stdout_aggregate_bytes", "ceiling": 8388608, "unit": "bytes", "enforcement_class": "bounded_reader", "failure_scope": "attempt"},
+    {"limit_id": "writer_stderr_bytes", "ceiling": 8388608, "unit": "bytes", "enforcement_class": "bounded_reader", "failure_scope": "attempt"},
+    {"limit_id": "jsonl_line_before_lf_bytes", "ceiling": 262144, "unit": "bytes", "enforcement_class": "bounded_parser", "failure_scope": "attempt"},
+    {"limit_id": "normalized_journal_aggregate_bytes", "ceiling": 8388608, "unit": "bytes", "enforcement_class": "bounded_writer", "failure_scope": "attempt"},
+    {"limit_id": "normalized_event_bytes", "ceiling": 16384, "unit": "bytes", "enforcement_class": "bounded_writer", "failure_scope": "attempt"},
+    {"limit_id": "writer_final_result_bytes", "ceiling": 1048576, "unit": "bytes", "enforcement_class": "bounded_parser", "failure_scope": "attempt"},
+    {"limit_id": "non_writer_stream_bytes", "ceiling": 8388608, "unit": "bytes", "enforcement_class": "bounded_reader", "failure_scope": "attempt"},
+    {"limit_id": "validated_diff_representation_bytes", "ceiling": 16777216, "unit": "bytes", "enforcement_class": "bounded_parser", "failure_scope": "attempt"},
+    {"limit_id": "changed_paths", "ceiling": 200, "unit": "count", "enforcement_class": "bounded_parser", "failure_scope": "attempt"},
+    {"limit_id": "validated_changed_regular_file_bytes", "ceiling": 33554432, "unit": "bytes", "enforcement_class": "bounded_reader", "failure_scope": "attempt"},
+    {"limit_id": "validated_changed_file_aggregate_bytes", "ceiling": 268435456, "unit": "bytes", "enforcement_class": "bounded_reader", "failure_scope": "attempt"},
+    {"limit_id": "published_artifact_aggregate_bytes", "ceiling": 268435456, "unit": "bytes", "enforcement_class": "bounded_writer", "failure_scope": "attempt"},
+    {"limit_id": "gate_run_writable_cache_output_bytes", "ceiling": 536870912, "unit": "bytes", "enforcement_class": "accounting_kill_audit", "failure_scope": "attempt"},
+    {"limit_id": "gate_run_writable_entries", "ceiling": 20000, "unit": "count", "enforcement_class": "accounting_kill_audit", "failure_scope": "attempt"},
+    {"limit_id": "attempt_writable_growth_bytes", "ceiling": 2147483648, "unit": "bytes", "enforcement_class": "accounting_kill_audit", "failure_scope": "attempt"},
+    {"limit_id": "attempt_writable_entries", "ceiling": 50000, "unit": "count", "enforcement_class": "accounting_kill_audit", "failure_scope": "attempt"},
+    {"limit_id": "attempt_local_git_object_store_growth_bytes", "ceiling": 536870912, "unit": "bytes", "enforcement_class": "accounting_kill_audit", "failure_scope": "attempt"},
+    {"limit_id": "common_store_promoted_object_growth_bytes", "ceiling": 536870912, "unit": "bytes", "enforcement_class": "bounded_writer", "failure_scope": "repo"},
+    {"limit_id": "attempts_per_task_generation", "ceiling": 3, "unit": "count", "enforcement_class": "state_guard", "failure_scope": "task_generation"},
+    {"limit_id": "process_tree_active_processes", "ceiling": 64, "unit": "count", "enforcement_class": "job_limit", "failure_scope": "attempt"},
+    {"limit_id": "per_process_committed_memory_bytes", "ceiling": 4294967296, "unit": "bytes", "enforcement_class": "job_limit", "failure_scope": "attempt"},
+    {"limit_id": "process_bearing_job_committed_memory_bytes", "ceiling": 8589934592, "unit": "bytes", "enforcement_class": "job_limit", "failure_scope": "attempt"}
+  ],
+  "process_input_limits": [
+    {"limit_id": "environment_value_utf16_code_units", "ceiling": 8191, "unit": "utf16_code_units", "enforcement_class": "bounded_parser", "failure_scope": "platform_launch"},
+    {"limit_id": "environment_block_utf16_code_units", "ceiling": 32767, "unit": "utf16_code_units_including_double_nul", "enforcement_class": "bounded_serializer", "failure_scope": "platform_launch"},
+    {"limit_id": "create_process_command_line_utf16_code_units", "ceiling": 32766, "unit": "utf16_code_units_excluding_terminal_nul", "enforcement_class": "bounded_serializer", "failure_scope": "platform_launch"},
+    {"limit_id": "permission_overlay_assignment_count", "ceiling": 64, "unit": "count", "enforcement_class": "bounded_serializer", "failure_scope": "attempt"},
+    {"limit_id": "permission_overlay_aggregate_utf16_code_units", "ceiling": 16384, "unit": "utf16_code_units", "enforcement_class": "bounded_serializer", "failure_scope": "attempt"},
+    {"limit_id": "pipe_eof_after_job_terminal_ms", "ceiling": 5000, "unit": "milliseconds", "enforcement_class": "controller_deadline", "failure_scope": "platform_on_mechanism_drift"}
+  ],
+  "boundary_fixture_contract": {
+    "required_offsets": [-1, 0, 1],
+    "at_or_below_result": "accepted",
+    "above_result": "resource_limit_exceeded",
+    "time_contract_uses_fake_monotonic_clock": true,
+    "q0_uses_real_short_deadline_probe": true
+  },
+  "write_accounting_policy": {
+    "policy_id": "WriteAccountingPolicy.v1",
+    "mandatory_mode": "accounting_kill_audit",
+    "pre_spawn_snapshot": ["root_identity", "logical_bytes", "allocated_bytes", "entry_count", "free_space_reserve", "emergency_reserve_generation", "high_water_marks"],
+    "watcher": "ReadDirectoryChangesW_rescan_trigger",
+    "fallback_rescan_max_interval_ms": 500,
+    "limit_plus_one_sequence": ["persist_resource_limit_exceeded_intent", "terminate_job_under_current_fence", "drain_all_pipes_to_eof", "persist_final_counts_and_reason", "seal_journal_segment", "durable_recovery_handoff", "no_follow_final_audit"],
+    "unknown_or_overflow_equivalent_to_limit_plus_one": true,
+    "publication_after_limit_plus_one": false,
+    "atomic_prewrite_denial_claim": false
+  },
+  "emergency_disk_reserve": {
+    "record_version": "EmergencyDiskReserveRecord.v1",
+    "allocated_bytes": 1073741824,
+    "controller_only": true,
+    "non_sparse": true,
+    "non_compressed": true,
+    "fully_allocated": true,
+    "normal_operation_release_allowed": false,
+    "release_requires": ["disk_pressure_or_safety_recovery_durable", "active_job_termination_intent", "seal_or_handoff_blocked"],
+    "post_release_platform_state": "suspended",
+    "rebuild_requires_zero_active_attempts": true,
+    "rebuild_generation_cas": true
+  },
+  "hard_write_quota_capability": {
+    "capability_version": "HardWriteQuotaCapability.v1",
+    "required_for_p2": false,
+    "default_state": "absent_accounting_kill_audit",
+    "enable_requires": "full_q0_applicable_per_root_or_per_sandbox_user_primitive",
+    "reservation_version": "HardWriteQuotaReservation.v1",
+    "must_bind": ["primitive_type", "primitive_version", "volume_identity", "sandbox_sid", "quota_generation", "charge_unit", "reserve", "release", "recovery", "bypass_probe_ids"],
+    "unsupported_substitutions": ["unqualified_ntfs_per_user_quota", "unqualified_fsrm_folder_quota", "job_io_rate_as_directory_quota"],
+    "active_attempt_silent_downgrade": false
+  },
+  "disk_pressure_policy": {
+    "runtime_claim_floor_formula": "max(5_GiB,2*base_materialized_bytes+2*artifact_limit+2*attempt_writable_growth_limit)",
+    "running_floor_bytes": 1073741824,
+    "repo_operation_extra_floor_bytes": 1073741824,
+    "state": "disk_pressure",
+    "attempt_result": "resource_exhausted_recovery_pending",
+    "forbidden_classification": "needs_environment",
+    "resume_requires": ["managed_cleanup", "capacity_restored", "emergency_reserve_rebuilt", "quick_preflight_passed"]
+  },
+  "counting_rules": {
+    "checked_unsigned_64_bit": true,
+    "compressed_size_used": false,
+    "logical_or_allocated_max_for_filesystem_growth": true,
+    "hardlink_reparse_ads_discount": false,
+    "existing_verified_git_object_new_growth_bytes": 0
+  }
+}

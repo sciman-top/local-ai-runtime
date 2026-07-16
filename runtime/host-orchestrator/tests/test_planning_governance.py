@@ -160,8 +160,8 @@ def test_planning_verifier_accepts_truthful_candidate_state() -> None:
     assert payload["status"] == "pass"
     assert payload["baseline_id"] == "local-ai-runtime-0.2-v3.25"
     assert payload["approval_active"] is False
-    assert payload["missing_artifact_count"] == 6
-    assert payload["current_work_item_id"] == "LAR-P0A-010"
+    assert payload["missing_artifact_count"] == 5
+    assert payload["current_work_item_id"] == "LAR-P0A-011"
     work_items = json.loads(WORK_ITEMS_PATH.read_text(encoding="utf-8"))["work_items"]
     task_ids = {item["task_id"] for item in work_items}
     assert payload["work_item_count"] == len(work_items) == 52
@@ -180,7 +180,7 @@ def test_planning_selector_returns_baseline_closure_without_preflight() -> None:
     assert completed.returncode == 0, completed.stderr
     payload = json.loads(completed.stdout)
     assert payload["next_action"] == "close_baseline_normative_package_first"
-    assert payload["current_work_item_id"] == "LAR-P0A-010"
+    assert payload["current_work_item_id"] == "LAR-P0A-011"
     assert payload["side_effects_performed"] is False
     assert payload["preflight_run"] is False
 
@@ -288,7 +288,7 @@ def test_selector_routes_current_candidate_semantic_change_to_successor(
     status_path = _write_status(tmp_path, mutate)
     select_next_work.__globals__["_run_verifier"] = (
         lambda _root, path, _verifier: _verifier_attestation(
-            path, "LAR-P0A-010"
+            path, "LAR-P0A-011"
         )
     )
     payload = select_next_work(
@@ -299,7 +299,7 @@ def test_selector_routes_current_candidate_semantic_change_to_successor(
     )
 
     assert payload["next_action"] == "create_successor_candidate_first"
-    assert payload["current_work_item_id"] == "LAR-P0A-010"
+    assert payload["current_work_item_id"] == "LAR-P0A-011"
 
 
 def test_selector_policy_and_implementation_keep_successor_priority_in_sync() -> None:
@@ -386,9 +386,10 @@ def test_baseline_verifier_skeleton_fails_closed_for_full_package() -> None:
         "manifest_self_test",
         "canonicalization",
         "product_submission",
-        "qualification",
-        "state_policy",
-        "execution_safety",
+            "qualification",
+            "state_policy",
+            "q0_gates_limits",
+            "execution_safety",
         "evidence",
         "deterministic_git",
     ]
@@ -450,8 +451,8 @@ def test_stable_baseline_entry_is_non_normative_and_targets_frozen_candidate() -
         "target_sha256": baseline["sha256"],
         "approval_input": False,
         "maximum_byte_count": 4096,
-        "byte_count": 3242,
-        "sha256": "64b1abdd652ddad763b6b790287fa03a54cc8c192426aa15b1fb04d01b3904b7",
+        "byte_count": 3358,
+        "sha256": "8872fa0269d1e16023443f5c2c6abbcb12a4e66e86bbf3137a88631406856120",
     }
     assert len(raw) <= entry["maximum_byte_count"]
     assert len(raw) == entry["byte_count"]
@@ -466,7 +467,7 @@ def test_stable_baseline_entry_is_non_normative_and_targets_frozen_candidate() -
         "BaselineManifest.v1",
         "BaselineApprovalRecord",
         "ProductContract.v2",
-        "LAR-P0A-010",
+        "LAR-P0A-011",
         "close_baseline_normative_package_first",
     ):
         assert marker in rendered
@@ -961,6 +962,12 @@ def test_inventory_versions_and_manifest_review_order_are_closed() -> None:
     assert by_id["P0A-STATE"]["sha256"] == (
         "423f90a0550630b0d413cc82a53f98b6602d05cd6b7a9072f2a65759e15189de"
     )
+    assert by_id["P0A-Q0"]["artifact_version"] == "QualificationGateCatalog.v1"
+    assert by_id["P0A-Q0"]["status"] == "present"
+    assert by_id["P0A-Q0"]["byte_count"] == 16513
+    assert by_id["P0A-Q0"]["sha256"] == (
+        "bad2899fa6af96af2800d05d6c78e0e17ebf9ac08ecb5d89b68518630a31070b"
+    )
 
     carried = {
         "P0A-CANONICAL",
@@ -1004,8 +1011,9 @@ def test_machine_work_items_are_a_deterministic_v325_dag() -> None:
     }
     assert by_id["LAR-P0A-REBASELINE-V325"]["status"] == "completed"
     assert by_id["LAR-P0A-REBASELINE-V325"]["next_task_ids"] == ["LAR-P0A-010"]
-    assert by_id["LAR-P0A-010"]["status"] == "ready"
+    assert by_id["LAR-P0A-010"]["status"] == "completed"
     assert by_id["LAR-P0A-010"]["depends_on"] == ["LAR-P0A-REBASELINE-V325"]
+    assert by_id["LAR-P0A-011"]["status"] == "ready"
     assert by_id["LAR-P0B-001"]["next_task_ids"] == [
         "LAR-P0C-001",
         "LAR-P0D-001",

@@ -2,7 +2,7 @@
 
 ## 1. 当前真值
 
-Baseline=`local-ai-runtime-0.2-v3.25`；plan=`local_ai_runtime_work_items.v4`；机器图总计 52 项；状态分布为 `completed=1 / ready=1 / pending=3 / blocked=47`。当前队列 `LOCAL-AI-RUNTIME-0.2-BASELINE-CLOSURE`，唯一 selectable=`LAR-P0A-010`，action=`close_baseline_normative_package_first`。
+Baseline=`local-ai-runtime-0.2-v3.25`；plan=`local_ai_runtime_work_items.v4`；机器图总计 52 项；状态分布为 `completed=2 / ready=1 / pending=2 / blocked=47`。当前队列 `LOCAL-AI-RUNTIME-0.2-BASELINE-CLOSURE`，唯一 selectable=`LAR-P0A-011`，action=`close_baseline_normative_package_first`。
 
 本页只读投影 [machine work items](D:/CODE/local-ai-dev-orchestrator/docs/plans/local-ai-runtime-0.2-work-items.json)。`[x]` completed、`[ ]` ready/pending、`[!]` blocked。状态只能在 acceptance + declared verification + evidence + machine/doc sync + local commit + clean worktree 后改变。
 
@@ -11,8 +11,8 @@ Baseline=`local-ai-runtime-0.2-v3.25`；plan=`local_ai_runtime_work_items.v4`；
 ## 2. P0A / Governance / Bootstrap
 
 - [x] `LAR-P0A-REBASELINE-V325` completed：冻结 v3.24 candidate/package/plan，创建 v3.25/Lineage.v4，carry forward 七项，建立两阶段 environment proof 并切换 52-task graph。v3.24 的 Product/Qualification/State producer tasks 只保留在 plan archive，不在当前图重复计数。
-- [ ] `LAR-P0A-010` ready：GateGraph、Q0/capability/activation/resource/process/toolchain gate catalogs；物化 `pre_resume_parent_environment_proof` 与 `post_resume_q0_child_environment_observation`，但不运行 live Q0。
-- [ ] `LAR-P0A-011` pending：migration specification、cross-contract examples、negative/crash/limit fixtures。
+- [x] `LAR-P0A-010` completed：GateGraph、Q0/capability/activation/resource/process/toolchain gate catalogs；已物化 `pre_resume_parent_environment_proof` 与 `post_resume_q0_child_environment_observation`、28 项主资源与 6 项 process-input/EOF limits、84 + 18 个 boundary observations，但未运行 live Q0。
+- [ ] `LAR-P0A-011` ready：migration specification、cross-contract examples、negative/crash fixtures。
 - [ ] `LAR-P0A-012` pending：standalone normative package verifier 与 tamper tests。
 - [ ] `LAR-P0A-013` pending：preliminary review、package head、final manifest、closure review、approval readiness。
 - [!] `LAR-GOV-001` blocked：controlled v3.25 Baseline Approval；要求 explicit authority/expected generation/anti-replay，AI 不自签。

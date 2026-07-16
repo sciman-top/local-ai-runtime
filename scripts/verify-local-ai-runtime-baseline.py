@@ -32,6 +32,10 @@ from state_policy_contract import (
     StatePolicyValidationError,
     verify_state_policy_bundle,
 )
+from q0_gates_limits_contract import (
+    Q0BundleValidationError,
+    verify_q0_gate_limit_bundle,
+)
 
 
 MANIFEST_DOMAIN = "local-ai-runtime/BaselineManifest/v1"
@@ -3330,6 +3334,20 @@ def verify_state_policy_component(repo_root: Path) -> dict[str, Any]:
     }
 
 
+def verify_q0_gates_limits_component(repo_root: Path) -> dict[str, Any]:
+    """Verify the v3.25 Q0, gate, feature, process and limit bundle."""
+
+    try:
+        current = verify_q0_gate_limit_bundle(repo_root)
+    except Q0BundleValidationError as exc:
+        raise ValidationFailure(exc.reason, str(exc)) from exc
+    return {
+        "status": "pass",
+        "component": "q0-gates-limits",
+        **current,
+    }
+
+
 def _verify_execution_safety_identity(
     raw: bytes, identity_key: str, reason: str, label: str
 ) -> None:
@@ -6395,6 +6413,7 @@ def _parse_args(argv: list[str]) -> argparse.Namespace:
             "product-submission",
             "qualification",
             "state-policy",
+            "q0-gates-limits",
             "execution-safety",
             "evidence",
             "deterministic-git",
@@ -6425,6 +6444,9 @@ def main(argv: list[str] | None = None) -> int:
         elif args.component == "state-policy":
             payload = verify_state_policy_component(root)
             exit_code = 0
+        elif args.component == "q0-gates-limits":
+            payload = verify_q0_gates_limits_component(root)
+            exit_code = 0
         elif args.component == "execution-safety":
             payload = verify_execution_safety_component(root)
             exit_code = 0
@@ -6444,6 +6466,7 @@ def main(argv: list[str] | None = None) -> int:
                     "product_submission",
                     "qualification",
                     "state_policy",
+                    "q0_gates_limits",
                     "execution_safety",
                     "evidence",
                     "deterministic_git",

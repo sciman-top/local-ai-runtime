@@ -2305,6 +2305,7 @@ def _verify_completed_normative_components(
         ("LAR-P0A-REBASELINE-V325", "P0A-EVIDENCE", "evidence", "EvidenceContractSet.v1"),
         ("LAR-P0A-REBASELINE-V325", "P0A-GIT", "deterministic-git", "DeterministicGitContractSet.v1"),
         ("LAR-P0A-REBASELINE-V325", "P0A-STATE", "state-policy", "StatePolicyCatalog.v1"),
+        ("LAR-P0A-010", "P0A-Q0", "q0-gates-limits", "QualificationGateCatalog.v1"),
     )
     for task_id, artifact_id, component, expected_version in components:
         if work_items.get(task_id, {}).get("status") != "completed":

@@ -305,10 +305,12 @@
       "kind": "qualification_gate_limit_bundle",
       "artifact_version": "QualificationGateCatalog.v1",
       "path": "docs/specs/local-ai-runtime-0.2/normative/QualificationGateCatalog.v1.json",
-      "status": "missing",
+      "status": "present",
+      "byte_count": 16513,
+      "sha256": "bad2899fa6af96af2800d05d6c78e0e17ebf9ac08ecb5d89b68518630a31070b",
       "required_for_approval": true,
       "producer_task_id": "LAR-P0A-010",
-      "verification": "q0_matrix_limit_boundary_fixtures"
+      "verification": "q0_gates_limits_component_verifier"
     },
     {
       "artifact_id": "P0A-MIGRATION",
@@ -362,7 +364,6 @@
     }
   ],
   "missing_artifact_ids": [
-    "P0A-Q0",
     "P0A-MIGRATION",
     "P0A-EXAMPLES",
     "P0A-VERIFIER",
@@ -375,8 +376,8 @@
     "A present artifact must exist and pass its declared verifier.",
     "Every present artifact records and matches its exact byte_count and sha256; file existence alone never closes an artifact.",
     "Successor carry-forward is closed by BaselineLineage.v4 and cannot infer compatibility from a matching filename or predecessor status.",
-    "Exactly seven v3.24 artifacts are carried into v3.25; Q0 and later closure artifacts remain non-present.",
-    "The two-stage environment-proof correction is narrative-only until P0A-Q0 materializes its schema catalog fixtures and verifier.",
+    "Exactly seven v3.24 artifacts are carried into v3.25; P0A-Q0 is a new v3.25 artifact and is never represented as carried predecessor evidence.",
+    "P0A-Q0 materializes the two-stage environment proof, Q0/gate/feature/process/resource catalogs and offline fixtures without claiming a live Q0 result.",
     "A complete inventory is approval-eligible only after the checked-in standalone normative package verifier returns a matching structured pass result.",
     "A missing artifact must not be silently treated as present; a partially materialized artifact is explicitly in_progress and remains approval-blocking.",
     "Review evidence is non-normative and cannot change the narrative specification content hash.",
