@@ -18,6 +18,15 @@ POLICY_PATH = PRODUCT_ROOT / "normative" / "ProductContract.v1.json"
 TEMPLATE_SCHEMA_PATH = PRODUCT_ROOT / "schemas" / "TaskTemplate.v1.schema.json"
 SUBMISSION_SCHEMA_PATH = PRODUCT_ROOT / "schemas" / "BatchSubmission.v1.schema.json"
 FIXTURE_PATH = PRODUCT_ROOT / "fixtures" / "submission" / "manifest.json"
+V2_POLICY_PATH = PRODUCT_ROOT / "normative" / "ProductContract.v2.json"
+FIRST_RUN_SCHEMA_PATH = PRODUCT_ROOT / "schemas" / "FirstRunExperience.v1.schema.json"
+LAUNCH_TEMPLATE_CATALOG_PATH = (
+    PRODUCT_ROOT / "catalogs" / "LaunchTemplateCatalog.v1.json"
+)
+OPERATOR_PRESENTATION_CATALOG_PATH = (
+    PRODUCT_ROOT / "catalogs" / "OperatorPresentationCatalog.v1.json"
+)
+V2_FIXTURE_PATH = PRODUCT_ROOT / "fixtures" / "product-v2" / "manifest.json"
 
 
 def _run_component(repo_root: Path = REPO_ROOT) -> subprocess.CompletedProcess[str]:
@@ -38,7 +47,17 @@ def _run_component(repo_root: Path = REPO_ROOT) -> subprocess.CompletedProcess[s
 
 
 def _copy_bundle(tmp_path: Path) -> None:
-    for source in (POLICY_PATH, TEMPLATE_SCHEMA_PATH, SUBMISSION_SCHEMA_PATH, FIXTURE_PATH):
+    for source in (
+        POLICY_PATH,
+        TEMPLATE_SCHEMA_PATH,
+        SUBMISSION_SCHEMA_PATH,
+        FIXTURE_PATH,
+        V2_POLICY_PATH,
+        FIRST_RUN_SCHEMA_PATH,
+        LAUNCH_TEMPLATE_CATALOG_PATH,
+        OPERATOR_PRESENTATION_CATALOG_PATH,
+        V2_FIXTURE_PATH,
+    ):
         target = tmp_path / source.relative_to(REPO_ROOT)
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_bytes(source.read_bytes())
@@ -50,23 +69,86 @@ def test_product_submission_component_closes_declared_contracts() -> None:
     payload = json.loads(completed.stdout)
     assert payload["status"] == "pass"
     assert payload["component"] == "product-submission"
-    assert payload["artifact_version"] == "ProductContract.v1"
-    assert payload["artifact_byte_count"] == 5003
+    assert payload["artifact_version"] == "ProductContract.v2"
+    assert payload["artifact_byte_count"] == 14902
     assert payload["artifact_sha256"] == (
+        "ef93061279accfd6af7a580d1eafbb3352bf8a8a4f610f7bcd86006643a9bcae"
+    )
+    assert payload["legacy_artifact_version"] == "ProductContract.v1"
+    assert payload["legacy_artifact_byte_count"] == 5003
+    assert payload["legacy_artifact_sha256"] == (
         "b239cee308681ac5972e494ad4ff76958623fbd558a47e03b95e0be4159fb1ef"
     )
     assert payload["fixture_counts"] == {
-        "family_replay": 4,
-        "resubmission": 5,
-        "routing": 6,
-        "submission_negative": 5,
-        "submission_positive": 1,
-        "template_negative": 4,
-        "template_positive": 1,
+        "first_run_steps": 10,
+        "launch_templates": 4,
+        "negative": 12,
+        "operator_reasons": 8,
+        "operator_views": 5,
+        "positive": 5,
+        "product_metrics": 8,
     }
-    assert hashlib.sha256(POLICY_PATH.read_bytes()).hexdigest() == payload[
+    assert hashlib.sha256(V2_POLICY_PATH.read_bytes()).hexdigest() == payload[
         "artifact_sha256"
     ]
+
+
+@pytest.mark.parametrize(
+    ("target", "mutation", "expected_reason"),
+    [
+        (
+            V2_POLICY_PATH,
+            lambda value: value["payload"].__setitem__(
+                "baseline_id", "local-ai-runtime-0.2-v3.25"
+            ),
+            "product_v2_policy_identity",
+        ),
+        (
+            FIRST_RUN_SCHEMA_PATH,
+            lambda value: value.__setitem__("additionalProperties", True),
+            "product_v2_first_run_schema_identity",
+        ),
+        (
+            LAUNCH_TEMPLATE_CATALOG_PATH,
+            lambda value: value.__setitem__("template_count", 5),
+            "product_v2_launch_template_catalog_identity",
+        ),
+        (
+            OPERATOR_PRESENTATION_CATALOG_PATH,
+            lambda value: value["render_policy"].__setitem__(
+                "human_source", "raw_model_output"
+            ),
+            "product_v2_operator_presentation_catalog_identity",
+        ),
+        (
+            V2_FIXTURE_PATH,
+            lambda value: value.__setitem__("negative_mutations", []),
+            "product_v2_fixture_identity",
+        ),
+    ],
+)
+def test_product_v2_bundle_fails_closed_on_member_identity_drift(
+    tmp_path: Path,
+    target: Path,
+    mutation: Callable[[dict[str, object]], None],
+    expected_reason: str,
+) -> None:
+    _copy_bundle(tmp_path)
+    copied = tmp_path / target.relative_to(REPO_ROOT)
+    value = json.loads(copied.read_text(encoding="utf-8"))
+    mutation(value)
+    copied.write_text(
+        json.dumps(value, ensure_ascii=True, indent=2) + "\n",
+        encoding="utf-8",
+        newline="\n",
+    )
+
+    completed = _run_component(tmp_path)
+
+    assert completed.returncode == 4
+    failure = json.loads(completed.stdout)
+    assert failure["status"] == "fail"
+    assert failure["reason"] == expected_reason
 
 
 @pytest.mark.parametrize(

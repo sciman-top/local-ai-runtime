@@ -417,6 +417,7 @@ def verify(*, repo_root: Path, status_path: Path) -> dict[str, object]:
         if inventory:
             _verify_inventory_task_links(inventory, work_items, current_work, failures)
         _verify_manifest_contract_slice(root, work_items, inventory, failures)
+        _verify_completed_normative_components(root, work_items, inventory, failures)
 
     try:
         policy_path = _resolve_repo_path(root, str(POLICY_PATH), "selector policy")
@@ -2232,6 +2233,70 @@ def _verify_manifest_contract_slice(
         )
     if payload.get("final_manifest_exists") is not False:
         failures.append("BaselineManifest verifier self-test must prove final manifest absence")
+
+
+def _verify_completed_normative_components(
+    root: Path,
+    work_items: dict[str, Any],
+    inventory: dict[str, Any],
+    failures: list[str],
+) -> None:
+    """Bind completed producer tasks to their checked-in component verifier."""
+
+    artifacts = {
+        item.get("artifact_id"): item
+        for item in inventory.get("required_artifacts", [])
+        if isinstance(item, dict) and isinstance(item.get("artifact_id"), str)
+    }
+    components = (
+        ("LAR-P0A-004", "P0A-PRODUCT", "product-submission", "ProductContract.v2"),
+    )
+    for task_id, artifact_id, component, expected_version in components:
+        if work_items.get(task_id, {}).get("status") != "completed":
+            continue
+        artifact = artifacts.get(artifact_id)
+        if not isinstance(artifact, dict) or artifact.get("status") != "present":
+            failures.append(
+                f"completed {task_id} requires present inventory artifact {artifact_id}"
+            )
+            continue
+        command = [
+            sys.executable,
+            str(root / BASELINE_VERIFIER_SKELETON_PATH),
+            "--component",
+            component,
+        ]
+        try:
+            completed = subprocess.run(
+                command,
+                cwd=root,
+                capture_output=True,
+                text=True,
+                errors="replace",
+                timeout=30,
+                check=False,
+            )
+        except subprocess.TimeoutExpired:
+            failures.append(f"completed {task_id} component verifier timed out")
+            continue
+        try:
+            payload = _loads_json_object(
+                completed.stdout, f"{task_id} component verifier"
+            )
+        except ValueError as exc:
+            failures.append(str(exc))
+            continue
+        if (
+            completed.returncode != 0
+            or payload.get("status") != "pass"
+            or payload.get("component") != component
+            or payload.get("artifact_version") != expected_version
+            or payload.get("artifact_byte_count") != artifact.get("byte_count")
+            or payload.get("artifact_sha256") != artifact.get("sha256")
+        ):
+            failures.append(
+                f"completed {task_id} must pass {component} with exact inventory identity"
+            )
 
 
 def _verify_selector_policy(

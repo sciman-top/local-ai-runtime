@@ -1,5 +1,7 @@
 # Change Evidence Index
 
+- [2026-07-16 LAR-P0A-004 ProductContract.v2 and launch experience](20260716-lar-p0a-004-product-v2-launch-experience.md) — closes the ten-step first-run CLI journey, four launch templates, catalog-only operator presentation, metrics/unknown policy and 12 negative product fixtures without runtime implementation or approval.
+
 - [20260716 Local AI Runtime v3.24 Product/Toolchain Rebaseline](20260716-local-ai-runtime-v3.24-product-toolchain-rebaseline.md): freezes the v3.23 candidate/package/plan as superseded inputs, creates v3.24/Lineage.v3, carries forward only four exact compatible artifacts, adds launch-product design and an exact uv/Python/build gate profile, reduces the graph to 55 tasks, and keeps approval/runtime/live effects inactive.
 - [20260714 LAR-P0A-008 Deterministic Git](20260714-lar-p0a-008-git.md): closes hardened Git environment/config audit, canonical object and commit identities, attempt-local object verification/promotion, no-reflog HEAD/task-ref publication and ordered cleanup without running Git against a real target repository.
 - [20260714 LAR-P0A-007 Evidence And Backup](20260714-lar-p0a-007-evidence.md): closes the exhaustive normalized-event matrix and hash chain, pre-scan secret-safe projections, flush-before-cursor journal, six-condition receipt, no-replace artifacts, activation-bound external evidence, purpose-separated key envelopes and single-intent anti-rollback backup/restore without reading live evidence, DPAPI state or backups.

@@ -2,7 +2,7 @@
 
 ## 1. 路线真值与总原则
 
-当前 baseline candidate 是 `local-ai-runtime-0.2-v3.24`；package 为 `6/15 present, 9 non-present`；唯一 selectable work item 是 `LAR-P0A-004`。机器图总计 55 项，schema 为 `local_ai_runtime_work_items.v4`，含 11 个 closed contract projections，以 [work items](D:/CODE/local-ai-dev-orchestrator/docs/plans/local-ai-runtime-0.2-work-items.json) 为任务真源。
+当前 baseline candidate 是 `local-ai-runtime-0.2-v3.24`；package 为 `7/15 present, 8 non-present`；唯一 selectable work item 是 `LAR-P0A-005`。机器图总计 55 项，schema 为 `local_ai_runtime_work_items.v4`，含 11 个 closed contract projections，以 [work items](D:/CODE/local-ai-dev-orchestrator/docs/plans/local-ai-runtime-0.2-work-items.json) 为任务真源。
 
 产品目标是 Windows-local single-operator 的 Unified Native + global capacity=1 deterministic commit-only Batch。首发以首次安全 commit-ready 体验和 operator minutes 为中心，不追求并发吞吐。`same_run_reselect_after_verified_atomic_closeout` 允许一次 kickoff 在每项完整 closeout 后继续，默认最多 3 项/180 分钟；不跨阶段、批准、successor 或 live 外部写边界。
 
@@ -34,8 +34,8 @@ flowchart LR
 
 剩余关键序列：
 
-1. `LAR-P0A-004` — `ProductContract.v2`、`FirstRunExperiencePolicy`、`LaunchTemplateCatalog`、`OperatorPresentationCatalog`、四模板 positive/negative fixtures；当前 ready。
-2. `LAR-P0A-005` — `QualificationContractSet.v2`、`RuntimeToolchainManifest`、`VerificationExecutionProfile`、hashed build constraints、wrong-interpreter/extraneous-package/backend-cache/repeatability fixtures。
+1. `LAR-P0A-004` — `ProductContract.v2`、`FirstRunExperiencePolicy`、`LaunchTemplateCatalog`、`OperatorPresentationCatalog`、四模板 positive/negative fixtures；已完成并验证。
+2. `LAR-P0A-005` — `QualificationContractSet.v2`、`RuntimeToolchainManifest`、`VerificationExecutionProfile`、hashed build constraints、wrong-interpreter/extraneous-package/backend-cache/repeatability fixtures；当前 ready。
 3. `LAR-P0A-009` — SQLite-authority/journal-observation state policy、GuardCatalog、cleanup finalizers、durable operator inbox、B3 deferred rows。
 4. `LAR-P0A-010` — GateGraph、Q0 triggers、activation chain、resource/process/Windows probes、exact toolchain gate evaluation。
 5. `LAR-P0A-011` — cross-contract examples、negative/crash/limit fixtures。

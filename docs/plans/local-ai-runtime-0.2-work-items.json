@@ -540,7 +540,7 @@
       ],
       "phase": "P0A",
       "priority": 0,
-      "status": "ready",
+      "status": "completed",
       "title": "Materialize ProductContract.v2 and the launch product experience",
       "goal": "Create the v3.24-bound product contract for the first usable CLI journey, four closed launch templates, template promotion, human/JSON presentation, operator action inbox and product metrics while preserving the Native/Batch authority boundary.",
       "depends_on": [
@@ -588,7 +588,7 @@
         "python scripts/select-next-work.py",
         "git diff --check"
       ],
-      "evidence_path": "docs/change-evidence/<date>-lar-p0a-004-product-v2-launch-experience.md",
+      "evidence_path": "docs/change-evidence/20260716-lar-p0a-004-product-v2-launch-experience.md",
       "rollback": "Revert only ProductContract.v2 its new schemas/catalogs/fixtures evidence and status projection; keep ProductContract.v1 and v3.24 candidate immutable.",
       "stop_conditions": [
         "A launch template requires free text dynamic commands dependency install remote effects or more than the approved path envelope",
@@ -608,7 +608,7 @@
       "task_id": "LAR-P0A-005",
       "phase": "P0A",
       "priority": 0,
-      "status": "pending",
+      "status": "ready",
       "title": "Materialize QualificationContractSet.v2 and exact toolchain gates",
       "goal": "Create the v3.24 qualification contract that proves exact uv environment synchronization manifest-pinned Python identity no Python downloads hash-pinned build backend and clean-root repeatable builds before any implementation can be accepted.",
       "depends_on": [

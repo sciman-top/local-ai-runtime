@@ -19,6 +19,12 @@ import sys
 import unicodedata
 from typing import Any, Callable
 
+SCRIPT_DIR = Path(__file__).resolve().parent
+if str(SCRIPT_DIR) not in sys.path:
+    sys.path.insert(0, str(SCRIPT_DIR))
+
+from product_v2_contract import ProductV2ValidationError, verify_product_v2_bundle
+
 
 MANIFEST_DOMAIN = "local-ai-runtime/BaselineManifest/v1"
 MANIFEST_VERSION = "BaselineManifest.v1"
@@ -2158,7 +2164,7 @@ def _fixture_cases(
     return cases
 
 
-def verify_product_submission_component(repo_root: Path) -> dict[str, Any]:
+def _verify_product_v1_bundle(repo_root: Path) -> dict[str, Any]:
     policy, policy_raw = _load_json_object(repo_root / PRODUCT_POLICY_RELATIVE)
     _, template_schema_raw = _load_json_object(repo_root / TASK_TEMPLATE_SCHEMA_RELATIVE)
     _, submission_schema_raw = _load_json_object(repo_root / BATCH_SUBMISSION_SCHEMA_RELATIVE)
@@ -2336,6 +2342,33 @@ def verify_product_submission_component(repo_root: Path) -> dict[str, Any]:
             "submission_positive": 1,
             "template_negative": len(template_cases),
             "template_positive": 1,
+        },
+    }
+
+
+def verify_product_submission_component(repo_root: Path) -> dict[str, Any]:
+    """Verify the immutable v1 predecessor and the active v3.24 v2 bundle."""
+
+    legacy = _verify_product_v1_bundle(repo_root)
+    try:
+        current = verify_product_v2_bundle(repo_root)
+    except ProductV2ValidationError as exc:
+        raise ValidationFailure(exc.reason, str(exc)) from exc
+    return {
+        "status": "pass",
+        "component": "product-submission",
+        **current,
+        "legacy_artifact_version": legacy["artifact_version"],
+        "legacy_artifact_byte_count": legacy["artifact_byte_count"],
+        "legacy_artifact_sha256": legacy["artifact_sha256"],
+        "fixture_counts": {
+            "first_run_steps": current["first_run_step_count"],
+            "launch_templates": current["launch_template_count"],
+            "negative": current["negative_fixture_count"],
+            "operator_reasons": current["operator_reason_count"],
+            "operator_views": current["operator_view_count"],
+            "positive": current["positive_fixture_count"],
+            "product_metrics": current["product_metric_count"],
         },
     }
 

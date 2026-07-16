@@ -1,0 +1,73 @@
+{
+  "catalog_id": "local-ai-runtime-operator-presentation",
+  "catalog_version": "OperatorPresentationCatalog.v1",
+  "baseline_id": "local-ai-runtime-0.2-v3.24",
+  "render_policy": {
+    "human_renderer": "catalog_template_only",
+    "human_source": "public_machine_state_reason_code_and_public_locator",
+    "machine_format": "stable_json",
+    "machine_unknown_field_policy": "fail_closed",
+    "forbidden_sources": ["raw_model_output", "raw_tool_output", "secret_derived_metadata"],
+    "secret_field_policy": "never_render_never_persist",
+    "exit_code_semantics_shared": true
+  },
+  "status_views": [
+    {
+      "view_id": "runtime_status_v1",
+      "command": "runtime status",
+      "public_fields": ["active_runtime_identity", "platform_lane", "capacity", "suspension_reason_code", "recovery_reason_code", "next_operator_action_id"],
+      "human_template": "Runtime {active_runtime_identity}: lane={platform_lane}, capacity={capacity}, next={next_operator_action_id}.",
+      "empty_template": "No active runtime identity. Run runtime doctor --setup-readiness.",
+      "forbidden_fields": ["raw_model_output", "raw_tool_output", "secret_derived_metadata"]
+    },
+    {
+      "view_id": "repo_status_v1",
+      "command": "repo status <repo_id>",
+      "public_fields": ["repo_id", "ownership_state", "qualification_state", "maintenance_state", "base_drift_state", "active_task_id", "task_ref_locator", "next_operator_action_id"],
+      "human_template": "Repo {repo_id}: ownership={ownership_state}, qualification={qualification_state}, maintenance={maintenance_state}, next={next_operator_action_id}.",
+      "empty_template": "Repository is not qualified. Run repo inspect --repo <path>.",
+      "forbidden_fields": ["absolute_secret_path", "raw_model_output", "raw_tool_output"]
+    },
+    {
+      "view_id": "batch_status_v1",
+      "command": "batch status <task_id>",
+      "public_fields": ["family_id", "task_id", "attempt_id", "task_state", "attempt_state", "current_phase", "gate_summary", "commit_oid", "task_ref_locator", "cleanup_disposition", "next_operator_action_id"],
+      "human_template": "Task {task_id}: state={task_state}, phase={current_phase}, gates={gate_summary}, next={next_operator_action_id}.",
+      "empty_template": "Task not found or not readable.",
+      "forbidden_fields": ["prompt", "raw_model_output", "raw_tool_output", "environment_value"]
+    },
+    {
+      "view_id": "operator_action_inbox_v1",
+      "command": "operator actions list",
+      "public_fields": ["action_id", "scope", "severity", "reason_code", "explanation_message_id", "recommended_command", "precondition_codes", "expires_at", "evidence_locator", "blocks_other_repos"],
+      "human_template": "[{severity}] {reason_code}: {explanation_message_id}; next={recommended_command}.",
+      "empty_template": "No operator actions require attention.",
+      "forbidden_fields": ["challenge_response", "raw_model_output", "raw_tool_output", "secret_derived_metadata"]
+    },
+    {
+      "view_id": "doctor_result_v1",
+      "command": "runtime doctor --quick|--full",
+      "public_fields": ["doctor_mode", "status", "reason_code", "check_ids", "evidence_locator", "recommended_command"],
+      "human_template": "Doctor {doctor_mode}: {status} ({reason_code}); next={recommended_command}.",
+      "empty_template": "Doctor returned no checks; treat as policy error.",
+      "forbidden_fields": ["credential_value", "raw_probe_output", "raw_model_output", "raw_tool_output"]
+    }
+  ],
+  "reason_messages": [
+    {"reason_code": "configuration_error", "severity": "error", "message_id": "configuration_error_v1", "recommended_command_pattern": "runtime doctor --full", "retry_policy": "after_operator_fix"},
+    {"reason_code": "needs_auth", "severity": "action_required", "message_id": "needs_auth_v1", "recommended_command_pattern": "authorization prepare --repo <repo_id> --template <template_id>", "retry_policy": "after_operator_action"},
+    {"reason_code": "needs_environment", "severity": "action_required", "message_id": "needs_environment_v1", "recommended_command_pattern": "runtime install/qualify --staged", "retry_policy": "after_qualification"},
+    {"reason_code": "platform_incompatible", "severity": "blocked", "message_id": "platform_incompatible_v1", "recommended_command_pattern": "runtime doctor --full", "retry_policy": "after_platform_change"},
+    {"reason_code": "transient_unavailable", "severity": "warning", "message_id": "transient_unavailable_v1", "recommended_command_pattern": "runtime status", "retry_policy": "bounded_retry"},
+    {"reason_code": "operator_review_required", "severity": "action_required", "message_id": "operator_review_required_v1", "recommended_command_pattern": "batch inspect <task_id>", "retry_policy": "no_automatic_retry"},
+    {"reason_code": "cleanup_incomplete", "severity": "blocked", "message_id": "cleanup_incomplete_v1", "recommended_command_pattern": "operator actions show <action_id>", "retry_policy": "after_cleanup_resolution"},
+    {"reason_code": "qualification_stale", "severity": "blocked", "message_id": "qualification_stale_v1", "recommended_command_pattern": "repo inspect --repo <path>", "retry_policy": "after_requalification"}
+  ],
+  "operator_action_contract": {
+    "required_fields": ["action_id", "scope", "severity", "reason_code", "explanation_message_id", "recommended_command", "precondition_codes", "expires_at", "evidence_locator", "blocks_other_repos"],
+    "severity_order": ["blocked", "error", "action_required", "warning", "info"],
+    "durability": "sqlite_authority_with_public_evidence_locator",
+    "resolution": "explicit_catalog_action_only",
+    "global_clear_forbidden": true
+  }
+}

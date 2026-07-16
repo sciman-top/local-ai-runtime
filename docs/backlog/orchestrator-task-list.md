@@ -2,7 +2,7 @@
 
 ## 1. 当前真值
 
-Baseline=`local-ai-runtime-0.2-v3.24`；plan=`local_ai_runtime_work_items.v4`；机器图总计 55 项；状态分布为 `completed=1 / ready=1 / pending=6 / blocked=47`。当前队列 `LOCAL-AI-RUNTIME-0.2-BASELINE-CLOSURE`，唯一 selectable=`LAR-P0A-004`，action=`close_baseline_normative_package_first`。
+Baseline=`local-ai-runtime-0.2-v3.24`；plan=`local_ai_runtime_work_items.v4`；机器图总计 55 项；状态分布为 `completed=2 / ready=1 / pending=5 / blocked=47`。当前队列 `LOCAL-AI-RUNTIME-0.2-BASELINE-CLOSURE`，唯一 selectable=`LAR-P0A-005`，action=`close_baseline_normative_package_first`。
 
 本页只读投影 [machine work items](D:/CODE/local-ai-dev-orchestrator/docs/plans/local-ai-runtime-0.2-work-items.json)。`[x]` completed、`[ ]` ready/pending、`[!]` blocked。状态只能在 acceptance + declared verification + evidence + machine/doc sync + local commit + clean worktree 后改变。
 
@@ -11,8 +11,8 @@ Baseline=`local-ai-runtime-0.2-v3.24`；plan=`local_ai_runtime_work_items.v4`；
 ## 2. P0A / Governance / Bootstrap
 
 - [x] `LAR-P0A-REBASELINE-V324` completed：v3.24 product/toolchain successor；冻结 v3.23 candidate/package/plan，创建 Lineage.v3，carry forward 四项，切换 55-task graph。
-- [ ] `LAR-P0A-004` ready：ProductContract.v2、FirstRunExperiencePolicy、LaunchTemplateCatalog、OperatorPresentationCatalog、四 launch templates 与 fixtures。
-- [ ] `LAR-P0A-005` pending：QualificationContractSet.v2、RuntimeToolchainManifest、VerificationExecutionProfile、exact uv/Python/build gates 与 clean-root repeatability。
+- [x] `LAR-P0A-004` completed：ProductContract.v2、FirstRunExperiencePolicy、LaunchTemplateCatalog、OperatorPresentationCatalog、四 launch templates 与 fixtures。
+- [ ] `LAR-P0A-005` ready：QualificationContractSet.v2、RuntimeToolchainManifest、VerificationExecutionProfile、exact uv/Python/build gates 与 clean-root repeatability。
 - [ ] `LAR-P0A-009` pending：SQLite-authority/journal-observation state/guard/operator catalogs、cleanup finalizer、durable inbox、B3 deferred。
 - [ ] `LAR-P0A-010` pending：GateGraph、Q0/capability/activation/resource/process/toolchain gate catalogs。
 - [ ] `LAR-P0A-011` pending：migration specification、cross-contract examples、negative/crash/limit fixtures。
@@ -93,4 +93,4 @@ B3 portfolio scheduling、multi-writer、remote/distributed runtime、SDK/App Se
 
 ## 10. 当前 task 的可执行摘要
 
-`LAR-P0A-004` 只允许修改 ProductContract.v2、first-run schema、launch/presentation catalogs、product fixtures、inventory/status/evidence。验收必须证明恰好四 templates、closed envelope、human/JSON projection、controlled promotion、metrics/unknown handling，以及 free prompt/effect expansion/promotion bypass/secret negative fixtures fail。验证依次为 product component verifier、planning verifier、selector、host-orchestrator tests、preflight、`git diff --check`。不得实现 CLI handler、创建 runtime、生成 QualificationContractSet.v2/final manifest/approval 或运行 live probe。
+`LAR-P0A-005` 只允许修改 QualificationContractSet.v2、RuntimeToolchainManifest schema、VerificationExecutionProfile catalog、toolchain-v2 fixtures、component verifier、inventory/status/evidence。验收必须证明 exact locked offline sync、manifest Python read-back、no-download、hash-pinned build backend 与 clean-root repeatability；不得准备 live environment、下载 Python/依赖、创建 runtime/final manifest/approval 或运行 live probe。

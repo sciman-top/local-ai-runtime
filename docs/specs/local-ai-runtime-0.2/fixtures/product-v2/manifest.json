@@ -1,0 +1,31 @@
+{
+  "fixture_id": "ProductContract.v2.contract-fixtures",
+  "schema_version": 2,
+  "baseline_id": "local-ai-runtime-0.2-v3.24",
+  "policy_path": "docs/specs/local-ai-runtime-0.2/normative/ProductContract.v2.json",
+  "legacy_policy_path": "docs/specs/local-ai-runtime-0.2/normative/ProductContract.v1.json",
+  "first_run_schema_path": "docs/specs/local-ai-runtime-0.2/schemas/FirstRunExperience.v1.schema.json",
+  "launch_template_catalog_path": "docs/specs/local-ai-runtime-0.2/catalogs/LaunchTemplateCatalog.v1.json",
+  "operator_presentation_catalog_path": "docs/specs/local-ai-runtime-0.2/catalogs/OperatorPresentationCatalog.v1.json",
+  "positive_cases": [
+    {"case_id": "first_run_complete", "surface": "first_run", "expected_result": "valid"},
+    {"case_id": "four_launch_templates_closed", "surface": "launch_catalog", "expected_result": "valid"},
+    {"case_id": "catalog_rendered_human_output", "surface": "operator_presentation", "expected_result": "valid"},
+    {"case_id": "closed_submission_and_promotion", "surface": "product_policy", "expected_result": "valid"},
+    {"case_id": "metrics_keep_unknown", "surface": "product_metrics", "expected_result": "valid"}
+  ],
+  "negative_mutations": [
+    {"case_id": "free_prompt_parameter", "target": "launch_catalog", "mutation": "add_free_prompt_parameter", "expected_reason": "launch_template_parameter"},
+    {"case_id": "dynamic_command_parameter", "target": "launch_catalog", "mutation": "add_dynamic_command_parameter", "expected_reason": "launch_template_parameter"},
+    {"case_id": "dependency_effect_expansion", "target": "launch_catalog", "mutation": "add_dependency_install_effect", "expected_reason": "launch_template_effect"},
+    {"case_id": "remote_effect_expansion", "target": "launch_catalog", "mutation": "add_push_effect", "expected_reason": "launch_template_effect"},
+    {"case_id": "secret_bearing_parameter", "target": "launch_catalog", "mutation": "add_secret_parameter", "expected_reason": "launch_template_parameter"},
+    {"case_id": "promotion_bypass", "target": "launch_catalog", "mutation": "remove_operator_promotion", "expected_reason": "launch_template_promotion"},
+    {"case_id": "raw_model_human_output", "target": "operator_presentation", "mutation": "allow_raw_model_output", "expected_reason": "operator_presentation_source"},
+    {"case_id": "raw_tool_machine_output", "target": "first_run", "mutation": "remove_raw_tool_forbidden_source", "expected_reason": "first_run_output"},
+    {"case_id": "read_only_approval", "target": "first_run", "mutation": "require_read_only_approval", "expected_reason": "first_run_mutation"},
+    {"case_id": "metric_unknown_dropped", "target": "product_policy", "mutation": "drop_unknown_from_denominator", "expected_reason": "product_metric"},
+    {"case_id": "unmeasured_target_claim", "target": "product_policy", "mutation": "set_unmeasured_target", "expected_reason": "product_metric"},
+    {"case_id": "batch_additional_field", "target": "product_policy", "mutation": "add_batch_submission_field", "expected_reason": "batch_submission_boundary"}
+  ]
+}

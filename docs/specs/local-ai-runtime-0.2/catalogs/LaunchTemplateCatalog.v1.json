@@ -1,0 +1,116 @@
+{
+  "catalog_id": "local-ai-runtime-launch-templates",
+  "catalog_version": "LaunchTemplateCatalog.v1",
+  "baseline_id": "local-ai-runtime-0.2-v3.24",
+  "catalog_status": "candidate_not_promoted",
+  "template_count": 4,
+  "promotion_flow": [
+    "candidate_definition",
+    "negative_examples",
+    "disposable_dry_run",
+    "repo_template_qualification",
+    "explicit_operator_promotion",
+    "reusable_authorization"
+  ],
+  "native_spec_authority": "candidate_definition_only",
+  "templates": [
+    {
+      "template_id": "docs_contract_sync_v1",
+      "template_version": 1,
+      "purpose": "Synchronize known documentation and declared contract projections from an approved source of truth.",
+      "work_class": "batch",
+      "risk_class": "low",
+      "host_scope": "host_local",
+      "parameter_definitions": [
+        {"parameter_id": "source_of_truth_id", "required": true, "kind": "public_id", "max_items": 1},
+        {"parameter_id": "document_path_ids", "required": true, "kind": "approved_relative_path_id_array", "max_items": 20},
+        {"parameter_id": "projection_ids", "required": true, "kind": "public_id_array", "max_items": 20},
+        {"parameter_id": "max_changed_files", "required": true, "kind": "integer", "minimum": 1, "maximum": 20}
+      ],
+      "path_envelope": {"read_classes": ["approved_source_of_truth", "approved_document"], "write_classes": ["approved_markdown", "approved_json", "approved_yaml", "task_evidence"], "max_primary_files": 20},
+      "effect_envelope": ["read_repo_file", "write_allowlisted_file", "run_declared_gate", "create_local_commit", "create_runtime_task_ref", "write_task_evidence"],
+      "required_gates": ["format_or_parse", "contract_projection", "link_and_path", "diff_budget"],
+      "forbidden_gates": ["skip_declared_gate", "lower_threshold", "rewrite_gate_config"],
+      "forbidden_effects": ["runtime_code_change", "dependency_change", "secret_access", "network", "merge", "push", "deploy"],
+      "expected_outputs": ["projection_delta", "gate_reports", "deterministic_local_commit", "runtime_owned_task_ref"],
+      "stop_reasons": ["unknown_projection", "path_outside_envelope", "source_truth_ambiguous", "diff_budget_exceeded", "sensitive_content_detected"],
+      "recovery_class": "discard_attempt_or_retry_same_closed_input",
+      "evaluation": {"denominator": "all_admitted_docs_contract_sync_v1_tasks", "unknown_handling": "retain_as_unknown", "success": "commit_ready_and_all_required_gates_pass"},
+      "rollback": "delete_unpublished_attempt_and_task_ref_or_revert_reviewed_local_commit"
+    },
+    {
+      "template_id": "bounded_lint_type_repair_v1",
+      "template_version": 1,
+      "purpose": "Repair a closed set of already observed static-analysis diagnostics without changing public contracts or gate policy.",
+      "work_class": "batch",
+      "risk_class": "low",
+      "host_scope": "host_local",
+      "parameter_definitions": [
+        {"parameter_id": "diagnostic_ids", "required": true, "kind": "public_id_array", "max_items": 50},
+        {"parameter_id": "source_path_ids", "required": true, "kind": "approved_relative_path_id_array", "max_items": 5},
+        {"parameter_id": "max_changed_files", "required": true, "kind": "integer", "minimum": 1, "maximum": 5},
+        {"parameter_id": "focused_gate_ids", "required": true, "kind": "public_id_array", "max_items": 8}
+      ],
+      "path_envelope": {"read_classes": ["qualified_source", "qualified_test", "declared_gate_config"], "write_classes": ["approved_source", "approved_test", "task_evidence"], "max_primary_files": 5},
+      "effect_envelope": ["read_repo_file", "write_allowlisted_file", "run_declared_gate", "create_local_commit", "create_runtime_task_ref", "write_task_evidence"],
+      "required_gates": ["focused_lint_or_type", "related_tests", "full_declared_gate_graph", "public_contract_unchanged"],
+      "forbidden_gates": ["skip_declared_gate", "lower_threshold", "rewrite_gate_config"],
+      "forbidden_effects": ["dependency_change", "public_api_semantic_change", "gate_config_downgrade", "ignore_rule_addition", "network", "merge", "push", "deploy"],
+      "expected_outputs": ["diagnostic_resolution_map", "gate_reports", "deterministic_local_commit", "runtime_owned_task_ref"],
+      "stop_reasons": ["diagnostic_set_changed", "path_outside_envelope", "public_contract_change_required", "new_dependency_required", "diff_budget_exceeded"],
+      "recovery_class": "discard_attempt_or_requalify_diagnostics",
+      "evaluation": {"denominator": "all_admitted_bounded_lint_type_repair_v1_tasks", "unknown_handling": "retain_as_unknown", "success": "declared_diagnostics_absent_and_all_required_gates_pass"},
+      "rollback": "delete_unpublished_attempt_and_task_ref_or_revert_reviewed_local_commit"
+    },
+    {
+      "template_id": "focused_test_repair_v1",
+      "template_version": 1,
+      "purpose": "Repair one reproduced and localized repository test failure with explicit red and green evidence.",
+      "work_class": "batch",
+      "risk_class": "low",
+      "host_scope": "host_local",
+      "parameter_definitions": [
+        {"parameter_id": "test_ids", "required": true, "kind": "public_id_array", "max_items": 10},
+        {"parameter_id": "failure_fingerprint", "required": true, "kind": "public_id", "max_items": 1},
+        {"parameter_id": "source_path_ids", "required": true, "kind": "approved_relative_path_id_array", "max_items": 8},
+        {"parameter_id": "test_path_ids", "required": true, "kind": "approved_relative_path_id_array", "max_items": 8},
+        {"parameter_id": "max_changed_files", "required": true, "kind": "integer", "minimum": 1, "maximum": 8}
+      ],
+      "path_envelope": {"read_classes": ["qualified_source", "qualified_test", "declared_gate_config"], "write_classes": ["approved_source", "approved_test", "task_evidence"], "max_primary_files": 8},
+      "effect_envelope": ["read_repo_file", "write_allowlisted_file", "run_declared_gate", "create_local_commit", "create_runtime_task_ref", "write_task_evidence"],
+      "required_gates": ["original_failure_red", "focused_test_green", "declared_regression_gates", "full_declared_gate_graph"],
+      "forbidden_gates": ["delete_test", "skip_test", "flaky_rerun_as_success", "rewrite_gate_config"],
+      "forbidden_effects": ["dependency_change", "external_service", "test_removal", "test_skip", "network", "merge", "push", "deploy"],
+      "expected_outputs": ["red_green_evidence", "regression_gate_reports", "deterministic_local_commit", "runtime_owned_task_ref"],
+      "stop_reasons": ["failure_not_reproduced", "failure_fingerprint_changed", "path_outside_envelope", "external_service_required", "flaky_only_outcome"],
+      "recovery_class": "discard_attempt_or_requalify_failure",
+      "evaluation": {"denominator": "all_admitted_focused_test_repair_v1_tasks", "unknown_handling": "retain_as_unknown", "success": "same_failure_red_then_green_and_all_required_gates_pass"},
+      "rollback": "delete_unpublished_attempt_and_task_ref_or_revert_reviewed_local_commit"
+    },
+    {
+      "template_id": "mechanical_repo_maintenance_v1",
+      "template_version": 1,
+      "purpose": "Apply a versioned closed mapping, refresh declared generated outputs, or perform declarative repository maintenance.",
+      "work_class": "batch",
+      "risk_class": "low",
+      "host_scope": "host_local",
+      "parameter_definitions": [
+        {"parameter_id": "mapping_id", "required": true, "kind": "public_id", "max_items": 1},
+        {"parameter_id": "approved_path_ids", "required": true, "kind": "approved_relative_path_id_array", "max_items": 50},
+        {"parameter_id": "generator_id", "required": false, "kind": "public_id", "max_items": 1},
+        {"parameter_id": "expected_output_ids", "required": true, "kind": "approved_relative_path_id_array", "max_items": 50},
+        {"parameter_id": "max_changed_files", "required": true, "kind": "integer", "minimum": 1, "maximum": 50}
+      ],
+      "path_envelope": {"read_classes": ["versioned_mapping", "approved_input", "approved_generator"], "write_classes": ["approved_output", "task_evidence"], "max_primary_files": 50},
+      "effect_envelope": ["read_repo_file", "write_allowlisted_file", "run_declared_generator", "run_declared_gate", "create_local_commit", "create_runtime_task_ref", "write_task_evidence"],
+      "required_gates": ["dry_run_manifest", "generation_consistency", "build_test_contract", "unexpected_delta_zero"],
+      "forbidden_gates": ["skip_declared_gate", "dynamic_target_discovery", "rewrite_gate_config"],
+      "forbidden_effects": ["free_refactor", "dynamic_target_expansion", "dependency_change", "network", "merge", "push", "deploy"],
+      "expected_outputs": ["dry_run_manifest", "output_identity_map", "gate_reports", "deterministic_local_commit", "runtime_owned_task_ref"],
+      "stop_reasons": ["mapping_generation_changed", "unexpected_output", "path_outside_envelope", "generator_identity_changed", "unexpected_delta_nonzero"],
+      "recovery_class": "discard_attempt_or_requalify_mapping",
+      "evaluation": {"denominator": "all_admitted_mechanical_repo_maintenance_v1_tasks", "unknown_handling": "retain_as_unknown", "success": "expected_outputs_only_and_all_required_gates_pass"},
+      "rollback": "delete_unpublished_attempt_and_task_ref_or_revert_reviewed_local_commit"
+    }
+  ]
+}

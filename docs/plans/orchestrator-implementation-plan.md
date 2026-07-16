@@ -2,7 +2,7 @@
 
 ## 1. 目标、当前落点与真值
 
-目标是在 Baseline Approval 后，把现行 `runtime/host-orchestrator` 逐步迁移到 `runtime/local-ai-runtime`：Windows-local、single-operator、Python modular monolith、Unified Native + global capacity=1 deterministic commit-only Batch。当前仍是 v3.24 preapproval planning：package `6/15 present, 9 non-present`，唯一 task 为 `LAR-P0A-004`，不得创建 runtime、approval、claim 或 live evidence。
+目标是在 Baseline Approval 后，把现行 `runtime/host-orchestrator` 逐步迁移到 `runtime/local-ai-runtime`：Windows-local、single-operator、Python modular monolith、Unified Native + global capacity=1 deterministic commit-only Batch。当前仍是 v3.24 preapproval planning：package `7/15 present, 8 non-present`，唯一 task 为 `LAR-P0A-005`，不得创建 runtime、approval、claim 或 live evidence。
 
 机器执行真源是 [local-ai-runtime-0.2-work-items.json](D:/CODE/local-ai-dev-orchestrator/docs/plans/local-ai-runtime-0.2-work-items.json)。本文件说明如何执行；若 task scope/acceptance/dependency/status 与 machine plan 冲突，以 verifier 通过的 machine plan 为准并先修正文档漂移。
 
@@ -35,7 +35,7 @@
 - `ProductContract.v1`/`QualificationContractSet.v1` 保持 predecessor-only，v3.24 要求 v2；
 - 机器图降为 55 项，删除 0.2 B3 activation，建立 P0C/P0D join 与 exact toolchain projection。
 
-### 3.2 `LAR-P0A-004` — ProductContract.v2（当前）
+### 3.2 `LAR-P0A-004` — ProductContract.v2（已完成）
 
 写集：`ProductContract.v2.json`、`FirstRunExperience.v1.schema.json`、`LaunchTemplateCatalog.v1.json`、`OperatorPresentationCatalog.v1.json`、product-v2 fixtures、inventory/status/evidence。
 
@@ -123,4 +123,4 @@ Implementation Acceptance 覆盖 code/migration/CLI/first-run/templates/crash/ba
 
 ## 9. 当前下一步
 
-执行 `LAR-P0A-004`，只创建 ProductContract.v2 及 launch experience artifacts。不得创建 `QualificationContractSet.v2`、final manifest、approval、Truth Reset、`runtime/local-ai-runtime`、真实 Git publication、读取 live auth/DPAPI/sandbox state、remote push 或 CI retrieval。
+执行 `LAR-P0A-005`，只创建 QualificationContractSet.v2 及 exact-toolchain artifacts。不得准备 live environment、下载 Python/依赖、创建 final manifest、approval、Truth Reset、`runtime/local-ai-runtime`、真实 Git publication、读取 live auth/DPAPI/sandbox state、remote push 或 CI retrieval。

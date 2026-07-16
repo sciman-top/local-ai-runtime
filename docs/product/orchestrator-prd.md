@@ -8,7 +8,7 @@
 - 产品方向：`Unified Native + Batch` 的 Windows-local single-operator general-purpose governed AI development execution platform
 - 优化目标：安全与副作用正确性硬门下的 `minimum-operator`、低人工、可预测、可恢复的开发吞吐；Native 快路径优化交互延迟，Batch 优化可恢复的无人值守交付，不承诺高速并发
 
-本文是 v3.24 的产品投影，不补写规范语义。字段、状态、哈希、崩溃窗口和安全边界以候选正文及批准后的 normative package 为准。v3.24 narrative、独立 versioned artifacts 与最终 immutable BaselineManifest 是三个层次；正文和 lineage 完整不代表 package 已闭合。v3.23 candidate/package/plan 是精确 superseded inputs，不能被当作当前实现要求。当前 package 为 `6/15 present, 9 non-present`，下一项是 `LAR-P0A-004 / ProductContract.v2`。
+本文是 v3.24 的产品投影，不补写规范语义。字段、状态、哈希、崩溃窗口和安全边界以候选正文及批准后的 normative package 为准。v3.24 narrative、独立 versioned artifacts 与最终 immutable BaselineManifest 是三个层次；正文和 lineage 完整不代表 package 已闭合。v3.23 candidate/package/plan 是精确 superseded inputs，不能被当作当前实现要求。当前 package 为 `7/15 present, 8 non-present`；`ProductContract.v2` 已闭合，下一项是 `LAR-P0A-005 / QualificationContractSet.v2`。
 
 ## 2. 问题与机会
 
