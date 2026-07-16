@@ -1,0 +1,100 @@
+{
+  "fixture_id": "QualificationContractSet.v2.toolchain-fixtures",
+  "schema_version": 2,
+  "baseline_id": "local-ai-runtime-0.2-v3.24",
+  "policy_path": "docs/specs/local-ai-runtime-0.2/normative/QualificationContractSet.v2.json",
+  "legacy_policy_path": "docs/specs/local-ai-runtime-0.2/normative/QualificationContractSet.v1.json",
+  "toolchain_schema_path": "docs/specs/local-ai-runtime-0.2/schemas/RuntimeToolchainManifest.v1.schema.json",
+  "execution_profile_path": "docs/specs/local-ai-runtime-0.2/catalogs/VerificationExecutionProfile.v1.json",
+  "runtime_toolchain_manifest_positive": {
+    "schema_version": 1,
+    "manifest_id": "runtime-toolchain-fixture-v1",
+    "baseline_id": "local-ai-runtime-0.2-v3.24",
+    "python": {
+      "absolute_path": "C:/LocalAIRuntime/toolchain/python.exe",
+      "version": "3.11.9",
+      "file_identity_sha256": "1111111111111111111111111111111111111111111111111111111111111111",
+      "file_sha256": "2222222222222222222222222222222222222222222222222222222222222222",
+      "automatic_downloads": "deny"
+    },
+    "uv": {
+      "absolute_path": "C:/LocalAIRuntime/toolchain/uv.exe",
+      "version": "0.8.0",
+      "file_identity_sha256": "3333333333333333333333333333333333333333333333333333333333333333",
+      "file_sha256": "4444444444444444444444444444444444444444444444444444444444444444"
+    },
+    "lock": {
+      "project_path": "runtime/local-ai-runtime",
+      "lock_path": "runtime/local-ai-runtime/uv.lock",
+      "lock_sha256": "5555555555555555555555555555555555555555555555555555555555555555",
+      "offline_cache_manifest_sha256": "6666666666666666666666666666666666666666666666666666666666666666"
+    },
+    "environment": {
+      "environment_root": "C:/LocalAIRuntime/environments/runtime-v1",
+      "distribution_identities": [
+        {"name": "local-ai-runtime", "version": "0.2.0", "metadata_sha256": "7777777777777777777777777777777777777777777777777777777777777777"},
+        {"name": "pytest", "version": "9.0.0", "metadata_sha256": "8888888888888888888888888888888888888888888888888888888888888888"}
+      ],
+      "pytest_plugin_identities": [
+        {"entry_point": "pytest11", "distribution_name": "pytest", "distribution_version": "9.0.0", "metadata_sha256": "8888888888888888888888888888888888888888888888888888888888888888"}
+      ],
+      "extraneous_policy": "exact_set_no_additions_no_missing"
+    },
+    "build": {
+      "frontend": {"name": "uv", "version": "0.8.0", "metadata_sha256": "9999999999999999999999999999999999999999999999999999999999999999"},
+      "backend": {"name": "hatchling", "version": "1.27.0", "metadata_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"},
+      "constraint_path": "C:/LocalAIRuntime/policies/build-constraints-v1.txt",
+      "constraint_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "require_hashes": true,
+      "backend_requirements": [
+        {"name": "hatchling", "version": "1.27.0", "artifact_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"},
+        {"name": "packaging", "version": "24.2", "artifact_sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"}
+      ]
+    },
+    "reproducibility": {
+      "source_date_epoch": 1735689600,
+      "clean_root_count": 2,
+      "comparison_fields": ["normalized_member_manifest_sha256", "artifact_sha256"],
+      "normalization_policy": "wheel_member_path_mode_size_content_hash_no_root_path_or_mtime"
+    }
+  },
+  "environment_observation_positive": {
+    "python_absolute_path": "C:/LocalAIRuntime/toolchain/python.exe",
+    "python_version": "3.11.9",
+    "python_file_identity_sha256": "1111111111111111111111111111111111111111111111111111111111111111",
+    "python_file_sha256": "2222222222222222222222222222222222222222222222222222222222222222",
+    "automatic_download_requested": false,
+    "distribution_identities": [
+      {"name": "local-ai-runtime", "version": "0.2.0", "metadata_sha256": "7777777777777777777777777777777777777777777777777777777777777777"},
+      {"name": "pytest", "version": "9.0.0", "metadata_sha256": "8888888888888888888888888888888888888888888888888888888888888888"}
+    ],
+    "pytest_plugin_identities": [
+      {"entry_point": "pytest11", "distribution_name": "pytest", "distribution_version": "9.0.0", "metadata_sha256": "8888888888888888888888888888888888888888888888888888888888888888"}
+    ],
+    "build_backend_identities": [
+      {"name": "hatchling", "version": "1.27.0", "artifact_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"},
+      {"name": "packaging", "version": "24.2", "artifact_sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"}
+    ]
+  },
+  "repeat_build_positive": {
+    "source_date_epoch": 1735689600,
+    "roots": [
+      {"root_id": "clean-root-a", "normalized_member_manifest_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee", "artifact_sha256": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"},
+      {"root_id": "clean-root-b", "normalized_member_manifest_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee", "artifact_sha256": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"}
+    ]
+  },
+  "negative_mutations": [
+    {"case_id": "extraneous_distribution", "target": "environment", "mutation": "add_extraneous_distribution", "expected_reason": "toolchain_distribution_set"},
+    {"case_id": "extraneous_pytest_plugin", "target": "environment", "mutation": "add_extraneous_plugin", "expected_reason": "toolchain_plugin_set"},
+    {"case_id": "wrong_python_patch", "target": "environment", "mutation": "change_python_patch", "expected_reason": "toolchain_python_identity"},
+    {"case_id": "wrong_python_executable", "target": "environment", "mutation": "change_python_path", "expected_reason": "toolchain_python_identity"},
+    {"case_id": "python_download_request", "target": "environment", "mutation": "request_python_download", "expected_reason": "toolchain_python_download"},
+    {"case_id": "multi_backend_cache", "target": "environment", "mutation": "add_unconstrained_backend", "expected_reason": "toolchain_backend_set"},
+    {"case_id": "missing_backend_hash", "target": "manifest", "mutation": "remove_backend_hash", "expected_reason": "toolchain_build_hash"},
+    {"case_id": "repeat_member_mismatch", "target": "repeat_build", "mutation": "change_member_manifest", "expected_reason": "toolchain_repeatability"},
+    {"case_id": "repeat_artifact_mismatch", "target": "repeat_build", "mutation": "change_artifact_hash", "expected_reason": "toolchain_repeatability"},
+    {"case_id": "hidden_sync_in_validation", "target": "profile", "mutation": "replace_no_sync_with_locked", "expected_reason": "toolchain_validation_command"},
+    {"case_id": "build_without_require_hashes", "target": "profile", "mutation": "remove_require_hashes", "expected_reason": "toolchain_build_command"},
+    {"case_id": "path_python_fallback", "target": "profile", "mutation": "remove_explicit_python", "expected_reason": "toolchain_python_command"}
+  ]
+}

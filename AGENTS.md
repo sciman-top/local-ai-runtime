@@ -8,7 +8,7 @@
 - 当前落点：`runtime/host-orchestrator`、`.ai/state/control-plane.db` 与既有 evidence 仍是唯一现行运行事实；`local-ai-runtime-0.2-v3.24` 只是 `baseline_candidate`，尚未批准、Truth Reset 或实现。
 - 目标归宿：Baseline Approval 后按 v3.24 在 `runtime/local-ai-runtime` 实现 Windows-local、single-operator、Python 3.11.x modular monolith。产品面为 Unified Native Direct/Spec/Program + 全局 `capacity=1` 的 deterministic commit-only Batch；Native 负责低延迟意图形成，Batch 只消费已资格化的封闭模板并产出本地 commit/task ref，不 merge/push。
 - 首发体验：预资格化主机上，操作者经 `doctor -> repo qualify -> template list/show -> batch dry-run -> batch submit -> status/action -> evidence show` 完成第一次安全提交；首发只提供 `docs_contract_sync_v1`、`bounded_lint_type_repair_v1`、`focused_test_repair_v1`、`mechanical_repo_maintenance_v1` 四个 launch templates。
-- 下一最小里程碑：队列 `LOCAL-AI-RUNTIME-0.2-BASELINE-CLOSURE` 的 `close_baseline_normative_package_first / LAR-P0A-005`，创建 v3.24-bound `QualificationContractSet.v2`、exact uv/Python/build profile 与负向 toolchain fixtures。`ProductContract.v2` 已闭合 first-run journey、四个 launch templates 与 operator presentation contracts；规范包为 `7/15 present, 8 non-present`，最终 manifest 仍不存在。
+- 下一最小里程碑：队列 `LOCAL-AI-RUNTIME-0.2-BASELINE-CLOSURE` 的 `close_baseline_normative_package_first / LAR-P0A-009`，创建 SQLite-authority state/guard/operator catalogs、deterministic recovery 与 cleanup-finalizer contracts。`ProductContract.v2` 和 `QualificationContractSet.v2` 已闭合并通过 component verifiers；规范包为 `8/15 present, 7 non-present`，最终 manifest 仍不存在。
 - v3.24 因 v3.23 无法证明 exact uv environment、manifest-selected Python、hash-pinned build backend，且 launch product experience 不完整而成为 successor。v3.23 candidate/package/plan 是精确 superseded inputs；Native comparative evaluation 仅作为非规范 predecessor evidence，不 promotion profile。
 - 本次只是预批准 planning control-plane 重基线，不是 P0B Truth Reset；不得据此创建 approval、新 runtime、Batch claim 或 live evidence。任何 v3.24 冻结语义变更都必须创建 v3.25 successor。
 
@@ -30,7 +30,7 @@
 
 ## C. 门禁、证据与回滚
 - planning fixed order：`build -> test -> contract/invariant -> hotspot`。build/hotspot 当前按 [acceptance-and-gates](docs/specs/acceptance-and-gates.md) 的完整 `gate_na` 记录；test=`uv run --project ./runtime/host-orchestrator python -m pytest`；contract=`python scripts/verify-planning-status.py`；quick=`python scripts/select-next-work.py`；release-style=`pwsh -NoProfile -NonInteractive -File scripts/governance/preflight.ps1 -DisableAutoCommit`。
-- 新 runtime 使用 `new_runtime_exact_v1`：显式 environment preparation `uv sync --exact --locked --offline --no-python-downloads --python <manifest-python>`；日常 gate 全部 `run --no-sync`；build 使用 manifest-bound `--build-constraint ... --require-hashes`；子进程回读解释器/distribution/plugin 身份；两次 clean-root build 对比 member manifest 与 artifact hash。
+- 新 runtime 使用 `new_runtime_exact_v1`：显式 environment preparation `uv sync --locked --offline --no-python-downloads --python <manifest-python>`；`uv sync` 默认执行 exact sync，`--inexact` 明确禁止；日常 gate 全部 `run --no-sync`；build 使用 manifest-bound `--build-constraint ... --require-hashes`；子进程回读解释器/distribution/plugin 身份；两次 clean-root build 对比 member manifest 与 artifact hash。
 - 新 runtime 固定门序为 `supply_chain_identity -> build -> test -> contract_invariant -> hotspot`，每阶段都 fail closed；环境准备不是验证 gate，不得隐藏同步或下载。
 - 证据记录命令、exit code、关键输出、输入身份、兼容、N/A、rollback；repo-level 写 `docs/change-evidence/`，task-level 写 `.ai/runs/...`。回滚只撤销本 task diff，不改写冻结 v3.23/v3.24 bytes 或既有 evidence。
 

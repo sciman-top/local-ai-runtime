@@ -306,7 +306,7 @@
         "required_contract_tokens": [
           "RuntimeToolchainManifest",
           "VerificationExecutionProfile",
-          "uv sync --exact",
+          "uv sync default exact; --inexact forbidden",
           "--no-python-downloads",
           "--build-constraint",
           "--require-hashes"
@@ -360,7 +360,7 @@
     ],
     "new_runtime_exact_v1": {
       "environment_preparation": [
-        "& <uv.absolute_path> sync --exact --locked --offline --no-python-downloads --python <python.absolute_path> --project runtime/local-ai-runtime"
+        "& <uv.absolute_path> sync --locked --offline --no-python-downloads --python <python.absolute_path> --project runtime/local-ai-runtime"
       ],
       "fixed_gate_order": [
         "supply_chain_identity",
@@ -392,7 +392,7 @@
         ]
       },
       "invariants": [
-        "environment preparation is explicit and never hidden inside a validation gate",
+        "environment preparation is explicit, relies on uv sync default exact behavior, forbids --inexact, and is never hidden inside a validation gate",
         "child sys.executable patch path file identity and sha256 match RuntimeToolchainManifest",
         "installed distributions and pytest plugins contain no extraneous package",
         "build backend is constrained by manifest-bound hashes",
@@ -608,7 +608,7 @@
       "task_id": "LAR-P0A-005",
       "phase": "P0A",
       "priority": 0,
-      "status": "ready",
+      "status": "completed",
       "title": "Materialize QualificationContractSet.v2 and exact toolchain gates",
       "goal": "Create the v3.24 qualification contract that proves exact uv environment synchronization manifest-pinned Python identity no Python downloads hash-pinned build backend and clean-root repeatable builds before any implementation can be accepted.",
       "depends_on": [
@@ -656,7 +656,7 @@
         "python scripts/select-next-work.py",
         "git diff --check"
       ],
-      "evidence_path": "docs/change-evidence/<date>-lar-p0a-005-qualification-v2-exact-toolchain.md",
+      "evidence_path": "docs/change-evidence/20260716-lar-p0a-005-qualification-v2-exact-toolchain.md",
       "rollback": "Revert only QualificationContractSet.v2 new schemas/catalogs/fixtures verifier branch evidence and status projection; never edit QualificationContractSet.v1.",
       "stop_conditions": [
         "uv or build behavior cannot be bound to exact official/local help semantics",
@@ -681,7 +681,7 @@
       "contract_projection_tokens": [
         "RuntimeToolchainManifest",
         "VerificationExecutionProfile",
-        "uv sync --exact",
+        "uv sync default exact; --inexact forbidden",
         "--no-python-downloads",
         "--build-constraint",
         "--require-hashes"
@@ -702,7 +702,7 @@
       ],
       "phase": "P0A",
       "priority": 0,
-      "status": "pending",
+      "status": "ready",
       "title": "Materialize complete state, guard, autonomy and operator catalogs",
       "goal": "Materialize complete state guard autonomy and operator catalogs including the SQLite-authority/journal-observation boundary deterministic recovery replay explicit cleanup finalizers first-launch operator inbox and B3-deferred autonomy rows.",
       "depends_on": [
@@ -1356,7 +1356,7 @@
       "contract_projection_tokens": [
         "RuntimeToolchainManifest",
         "VerificationExecutionProfile",
-        "uv sync --exact",
+        "uv sync default exact; --inexact forbidden",
         "--no-python-downloads",
         "--build-constraint",
         "--require-hashes"
@@ -2051,7 +2051,7 @@
       "contract_projection_tokens": [
         "RuntimeToolchainManifest",
         "VerificationExecutionProfile",
-        "uv sync --exact",
+        "uv sync default exact; --inexact forbidden",
         "--no-python-downloads",
         "--build-constraint",
         "--require-hashes"
@@ -3663,7 +3663,7 @@
       "ActiveRuntimeIdentity",
       "RuntimeToolchainManifest",
       "VerificationExecutionProfile",
-      "uv sync --exact",
+      "uv sync default exact; --inexact forbidden",
       "--no-python-downloads",
       "--build-constraint",
       "--require-hashes"
@@ -3752,7 +3752,7 @@
       "ActiveRuntimeIdentity",
       "RuntimeToolchainManifest",
       "VerificationExecutionProfile",
-      "uv sync --exact",
+      "uv sync default exact; --inexact forbidden",
       "--no-python-downloads",
       "--build-constraint",
       "--require-hashes"

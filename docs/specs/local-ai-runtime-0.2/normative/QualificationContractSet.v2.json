@@ -1,0 +1,218 @@
+{
+  "domain": "local-ai-runtime/QualificationContractSet/v2",
+  "schema_version": 2,
+  "payload": {
+    "artifact_id": "P0A-QUALIFICATION",
+    "artifact_version": "QualificationContractSet.v2",
+    "baseline_id": "local-ai-runtime-0.2-v3.24",
+    "predecessor_binding": {
+      "artifact_version": "QualificationContractSet.v1",
+      "path": "docs/specs/local-ai-runtime-0.2/normative/QualificationContractSet.v1.json",
+      "byte_count": 7336,
+      "sha256": "089a60664188fdc86c0de56496c493339246c5b423ddc3271450fb01e4fd6a80",
+      "disposition": "immutable_compatible_predecessor_extended_by_exact_toolchain_v2"
+    },
+    "bundle_bindings": {
+      "runtime_toolchain_manifest_schema": {
+        "path": "docs/specs/local-ai-runtime-0.2/schemas/RuntimeToolchainManifest.v1.schema.json",
+        "byte_count": 5314,
+        "sha256": "96bfcba51d76d5539c3b37559ebd9e455d32482442442dc8add3ae86100e8a90"
+      },
+      "verification_execution_profile": {
+        "path": "docs/specs/local-ai-runtime-0.2/catalogs/VerificationExecutionProfile.v1.json",
+        "byte_count": 3392,
+        "sha256": "9744a431f0dedf1fe5c3503d83535ac4902b8e064bd4175bcf2cf56f70365d49"
+      },
+      "fixture_manifest": {
+        "path": "docs/specs/local-ai-runtime-0.2/fixtures/toolchain-v2/manifest.json",
+        "byte_count": 7143,
+        "sha256": "91004d7915f331ef94579c1e0b34f34bf178eee3efefc956440f2cd51369b50f"
+      }
+    },
+    "qualification_scope": {
+      "mode": "preimplementation_contract_only",
+      "live_environment_preparation_performed": false,
+      "network_allowed": false,
+      "python_or_dependency_download_allowed": false,
+      "runtime_package_required": false,
+      "evidence_claim": "schema_profile_fixture_and_verifier_only"
+    },
+    "inherited_v1_contracts": [
+      "qualification_sensitive_input_set",
+      "repo_template_qualification",
+      "qualified_environment_binding",
+      "auth_state",
+      "codex_sandbox_state_binding",
+      "authorization",
+      "authorization_execution_grant",
+      "attempt_authorization_continuation"
+    ],
+    "runtime_toolchain_manifest": {
+      "schema_version": "RuntimeToolchainManifest.v1",
+      "exact_bindings": [
+        "python_absolute_path",
+        "python_version_patch",
+        "python_file_identity_sha256",
+        "python_file_sha256",
+        "uv_absolute_path",
+        "uv_version",
+        "uv_file_identity_sha256",
+        "uv_file_sha256",
+        "lock_sha256",
+        "offline_cache_manifest_sha256",
+        "distribution_identities",
+        "pytest_plugin_identities",
+        "build_frontend_identity",
+        "build_backend_identity",
+        "build_constraint_sha256",
+        "source_date_epoch"
+      ],
+      "automatic_python_downloads": "deny",
+      "path_python_fallback": "deny",
+      "environment_set_policy": "exact_no_additions_no_missing",
+      "build_backend_set_policy": "exact_manifest_hashes_only"
+    },
+    "environment_preparation": {
+      "command": "& <uv.absolute_path> sync --locked --offline --no-python-downloads --python <python.absolute_path> --project runtime/local-ai-runtime",
+      "classification": "explicit_preparation_not_validation_gate",
+      "allowed_invocation_count_per_new_environment": 1,
+      "hidden_sync_in_validation": "deny",
+      "exactness_semantics": "uv_sync_default_exact_and_inexact_forbidden",
+      "frozen_candidate_command_correction": {
+        "source": "uv sync --exact",
+        "replacement": "uv sync",
+        "classification": "non_semantic_cli_spelling_correction",
+        "reason": "uv_sync_is_exact_by_default_and_does_not_accept_an_exact_option",
+        "authority": "QualificationContractSet.v2_and_VerificationExecutionProfile.v1"
+      },
+      "success_requires": [
+        "exit_0",
+        "child_identity_readback",
+        "exact_distribution_set",
+        "exact_pytest_plugin_set",
+        "immutable_environment_binding"
+      ]
+    },
+    "verification_profile": {
+      "profile_id": "new_runtime_exact_v1",
+      "catalog_binding": "bundle_bindings.verification_execution_profile",
+      "fixed_gate_order": [
+        "supply_chain_identity",
+        "build",
+        "test",
+        "contract_invariant",
+        "hotspot"
+      ],
+      "validation_environment_mode": "no_sync",
+      "isolated_python_flags": [
+        "-I",
+        "-s",
+        "-E"
+      ],
+      "no_python_downloads": true,
+      "explicit_python_on_uv_commands": true
+    },
+    "environment_identity_readback": {
+      "command_owner": "local_ai_runtime.toolchain",
+      "required_fields": [
+        "sys.executable",
+        "python_version_patch",
+        "python_file_identity_sha256",
+        "python_file_sha256",
+        "uv_version",
+        "uv_file_identity_sha256",
+        "uv_file_sha256",
+        "installed_distribution_identities",
+        "pytest_plugin_identities",
+        "build_frontend_identity",
+        "build_backend_identity"
+      ],
+      "comparison": "byte_exact_to_RuntimeToolchainManifest",
+      "extraneous_distribution_result": "qualification_failed",
+      "extraneous_pytest_plugin_result": "qualification_failed",
+      "wrong_python_patch_or_path_result": "qualification_failed"
+    },
+    "build_supply_chain": {
+      "command_requires": [
+        "--offline",
+        "--no-python-downloads",
+        "--python",
+        "--build-constraint",
+        "--require-hashes",
+        "--project"
+      ],
+      "build_constraint_format": "all_backend_requirements_name_exact_version_artifact_sha256",
+      "cached_backend_policy": "only_exact_manifest_set_may_be_selected",
+      "missing_hash_result": "qualification_failed",
+      "multiple_backend_candidate_result": "qualification_failed",
+      "automatic_resolution_result": "qualification_failed"
+    },
+    "reproducibility": {
+      "clean_root_count": 2,
+      "source_date_epoch_binding": "RuntimeToolchainManifest.v1.reproducibility.source_date_epoch",
+      "normalized_member_fields": [
+        "member_path",
+        "mode",
+        "size",
+        "content_sha256"
+      ],
+      "excluded_fields": [
+        "absolute_root_path",
+        "filesystem_mtime",
+        "build_start_time",
+        "random_temp_path"
+      ],
+      "required_equalities": [
+        "normalized_member_manifest_sha256",
+        "artifact_sha256"
+      ],
+      "mismatch_result": "qualification_failed"
+    },
+    "active_surface_rejection": {
+      "prohibited_forms": [
+        "uv sync --exact",
+        "uv sync --inexact",
+        "uv run --locked --offline",
+        "uv build --offline --project",
+        "PATH python",
+        "automatic Python download",
+        "unconstrained cached build backend",
+        "validation command that performs sync",
+        "build without --require-hashes",
+        "build without --build-constraint"
+      ],
+      "scan_scope": [
+        "authoritative_docs",
+        "machine_work_items",
+        "active_verification_profiles",
+        "acceptance_contracts"
+      ],
+      "historical_and_negative_fixture_exception": true,
+      "frozen_candidate_cli_spelling_exception": "only_the_frozen_v3_24_source_excerpt_bound_by_environment_preparation.frozen_candidate_command_correction"
+    },
+    "fixture_requirements": {
+      "positive": [
+        "exact_manifest",
+        "exact_environment_observation",
+        "two_clean_root_repeat_build",
+        "fixed_command_projection"
+      ],
+      "negative": [
+        "extraneous_distribution",
+        "extraneous_pytest_plugin",
+        "wrong_python_patch",
+        "wrong_python_executable",
+        "python_download_request",
+        "multi_backend_cache",
+        "missing_backend_hash",
+        "repeat_member_mismatch",
+        "repeat_artifact_mismatch",
+        "hidden_sync_in_validation",
+        "build_without_require_hashes",
+        "path_python_fallback"
+      ],
+      "unknown_mutation": "fixture_schema_failure",
+      "all_negative_must_fail": true
+    }
+  }
+}

@@ -158,8 +158,8 @@ def test_planning_verifier_accepts_truthful_candidate_state() -> None:
     assert payload["status"] == "pass"
     assert payload["baseline_id"] == "local-ai-runtime-0.2-v3.24"
     assert payload["approval_active"] is False
-    assert payload["missing_artifact_count"] == 8
-    assert payload["current_work_item_id"] == "LAR-P0A-005"
+    assert payload["missing_artifact_count"] == 7
+    assert payload["current_work_item_id"] == "LAR-P0A-009"
     work_items = json.loads(WORK_ITEMS_PATH.read_text(encoding="utf-8"))["work_items"]
     task_ids = {item["task_id"] for item in work_items}
     assert payload["work_item_count"] == len(work_items) == 55
@@ -179,7 +179,7 @@ def test_planning_selector_returns_baseline_closure_without_preflight() -> None:
     assert completed.returncode == 0, completed.stderr
     payload = json.loads(completed.stdout)
     assert payload["next_action"] == "close_baseline_normative_package_first"
-    assert payload["current_work_item_id"] == "LAR-P0A-005"
+    assert payload["current_work_item_id"] == "LAR-P0A-009"
     assert payload["side_effects_performed"] is False
     assert payload["preflight_run"] is False
 
@@ -276,7 +276,7 @@ def test_selector_routes_current_candidate_semantic_change_to_successor(
     status_path = _write_status(tmp_path, mutate)
     select_next_work.__globals__["_run_verifier"] = (
         lambda _root, path, _verifier: _verifier_attestation(
-            path, "LAR-P0A-005"
+            path, "LAR-P0A-009"
         )
     )
     payload = select_next_work(
@@ -287,7 +287,7 @@ def test_selector_routes_current_candidate_semantic_change_to_successor(
     )
 
     assert payload["next_action"] == "create_successor_candidate_first"
-    assert payload["current_work_item_id"] == "LAR-P0A-005"
+    assert payload["current_work_item_id"] == "LAR-P0A-009"
 
 
 def test_selector_policy_and_implementation_keep_successor_priority_in_sync() -> None:
@@ -437,8 +437,8 @@ def test_stable_baseline_entry_is_non_normative_and_targets_frozen_candidate() -
         "target_sha256": baseline["sha256"],
         "approval_input": False,
         "maximum_byte_count": 4096,
-        "byte_count": 3035,
-        "sha256": "bdc80c648e39d7a1cc0b9abfc11b2426298310ad89bc90b24eb86068f5d01173",
+        "byte_count": 3098,
+        "sha256": "c2c2d1d9549164a7dddc2d3c6e708c73bc714bf4bf48d6598422acff8759c43c",
     }
     assert len(raw) <= entry["maximum_byte_count"]
     assert len(raw) == entry["byte_count"]
@@ -453,7 +453,7 @@ def test_stable_baseline_entry_is_non_normative_and_targets_frozen_candidate() -
         "BaselineManifest.v1",
         "BaselineApprovalRecord",
         "ProductContract.v2",
-        "LAR-P0A-005",
+        "LAR-P0A-009",
         "close_baseline_normative_package_first",
     ):
         assert marker in rendered
@@ -937,7 +937,11 @@ def test_inventory_versions_and_manifest_review_order_are_closed() -> None:
         "ef93061279accfd6af7a580d1eafbb3352bf8a8a4f610f7bcd86006643a9bcae"
     )
     assert by_id["P0A-QUALIFICATION"]["artifact_version"] == "QualificationContractSet.v2"
-    assert by_id["P0A-QUALIFICATION"]["status"] == "missing"
+    assert by_id["P0A-QUALIFICATION"]["status"] == "present"
+    assert by_id["P0A-QUALIFICATION"]["byte_count"] == 7936
+    assert by_id["P0A-QUALIFICATION"]["sha256"] == (
+        "4c873185b2eb293c23099d616fb1e754ce073e89491200dcc4e4ac0bb6fc4dac"
+    )
 
     carried = {"P0A-CANONICAL", "P0A-EXECUTION", "P0A-EVIDENCE", "P0A-GIT"}
     assert {
@@ -975,8 +979,9 @@ def test_machine_work_items_are_a_deterministic_v324_dag() -> None:
     assert by_id["LAR-P0A-REBASELINE-V324"]["next_task_ids"] == ["LAR-P0A-004"]
     assert by_id["LAR-P0A-004"]["status"] == "completed"
     assert by_id["LAR-P0A-004"]["depends_on"] == ["LAR-P0A-REBASELINE-V324"]
-    assert by_id["LAR-P0A-005"]["status"] == "ready"
+    assert by_id["LAR-P0A-005"]["status"] == "completed"
     assert by_id["LAR-P0A-005"]["depends_on"] == ["LAR-P0A-004"]
+    assert by_id["LAR-P0A-009"]["status"] == "ready"
     assert by_id["LAR-P0B-001"]["next_task_ids"] == [
         "LAR-P0C-001",
         "LAR-P0D-001",
@@ -1395,12 +1400,13 @@ def test_work_item_verifier_requires_exact_toolchain_gate_profile() -> None:
         "contract_invariant",
         "hotspot",
     ]
-    assert "sync --exact --locked --offline --no-python-downloads" in rendered
+    assert "sync --locked --offline --no-python-downloads" in rendered
+    assert "sync --exact" not in rendered and "sync --inexact" not in rendered
     assert "run --no-sync --offline --no-python-downloads" in rendered
     assert "--build-constraint" in rendered and "--require-hashes" in rendered
 
     profile["environment_preparation"][0] = profile["environment_preparation"][0].replace(
-        "sync --exact", "sync"
+        "sync --locked", "sync --inexact --locked"
     )
     failures: list[str] = []
     verify_work_items(
@@ -1411,7 +1417,7 @@ def test_work_item_verifier_requires_exact_toolchain_gate_profile() -> None:
         failures,
     )
     assert any("exact-toolchain gate" in failure for failure in failures)
-    assert any("missing exact-toolchain token: sync --exact" in failure for failure in failures)
+    assert any("retains forbidden ambiguous gate: sync --inexact" in failure for failure in failures)
 
 
 def test_work_item_verifier_rejects_b3_as_a_p5_dependency() -> None:

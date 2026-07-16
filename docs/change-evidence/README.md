@@ -1,5 +1,7 @@
 # Change Evidence Index
 
+- [2026-07-16 LAR-P0A-005 QualificationContractSet.v2 exact toolchain](20260716-lar-p0a-005-qualification-v2-exact-toolchain.md) — closes explicit exact preparation, manifest Python/uv/environment read-back, hash-pinned build backend, no-sync validation, clean-root reproducibility and 12 negative toolchain fixtures without touching a live environment.
+
 - [2026-07-16 LAR-P0A-004 ProductContract.v2 and launch experience](20260716-lar-p0a-004-product-v2-launch-experience.md) — closes the ten-step first-run CLI journey, four launch templates, catalog-only operator presentation, metrics/unknown policy and 12 negative product fixtures without runtime implementation or approval.
 
 - [20260716 Local AI Runtime v3.24 Product/Toolchain Rebaseline](20260716-local-ai-runtime-v3.24-product-toolchain-rebaseline.md): freezes the v3.23 candidate/package/plan as superseded inputs, creates v3.24/Lineage.v3, carries forward only four exact compatible artifacts, adds launch-product design and an exact uv/Python/build gate profile, reduces the graph to 55 tasks, and keeps approval/runtime/live effects inactive.

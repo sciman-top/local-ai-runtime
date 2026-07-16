@@ -24,6 +24,10 @@ if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
 from product_v2_contract import ProductV2ValidationError, verify_product_v2_bundle
+from qualification_v2_contract import (
+    QualificationV2ValidationError,
+    verify_qualification_v2_bundle,
+)
 
 
 MANIFEST_DOMAIN = "local-ai-runtime/BaselineManifest/v1"
@@ -3125,7 +3129,7 @@ def _verify_qualification_case_matrix(
     return len(cases)
 
 
-def verify_qualification_component(repo_root: Path) -> dict[str, Any]:
+def _verify_qualification_v1_bundle(repo_root: Path) -> dict[str, Any]:
     policy, policy_raw = _load_json_object(repo_root / QUALIFICATION_POLICY_RELATIVE)
     _, sensitive_schema_raw = _load_json_object(repo_root / SENSITIVE_INPUT_SCHEMA_RELATIVE)
     _, authorization_schema_raw = _load_json_object(repo_root / AUTHORIZATION_SCHEMA_RELATIVE)
@@ -3272,6 +3276,35 @@ def verify_qualification_component(repo_root: Path) -> dict[str, Any]:
         "authorization_fingerprint": authorization_id,
         "sensitive_entry_kind_count": 4,
         "fixture_counts": counts,
+    }
+
+
+def verify_qualification_component(repo_root: Path) -> dict[str, Any]:
+    """Verify immutable v1 qualification plus the active v3.24 toolchain v2 bundle."""
+
+    legacy = _verify_qualification_v1_bundle(repo_root)
+    try:
+        current = verify_qualification_v2_bundle(repo_root)
+    except QualificationV2ValidationError as exc:
+        raise ValidationFailure(exc.reason, str(exc)) from exc
+    return {
+        "status": "pass",
+        "component": "qualification",
+        **current,
+        "legacy_artifact_version": legacy["artifact_version"],
+        "legacy_artifact_byte_count": legacy["artifact_byte_count"],
+        "legacy_artifact_sha256": legacy["artifact_sha256"],
+        "legacy_authorization_fingerprint": legacy["authorization_fingerprint"],
+        "legacy_sensitive_entry_kind_count": legacy["sensitive_entry_kind_count"],
+        "fixture_counts": {
+            "active_surfaces": current["active_surface_count"],
+            "backend_requirements": current["backend_requirement_count"],
+            "distributions": current["distribution_count"],
+            "negative": current["negative_fixture_count"],
+            "preparation_commands": current["preparation_command_count"],
+            "pytest_plugins": current["pytest_plugin_count"],
+            "validation_commands": current["validation_command_count"],
+        },
     }
 
 

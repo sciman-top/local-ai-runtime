@@ -13,6 +13,7 @@ import pytest
 
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
+README_PATH = REPO_ROOT / "README.md"
 VERIFIER_PATH = REPO_ROOT / "scripts" / "verify-local-ai-runtime-baseline.py"
 QUALIFICATION_ROOT = REPO_ROOT / "docs" / "specs" / "local-ai-runtime-0.2"
 POLICY_PATH = QUALIFICATION_ROOT / "normative" / "QualificationContractSet.v1.json"
@@ -21,6 +22,32 @@ SENSITIVE_SCHEMA_PATH = (
 )
 AUTHORIZATION_SCHEMA_PATH = QUALIFICATION_ROOT / "schemas" / "Authorization.v1.schema.json"
 FIXTURE_PATH = QUALIFICATION_ROOT / "fixtures" / "qualification" / "manifest.json"
+V2_POLICY_PATH = (
+    QUALIFICATION_ROOT / "normative" / "QualificationContractSet.v2.json"
+)
+TOOLCHAIN_SCHEMA_PATH = (
+    QUALIFICATION_ROOT / "schemas" / "RuntimeToolchainManifest.v1.schema.json"
+)
+EXECUTION_PROFILE_PATH = (
+    QUALIFICATION_ROOT / "catalogs" / "VerificationExecutionProfile.v1.json"
+)
+V2_FIXTURE_PATH = QUALIFICATION_ROOT / "fixtures" / "toolchain-v2" / "manifest.json"
+ACTIVE_TOOLCHAIN_SURFACE_PATHS = (
+    REPO_ROOT / "AGENTS.md",
+    REPO_ROOT / "README.md",
+    REPO_ROOT / "docs" / "README.md",
+    REPO_ROOT / "docs" / "architecture" / "orchestrator-target-architecture.md",
+    REPO_ROOT / "docs" / "architecture" / "planning-status.json",
+    REPO_ROOT / "docs" / "architecture" / "next-work-selection-policy.json",
+    REPO_ROOT / "docs" / "backlog" / "orchestrator-task-list.md",
+    REPO_ROOT / "docs" / "plans" / "local-ai-runtime-0.2-work-items.json",
+    REPO_ROOT / "docs" / "plans" / "orchestrator-implementation-plan.md",
+    REPO_ROOT / "docs" / "product" / "orchestrator-prd.md",
+    REPO_ROOT / "docs" / "roadmap" / "orchestrator-roadmap.md",
+    REPO_ROOT / "docs" / "specs" / "acceptance-and-gates.md",
+    REPO_ROOT / "docs" / "specs" / "local-ai-runtime-0.2-baseline-candidate.md",
+    REPO_ROOT / "docs" / "specs" / "local-ai-runtime-0.2-normative-package.json",
+)
 
 
 def _run_component(repo_root: Path = REPO_ROOT) -> subprocess.CompletedProcess[str]:
@@ -46,6 +73,11 @@ def _copy_bundle(tmp_path: Path) -> None:
         SENSITIVE_SCHEMA_PATH,
         AUTHORIZATION_SCHEMA_PATH,
         FIXTURE_PATH,
+        V2_POLICY_PATH,
+        TOOLCHAIN_SCHEMA_PATH,
+        EXECUTION_PROFILE_PATH,
+        V2_FIXTURE_PATH,
+        *ACTIVE_TOOLCHAIN_SURFACE_PATHS,
     ):
         target = tmp_path / source.relative_to(REPO_ROOT)
         target.parent.mkdir(parents=True, exist_ok=True)
@@ -59,26 +91,121 @@ def test_qualification_component_closes_declared_contracts() -> None:
     payload = json.loads(completed.stdout)
     assert payload["status"] == "pass"
     assert payload["component"] == "qualification"
-    assert payload["artifact_version"] == "QualificationContractSet.v1"
-    assert payload["artifact_byte_count"] == 7336
+    assert payload["artifact_version"] == "QualificationContractSet.v2"
+    assert payload["artifact_byte_count"] == 7936
     assert payload["artifact_sha256"] == (
+        "4c873185b2eb293c23099d616fb1e754ce073e89491200dcc4e4ac0bb6fc4dac"
+    )
+    assert payload["legacy_artifact_version"] == "QualificationContractSet.v1"
+    assert payload["legacy_artifact_byte_count"] == 7336
+    assert payload["legacy_artifact_sha256"] == (
         "089a60664188fdc86c0de56496c493339246c5b423ddc3271450fb01e4fd6a80"
     )
-    assert payload["authorization_fingerprint"] == (
+    assert payload["legacy_authorization_fingerprint"] == (
         "a166aedb3c65e4bcf3d0e2cde0d798f6d646b44df50b2d5cd45386841d84b1eb"
     )
-    assert payload["sensitive_entry_kind_count"] == 4
+    assert payload["legacy_sensitive_entry_kind_count"] == 4
+    assert payload["profile_id"] == "new_runtime_exact_v1"
+    assert payload["fixed_gate_order"] == [
+        "supply_chain_identity",
+        "build",
+        "test",
+        "contract_invariant",
+        "hotspot",
+    ]
     assert payload["fixture_counts"] == {
-        "auth_store": 4,
-        "continuation": 5,
-        "grant_revoke": 5,
-        "observation_refresh": 4,
-        "sandbox_projection": 6,
-        "working_tree": 4,
+        "active_surfaces": 14,
+        "backend_requirements": 2,
+        "distributions": 2,
+        "negative": 12,
+        "preparation_commands": 1,
+        "pytest_plugins": 1,
+        "validation_commands": 10,
     }
-    assert hashlib.sha256(POLICY_PATH.read_bytes()).hexdigest() == payload[
+    profile = json.loads(EXECUTION_PROFILE_PATH.read_text(encoding="utf-8"))
+    preparation = profile["environment_preparation"][0]
+    assert "sync --locked --offline --no-python-downloads" in preparation
+    assert "sync --exact" not in preparation and "sync --inexact" not in preparation
+    assert profile["environment_preparation_semantics"] == (
+        "uv_sync_default_exact_and_inexact_forbidden"
+    )
+    assert {"uv sync --exact", "uv sync --inexact"}.issubset(
+        profile["prohibited_active_forms"]
+    )
+    assert hashlib.sha256(V2_POLICY_PATH.read_bytes()).hexdigest() == payload[
         "artifact_sha256"
     ]
+
+
+def test_qualification_v2_rejects_unsupported_sync_form_on_active_surface(
+    tmp_path: Path,
+) -> None:
+    _copy_bundle(tmp_path)
+    active_readme = tmp_path / README_PATH.relative_to(REPO_ROOT)
+    active_readme.write_text(
+        active_readme.read_text(encoding="utf-8")
+        + "\nuv sync --exact --locked --offline\n",
+        encoding="utf-8",
+        newline="\n",
+    )
+
+    completed = _run_component(tmp_path)
+
+    assert completed.returncode == 4
+    failure = json.loads(completed.stdout)
+    assert failure["status"] == "fail"
+    assert failure["reason"] == "toolchain_prohibited_active_surface"
+
+
+@pytest.mark.parametrize(
+    ("target", "mutation", "expected_reason"),
+    [
+        (
+            V2_POLICY_PATH,
+            lambda value: value["payload"].__setitem__(
+                "baseline_id", "local-ai-runtime-0.2-v3.25"
+            ),
+            "qualification_v2_policy_identity",
+        ),
+        (
+            TOOLCHAIN_SCHEMA_PATH,
+            lambda value: value.__setitem__("additionalProperties", True),
+            "qualification_v2_toolchain_schema_identity",
+        ),
+        (
+            EXECUTION_PROFILE_PATH,
+            lambda value: value.__setitem__("environment_preparation_is_gate", True),
+            "qualification_v2_execution_profile_identity",
+        ),
+        (
+            V2_FIXTURE_PATH,
+            lambda value: value.__setitem__("negative_mutations", []),
+            "qualification_v2_fixture_identity",
+        ),
+    ],
+)
+def test_qualification_v2_bundle_fails_closed_on_member_identity_drift(
+    tmp_path: Path,
+    target: Path,
+    mutation: Callable[[dict[str, object]], None],
+    expected_reason: str,
+) -> None:
+    _copy_bundle(tmp_path)
+    copied = tmp_path / target.relative_to(REPO_ROOT)
+    value = json.loads(copied.read_text(encoding="utf-8"))
+    mutation(value)
+    copied.write_text(
+        json.dumps(value, ensure_ascii=True, indent=2) + "\n",
+        encoding="utf-8",
+        newline="\n",
+    )
+
+    completed = _run_component(tmp_path)
+
+    assert completed.returncode == 4
+    failure = json.loads(completed.stdout)
+    assert failure["status"] == "fail"
+    assert failure["reason"] == expected_reason
 
 
 @pytest.mark.parametrize(

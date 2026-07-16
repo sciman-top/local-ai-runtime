@@ -2,7 +2,7 @@
 
 ## 1. 目标、当前落点与真值
 
-目标是在 Baseline Approval 后，把现行 `runtime/host-orchestrator` 逐步迁移到 `runtime/local-ai-runtime`：Windows-local、single-operator、Python modular monolith、Unified Native + global capacity=1 deterministic commit-only Batch。当前仍是 v3.24 preapproval planning：package `7/15 present, 8 non-present`，唯一 task 为 `LAR-P0A-005`，不得创建 runtime、approval、claim 或 live evidence。
+目标是在 Baseline Approval 后，把现行 `runtime/host-orchestrator` 逐步迁移到 `runtime/local-ai-runtime`：Windows-local、single-operator、Python modular monolith、Unified Native + global capacity=1 deterministic commit-only Batch。当前仍是 v3.24 preapproval planning：package `8/15 present, 7 non-present`，唯一 task 为 `LAR-P0A-009`，不得创建 runtime、approval、claim 或 live evidence。
 
 机器执行真源是 [local-ai-runtime-0.2-work-items.json](D:/CODE/local-ai-dev-orchestrator/docs/plans/local-ai-runtime-0.2-work-items.json)。本文件说明如何执行；若 task scope/acceptance/dependency/status 与 machine plan 冲突，以 verifier 通过的 machine plan 为准并先修正文档漂移。
 
@@ -47,11 +47,11 @@
 - human projection 只由 public machine state + `OperatorPresentationCatalog` 渲染，stable JSON 为自动化接口，raw output/secret-derived data 禁止插值；
 - 首发指标及 unknown handling。free prompt、dynamic command、dependency install、remote effect、promotion bypass、secret-bearing fixtures 必须失败。
 
-### 3.3 `LAR-P0A-005` — QualificationContractSet.v2
+### 3.3 `LAR-P0A-005` — QualificationContractSet.v2（已完成）
 
 写集：qualification v2、`RuntimeToolchainManifest` schema、`VerificationExecutionProfile` catalog、hashed build constraints、toolchain negative fixtures、baseline verifier component。
 
-必须证明：显式 `uv sync --exact --locked --offline --no-python-downloads --python <manifest-python>` 只作 environment preparation；daily validation `run --no-sync`；child `sys.executable`/patch/file identity/hash、installed distributions/plugins 精确；build frontend/backend/constraints hash-bound；同一 `SOURCE_DATE_EPOCH` 的两个 clean roots 具有相同 member manifest/artifact hashes。wrong patch、extraneous package/plugin、download request、multi-backend cache、missing hashes、repeat mismatch 全部拒绝。
+必须证明：显式 `uv sync --locked --offline --no-python-downloads --python <manifest-python>` 只作 environment preparation；`uv sync` 默认 exact，`--inexact` 必须拒绝；daily validation `run --no-sync`；child `sys.executable`/patch/file identity/hash、installed distributions/plugins 精确；build frontend/backend/constraints hash-bound；同一 `SOURCE_DATE_EPOCH` 的两个 clean roots 具有相同 member manifest/artifact hashes。wrong patch、extraneous package/plugin、download request、multi-backend cache、missing hashes、repeat mismatch 全部拒绝。
 
 ### 3.4 `LAR-P0A-009` — State/guard/operator catalogs
 
@@ -123,4 +123,4 @@ Implementation Acceptance 覆盖 code/migration/CLI/first-run/templates/crash/ba
 
 ## 9. 当前下一步
 
-执行 `LAR-P0A-005`，只创建 QualificationContractSet.v2 及 exact-toolchain artifacts。不得准备 live environment、下载 Python/依赖、创建 final manifest、approval、Truth Reset、`runtime/local-ai-runtime`、真实 Git publication、读取 live auth/DPAPI/sandbox state、remote push 或 CI retrieval。
+执行 `LAR-P0A-009`，只创建 state/guard/operator catalog artifacts。不得创建 final manifest、approval、Truth Reset、`runtime/local-ai-runtime`、真实 Git publication、修改 `.ai` live state、读取 live auth/DPAPI/sandbox state、remote push 或 CI retrieval。

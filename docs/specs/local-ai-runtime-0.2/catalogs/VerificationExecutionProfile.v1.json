@@ -1,0 +1,80 @@
+{
+  "catalog_version": "VerificationExecutionProfile.v1",
+  "baseline_id": "local-ai-runtime-0.2-v3.24",
+  "profile_id": "new_runtime_exact_v1",
+  "profile_status": "normative_preimplementation_contract",
+  "environment_preparation": [
+    "& <uv.absolute_path> sync --locked --offline --no-python-downloads --python <python.absolute_path> --project runtime/local-ai-runtime"
+  ],
+  "environment_preparation_is_gate": false,
+  "environment_preparation_semantics": "uv_sync_default_exact_and_inexact_forbidden",
+  "fixed_gate_order": [
+    "supply_chain_identity",
+    "build",
+    "test",
+    "contract_invariant",
+    "hotspot"
+  ],
+  "commands": {
+    "supply_chain_identity": [
+      "& <uv.absolute_path> lock --check --offline --no-python-downloads --python <python.absolute_path> --project runtime/local-ai-runtime",
+      "& <python.absolute_path> -I -s -E -m local_ai_runtime toolchain verify-environment --profile new_runtime_exact_v1 --json"
+    ],
+    "build": [
+      "& <uv.absolute_path> build --offline --no-python-downloads --python <python.absolute_path> --build-constraint <hashed_build_constraints.absolute_path> --require-hashes --project runtime/local-ai-runtime runtime/local-ai-runtime"
+    ],
+    "test": [
+      "& <uv.absolute_path> run --no-sync --offline --no-python-downloads --python <python.absolute_path> --project runtime/local-ai-runtime python -I -s -E -m pytest"
+    ],
+    "contract_invariant": [
+      "& <uv.absolute_path> run --no-sync --offline --no-python-downloads --python <python.absolute_path> --project runtime/local-ai-runtime python -I -s -E -m local_ai_runtime contracts verify",
+      "python scripts/verify-planning-status.py",
+      "python scripts/select-next-work.py"
+    ],
+    "hotspot": [
+      "& <uv.absolute_path> run --no-sync --offline --no-python-downloads --python <python.absolute_path> --project runtime/local-ai-runtime ruff check runtime/local-ai-runtime",
+      "& <uv.absolute_path> run --no-sync --offline --no-python-downloads --python <python.absolute_path> --project runtime/local-ai-runtime pyright --project runtime/local-ai-runtime",
+      "git diff --check"
+    ]
+  },
+  "child_identity_readback": [
+    "sys.executable",
+    "python_version_patch",
+    "python_file_identity_sha256",
+    "python_file_sha256",
+    "uv_version",
+    "uv_file_identity_sha256",
+    "uv_file_sha256",
+    "installed_distribution_identities",
+    "pytest_plugin_identities",
+    "build_frontend_identity",
+    "build_backend_identity"
+  ],
+  "build_contract": {
+    "offline": true,
+    "no_python_downloads": true,
+    "explicit_python": true,
+    "build_constraint_required": true,
+    "require_hashes": true,
+    "cached_backend_selection": "exact_manifest_set_only"
+  },
+  "reproducibility_contract": {
+    "clean_root_count": 2,
+    "source_date_epoch_source": "RuntimeToolchainManifest.v1",
+    "compare": ["normalized_member_manifest_sha256", "artifact_sha256"],
+    "root_path_and_mtime_in_hash": false,
+    "mismatch_result": "qualification_failed"
+  },
+  "prohibited_active_forms": [
+    "uv sync --exact",
+    "uv sync --inexact",
+    "uv run --locked --offline",
+    "uv build --offline --project",
+    "PATH python",
+    "automatic Python download",
+    "unconstrained cached build backend",
+    "validation command that performs sync",
+    "build without --require-hashes",
+    "build without --build-constraint"
+  ]
+}

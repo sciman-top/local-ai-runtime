@@ -128,7 +128,7 @@ EXPECTED_PLANNING_OPTIMIZATION_SHA256 = (
     "5da5bcca5482afda6c0a393a8b03edb38498ee7affeee2960d4bf32838ef6604"
 )
 EXPECTED_EXACT_TOOLCHAIN_PROFILE_SHA256 = (
-    "506bdfb5bd8cd405cf5b42e21c9ef0b76c34911e05389f820c11e8ae8159d459"
+    "45f46c17f102fce0baa04619d8432655d85c479b9a51e11edb0f1c5e4de2b3f2"
 )
 EXPECTED_GRAPH_ROOTS = ["LAR-P0A-REBASELINE-V324"]
 EXPECTED_SUPERSEDED_PLAN = {
@@ -253,7 +253,7 @@ EXPECTED_CONTRACT_PROJECTIONS = [
         "required_contract_tokens": [
             "RuntimeToolchainManifest",
             "VerificationExecutionProfile",
-            "uv sync --exact",
+            "uv sync default exact; --inexact forbidden",
             "--no-python-downloads",
             "--build-constraint",
             "--require-hashes",
@@ -1691,7 +1691,7 @@ def _verify_work_items(
                 failures.append("new_runtime_exact_v1 must preserve fixed gate order")
             rendered_profile = json.dumps(exact_profile, ensure_ascii=False)
             for token in (
-                "sync --exact",
+                "sync --locked",
                 "--locked",
                 "--offline",
                 "--no-python-downloads",
@@ -1704,6 +1704,8 @@ def _verify_work_items(
                 if token not in rendered_profile:
                     failures.append(f"new_runtime_exact_v1 missing exact-toolchain token: {token}")
             for forbidden in (
+                "sync --exact",
+                "sync --inexact",
                 "uv run --locked --offline",
                 "uv build --offline --project",
             ):
@@ -2250,6 +2252,12 @@ def _verify_completed_normative_components(
     }
     components = (
         ("LAR-P0A-004", "P0A-PRODUCT", "product-submission", "ProductContract.v2"),
+        (
+            "LAR-P0A-005",
+            "P0A-QUALIFICATION",
+            "qualification",
+            "QualificationContractSet.v2",
+        ),
     )
     for task_id, artifact_id, component, expected_version in components:
         if work_items.get(task_id, {}).get("status") != "completed":

@@ -1,0 +1,128 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local-ai-runtime.invalid/schemas/RuntimeToolchainManifest.v1.schema.json",
+  "title": "RuntimeToolchainManifest.v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "manifest_id",
+    "baseline_id",
+    "python",
+    "uv",
+    "lock",
+    "environment",
+    "build",
+    "reproducibility"
+  ],
+  "properties": {
+    "schema_version": {"const": 1},
+    "manifest_id": {"$ref": "#/$defs/public_id"},
+    "baseline_id": {"const": "local-ai-runtime-0.2-v3.24"},
+    "python": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["absolute_path", "version", "file_identity_sha256", "file_sha256", "automatic_downloads"],
+      "properties": {
+        "absolute_path": {"$ref": "#/$defs/windows_absolute_path"},
+        "version": {"type": "string", "pattern": "^3\\.11\\.[0-9]+$"},
+        "file_identity_sha256": {"$ref": "#/$defs/sha256"},
+        "file_sha256": {"$ref": "#/$defs/sha256"},
+        "automatic_downloads": {"const": "deny"}
+      }
+    },
+    "uv": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["absolute_path", "version", "file_identity_sha256", "file_sha256"],
+      "properties": {
+        "absolute_path": {"$ref": "#/$defs/windows_absolute_path"},
+        "version": {"type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"},
+        "file_identity_sha256": {"$ref": "#/$defs/sha256"},
+        "file_sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "lock": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["project_path", "lock_path", "lock_sha256", "offline_cache_manifest_sha256"],
+      "properties": {
+        "project_path": {"const": "runtime/local-ai-runtime"},
+        "lock_path": {"const": "runtime/local-ai-runtime/uv.lock"},
+        "lock_sha256": {"$ref": "#/$defs/sha256"},
+        "offline_cache_manifest_sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "environment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["environment_root", "distribution_identities", "pytest_plugin_identities", "extraneous_policy"],
+      "properties": {
+        "environment_root": {"$ref": "#/$defs/windows_absolute_path"},
+        "distribution_identities": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"$ref": "#/$defs/distribution"}},
+        "pytest_plugin_identities": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/plugin"}},
+        "extraneous_policy": {"const": "exact_set_no_additions_no_missing"}
+      }
+    },
+    "build": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["frontend", "backend", "constraint_path", "constraint_sha256", "require_hashes", "backend_requirements"],
+      "properties": {
+        "frontend": {"$ref": "#/$defs/distribution"},
+        "backend": {"$ref": "#/$defs/distribution"},
+        "constraint_path": {"$ref": "#/$defs/windows_absolute_path"},
+        "constraint_sha256": {"$ref": "#/$defs/sha256"},
+        "require_hashes": {"const": true},
+        "backend_requirements": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"$ref": "#/$defs/hashed_requirement"}}
+      }
+    },
+    "reproducibility": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source_date_epoch", "clean_root_count", "comparison_fields", "normalization_policy"],
+      "properties": {
+        "source_date_epoch": {"type": "integer", "minimum": 1},
+        "clean_root_count": {"const": 2},
+        "comparison_fields": {"const": ["normalized_member_manifest_sha256", "artifact_sha256"]},
+        "normalization_policy": {"const": "wheel_member_path_mode_size_content_hash_no_root_path_or_mtime"}
+      }
+    }
+  },
+  "$defs": {
+    "public_id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9._-]{0,62}$"},
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "windows_absolute_path": {"type": "string", "pattern": "^[A-Za-z]:/[^\\r\\n]+$"},
+    "distribution": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "version", "metadata_sha256"],
+      "properties": {
+        "name": {"$ref": "#/$defs/public_id"},
+        "version": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9.+_-]{0,63}$"},
+        "metadata_sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "plugin": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["entry_point", "distribution_name", "distribution_version", "metadata_sha256"],
+      "properties": {
+        "entry_point": {"$ref": "#/$defs/public_id"},
+        "distribution_name": {"$ref": "#/$defs/public_id"},
+        "distribution_version": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9.+_-]{0,63}$"},
+        "metadata_sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "hashed_requirement": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "version", "artifact_sha256"],
+      "properties": {
+        "name": {"$ref": "#/$defs/public_id"},
+        "version": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9.+_-]{0,63}$"},
+        "artifact_sha256": {"$ref": "#/$defs/sha256"}
+      }
+    }
+  }
+}

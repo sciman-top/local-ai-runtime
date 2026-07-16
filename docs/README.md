@@ -4,7 +4,7 @@
 
 当前候选为 `local-ai-runtime-0.2-v3.24`，`blocking_stage=baseline_approval`。它是 v3.23 的 successor，不是已批准基线；原因是 predecessor gate 未证明 exact uv environment、manifest Python 与 hash-pinned build backend，且 launch product experience 不完整。v3.23 candidate/package/plan 仅作为冻结历史，Native thin-path comparative result 仅为 non-normative predecessor evidence。
 
-当前 package 是 `7/15 present, 8 non-present`。`ProductContract.v2` 已创建并通过 component verifier；`QualificationContractSet.v2` 尚未创建，最终 `BaselineManifest.v1.json` 不存在，`runtime/local-ai-runtime` 不存在。当前唯一 machine work item 是 `LAR-P0A-005`；selector action 是 `close_baseline_normative_package_first`。
+当前 package 是 `8/15 present, 7 non-present`。`ProductContract.v2` 与 `QualificationContractSet.v2` 已创建并通过 component verifiers；state/Q0/migration/examples/verifier/final manifest/review 尚未闭合，`runtime/local-ai-runtime` 不存在。当前唯一 machine work item 是 `LAR-P0A-009`；selector action 是 `close_baseline_normative_package_first`。
 
 `planning_optimization_policy` 使用 `one_selector_selected_work_item` 和 `same_run_reselect_after_verified_atomic_closeout`：一个 work item 必须 acceptance、verification、evidence、status、local commit、clean worktree 全闭合后，同一 run 才能继续；默认最多 3 个或 180 分钟，阶段/批准/successor/live 边界停止。
 
@@ -30,7 +30,7 @@
 
 目标技术栈是 Python 3.11.x modular monolith + uv exact offline environment + SQLite authority + append-only evidence/journal + Windows Job Object/process fencing + deterministic local Git objects/task refs + Windows Task Scheduler trigger。源码根只允许 `__init__.py`、`__main__.py` 与 `contracts/kernel/qualification/storage/execution/recovery/git_local/operations/compat`；`approved_root_files`、`approved_subpackages`、`required_source_owners` 由 machine plan/verifier 关闭。
 
-新 runtime gate profile 为 `new_runtime_exact_v1`：环境准备 `uv sync --exact --locked --offline --no-python-downloads --python <manifest-python>`；验证使用 `run --no-sync`；build backend 用 `--build-constraint` 与 `--require-hashes`；固定门序为 supply-chain identity、build、test、contract/invariant、hotspot，并要求 clean-root repeatability。
+新 runtime gate profile 为 `new_runtime_exact_v1`：环境准备 `uv sync --locked --offline --no-python-downloads --python <manifest-python>`，依赖 uv sync 默认 exact 并禁止 `--inexact`；验证使用 `run --no-sync`；build backend 用 `--build-constraint` 与 `--require-hashes`；固定门序为 supply-chain identity、build、test、contract/invariant、hotspot，并要求 clean-root repeatability。
 
 SQLite 是唯一 policy/transition authority；journal 是观察/恢复输入，不可成为第二状态机。global writer capacity=1。B3 portfolio scheduling、multi-writer、remote/distributed runtime、SDK/App Server/managed Worktree/Automations deferred beyond 0.2。
 
