@@ -17,10 +17,9 @@ DEFAULT_VERIFIER_PATH = ROOT / "scripts" / "verify-planning-status.py"
 EXPECTED_SELECTOR_STEPS = [
     ("planning_integrity_red", "repair_gate_first"),
     (
-        "native_thin_path_semantic_change_requires_successor",
+        "current_candidate_semantic_change_requires_successor",
         "create_successor_candidate_first",
     ),
-    ("native_thin_path_evaluation_pending", "run_native_thin_path_evaluation_first"),
     ("baseline_review_closure_pending", "run_baseline_consistency_review"),
     ("normative_package_incomplete", "close_baseline_normative_package_first"),
     ("approval_eligible_without_active_approval", "record_baseline_approval_first"),
@@ -32,7 +31,6 @@ EXPECTED_SELECTOR_STEPS = [
     ("full_q0_green_p2_pilot_missing", "run_single_p2_pilot_first"),
     ("p2_pilot_green_p3_missing", "run_five_scheduled_self_host_first"),
     ("p3_green_p4_missing", "run_30_task_cohort_first"),
-    ("p4_green_b3_work_item_selected", "activate_b3_portfolio_generation_first"),
     ("p4_green_p5_missing", "cut_over_repositories_first"),
     ("p5_complete", "operate_approved_runtime"),
 ]
@@ -172,7 +170,8 @@ def select_next_work(
     try:
         baseline = _required_object(status, "baseline_candidate")
         package = _required_object(status, "normative_package")
-        evaluation = _required_object(status, "native_thin_path_evaluation")
+        successor = _required_object(status, "successor_transition")
+        planning_optimization = _required_object(status, "planning_optimization")
         approval = _required_object(status, "approval_state")
         truth_reset = _required_object(status, "truth_reset")
         legacy = _required_object(status, "legacy_runtime_posture")
@@ -211,15 +210,11 @@ def select_next_work(
             stage_snapshot=None,
         )
 
-    evaluation_decision = evaluation.get("decision")
-    evaluation_status = evaluation.get("status")
-    if evaluation_decision in {
-        "narrow_profile_or_adapter_candidate",
-        "supersede_required",
-    }:
+    if (
+        planning_optimization.get("frozen_v324_semantics_changed") is True
+        or successor.get("status") != "completed"
+    ):
         action = "create_successor_candidate_first"
-    elif evaluation_status != "preserve_v3_23_semantics":
-        action = "run_native_thin_path_evaluation_first"
     elif package["status"] != "complete" or not package["approval_eligible"]:
         review_task_selected = current_id == "LAR-P0A-013"
         review_artifacts_pending = (
@@ -261,11 +256,6 @@ def select_next_work(
         action = "run_five_scheduled_self_host_first"
     elif not rollout["p4_cohort_complete"]:
         action = "run_30_task_cohort_first"
-    elif (
-        current_id == "LAR-P4-002"
-        and not rollout["b3_portfolio_generation_active"]
-    ):
-        action = "activate_b3_portfolio_generation_first"
     elif not rollout["p5_cutover_complete"] or not rollout["legacy_writer_retired"]:
         action = "cut_over_repositories_first"
     else:
@@ -326,7 +316,7 @@ def _validate_policy(policy: dict[str, Any]) -> dict[str, str]:
         )
     if allowed != EXPECTED_SELECTOR_ACTIONS:
         raise ValueError(
-            "selector allowed_next_actions must match the v3.23 action catalog"
+            "selector allowed_next_actions must match the v3.24 action catalog"
         )
     review_sets = policy["baseline_review_missing_artifact_sets"]
     if (
@@ -372,7 +362,7 @@ def _validate_policy(policy: dict[str, Any]) -> dict[str, str]:
     ]
     if actual_steps != EXPECTED_SELECTOR_STEPS:
         raise ValueError(
-            "selector condition/action order must match the v3.23 stage graph"
+            "selector condition/action order must match the v3.24 stage graph"
         )
     entrypoints = policy["required_entrypoints"]
     if not isinstance(entrypoints, list) or not all(
@@ -480,12 +470,10 @@ def _stage_snapshot(status: dict[str, Any]) -> dict[str, object]:
         "blocking_stage": status["baseline_candidate"]["blocking_stage"],
         "normative_package_status": status["normative_package"]["status"],
         "missing_artifact_count": len(status["normative_package"]["missing_artifact_ids"]),
-        "native_thin_path_evaluation_status": status["native_thin_path_evaluation"][
-            "status"
+        "successor_transition_status": status["successor_transition"]["status"],
+        "successor_transition_disposition": status["successor_transition"][
+            "disposition"
         ],
-        "native_thin_path_evaluation_decision": status[
-            "native_thin_path_evaluation"
-        ]["decision"],
         "approval_active": status["approval_state"]["active"],
         "truth_reset_performed": status["truth_reset"]["performed"],
         "legacy_guard_complete": status["legacy_runtime_posture"]["legacy_guard_complete"],
@@ -500,9 +488,6 @@ def _stage_snapshot(status: dict[str, Any]) -> dict[str, object]:
             "p3_scheduled_self_host_complete"
         ],
         "p4_cohort_complete": status["rollout"]["p4_cohort_complete"],
-        "b3_portfolio_generation_active": status["rollout"][
-            "b3_portfolio_generation_active"
-        ],
         "p5_cutover_complete": status["rollout"]["p5_cutover_complete"],
         "legacy_writer_retired": status["rollout"]["legacy_writer_retired"],
     }

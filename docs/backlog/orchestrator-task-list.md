@@ -1,123 +1,96 @@
 # Local AI Runtime 0.2 任务清单
 
-## 使用规则
+## 1. 当前真值
 
-机器真源是 `docs/plans/local-ai-runtime-0.2-work-items.json`。本文件只作可读索引；状态、依赖、验收、命令、证据、回滚、停止条件和 prohibited actions 必须从机器真源读取。
+Baseline=`local-ai-runtime-0.2-v3.24`；plan=`local_ai_runtime_work_items.v4`；机器图总计 55 项；状态分布为 `completed=1 / ready=1 / pending=6 / blocked=47`。当前队列 `LOCAL-AI-RUNTIME-0.2-BASELINE-CLOSURE`，唯一 selectable=`LAR-P0A-004`，action=`close_baseline_normative_package_first`。
 
-当前：`local-ai-runtime-0.2-v3.23` 为 `baseline_candidate`；队列 `LOCAL-AI-RUNTIME-0.2-BASELINE-CLOSURE`；唯一 selectable 项 `LAR-P0A-009`。机器图是 `local_ai_runtime_work_items.v3` 确定性 DAG，共 65 项，其中 P1A-P1F 的 35 项仍按 work-item 原子闭环；顶层 11 项 contract projection 机械绑定规范 producer、实现 consumer 与 acceptance consumer。`bounded continuation` 只允许完整 closeout 后同一 run 重新 selector，默认最多 3 项/180 分钟，不批量关闭状态，也不跨阶段或授权边界。
+本页只读投影 [machine work items](D:/CODE/local-ai-dev-orchestrator/docs/plans/local-ai-runtime-0.2-work-items.json)。`[x]` completed、`[ ]` ready/pending、`[!]` blocked。状态只能在 acceptance + declared verification + evidence + machine/doc sync + local commit + clean worktree 后改变。
 
-目标源码使用关闭布局：`approved_root_files=["__init__.py","__main__.py"]`；`approved_subpackages=["contracts","kernel","qualification","storage","execution","recovery","git_local","operations","compat"]`；`required_source_owners` 固定 bootstrap/marker 的唯一任务。`__main__.py` 只转发 contracts verifier；任务若计划其他包根功能模块、第十个首级子包、重复源码 owner 或缺失 marker，planning verifier 必须先阻断。
+`bounded continuation` 采用 `same_run_reselect_after_verified_atomic_closeout`：一次只关闭一个 selector-selected item，完整 closeout 后可同一 run 继续；默认最多 3 项/180 分钟，不跨阶段/批准/successor/live 边界。
 
-状态含义：
+## 2. P0A / Governance / Bootstrap
 
-- `[ ] ready`：当前唯一允许执行。
-- `[ ] pending`：依赖未完成，不得提前做。
-- `[!] blocked`：阶段门未通过。
-- `[x] completed`：全部 acceptance 有证据且 verification 绿色。
+- [x] `LAR-P0A-REBASELINE-V324` completed：v3.24 product/toolchain successor；冻结 v3.23 candidate/package/plan，创建 Lineage.v3，carry forward 四项，切换 55-task graph。
+- [ ] `LAR-P0A-004` ready：ProductContract.v2、FirstRunExperiencePolicy、LaunchTemplateCatalog、OperatorPresentationCatalog、四 launch templates 与 fixtures。
+- [ ] `LAR-P0A-005` pending：QualificationContractSet.v2、RuntimeToolchainManifest、VerificationExecutionProfile、exact uv/Python/build gates 与 clean-root repeatability。
+- [ ] `LAR-P0A-009` pending：SQLite-authority/journal-observation state/guard/operator catalogs、cleanup finalizer、durable inbox、B3 deferred。
+- [ ] `LAR-P0A-010` pending：GateGraph、Q0/capability/activation/resource/process/toolchain gate catalogs。
+- [ ] `LAR-P0A-011` pending：migration specification、cross-contract examples、negative/crash/limit fixtures。
+- [ ] `LAR-P0A-012` pending：standalone normative package verifier 与 tamper tests。
+- [ ] `LAR-P0A-013` pending：preliminary review、package head、final manifest、closure review、approval readiness。
+- [!] `LAR-GOV-001` blocked：controlled v3.24 Baseline Approval；要求 explicit authority/expected generation/anti-replay，AI 不自签。
+- [!] `LAR-P0B-001` blocked：approved Truth Reset；不创建 writer/claim。
+- [!] `LAR-P0C-001` blocked：ownership wire contract 与 legacy side-effect inventory。
+- [!] `LAR-P0C-002` blocked：guard 全部 legacy writer/repo side effects。
+- [!] `LAR-P0C-003` blocked：legacy/new ownership conformance 与 rollback。
+- [!] `LAR-P0D-001` blocked：no-side-effect `runtime/local-ai-runtime` scaffold + exact acceptance harness。
 
-## P0A：Normative Package Closure
+P0D source layout 是关闭集合：`approved_root_files=[__init__.py,__main__.py]`、`approved_subpackages=[contracts,kernel,qualification,storage,execution,recovery,git_local,operations,compat]`、一对一 `required_source_owners`。P0C/P0D 仅在 P0B 后可并行，P1A-001 同时依赖 P0C-003 与 P0D-001。
 
-- [x] `LAR-P0A-001` completed：从原始 session 归档 v3.17 exact bytes 和两份 conflicted v3.18，并完成 byte policy 与双路径 hash。
-- [x] `LAR-P0A-REBASELINE-V322` completed：冻结 v3.22、重发 v3.22-bound lineage、终结 v3.21 plan identity 并切换 v3 machine DAG。
-- [x] `LAR-P0A-REBASELINE-V323` completed：冻结 v3.23、保留 v3.22 exact bytes 为 superseded input、创建 v3.23-bound lineage，并把 preapproval Native thin-path 评测门投影到 control plane。
-- [x] `LAR-P0A-EVAL-001` completed：三份 machine-readable contract 已冻结并由 exact byte/hash/snapshot identity 绑定；定义 TaskFamily、model/effort、tool inventory、sandbox、gates、人工分钟、stop rules、evidence schema 和五个独立 capability surface，但不产生比较结果或资格化结论。
-- [x] `LAR-P0A-EVAL-002` completed：18 个 core trial 与全部 conditional disposition 已封存；决定为 `preserve_v3_23_semantics`，不 promotion 当前 high-effort profile，未知 downstream outcome 保留在分母。
-- [x] `LAR-P0A-002` completed：已重验 Narrative/artifact/package 三层版本语义，并把 manifest fixture/self-test 绑定到冻结 v3.23 source 与 `BaselineLineage.v2`；最终 manifest 未创建，`P0A-MANIFEST` 保持 missing，`P0A-VERIFIER` 保持 in_progress。
-- [x] `LAR-P0A-003` completed：Canonical JSON、Git path、Windows identity/collision、SID/named-object、alias-aware 8.3 与 `policy_query_denied` probe 已闭合为 `CanonicalizationPolicy.v1`。
-- [x] `LAR-P0A-004` completed：Product/routing/template、`WorkDefinition`/`TaskFamily`、永久 ordinary replay、absent-only secret/admission、原子 resubmission。
-- [x] `LAR-P0A-005` completed：base-bound QualificationObservation、base-independent QualificationSensitiveInputSet、environment、opaque sandbox state/log、keyring-only auth、Authorization continuation、root/child effect grant。
-- [x] `LAR-P0A-006` completed：`EffectPlan`、`writer_effect_id`/`writer_launch_id`、Writer/StageJob、marker、JOB_LIST/HANDLE_LIST、精确 stdio/EOF、suspended execution barrier、Authorization/SafetyOnly authority union、fencing/adoption。
-- [x] `LAR-P0A-007` completed：event/status matrix、journal、receipt、artifact、runtime-managed external evidence、key envelopes、anti-rollback backup/restore。
-- [x] `LAR-P0A-008` completed：Git config/audit、`git_hybrid_materialization_v1`、claim time、canonical object verification、no-reflog commit/finalize/ref/remove。
-- [ ] `LAR-P0A-009` ready：SubmissionFamily/Task/Attempt/Platform/Repo/Template/Autonomy/Operator policies、state/guard/operator catalogs、acyclic precedence、capacity/scheduler disposition、durable action inbox、data-only portfolio。
-- [ ] `LAR-P0A-010` pending：`GateGraph`、三级演进、`Q0TriggerPolicy`、activation admission、feature/process/gate、mandatory write accounting、emergency reserve、optional hard quota 和 resource-limit catalogs。
-- [ ] `LAR-P0A-011` pending：cross-contract examples、negative/crash/limit fixtures。
-- [ ] `LAR-P0A-012` pending：standalone normative package verifier 和 tamper tests。
-- [ ] `LAR-P0A-013` pending：preliminary review -> 冻结 `package_review_head` -> 一次性最终 BaselineManifest -> manifest-closure review -> `approval_review_head` 后继证明与 approval readiness。
+## 3. P1A — Contracts and kernel
 
-P0A 完成不自动批准。必须另有显式、append-only、可撤销/替代的 BaselineApprovalRecord。
+- [!] `LAR-P1A-001` blocked：canonical bytes/hash/path primitives。
+- [!] `LAR-P1A-002` blocked：schema registry、typed contracts、WorkDefinition/TaskFamily/launch product bindings。
+- [!] `LAR-P1A-003` blocked：state/guard/operator catalog evaluation。
+- [!] `LAR-P1A-004` blocked：cross-contract policy bundle verification。
 
-## Governance Approval
+## 4. P1B — Persistence
 
-- [!] `LAR-GOV-001` blocked by P0A review, `preserve_v3_23_semantics` evaluation decision and explicit authority：通过 `BaselineApprovalCommandPolicy`、authority/session、expected generation 与 anti-replay challenge 批准或拒绝 v3.23；不得与 review、Truth Reset 或实现合并，AI 不得自签。
+- [!] `LAR-P1B-001` blocked：SQLite bootstrap/schema migrations；single transition authority。
+- [!] `LAR-P1B-002` blocked：submission-family/resubmission transactions。
+- [!] `LAR-P1B-003` blocked：leases/fences/execution-authority CAS。
+- [!] `LAR-P1B-004` blocked：event/journal/outbox/artifact cursors。
+- [!] `LAR-P1B-005` blocked：crash recovery 与 response-loss replay。
 
-## P0B：Truth Reset
+## 5. P1C — Composition, qualification and limits
 
-- [!] `LAR-P0B-001` blocked by Baseline Approval：同步 AGENTS/README/PRD/architecture/roadmap/plan/backlog/acceptance/planning/selector/verifier；切换到 `MINIMUM-OPERATOR-COMMIT-ONLY-TRANSITION` 和 `implement_legacy_guard_first`。
+- [!] `LAR-P1C-001` blocked：immutable installation/activation rollback；RuntimeCompositionManifest -> SelectedRuntimeIdentity -> ActiveRuntimeIdentity。
+- [!] `LAR-P1C-002` blocked：exact toolchain/environment binding；RuntimeToolchainManifest + no-sync gates + hash-pinned backend。
+- [!] `LAR-P1C-003` blocked：repo/template qualification、auth state、Authorization。
+- [!] `LAR-P1C-004` blocked：Codex sandbox state/effective-config qualification。
+- [!] `LAR-P1C-005` blocked：write accounting 与 emergency reserve lifecycle。
+- [!] `LAR-P1C-006` blocked：Full/quick/daily qualification probes 与 Q0TriggerPolicy。
+- [!] `LAR-P1C-007` blocked：CLI Codex CapabilityAdapter 与 provider-free no-write smoke。
 
-## P0C：Legacy Ownership Guard
+## 6. P1D — Execution and recovery
 
-- [!] `LAR-P0C-001` blocked：ownership wire、SID/repo identity/mutex/SDDL、legacy entrypoint inventory。
-- [!] `LAR-P0C-002` blocked：在所有 legacy claim/lease/worktree/writer/Git/closeout/cleanup side effect 前接 guard。
-- [!] `LAR-P0C-003` blocked：legacy/new conformance、concurrent claim、crash/takeover、cutover/rollback drill。
+- [!] `LAR-P1D-001` blocked：named-object identity/empty Job lifecycle。
+- [!] `LAR-P1D-002` blocked：writer marker/atomic suspended launch；writer_effect_id/writer_launch_id。
+- [!] `LAR-P1D-003` blocked：StageJobs/execution-authority enforcement；ProcessHandlePolicy、ChildHandleManifest、HANDLE_LIST/STARTF_USESTDHANDLES。
+- [!] `LAR-P1D-004` blocked：bounded stream drain/normalized journal。
+- [!] `LAR-P1D-005` blocked：adoption/continuation/recovery handoff 与 cleanup finalizer。
+- [!] `LAR-P1D-006` blocked：exact offline gate runner。
 
-P0C 前新 Batch claim 始终禁止。
+## 7. P1E — Deterministic Git and evidence
 
-## P0D：Package Scaffold
+- [!] `LAR-P1E-001` blocked：hardened Git identity/preflight audit。
+- [!] `LAR-P1E-002` blocked：fenced worktree setup/mutation closure。
+- [!] `LAR-P1E-003` blocked：controller canonical object plan、pinned Git materialization/read-back/promotion。
+- [!] `LAR-P1E-004` blocked：finalize index/HEAD/task-ref，no reflog。
+- [!] `LAR-P1E-005` blocked：artifact/external evidence/receipt closeout。
+- [!] `LAR-P1E-006` blocked：safe cleanup 与 anti-rollback backup/restore。
+- [!] `LAR-P1E-007` blocked：provider-free fixture closeout rehearsal。
 
-- [!] `LAR-P0D-001` blocked：以 manifest 锁定 Python 3.11.x patch，创建 `runtime/local-ai-runtime`、包根 marker、薄 `__main__.py` contracts-verifier bootstrap 和 offline lock/build/test/contracts/ruff/pyright harness；不执行 writer，不 import legacy，不创建其他包根功能模块。
+## 8. P1F/P1G — Product operations and acceptance
 
-## P1：Implementation
+- [!] `LAR-P1F-001` blocked：stable CLI kernel/human+JSON envelope。
+- [!] `LAR-P1F-002` blocked：Batch prepare/dry-run/submit/status/recovery。
+- [!] `LAR-P1F-003` blocked：single-capacity scheduling/parking；四 template 运行约束。
+- [!] `LAR-P1F-004` blocked：managed Native maintenance/emergency kill。
+- [!] `LAR-P1F-005` blocked：durable operator actions、runbooks、work-session/product metrics。
+- [!] `LAR-P1F-006` blocked：compat/cutover/evaluation command surfaces。
+- [!] `LAR-P1G-001` blocked：Implementation Acceptance；闭合 11 projections、first-run、templates、exact toolchain、migration/crash/backup/compat。
 
-- [!] `LAR-P1A-001` blocked：canonical bytes/hash、Git path 和 Windows collision/alias primitives。
-- [!] `LAR-P1A-002` blocked：immutable schema registry、typed contract models、positive/negative fixtures。
-- [!] `LAR-P1A-003` blocked：state/guard/operator catalog evaluator、唯一 row、Guard DAG、unknown exit 2。
-- [!] `LAR-P1A-004` blocked：cross-contract policy bundle、foreign ID/hash、limit 与 execution-authority union verifier。
-- [!] `LAR-P1B-001` blocked：SQLite bootstrap、approved schema、forward/rollback/interrupted migration。
-- [!] `LAR-P1B-002` blocked：submission family permanent replay 与 atomic `TaskResubmission`。
-- [!] `LAR-P1B-003` blocked：lease/fence、grant/revoke、fenced action/continuation CAS repositories。
-- [!] `LAR-P1B-004` blocked：event/journal cursor、outbox/artifact/receipt metadata，DB 不领先 flush。
-- [!] `LAR-P1B-005` blocked：persistence failpoint、tamper audit 与 response-loss matrix。
-- [!] `LAR-P1C-001` blocked：在 `operations/installer.py` 与 `operations/activation.py` 实现 content-addressed install、activation CAS 与 compatible rollback，并首次创建 `operations/__init__.py`。
-- [!] `LAR-P1C-002` blocked：pinned toolchain 与 immutable qualified environment binding。
-- [!] `LAR-P1C-003` blocked：repo/template qualification、global AuthState、Authorization/revoke。
-- [!] `LAR-P1C-004` blocked：untrusted overlay、effective config/tool inventory、opaque sandbox state/log。
-- [!] `LAR-P1C-005` blocked：mandatory `accounting_kill_audit`、emergency reserve、optional quota interface。
-- [!] `LAR-P1C-006` blocked：Full/quick/daily offline Q0 probe dispatcher 与 immutable report。
-- [!] `LAR-P1C-007` blocked：Codex CapabilityAdapter 与 `adapter_no_write_smoke_v1`；无 task、writer grant/process、Git publication 或 raw model evidence。
-- [!] `LAR-P1D-001` blocked：named mutex/Job identity、SDDL/limits/process-list 与 same-name fail closed。
-- [!] `LAR-P1D-002` blocked：attempt environment、durable writer marker、稳定 effect/attempt launch identity、JOB_LIST/HANDLE_LIST suspended launch 与 resume barrier。
-- [!] `LAR-P1D-003` blocked：StageJob、exact stdio/ChildHandleManifest、root/inherited/safety authority。
-- [!] `LAR-P1D-004` blocked：bounded pipe drain、EOF/framing 分类、normalized events 与 segment journal。
-- [!] `LAR-P1D-005` blocked：takeover、adoption、Authorization continuation、recovery priority/handoff。
-- [!] `LAR-P1D-006` blocked：catalog-exact offline gate runner、bounded reports、deadline/limit+1。
-- [!] `LAR-P1E-001` blocked：repo/common-dir identity、Git config/attribute/hook/driver/protected-surface audit。
-- [!] `LAR-P1E-002` blocked：fenced worktree/checkout、root identity、mutation/secret/protected closure。
-- [!] `LAR-P1E-003` blocked：controller canonical payload/expected OID、pinned Git materialization/read-back、deterministic commit、canonical promotion/reachability。
-- [!] `LAR-P1E-004` blocked：finalize index -> detached HEAD -> task-ref 三步 CAS publication。
-- [!] `LAR-P1E-005` blocked：artifact、`runtime_external_v1` evidence、six-condition receipt 与 no-hash-cycle closeout。
-- [!] `LAR-P1E-006` blocked：safe cleanup、quiescent backup、key envelopes、anti-rollback isolated restore drill。
-- [!] `LAR-P1E-007` blocked：provider-free `fixture_closeout_rehearsal_v1`，覆盖 GateGraph、Git hybrid、ref/evidence/cleanup，全程 fixture-only。
-- [!] `LAR-P1F-001` blocked：在 `operations/cli.py` 与 `operations/cli_output.py` 实现 strict command tree、stable JSON envelope、exit/reason mapping；禁止回到包根创建 CLI 模块。
-- [!] `LAR-P1F-002` blocked：Batch prepare/submit/status/cancel/retry/reconcile/resolve/doctor handlers。
-- [!] `LAR-P1F-003` blocked：single-capacity recovery-first scheduler、parking/dedupe、data-only portfolio selection、task definition dry run。
-- [!] `LAR-P1F-004` blocked：managed Native maintenance 与 intent-before-termination emergency kill。
-- [!] `LAR-P1F-005` blocked：OperatorAction/WorkSession、`durable_local_status_v1`、optional qualified toast、runbooks、人工分钟计量。
-- [!] `LAR-P1F-006` blocked：read-only compat、cutover/rollback dry run、paired/cohort evaluation；不执行 live cutover/cohort。
-- [!] `LAR-P1G-001` blocked：冻结 `RuntimeCompositionManifest C`，运行全 offline gates、crash/conformance/migration/restore，创建 `ImplementationAcceptanceRecord I(C)`。
+## 9. Q0 and rollout
 
-`LAR-P1G-001` 完成后仍不得进入 P2；Full Q0 是独立门。
+- [!] `LAR-Q0-001` blocked：staged Full Q0、atomic activation、P2 Admission。
+- [!] `LAR-P2-001` blocked：one low-risk self-host pilot。
+- [!] `LAR-P3-001` blocked：five scheduled self-host observations。
+- [!] `LAR-P4-001` blocked：B2/per-repo，显式资格化两个 repo，30-task cohort；不激活 B3。
+- [!] `LAR-P5-001` blocked：per-repo CAS cutover、rollback drill、legacy read-only 与 30-day retirement。
 
-## Q0 与 P2-P5：有限自治、验证与迁移
+B3 portfolio scheduling、multi-writer、remote/distributed runtime、SDK/App Server/managed Worktree/Automations 全部 deferred beyond 0.2，机器图不存在 `LAR-P4-002`。
 
-- [!] `LAR-Q0-001` blocked：staged Full Q0、`B(C,I,Q,expected previous)` activation bundle、pointer CAS/immediate preflight 与 terminal `ActiveRuntimeIdentity`；禁止 writer，不能用 legacy probe/simulation 替代。
-- [!] `LAR-P2-001` blocked：Q0/P2 Admission 后一个人工启动、low-risk、commit-only self-host pilot。
-- [!] `LAR-P3-001` blocked：一个 promoted template 的 5 个 scheduled self-host observations。
-- [!] `LAR-P4-001` blocked：在 B2/per-repo 下执行两个真实 repo、30-task cohort、12+ 严格配对效率 case，标记 `evidence_scope=declared_profile_pilot`；抽样附回 `DownstreamOutcomeRecord` 的 human review disposition、merge/reject/rework、later CI、revert/defect 结果，`censored|unknown` 保留分母。
-- [!] `LAR-P4-002` blocked：P4 全绿后独立激活 `portfolio_data_only_v1` B3 generation；global capacity仍为1，repo selector code禁止。
-- [!] `LAR-P5-001` blocked：逐仓 CAS cutover、rollback drill、legacy read-only、30 天零调用后退休写面。
+## 10. 当前 task 的可执行摘要
 
-## 完成定义
-
-任务只有同时满足以下条件才可标记 completed：
-
-1. dependencies 和 preconditions 在耐久记录中可验证；
-2. scope 没有未经记录的扩大；
-3. 每条 acceptance 都有命令/文件/evidence 映射；
-4. 任务 verification 全部按固定顺序通过；
-5. evidence note 完整且不含敏感正文；
-6. rollback 可只撤销本切片；
-7. 无 stop condition 未解决；
-8. planning verifier 绿色，selector 稳定指向唯一后继任务。
-
-禁止为了“推进队列”一次性修改多个任务状态、跳过人工批准或把缺失 artifact 标成 present。
+`LAR-P0A-004` 只允许修改 ProductContract.v2、first-run schema、launch/presentation catalogs、product fixtures、inventory/status/evidence。验收必须证明恰好四 templates、closed envelope、human/JSON projection、controlled promotion、metrics/unknown handling，以及 free prompt/effect expansion/promotion bypass/secret negative fixtures fail。验证依次为 product component verifier、planning verifier、selector、host-orchestrator tests、preflight、`git diff --check`。不得实现 CLI handler、创建 runtime、生成 QualificationContractSet.v2/final manifest/approval 或运行 live probe。

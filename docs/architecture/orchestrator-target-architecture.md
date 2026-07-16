@@ -2,7 +2,7 @@
 
 ## 1. 状态与架构原则
 
-目标规范为 `local-ai-runtime-0.2-v3.23`，当前仍是 baseline candidate。本文描述批准后的目标，不宣称组件已经实现；v3.22 是保留 exact bytes 的 superseded input。
+目标规范为 `local-ai-runtime-0.2-v3.24`，当前仍是 baseline candidate。本文描述批准后的目标，不宣称组件已经实现；v3.23 candidate/package/plan 是保留 exact bytes/hash 的 superseded inputs。
 
 核心原则：
 
@@ -15,7 +15,7 @@
 - 不以“最终一致”掩盖不可解释的进程、对象、ref、worktree 或 evidence 状态。
 - 长期产品范围是受控本地开发工作流，不预建跨平台、多租户、分布式或第二 agent runtime 空壳；未实现 protocol 的能力始终 unsupported。
 
-repo planning 是实现期薄控制面，不是目标 runtime 的第二套编排架构。唯一 `planning_optimization_policy` 在现有 machine work items 中定义 work-item 原子 closeout、bounded continuation、复杂度硬上限、planning model 候选资格化和结果指标；selector、planning-status 与 verifier 继续复用。不得新增第二个 planner/router、平行 task 真源或 runtime model-router service。该 planning policy 不进入冻结 v3.23 runtime authority，也不改变 capacity=1、effect protocol、Q0 或事实来源。
+repo planning 是实现期薄控制面，不是目标 runtime 的第二套编排架构。唯一 `planning_optimization_policy` 在现有 machine work items 中定义 work-item 原子 closeout、bounded continuation、复杂度硬上限、planning model 候选资格化和结果指标；selector、planning-status 与 verifier 继续复用。不得新增第二个 planner/router、平行 task 真源或 runtime model-router service。该 planning policy 不进入冻结 v3.24 runtime authority，也不改变 capacity=1、effect protocol、Q0 或事实来源。
 
 ## 2. 当前态与目标态
 
@@ -24,13 +24,13 @@ repo planning 是实现期薄控制面，不是目标 runtime 的第二套编排
 | 运行内核 | `runtime/host-orchestrator` | `runtime/local-ai-runtime/src/local_ai_runtime/` |
 | 状态 | `.ai/state/control-plane.db`，另有 experimental runtime_v2 | `%LOCALAPPDATA%/LocalAIRuntime/state` 独立 DB |
 | 运行证据 | legacy `.ai/runs/...` | 外置 `evidence`、journal、receipt、artifact index |
-| 所有权 | 尚无 v3.23 shared guard | versioned ownership wire + repo mutex + generation |
+| 所有权 | 尚无 v3.24 shared guard | versioned ownership wire + repo mutex + generation |
 | 执行 | legacy host-local paths | isolated Job-bound writer/gate/Git adapters |
 | 迁移 | 未开始 | guard legacy -> implement isolated -> per-repo cutover -> read-only compat |
 
 批准前禁止创建目标包；P0C Legacy Ownership Guard 绿色前禁止目标 runtime claim repo。
 
-预批准 Native thin-path 评测已记录 `preserve_v3_23_semantics`，所以本架构不增加 v3.24 successor。该决定只资格化固定 generation 的 CLI execution interface 证据，不 promotion `gpt-5.6-sol/high` profile，也不跨 surface 外推；App Server、SDK、managed Worktree 仍需独立 probe，Automations 在当前 corpus 为 not_applicable。独立 policy/evaluator gates、evidence 和 recovery kernel 保持不变。
+v3.24 已经是 successor：v3.23 的 `uv run --locked` 不能证明 exact environment，build backend 未 hash-pin，manifest Python 未被 gate 显式选择，且首发体验不完整。predecessor Native thin-path 结果仅作为 non-normative evidence，不 promotion profile、不驱动当前 selector、不跨 surface 外推。0.2 只接纳 CLI execution interface；App Server、SDK、managed Worktree 和 Automations 都 deferred，未来必须各自通过 capability generation、Implementation Acceptance 与 Full Q0。
 
 目标源码的首级子包边界固定为 `contracts/kernel/qualification/storage/execution/recovery/git_local/operations/compat`。结构化机器约束固定为 `approved_root_files=["__init__.py","__main__.py"]`、`approved_subpackages=["contracts","kernel","qualification","storage","execution","recovery","git_local","operations","compat"]` 和 bootstrap/marker 到首个任务的一对一 `required_source_owners`。`__main__.py` 仅作为 `python -m local_ai_runtime contracts verify` 的薄转发层。Artifact/evidence 持久化归 `storage`，安装、激活、CLI、Batch、doctor、scheduler、managed Native 和 evaluation 编排归 `operations`；不得在包根新增其他功能模块，也不得增生平行的 `evidence`、`commands` 或其他未批准首级子包。
 
@@ -60,7 +60,13 @@ flowchart TB
 
 稳定 kernel 负责 task/attempt/generation、lease/fence/CAS、qualification/Authorization、recovery、evidence、backup/migration/rollback 和 activation authority。可演进层只实现由同一 `RuntimeCompositionManifest` 绑定并共同验收的 Codex/Windows/Git/toolchain capability 与 `ExecutionProfile`。Profile 只能选择已实现能力，不能把 Provider、network、delivery、Git format 或 concurrency protocol变成配置开关。
 
-`CodexPlatformCapabilitySet` 由正交的 surface 组成：CLI 或 SDK 的 `ExecutionInterfaceCapability`、App Server 的 `ClientProtocolCapability`、managed Worktree 的 `WorkspaceIsolationCapability`、Automations 的 `SchedulingCapability`。这些不是一个可随意展开的 `CodexPlatformAdapter`：每个 surface 与实际组合都必须独立绑定 version/help/schema/tool inventory、sandbox/permission probe、允许的 state/effect envelope、recovery/rollback result 与 evidence projection。一个 surface 的资格化不向其他 surface 继承，未资格化实例不能进入 Batch。
+首发 CLI 不是另一套业务逻辑，而是 `operations` 对同一 typed application services 的 human/JSON 双投影：`doctor` 读取 qualification/toolchain probes；`repo qualify` 写 versioned observation；`template list/show` 只读 `LaunchTemplateCatalog`；`batch dry-run` 生成无副作用 `WorkDefinition + EffectPlan + GateGraph preview`；`submit` 在 anti-replay challenge 后写 durable task；`status/action/evidence` 读取 public projection。`OperatorPresentationCatalog` 只把 reason code/public fields 映射为文本、exit code 和 next command，禁止拼接 raw output。
+
+四个 launch templates 都是 versioned closed data，不包含可执行 selector code：`docs_contract_sync_v1`、`bounded_lint_type_repair_v1`、`focused_test_repair_v1`、`mechanical_repo_maintenance_v1`。每项都绑定 parameter schema、path/effect envelope、gates、limits、stop/recovery 和 evaluation denominator。Native Spec 仅能创建 candidate；promotion 走独立 operator action、new generation、fixtures、pilot/canary 与 repo requalification。
+
+`CodexPlatformCapabilitySet` 可由正交 surface 演进：CLI/SDK 的 `ExecutionInterfaceCapability`、App Server 的 `ClientProtocolCapability`、managed Worktree 的 `WorkspaceIsolationCapability`、Automations 的 `SchedulingCapability`。0.2 只实现 CLI；其余不是 dormant flags。未来每个 surface 与组合都必须独立绑定 version/help/schema/tool inventory、sandbox/permission probe、state/effect envelope、recovery/rollback 与 evidence projection；一个 surface 的资格化不向其他 surface 继承。
+
+`RuntimeToolchainManifest` 是 supply-chain identity 根：绑定 Python 3.11.x patch/absolute path/file identity/hash、uv identity、lockfile、distributions/plugins、build frontend/backend 与 hashed build constraints。`VerificationExecutionProfile=new_runtime_exact_v1` 把显式 exact sync 与验证分开，固定 `supply_chain_identity -> build -> test -> contract_invariant -> hotspot`，并用 clean-root repeatability 拒绝缓存偶然性。
 
 ### 3.1 模块化单体
 
@@ -131,7 +137,7 @@ Git path 保留原始 UTF-8 拼写，只验证不改写。Windows collision key 
 - ObjectSetManifest、artifact/outbox、evidence/closeout、backup。
 - Platform/repo/template/autonomy/operator state policy。
 
-SQLite 使用 `journal_mode=DELETE`、`foreign_keys=ON`、`synchronous=FULL`、短 `BEGIN IMMEDIATE` 事务。Journal append+flush 在 DB cursor 前，DB 只能落后。
+SQLite 是唯一 policy/transition authority，使用 `journal_mode=DELETE`、`foreign_keys=ON`、`synchronous=FULL`、短 `BEGIN IMMEDIATE` 事务。Journal segment 是 append-only observation/audit/recovery input：每段绑定 accepted DB cursor、attempt/fence/action identity 和 immutable event hash；replay 只能提出 recovery candidate，必须经当前 guard + CAS 写回 SQLite 后才成为状态。相同 accepted history 与 policy generation 必须得到相同 recovery decision，不依赖 wall clock 或 restart count；journal 缺口、重复、越 cursor 或 fence drift 一律 suspended/recovery-first。
 
 ## 7. 状态域
 
@@ -235,8 +241,8 @@ Ownership record 绑定 canonical common-dir identity、owner、status、generat
 
 演进层级固定为：profile generation 选择已证明能力；capability generation 引入新 effect protocol；architecture epoch 改变 concurrency/trust/authority topology。Epoch 1 全局 capacity 永久为 1；跨 repo 多 writer需要 successor epoch 的 migration、resource/auth/backup/maintenance/recovery protocol 和完整 crash/conformance matrix。同 repo并发、多操作者或多信任域属于更晚独立 epoch。
 
-Portfolio selection 留在同一 Python/SQLite control plane，只消费 qualification-bound、content-addressed、closed-schema backlog data；不执行 repo 自带 selector code、脚本、表达式或 prompt。P4 在 B2/per-repo 下完成；绿色后 `LAR-P4-002` 才可独立激活 B3，P5 不依赖 B3。
+0.2 的 autonomy ceiling 是 B2/per-repo scheduling。B3 portfolio selection、portfolio generation 与 repo auto-selection 全部 deferred beyond 0.2，机器图不含激活任务或状态转换；P4 只验证两个显式资格化 repo 的固定 cohort，绿色后直接进入 P5 per-repo cutover。若未来需要 B3，必须用 successor baseline 定义 backlog authority、fairness、cross-repo recovery/resource policy、operator override、data migration 与独立 cohort，而不是在当前 control plane 内开启隐藏开关。
 
-Baseline Approval 的第一前置是 Native thin-path / capability comparative evaluation，不是对任一 Codex surface 的名称推断。评测在固定 repo snapshot、TaskFamily、model/effort、tool inventory、sandbox、gates 与人工分钟定义下，比较精简 Native、Native + key gates 和仅在适用场景的外部 harness。质量、安全、证据任一 hard floor 下降都使效率收益无效。若结果改变 Batch 禁止面、adapter、authority、并发、Q0 trigger、质量晋升或事实来源，必须冻结 v3.23 并建立 v3.24 successor；若不改变规范语义，只记录非规范 decision 后继续 P0A。
+Baseline Approval 的前置是 v3.24 的 15-artifact closure、standalone verifier 和两阶段 review，不是 surface 名称或 predecessor evaluation。若产品/工具链/authority/并发/Q0/事实源发生语义变化，冻结 v3.24 并创建 v3.25 successor。
 
 当前架构执行入口由 [machine work items](D:/CODE/local-ai-dev-orchestrator/docs/plans/local-ai-runtime-0.2-work-items.json) 控制；不能从本图直接跳到代码实现。

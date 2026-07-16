@@ -2,16 +2,16 @@
   "schema_version": "local_ai_runtime_normative_package_inventory.v1",
   "record_kind": "preapproval_inventory",
   "normative": false,
-  "package_id": "local-ai-runtime-0.2-v3.24-normative-package",
-  "baseline_id": "local-ai-runtime-0.2-v3.24",
+  "package_id": "local-ai-runtime-0.2-v3.23-normative-package",
+  "baseline_id": "local-ai-runtime-0.2-v3.23",
   "package_status": "incomplete",
   "approval_eligible": false,
   "blocking_stage": "baseline_approval",
-  "updated_on": "2026-07-16",
+  "updated_on": "2026-07-14",
   "candidate_source": {
-    "path": "docs/specs/local-ai-runtime-0.2-v3.24-baseline-candidate.md",
-    "byte_count": 199728,
-    "sha256": "13ee366152d47edec151f30619ccd068a030b63febf2d899ee822d08d4dc4e2a",
+    "path": "docs/specs/local-ai-runtime-0.2-v3.23-baseline-candidate.md",
+    "byte_count": 188325,
+    "sha256": "80562322ebc744eda2a87a17c45f73a11982f4947c9d10e8628bb6f73ee9d5c6",
     "status": "baseline_candidate"
   },
   "lineage": {
@@ -61,23 +61,6 @@
         "byte_count": 178330,
         "path": "docs/specs/local-ai-runtime-0.2-v3.22-baseline-candidate.md",
         "archive_status": "present_verified_archive"
-      },
-      {
-        "id": "local-ai-runtime-0.2-v3.23",
-        "sha256": "80562322ebc744eda2a87a17c45f73a11982f4947c9d10e8628bb6f73ee9d5c6",
-        "byte_count": 188325,
-        "path": "docs/specs/local-ai-runtime-0.2-v3.23-baseline-candidate.md",
-        "archive_status": "present_verified_archive",
-        "preapproval_inventory_archive": {
-          "path": "docs/specs/local-ai-runtime-0.2/history/local-ai-runtime-0.2-v3.23-normative-package.json",
-          "byte_count": 12439,
-          "sha256": "2771b750557c68002eb54c3681185395e7d2881632211a4bb0bd6de75644d620"
-        },
-        "work_item_plan_archive": {
-          "path": "docs/plans/history/local-ai-runtime-0.2-v3.23-work-items.json",
-          "byte_count": 220533,
-          "sha256": "4b146d79c0f99a9621a8f6a743e8ddab7e2eb6d19356d2152a1c7130c0adebfe"
-        }
       }
     ],
     "conflicted_candidate_ids": [
@@ -107,66 +90,32 @@
         "id": "local-ai-runtime-0.2-v3.15",
         "sha256": null
       }
-    ],
-    "compatible_predecessor_artifacts": [
-      {
-        "artifact_id": "P0A-CANONICAL",
-        "artifact_version": "CanonicalizationPolicy.v1",
-        "baseline_id": "local-ai-runtime-0.2-v3.23",
-        "path": "docs/specs/local-ai-runtime-0.2/normative/CanonicalizationPolicy.v1.json",
-        "byte_count": 4264,
-        "sha256": "9cbc7295fb1cefdb651985cc81181ffa3a81db33ccf229535bf2e65438b71a7f"
-      },
-      {
-        "artifact_id": "P0A-EXECUTION",
-        "artifact_version": "ExecutionSafetyContractSet.v1",
-        "baseline_id": "local-ai-runtime-0.2-v3.23",
-        "path": "docs/specs/local-ai-runtime-0.2/normative/ExecutionSafetyContractSet.v1.json",
-        "byte_count": 7985,
-        "sha256": "a3e8692e691cfa90fba7fc945f4bb0fa55e5380cb9cbe9550857a053cd25cb12"
-      },
-      {
-        "artifact_id": "P0A-EVIDENCE",
-        "artifact_version": "EvidenceContractSet.v1",
-        "baseline_id": "local-ai-runtime-0.2-v3.23",
-        "path": "docs/specs/local-ai-runtime-0.2/normative/EvidenceContractSet.v1.json",
-        "byte_count": 9656,
-        "sha256": "d9cea69a4680a0229b5680ea0de503e9d6f9d24eb6232893b727e11c1e52e9e0"
-      },
-      {
-        "artifact_id": "P0A-GIT",
-        "artifact_version": "DeterministicGitContractSet.v1",
-        "baseline_id": "local-ai-runtime-0.2-v3.23",
-        "path": "docs/specs/local-ai-runtime-0.2/normative/DeterministicGitContractSet.v1.json",
-        "byte_count": 7438,
-        "sha256": "c6ff21651cd525f1319fe0620f280e96db825086c2e8e98149340f4e08b11e26"
-      }
     ]
   },
   "required_artifacts": [
     {
       "artifact_id": "P0A-SOURCE",
       "kind": "candidate_spec",
-      "artifact_version": "local-ai-runtime-0.2-v3.24",
-      "path": "docs/specs/local-ai-runtime-0.2-v3.24-baseline-candidate.md",
+      "artifact_version": "local-ai-runtime-0.2-v3.23",
+      "path": "docs/specs/local-ai-runtime-0.2-v3.23-baseline-candidate.md",
       "status": "present",
-      "byte_count": 199728,
-      "sha256": "13ee366152d47edec151f30619ccd068a030b63febf2d899ee822d08d4dc4e2a",
+      "byte_count": 188325,
+      "sha256": "80562322ebc744eda2a87a17c45f73a11982f4947c9d10e8628bb6f73ee9d5c6",
       "required_for_approval": true,
-      "producer_task_id": "LAR-P0A-REBASELINE-V324",
+      "producer_task_id": null,
       "verification": "byte_format_and_sha256"
     },
     {
       "artifact_id": "P0A-LINEAGE",
       "kind": "lineage_archive_and_manifest",
-      "artifact_version": "BaselineLineage.v3",
-      "path": "docs/specs/local-ai-runtime-0.2/normative/BaselineLineage.v3.json",
+      "artifact_version": "BaselineLineage.v2",
+      "path": "docs/specs/local-ai-runtime-0.2/normative/BaselineLineage.v2.json",
       "status": "present",
-      "byte_count": 6700,
-      "sha256": "b769bb3460a83ba31ca28fe60cc6d4c44902063c69b01ff344942a04e62dc756",
+      "byte_count": 3495,
+      "sha256": "49141a69c9aed6065ba063714fb2349750e500199ed8dfaf64fa6e2b198b9043",
       "required_for_approval": true,
-      "producer_task_id": "LAR-P0A-REBASELINE-V324",
-      "verification": "schema_archive_hash_and_explicit_carry_forward"
+      "producer_task_id": "LAR-P0A-REBASELINE-V323",
+      "verification": "schema_plus_dual_hash_evidence"
     },
     {
       "artifact_id": "P0A-CANONICAL",
@@ -177,29 +126,32 @@
       "byte_count": 4264,
       "sha256": "9cbc7295fb1cefdb651985cc81181ffa3a81db33ccf229535bf2e65438b71a7f",
       "required_for_approval": true,
-      "producer_task_id": "LAR-P0A-REBASELINE-V324",
-      "verification": "successor_carry_forward_identity_plus_component_verifier",
-      "carried_forward_from": "local-ai-runtime-0.2-v3.23"
+      "producer_task_id": "LAR-P0A-003",
+      "verification": "schema_examples_fixtures_verifier"
     },
     {
       "artifact_id": "P0A-PRODUCT",
       "kind": "product_routing_submission_bundle",
-      "artifact_version": "ProductContract.v2",
-      "path": "docs/specs/local-ai-runtime-0.2/normative/ProductContract.v2.json",
-      "status": "missing",
+      "artifact_version": "ProductContract.v1",
+      "path": "docs/specs/local-ai-runtime-0.2/normative/ProductContract.v1.json",
+      "status": "present",
+      "byte_count": 5003,
+      "sha256": "b239cee308681ac5972e494ad4ff76958623fbd558a47e03b95e0be4159fb1ef",
       "required_for_approval": true,
       "producer_task_id": "LAR-P0A-004",
-      "verification": "schema_launch_catalog_examples_negative_fixtures_verifier"
+      "verification": "schema_examples_catalog_verifier"
     },
     {
       "artifact_id": "P0A-QUALIFICATION",
       "kind": "qualification_environment_authorization_bundle",
-      "artifact_version": "QualificationContractSet.v2",
-      "path": "docs/specs/local-ai-runtime-0.2/normative/QualificationContractSet.v2.json",
-      "status": "missing",
+      "artifact_version": "QualificationContractSet.v1",
+      "path": "docs/specs/local-ai-runtime-0.2/normative/QualificationContractSet.v1.json",
+      "status": "present",
+      "byte_count": 7336,
+      "sha256": "089a60664188fdc86c0de56496c493339246c5b423ddc3271450fb01e4fd6a80",
       "required_for_approval": true,
       "producer_task_id": "LAR-P0A-005",
-      "verification": "schema_exact_toolchain_environment_fixtures_verifier"
+      "verification": "schema_examples_catalog_verifier"
     },
     {
       "artifact_id": "P0A-EXECUTION",
@@ -210,9 +162,8 @@
       "byte_count": 7985,
       "sha256": "a3e8692e691cfa90fba7fc945f4bb0fa55e5380cb9cbe9550857a053cd25cb12",
       "required_for_approval": true,
-      "producer_task_id": "LAR-P0A-REBASELINE-V324",
-      "verification": "successor_carry_forward_identity_plus_component_verifier",
-      "carried_forward_from": "local-ai-runtime-0.2-v3.23"
+      "producer_task_id": "LAR-P0A-006",
+      "verification": "schema_transition_crash_fixtures"
     },
     {
       "artifact_id": "P0A-EVIDENCE",
@@ -223,9 +174,8 @@
       "byte_count": 9656,
       "sha256": "d9cea69a4680a0229b5680ea0de503e9d6f9d24eb6232893b727e11c1e52e9e0",
       "required_for_approval": true,
-      "producer_task_id": "LAR-P0A-REBASELINE-V324",
-      "verification": "successor_carry_forward_identity_plus_component_verifier",
-      "carried_forward_from": "local-ai-runtime-0.2-v3.23"
+      "producer_task_id": "LAR-P0A-007",
+      "verification": "schema_event_matrix_secret_safe_fixtures"
     },
     {
       "artifact_id": "P0A-GIT",
@@ -236,9 +186,8 @@
       "byte_count": 7438,
       "sha256": "c6ff21651cd525f1319fe0620f280e96db825086c2e8e98149340f4e08b11e26",
       "required_for_approval": true,
-      "producer_task_id": "LAR-P0A-REBASELINE-V324",
-      "verification": "successor_carry_forward_identity_plus_component_verifier",
-      "carried_forward_from": "local-ai-runtime-0.2-v3.23"
+      "producer_task_id": "LAR-P0A-008",
+      "verification": "schema_action_graph_object_fixtures"
     },
     {
       "artifact_id": "P0A-STATE",
@@ -312,8 +261,6 @@
     }
   ],
   "missing_artifact_ids": [
-    "P0A-PRODUCT",
-    "P0A-QUALIFICATION",
     "P0A-STATE",
     "P0A-Q0",
     "P0A-MIGRATION",
@@ -327,8 +274,6 @@
     "An incomplete package may pass planning verification but may not be approved.",
     "A present artifact must exist and pass its declared verifier.",
     "Every present artifact records and matches its exact byte_count and sha256; file existence alone never closes an artifact.",
-    "Successor carry-forward is closed by BaselineLineage.v3 and cannot infer compatibility from a matching filename or predecessor status.",
-    "ProductContract.v1 and QualificationContractSet.v1 remain frozen v3.23 artifacts and cannot satisfy v3.24.",
     "A complete inventory is approval-eligible only after the checked-in standalone normative package verifier returns a matching structured pass result.",
     "A missing artifact must not be silently treated as present; a partially materialized artifact is explicitly in_progress and remains approval-blocking.",
     "Review evidence is non-normative and cannot change the narrative specification content hash.",

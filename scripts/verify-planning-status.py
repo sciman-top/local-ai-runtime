@@ -14,11 +14,11 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_STATUS_PATH = ROOT / "docs" / "architecture" / "planning-status.json"
 POLICY_PATH = Path("docs/architecture/next-work-selection-policy.json")
-CURRENT_BASELINE_ID = "local-ai-runtime-0.2-v3.23"
-CURRENT_BASELINE_PATH = "docs/specs/local-ai-runtime-0.2-v3.23-baseline-candidate.md"
+CURRENT_BASELINE_ID = "local-ai-runtime-0.2-v3.24"
+CURRENT_BASELINE_PATH = "docs/specs/local-ai-runtime-0.2-v3.24-baseline-candidate.md"
 CURRENT_BASELINE_ENTRY_PATH = "docs/specs/local-ai-runtime-0.2-baseline-candidate.md"
 CURRENT_LINEAGE_PATH = (
-    "docs/specs/local-ai-runtime-0.2/normative/BaselineLineage.v2.json"
+    "docs/specs/local-ai-runtime-0.2/normative/BaselineLineage.v3.json"
 )
 HISTORICAL_SOURCE_RECORD_PATH = (
     "docs/specs/local-ai-runtime-0.2/history/HistoricalSourceArchive.v1.json"
@@ -38,10 +38,9 @@ EXPECTED_SELECTOR_ENTRYPOINTS = [
 EXPECTED_SELECTOR_STEPS = [
     ("planning_integrity_red", "repair_gate_first"),
     (
-        "native_thin_path_semantic_change_requires_successor",
+        "current_candidate_semantic_change_requires_successor",
         "create_successor_candidate_first",
     ),
-    ("native_thin_path_evaluation_pending", "run_native_thin_path_evaluation_first"),
     ("baseline_review_closure_pending", "run_baseline_consistency_review"),
     ("normative_package_incomplete", "close_baseline_normative_package_first"),
     ("approval_eligible_without_active_approval", "record_baseline_approval_first"),
@@ -53,12 +52,11 @@ EXPECTED_SELECTOR_STEPS = [
     ("full_q0_green_p2_pilot_missing", "run_single_p2_pilot_first"),
     ("p2_pilot_green_p3_missing", "run_five_scheduled_self_host_first"),
     ("p3_green_p4_missing", "run_30_task_cohort_first"),
-    ("p4_green_b3_work_item_selected", "activate_b3_portfolio_generation_first"),
     ("p4_green_p5_missing", "cut_over_repositories_first"),
     ("p5_complete", "operate_approved_runtime"),
 ]
 EXPECTED_SELECTOR_ACTIONS = [action for _, action in EXPECTED_SELECTOR_STEPS]
-CURRENT_WORK_ITEM_COUNT = 65
+CURRENT_WORK_ITEM_COUNT = 55
 EXPECTED_ARTIFACT_IDS = [
     "P0A-SOURCE",
     "P0A-LINEAGE",
@@ -115,14 +113,9 @@ EXPECTED_RUNTIME_SOURCE_OWNERS = {
     "compat/__init__.py": "LAR-P1F-006",
 }
 IGNORED_RUNTIME_SOURCE_TREE_ENTRIES = frozenset({"__pycache__"})
-WORK_ITEM_SCHEMA_VERSION = "local_ai_runtime_work_items.v3"
+WORK_ITEM_SCHEMA_VERSION = "local_ai_runtime_work_items.v4"
 EXPECTED_WORK_ITEM_STATUSES = [
     "completed",
-    "contract_pending",
-    "execution_pending",
-    "preserve_v3_23_semantics",
-    "narrow_profile_or_adapter_candidate",
-    "supersede_required",
     "ready",
     "pending",
     "blocked",
@@ -130,102 +123,26 @@ EXPECTED_WORK_ITEM_STATUSES = [
     "cancelled",
     "superseded",
 ]
-EXPECTED_VERIFICATION_PROFILES = {"planning", "new_runtime"}
-EXPECTED_NEW_RUNTIME_VERIFICATION = [
-    "uv lock --check --offline --project runtime/local-ai-runtime",
-    "uv build --offline --project runtime/local-ai-runtime runtime/local-ai-runtime",
-    "uv run --locked --offline --project runtime/local-ai-runtime python -m pytest",
-    "uv run --locked --offline --project runtime/local-ai-runtime python -m local_ai_runtime contracts verify",
-    "uv run --locked --offline --project runtime/local-ai-runtime ruff check runtime/local-ai-runtime",
-    "uv run --locked --offline --project runtime/local-ai-runtime pyright --project runtime/local-ai-runtime",
-    "python scripts/verify-planning-status.py",
-    "python scripts/select-next-work.py",
-    "git diff --check",
-]
+EXPECTED_VERIFICATION_PROFILES = {"planning", "new_runtime_exact_v1"}
 EXPECTED_PLANNING_OPTIMIZATION_SHA256 = (
-    "01da1dab80b59df8d4dfd50e6c4bcf637e5ec3493bd4db0b347ff78e3dcf7d9f"
+    "5da5bcca5482afda6c0a393a8b03edb38498ee7affeee2960d4bf32838ef6604"
 )
-EXPECTED_GRAPH_ROOTS = ["LAR-P0A-001"]
+EXPECTED_EXACT_TOOLCHAIN_PROFILE_SHA256 = (
+    "506bdfb5bd8cd405cf5b42e21c9ef0b76c34911e05389f820c11e8ae8159d459"
+)
+EXPECTED_GRAPH_ROOTS = ["LAR-P0A-REBASELINE-V324"]
 EXPECTED_SUPERSEDED_PLAN = {
-    "plan_id": "local-ai-runtime-0.2-v3.22-implementation-work-items",
+    "plan_id": "local-ai-runtime-0.2-v3.23-implementation-work-items",
+    "path": "docs/plans/history/local-ai-runtime-0.2-v3.23-work-items.json",
     "terminal_status": "superseded",
-    "last_commit": "6fd6cd54037f17e44192bc272306b137def7f8a4",
-    "byte_count": 202002,
-    "sha256": "acabe34f188d73015536a141a8990c333ce6643dc28347671c2523adcaf7d2cc",
+    "last_commit": "010dede90545e71d634087c84aef75790f5949e9",
+    "byte_count": 220533,
+    "sha256": "4b146d79c0f99a9621a8f6a743e8ddab7e2eb6d19356d2152a1c7130c0adebfe",
 }
-CURRENT_LINEAGE_BYTE_COUNT = 3495
+CURRENT_LINEAGE_BYTE_COUNT = 6700
 CURRENT_LINEAGE_SHA256 = (
-    "49141a69c9aed6065ba063714fb2349750e500199ed8dfaf64fa6e2b198b9043"
+    "b769bb3460a83ba31ca28fe60cc6d4c44902063c69b01ff344942a04e62dc756"
 )
-NATIVE_THIN_PATH_EVALUATION_ROOT = Path("docs/evaluations/local-ai-runtime-0.2")
-NATIVE_THIN_PATH_EVALUATION_CONTRACT_SET_ID = (
-    "local-ai-runtime-0.2-v3.23-native-thin-path-evaluation-v1"
-)
-NATIVE_THIN_PATH_EVALUATION_SNAPSHOT = {
-    "commit": "6fd6cd54037f17e44192bc272306b137def7f8a4",
-    "tree": "11c8ab770769b3aeff5c111063a316e712fa7241",
-}
-NATIVE_THIN_PATH_EVALUATION_CONTRACTS = (
-    (
-        "docs/evaluations/local-ai-runtime-0.2/"
-        "native-thin-path-capability-evaluation.v1.json",
-        "NativeThinPathCapabilityEvaluation.v1",
-    ),
-    (
-        "docs/evaluations/local-ai-runtime-0.2/"
-        "native-thin-path-task-family-manifest.v1.json",
-        "NativeThinPathTaskFamilyManifest.v1",
-    ),
-    (
-        "docs/evaluations/local-ai-runtime-0.2/"
-        "native-thin-path-evidence-schema.v1.json",
-        "NativeThinPathEvidenceSchema.v1",
-    ),
-)
-NATIVE_THIN_PATH_EVALUATION_CONTRACT_REFS = {
-    "evaluation_contract": NATIVE_THIN_PATH_EVALUATION_CONTRACTS[0][0],
-    "task_family_manifest": NATIVE_THIN_PATH_EVALUATION_CONTRACTS[1][0],
-    "evidence_schema": NATIVE_THIN_PATH_EVALUATION_CONTRACTS[2][0],
-}
-NATIVE_THIN_PATH_EVALUATION_VARIANTS = [
-    "thin_codex_native",
-    "native_plus_key_gates",
-    "superpowers_when_applicable",
-    "trellis_when_applicable",
-    "hermes_when_applicable",
-]
-NATIVE_THIN_PATH_EVALUATION_SURFACES = [
-    "codex_cli_execution_interface",
-    "codex_app_server_client_protocol",
-    "codex_sdk_execution_interface",
-    "codex_managed_worktree_isolation",
-    "codex_automations_scheduling",
-]
-NATIVE_THIN_PATH_EVALUATION_METRICS = [
-    "task_success_rate",
-    "missed_defect_or_regression_rate",
-    "safety_gate_evidence_completeness",
-    "net_human_minutes",
-    "wall_time_p50_p95",
-    "token_and_cost",
-    "conflict_and_rework",
-    "recovery_and_rollback_success_rate",
-    "sampled_downstream_outcome",
-]
-NATIVE_THIN_PATH_EVALUATION_HARD_RULES = [
-    "quality_security_or_evidence_regression_invalidates_efficiency_gain",
-    "unknown_or_unowned_external_effect_stops_evaluation",
-    "unreproducible_recovery_or_rollback_stops_evaluation",
-    "censored_or_unknown_downstream_outcome_remains_in_denominator",
-]
-NATIVE_THIN_PATH_EVALUATION_DECISIONS = [
-    "preserve_v3_23_semantics",
-    "narrow_profile_or_adapter_candidate",
-    "supersede_required",
-]
-NATIVE_THIN_PATH_RESULTS_SCHEMA = "NativeThinPathCapabilityResults.v1"
-NATIVE_THIN_PATH_DECISION_SCHEMA = "NativeThinPathCapabilityDecision.v1"
-NATIVE_THIN_PATH_EVIDENCE_SCHEMA = "NativeThinPathCapabilityEvidence.v1"
 BASELINE_MANIFEST_SCHEMA_PATH = Path(
     "docs/specs/local-ai-runtime-0.2/normative/BaselineManifest.v1.schema.json"
 )
@@ -239,7 +156,13 @@ FINAL_BASELINE_MANIFEST_PATH = Path(
 EXPECTED_CONTRACT_PROJECTIONS = [
     {
         "projection_id": "work_definition_task_family_v1",
-        "required_contract_tokens": ["WorkDefinition", "TaskFamily"],
+        "required_contract_tokens": [
+            "WorkDefinition",
+            "TaskFamily",
+            "FirstRunExperiencePolicy",
+            "LaunchTemplateCatalog",
+            "OperatorPresentationCatalog",
+        ],
         "normative_producer_task_id": "LAR-P0A-004",
         "implementation_task_ids": ["LAR-P1A-002", "LAR-P1F-003"],
         "acceptance_task_ids": ["LAR-P1G-001", "LAR-P4-001"],
@@ -247,7 +170,7 @@ EXPECTED_CONTRACT_PROJECTIONS = [
     {
         "projection_id": "effect_plan_v1",
         "required_contract_tokens": ["EffectPlan"],
-        "normative_producer_task_id": "LAR-P0A-006",
+        "normative_producer_task_id": "LAR-P0A-REBASELINE-V324",
         "implementation_task_ids": ["LAR-P1A-002", "LAR-P1B-003", "LAR-P1D-003"],
         "acceptance_task_ids": ["LAR-P1G-001"],
     },
@@ -272,7 +195,7 @@ EXPECTED_CONTRACT_PROJECTIONS = [
     {
         "projection_id": "writer_effect_launch_identity_v1",
         "required_contract_tokens": ["writer_effect_id", "writer_launch_id"],
-        "normative_producer_task_id": "LAR-P0A-006",
+        "normative_producer_task_id": "LAR-P0A-REBASELINE-V324",
         "implementation_task_ids": ["LAR-P1B-003", "LAR-P1D-002"],
         "acceptance_task_ids": ["LAR-P1G-001"],
     },
@@ -293,7 +216,7 @@ EXPECTED_CONTRACT_PROJECTIONS = [
             "hash-object -w",
             "cat-file",
         ],
-        "normative_producer_task_id": "LAR-P0A-008",
+        "normative_producer_task_id": "LAR-P0A-REBASELINE-V324",
         "implementation_task_ids": ["LAR-P1E-003"],
         "acceptance_task_ids": ["LAR-P1E-007", "LAR-P1G-001"],
     },
@@ -326,11 +249,18 @@ EXPECTED_CONTRACT_PROJECTIONS = [
         "acceptance_task_ids": ["LAR-P1G-001", "LAR-Q0-001"],
     },
     {
-        "projection_id": "portfolio_data_only_v1",
-        "required_contract_tokens": ["portfolio_data_only_v1"],
-        "normative_producer_task_id": "LAR-P0A-009",
-        "implementation_task_ids": ["LAR-P1F-003"],
-        "acceptance_task_ids": ["LAR-P4-001", "LAR-P4-002"],
+        "projection_id": "exact_toolchain_gate_v1",
+        "required_contract_tokens": [
+            "RuntimeToolchainManifest",
+            "VerificationExecutionProfile",
+            "uv sync --exact",
+            "--no-python-downloads",
+            "--build-constraint",
+            "--require-hashes",
+        ],
+        "normative_producer_task_id": "LAR-P0A-005",
+        "implementation_task_ids": ["LAR-P0D-001", "LAR-P1C-002"],
+        "acceptance_task_ids": ["LAR-P1G-001", "LAR-Q0-001"],
     },
 ]
 
@@ -377,7 +307,7 @@ def verify(*, repo_root: Path, status_path: Path) -> dict[str, object]:
             "baseline_entry",
             "approval_state",
             "normative_package",
-            "native_thin_path_evaluation",
+            "successor_transition",
             "current_active_queue",
             "current_work_item",
             "planning_optimization",
@@ -402,9 +332,9 @@ def verify(*, repo_root: Path, status_path: Path) -> dict[str, object]:
     baseline_entry = _as_dict(status.get("baseline_entry"), "baseline_entry", failures)
     approval = _as_dict(status.get("approval_state"), "approval_state", failures)
     package_state = _as_dict(status.get("normative_package"), "normative_package", failures)
-    evaluation = _as_dict(
-        status.get("native_thin_path_evaluation"),
-        "native_thin_path_evaluation",
+    successor = _as_dict(
+        status.get("successor_transition"),
+        "successor_transition",
         failures,
     )
     queue = _as_dict(status.get("current_active_queue"), "current_active_queue", failures)
@@ -420,6 +350,7 @@ def verify(*, repo_root: Path, status_path: Path) -> dict[str, object]:
 
     _verify_baseline(root, baseline, failures)
     _verify_baseline_entry(root, baseline_entry, baseline, failures)
+    _verify_successor_transition(root, successor, current_work=current_work, failures=failures)
 
     inventory: dict[str, Any] = {}
     inventory_ref = package_state.get("inventory_ref")
@@ -509,7 +440,7 @@ def verify(*, repo_root: Path, status_path: Path) -> dict[str, object]:
         package_state=package_state,
         queue=queue,
         current_work=current_work,
-        evaluation=evaluation,
+        successor=successor,
         legacy=legacy,
         truth_reset=truth_reset,
         implementation=implementation,
@@ -544,8 +475,8 @@ def verify(*, repo_root: Path, status_path: Path) -> dict[str, object]:
         "baseline_sha256": baseline["sha256"],
         "blocking_stage": baseline["blocking_stage"],
         "approval_active": approval["active"],
-        "native_thin_path_evaluation_status": evaluation["status"],
-        "native_thin_path_evaluation_decision": evaluation["decision"],
+        "successor_transition_status": successor["status"],
+        "successor_transition_disposition": successor["disposition"],
         "normative_package_status": package_state["status"],
         "missing_artifact_count": len(package_state["missing_artifact_ids"]),
         "current_queue": queue["queue_id"],
@@ -1009,7 +940,9 @@ def _verify_historical_source_record(
 
 
 def _project_inventory_lineage(
-    entries: list[Any], failures: list[str]
+    entries: list[Any],
+    failures: list[str],
+    compatible_predecessor_artifacts: Any = None,
 ) -> dict[str, Any]:
     canonical_predecessors: list[dict[str, Any]] = []
     withdrawn_candidates: list[dict[str, Any]] = []
@@ -1045,6 +978,12 @@ def _project_inventory_lineage(
             if "source_record" in entry:
                 candidate["source_record"] = entry.get("source_record")
             candidate["archive_status"] = "present_verified_archive"
+            for archive_field in (
+                "preapproval_inventory_archive",
+                "work_item_plan_archive",
+            ):
+                if archive_field in entry:
+                    candidate[archive_field] = entry.get(archive_field)
             superseded_candidates.append(candidate)
         elif role == "conflicted_candidate_archive":
             shared_id = entry.get("shared_candidate_id")
@@ -1089,7 +1028,7 @@ def _project_inventory_lineage(
             }
         )
 
-    return {
+    projection = {
         "canonical_predecessor": (
             canonical_predecessors[0] if canonical_predecessors else None
         ),
@@ -1098,6 +1037,27 @@ def _project_inventory_lineage(
         "conflicted_candidate_ids": conflicted_candidates,
         "withdrawn_drafts": withdrawn_drafts,
     }
+    if compatible_predecessor_artifacts is not None:
+        if not isinstance(compatible_predecessor_artifacts, list):
+            failures.append("BaselineLineage compatible_predecessor_artifacts must be an array")
+            projection["compatible_predecessor_artifacts"] = []
+        else:
+            projection["compatible_predecessor_artifacts"] = [
+                {
+                    field: entry.get(field)
+                    for field in (
+                        "artifact_id",
+                        "artifact_version",
+                        "baseline_id",
+                        "path",
+                        "byte_count",
+                        "sha256",
+                    )
+                }
+                for entry in compatible_predecessor_artifacts
+                if isinstance(entry, dict)
+            ]
+    return projection
 
 
 def _verify_current_lineage(
@@ -1119,12 +1079,12 @@ def _verify_current_lineage(
         None,
     )
     expected_artifact = {
-        "artifact_version": "BaselineLineage.v2",
+        "artifact_version": "BaselineLineage.v3",
         "path": CURRENT_LINEAGE_PATH,
         "status": "present",
         "byte_count": CURRENT_LINEAGE_BYTE_COUNT,
         "sha256": CURRENT_LINEAGE_SHA256,
-        "producer_task_id": "LAR-P0A-REBASELINE-V323",
+        "producer_task_id": "LAR-P0A-REBASELINE-V324",
     }
     if lineage_artifact is None:
         failures.append("inventory must contain the P0A-LINEAGE artifact")
@@ -1134,22 +1094,22 @@ def _verify_current_lineage(
             failures.append(f"P0A-LINEAGE.{field} must equal {expected!r}")
 
     try:
-        lineage_path = _resolve_repo_path(root, CURRENT_LINEAGE_PATH, "BaselineLineage.v2")
+        lineage_path = _resolve_repo_path(root, CURRENT_LINEAGE_PATH, "BaselineLineage.v3")
         raw = lineage_path.read_bytes()
         lineage = _loads_json_object(raw.decode("utf-8"), CURRENT_LINEAGE_PATH)
     except (OSError, UnicodeDecodeError, ValueError) as exc:
-        failures.append(f"BaselineLineage.v2 is unreadable: {exc}")
+        failures.append(f"BaselineLineage.v3 is unreadable: {exc}")
         return
-    _verify_normative_bytes(raw, "BaselineLineage.v2", failures)
+    _verify_normative_bytes(raw, "BaselineLineage.v3", failures)
     if len(raw) != CURRENT_LINEAGE_BYTE_COUNT:
-        failures.append("BaselineLineage.v2 byte count mismatch")
+        failures.append("BaselineLineage.v3 byte count mismatch")
     if hashlib.sha256(raw).hexdigest() != CURRENT_LINEAGE_SHA256:
-        failures.append("BaselineLineage.v2 SHA-256 mismatch")
-    if lineage.get("domain") != "local-ai-runtime/BaselineLineage/v2":
-        failures.append("BaselineLineage.v2 domain mismatch")
-    if lineage.get("schema_version") != 2:
-        failures.append("BaselineLineage.v2 schema_version must be 2")
-    payload = _as_dict(lineage.get("payload"), "BaselineLineage.v2.payload", failures)
+        failures.append("BaselineLineage.v3 SHA-256 mismatch")
+    if lineage.get("domain") != "local-ai-runtime/BaselineLineage/v3":
+        failures.append("BaselineLineage.v3 domain mismatch")
+    if lineage.get("schema_version") != 3:
+        failures.append("BaselineLineage.v3 schema_version must be 3")
+    payload = _as_dict(lineage.get("payload"), "BaselineLineage.v3.payload", failures)
     expected_candidate = {
         "byte_count": baseline.get("byte_count"),
         "id": baseline.get("id"),
@@ -1158,34 +1118,48 @@ def _verify_current_lineage(
         "sha256": baseline.get("sha256"),
     }
     if payload.get("candidate") != expected_candidate:
-        failures.append("BaselineLineage.v2 candidate must bind the current v3.23 identity")
+        failures.append("BaselineLineage.v3 candidate must bind the current v3.24 identity")
 
     entries_value = payload.get("entries")
     if not isinstance(entries_value, list):
-        failures.append("BaselineLineage.v2 entries must be an array")
+        failures.append("BaselineLineage.v3 entries must be an array")
         return
     entries = {
         entry.get("id"): entry for entry in entries_value if isinstance(entry, dict)
     }
-    expected_v322 = {
-        "byte_count": 178330,
-        "id": "local-ai-runtime-0.2-v3.22",
-        "path": "docs/specs/local-ai-runtime-0.2-v3.22-baseline-candidate.md",
+    expected_v323 = {
+        "byte_count": 188325,
+        "id": "local-ai-runtime-0.2-v3.23",
+        "path": "docs/specs/local-ai-runtime-0.2-v3.23-baseline-candidate.md",
         "role": "superseded_candidate",
-        "sha256": "8338a9dcf4bbbb40ca28f4f2ec6dca37587ee94fbfbbc6e3a0063c4de379569c",
+        "sha256": "80562322ebc744eda2a87a17c45f73a11982f4947c9d10e8628bb6f73ee9d5c6",
+        "preapproval_inventory_archive": {
+            "byte_count": 12439,
+            "path": "docs/specs/local-ai-runtime-0.2/history/local-ai-runtime-0.2-v3.23-normative-package.json",
+            "sha256": "2771b750557c68002eb54c3681185395e7d2881632211a4bb0bd6de75644d620",
+        },
+        "work_item_plan_archive": {
+            "byte_count": 220533,
+            "path": "docs/plans/history/local-ai-runtime-0.2-v3.23-work-items.json",
+            "sha256": "4b146d79c0f99a9621a8f6a743e8ddab7e2eb6d19356d2152a1c7130c0adebfe",
+        },
     }
-    if entries.get("local-ai-runtime-0.2-v3.22") != expected_v322:
-        failures.append("BaselineLineage.v2 must bind the exact superseded v3.22 identity")
+    if entries.get("local-ai-runtime-0.2-v3.23") != expected_v323:
+        failures.append("BaselineLineage.v3 must bind the exact superseded v3.23 identity and archives")
     if len(entries) != len(entries_value):
-        failures.append("BaselineLineage.v2 entry IDs must be unique")
+        failures.append("BaselineLineage.v3 entry IDs must be unique")
 
-    projected_inventory_lineage = _project_inventory_lineage(entries_value, failures)
+    projected_inventory_lineage = _project_inventory_lineage(
+        entries_value,
+        failures,
+        payload.get("compatible_predecessor_artifacts"),
+    )
     if inventory.get("lineage") != projected_inventory_lineage:
-        failures.append("inventory lineage must exactly project BaselineLineage.v2")
+        failures.append("inventory lineage must exactly project BaselineLineage.v3")
 
     historical = _as_dict(
         payload.get("historical_source_archive"),
-        "BaselineLineage.v2.historical_source_archive",
+        "BaselineLineage.v3.historical_source_archive",
         failures,
     )
     historical_path = historical.get("path")
@@ -1240,7 +1214,7 @@ def _verify_inventory(
     if inventory.get("baseline_id") != baseline.get("id"):
         failures.append("inventory baseline_id must match planning baseline id")
     if inventory.get("package_id") != f"{CURRENT_BASELINE_ID}-normative-package":
-        failures.append("inventory package_id must match the v3.23 package identity")
+        failures.append("inventory package_id must match the v3.24 package identity")
     if inventory.get("blocking_stage") != baseline.get("blocking_stage"):
         failures.append("inventory blocking_stage must match planning baseline")
 
@@ -1258,7 +1232,7 @@ def _verify_inventory(
     artifact_ids = [item.get("artifact_id") for item in artifacts if isinstance(item, dict)]
     if artifact_ids != EXPECTED_ARTIFACT_IDS:
         failures.append(
-            "inventory artifact IDs/order must match the v3.23 closure sequence"
+            "inventory artifact IDs/order must match the v3.24 closure sequence"
         )
 
     seen_ids: set[str] = set()
@@ -1346,13 +1320,34 @@ def _verify_inventory(
     source_artifact = artifacts_by_id.get("P0A-SOURCE", {})
     if source_artifact.get("artifact_version") != CURRENT_BASELINE_ID:
         failures.append("P0A-SOURCE artifact_version must equal the narrative ID")
-    if source_artifact.get("producer_task_id") is not None:
-        failures.append("P0A-SOURCE must not have a producer task")
+    if source_artifact.get("producer_task_id") != "LAR-P0A-REBASELINE-V324":
+        failures.append("P0A-SOURCE producer must be the v3.24 rebaseline task")
     for field in ("path", "byte_count", "sha256"):
         if source_artifact.get(field) != baseline.get(field):
             failures.append(f"P0A-SOURCE.{field} must match planning baseline")
     if source_artifact.get("status") != "present":
         failures.append("P0A-SOURCE must remain present")
+
+    expected_carry_forward = {
+        "P0A-CANONICAL",
+        "P0A-EXECUTION",
+        "P0A-EVIDENCE",
+        "P0A-GIT",
+    }
+    for artifact_id, artifact in artifacts_by_id.items():
+        expected_origin = (
+            "local-ai-runtime-0.2-v3.23"
+            if artifact_id in expected_carry_forward
+            else None
+        )
+        if artifact.get("carried_forward_from") != expected_origin:
+            failures.append(
+                f"{artifact_id}.carried_forward_from must equal {expected_origin!r}"
+            )
+    if artifacts_by_id.get("P0A-PRODUCT", {}).get("artifact_version") != "ProductContract.v2":
+        failures.append("v3.24 requires ProductContract.v2")
+    if artifacts_by_id.get("P0A-QUALIFICATION", {}).get("artifact_version") != "QualificationContractSet.v2":
+        failures.append("v3.24 requires QualificationContractSet.v2")
 
     manifest_artifact = artifacts_by_id.get("P0A-MANIFEST", {})
     review_artifact = artifacts_by_id.get("P0A-REVIEW", {})
@@ -1572,7 +1567,7 @@ def _verify_planning_optimization_projection(
         "policy_ref",
         "policy_kind",
         "complexity_health",
-        "frozen_v323_semantics_changed",
+        "frozen_v324_semantics_changed",
         "active_profile_change",
     }
     if set(projection) != expected_keys:
@@ -1588,8 +1583,8 @@ def _verify_planning_optimization_projection(
         failures.append("planning_optimization policy_kind must match machine policy")
     if projection.get("complexity_health") != "warning_all_dimensions":
         failures.append("planning_optimization complexity_health must expose current warning state")
-    if projection.get("frozen_v323_semantics_changed") is not False:
-        failures.append("planning optimization must not claim frozen v3.23 semantic change")
+    if projection.get("frozen_v324_semantics_changed") is not False:
+        failures.append("planning optimization must not claim frozen v3.24 semantic change")
     if projection.get("active_profile_change") != routing.get("active_profile_change"):
         failures.append("planning_optimization active_profile_change must match routing policy")
 
@@ -1629,7 +1624,7 @@ def _verify_work_items(
             f"work-item schema_version must be {WORK_ITEM_SCHEMA_VERSION}"
         )
     if payload.get("plan_id") != f"{CURRENT_BASELINE_ID}-implementation-work-items":
-        failures.append("work-item plan_id must match the v3.23 implementation graph")
+        failures.append("work-item plan_id must match the v3.24 implementation graph")
     if payload.get("baseline_id") != baseline.get("id"):
         failures.append("work-item baseline_id must match planning baseline")
     if payload.get("baseline_status") != baseline.get("status"):
@@ -1637,7 +1632,7 @@ def _verify_work_items(
     if payload.get("blocking_stage") != baseline.get("blocking_stage"):
         failures.append("work-item blocking_stage must match planning baseline")
     if payload.get("supersedes_plan") != EXPECTED_SUPERSEDED_PLAN:
-        failures.append("work-item supersedes_plan must match the frozen v3.22 plan identity")
+        failures.append("work-item supersedes_plan must match the frozen v3.23 plan identity")
     if payload.get("task_identity") != "plan_id_plus_task_id":
         failures.append("work-item task_identity must be plan_id_plus_task_id")
     if not isinstance(payload.get("updated_on"), str) or not payload["updated_on"].strip():
@@ -1663,23 +1658,56 @@ def _verify_work_items(
     else:
         if set(verification_profiles) != EXPECTED_VERIFICATION_PROFILES:
             failures.append(
-                "work-item verification_profiles must contain exactly planning and new_runtime"
+                "work-item verification_profiles must contain exactly planning and new_runtime_exact_v1"
             )
-        for profile_name, commands in verification_profiles.items():
-            if (
-                not isinstance(commands, list)
-                or not commands
-                or not all(isinstance(command, str) and command for command in commands)
-                or len(commands) != len(set(commands))
+        planning_commands = verification_profiles.get("planning")
+        if (
+            not isinstance(planning_commands, list)
+            or not planning_commands
+            or not all(isinstance(command, str) and command for command in planning_commands)
+            or len(planning_commands) != len(set(planning_commands))
+        ):
+            failures.append("planning verification profile must be a unique non-empty string array")
+        exact_profile = verification_profiles.get("new_runtime_exact_v1")
+        if not isinstance(exact_profile, dict):
+            failures.append("new_runtime_exact_v1 verification profile must be an object")
+        else:
+            canonical = json.dumps(
+                exact_profile,
+                ensure_ascii=False,
+                sort_keys=True,
+                separators=(",", ":"),
+            ).encode("utf-8")
+            if hashlib.sha256(canonical).hexdigest() != EXPECTED_EXACT_TOOLCHAIN_PROFILE_SHA256:
+                failures.append("new_runtime_exact_v1 profile drifted from the frozen exact-toolchain gate")
+            if exact_profile.get("fixed_gate_order") != [
+                "supply_chain_identity",
+                "build",
+                "test",
+                "contract_invariant",
+                "hotspot",
+            ]:
+                failures.append("new_runtime_exact_v1 must preserve fixed gate order")
+            rendered_profile = json.dumps(exact_profile, ensure_ascii=False)
+            for token in (
+                "sync --exact",
+                "--locked",
+                "--offline",
+                "--no-python-downloads",
+                "--python <python.absolute_path>",
+                "--build-constraint",
+                "--require-hashes",
+                "run --no-sync",
+                "python -I -s -E",
             ):
-                failures.append(
-                    "work-item verification profile must be a unique non-empty "
-                    f"string array: {profile_name}"
-                )
-        if verification_profiles.get("new_runtime") != EXPECTED_NEW_RUNTIME_VERIFICATION:
-            failures.append(
-                "work-item new_runtime verification profile must match the locked offline command set"
-            )
+                if token not in rendered_profile:
+                    failures.append(f"new_runtime_exact_v1 missing exact-toolchain token: {token}")
+            for forbidden in (
+                "uv run --locked --offline",
+                "uv build --offline --project",
+            ):
+                if forbidden in rendered_profile:
+                    failures.append(f"new_runtime_exact_v1 retains forbidden ambiguous gate: {forbidden}")
     runtime_source_layout = payload.get("runtime_source_layout")
     if not isinstance(runtime_source_layout, dict):
         failures.append("work-item runtime_source_layout must be an object")
@@ -1735,7 +1763,7 @@ def _verify_work_items(
         failures.append("work-item status_catalog must be a unique array")
         status_catalog = []
     elif status_catalog != EXPECTED_WORK_ITEM_STATUSES:
-        failures.append("work-item status_catalog must match the v3.23 state set and order")
+        failures.append("work-item status_catalog must match the v3.24 state set and order")
 
     required = [
         "task_id",
@@ -1774,10 +1802,8 @@ def _verify_work_items(
         order.append(task_id)
         phase = item.get("phase")
         task_id_parts = task_id.split("-")
-        if task_id in {"LAR-P0A-REBASELINE-V322", "LAR-P0A-REBASELINE-V323"}:
+        if task_id == "LAR-P0A-REBASELINE-V324":
             expected_phase = "P0A"
-        elif task_id in {"LAR-P0A-EVAL-001", "LAR-P0A-EVAL-002"}:
-            expected_phase = "EVAL"
         elif (
             len(task_id_parts) != 3
             or task_id_parts[0] != "LAR"
@@ -1894,46 +1920,36 @@ def _verify_work_items(
         )
 
     required_task_tokens = {
-        "LAR-P0A-002": [
-            "No final BaselineManifest.v1.json exists",
-            "P0A-MANIFEST remains missing",
-        ],
-        "LAR-P0A-003": [
-            "policy_query_denied",
-            "does not require globally disabling short-name creation",
+        "LAR-P0A-REBASELINE-V324": [
+            "exact verification profile",
+            "first-launch product design",
+            "BaselineLineage.v3",
+            "ProductContract.v2",
+            "QualificationContractSet.v2",
         ],
         "LAR-P0A-004": [
-            "volatile existing-family lookup",
-            "Existing-family replay remains stable",
-            "secret scan",
+            "FirstRunExperiencePolicy.v1",
+            "LaunchTemplateCatalog.v1 with four templates",
+            "OperatorPresentationCatalog.v1",
+            "Native Spec can create only a template candidate",
         ],
         "LAR-P0A-005": [
-            "AuthorizationExecutionGrant",
-            "sandbox.log is an opaque bounded diagnostic",
-            "basis_kind=active_authorization",
+            "RuntimeToolchainManifest.v1",
+            "VerificationExecutionProfile.v1",
+            "exact locked offline sync",
+            "hash-pinned build backend",
         ],
-        "LAR-P0A-006": [
-            "SafetyOnlyExecutionRecord",
-            "execution_authority_kind",
-            "release_emergency_reserve",
-            "rebuild_emergency_reserve",
-        ],
-        "LAR-P0A-007": [
-            "ExecutionReceipt",
-            "BackupPostActivity",
-            "BackupRestoreIntent",
-            "runtime_external_v1",
-        ],
-        "LAR-P0A-008": [
-            "GitConfigPolicy",
-            "claim_epoch_seconds",
-            "--no-create-reflog",
-            "historical success is durable",
+        "LAR-P0A-009": [
+            "SQLite is the only policy/transition authority",
+            "same recovery decision",
+            "Cleanup finalizers cannot be bypassed",
+            "B3 is declared deferred",
         ],
         "LAR-P0A-010": [
             "accounting_kill_audit",
             "EmergencyDiskReserve",
             "HardWriteQuotaCapability is optional",
+            "exact offline gates",
         ],
         "LAR-P0A-013": [
             "package_review_head",
@@ -1941,7 +1957,9 @@ def _verify_work_items(
             "BaselineManifest.v1.json",
         ],
         "LAR-P0D-001": [
-            "pinned Python 3.11",
+            "RuntimeToolchainManifest-pinned Python 3.11.x",
+            "profile:new_runtime_exact_v1",
+            "no-side-effect harness",
             "contracts/kernel/qualification/storage/execution/recovery/"
             "git_local/operations/compat modules",
             "approved_root_files",
@@ -1958,32 +1976,33 @@ def _verify_work_items(
             if token not in rendered:
                 failures.append(f"{task_id} missing required semantic token: {token}")
 
-    manifest_schema_task = items.get("LAR-P0A-002", {})
+    manifest_predecessor_tasks = [
+        items.get("LAR-P0A-REBASELINE-V324", {}),
+        items.get("LAR-P0A-004", {}),
+        items.get("LAR-P0A-005", {}),
+    ]
     manifest_close_task = items.get("LAR-P0A-013", {})
     final_manifest_path = (
         "docs/specs/local-ai-runtime-0.2/normative/BaselineManifest.v1.json"
     )
-    if final_manifest_path in _work_item_scope_list(
-        manifest_schema_task, "primary_files"
+    if any(
+        final_manifest_path in _work_item_scope_list(item, "primary_files")
+        for item in manifest_predecessor_tasks
     ):
-        failures.append("LAR-P0A-002 must not create the final BaselineManifest instance")
+        failures.append("pre-closure v3.24 tasks must not create the final BaselineManifest instance")
     if final_manifest_path not in _work_item_scope_list(
         manifest_close_task, "primary_files"
     ):
         failures.append("LAR-P0A-013 must create the final BaselineManifest instance")
 
     p4_cohort = items.get("LAR-P4-001", {})
-    b3_activation = items.get("LAR-P4-002", {})
     p5_cutover = items.get("LAR-P5-001", {})
-    if _work_item_list(b3_activation, "depends_on") != ["LAR-P4-001"]:
-        failures.append("B3 activation must depend only on the green P4 cohort")
+    if "LAR-P4-002" in items:
+        failures.append("B3 activation must remain deferred beyond the 0.2 work-item graph")
     if _work_item_list(p5_cutover, "depends_on") != ["LAR-P4-001"]:
         failures.append("P5 must depend on the green P4 cohort, not B3 activation")
-    if _work_item_list(p4_cohort, "next_task_ids") != [
-        "LAR-P4-002",
-        "LAR-P5-001",
-    ]:
-        failures.append("P4 must independently release B3 activation and P5 cutover")
+    if _work_item_list(p4_cohort, "next_task_ids") != ["LAR-P5-001"]:
+        failures.append("P4 must release only P5; B3 remains deferred beyond 0.2")
 
     for task_id in EXPECTED_P1_IMPLEMENTATION_TASK_IDS:
         item = items.get(task_id)
@@ -2041,13 +2060,7 @@ def _verify_work_items(
                 f"{relative_path}: expected={expected_owner}, actual={actual_owners}"
             )
 
-    selectable_statuses = {
-        "contract_pending",
-        "execution_pending",
-        "narrow_profile_or_adapter_candidate",
-        "supersede_required",
-        "ready",
-    }
+    selectable_statuses = {"ready"}
     selectable = [
         task_id
         for task_id, item in items.items()
@@ -2255,7 +2268,7 @@ def _verify_selector_policy(
         failures.append("selector allowed_next_actions must be a unique array")
         allowed = []
     if allowed != EXPECTED_SELECTOR_ACTIONS:
-        failures.append("selector allowed_next_actions must match the v3.23 action catalog")
+        failures.append("selector allowed_next_actions must match the v3.24 action catalog")
     if current_work.get("selector_action") not in allowed:
         failures.append("current selector action is not allowed by selector policy")
     completed_history_actions = {
@@ -2274,7 +2287,7 @@ def _verify_selector_policy(
     review_sets = policy.get("baseline_review_missing_artifact_sets")
     if review_sets != EXPECTED_REVIEW_MISSING_ARTIFACT_SETS:
         failures.append(
-            "selector baseline_review_missing_artifact_sets must match the v3.23 manifest/review closure"
+            "selector baseline_review_missing_artifact_sets must match the v3.24 manifest/review closure"
         )
     missing = package_state.get("missing_artifact_ids")
     review_phase = (
@@ -2329,7 +2342,7 @@ def _verify_selector_policy(
         ]
         if actual_steps != EXPECTED_SELECTOR_STEPS:
             failures.append(
-                "selector condition/action order must match the v3.23 stage graph"
+                "selector condition/action order must match the v3.24 stage graph"
             )
 
     required_entrypoints = policy.get("required_entrypoints")
@@ -2360,6 +2373,85 @@ def _verify_selector_policy(
             failures.append(f"selector doc ref missing text: {ref['path']}:{ref['contains']}")
 
 
+def _verify_successor_transition(
+    root: Path,
+    transition: dict[str, Any],
+    current_work: dict[str, Any],
+    failures: list[str],
+) -> None:
+    expected_predecessor = {
+        "id": "local-ai-runtime-0.2-v3.23",
+        "path": "docs/specs/local-ai-runtime-0.2-v3.23-baseline-candidate.md",
+        "byte_count": 188325,
+        "sha256": "80562322ebc744eda2a87a17c45f73a11982f4947c9d10e8628bb6f73ee9d5c6",
+        "package_archive": (
+            "docs/specs/local-ai-runtime-0.2/history/"
+            "local-ai-runtime-0.2-v3.23-normative-package.json"
+        ),
+        "plan_archive": "docs/plans/history/local-ai-runtime-0.2-v3.23-work-items.json",
+    }
+    expected_reasons = [
+        "uv_locked_run_not_exact_environment",
+        "build_backend_not_hash_pinned",
+        "manifest_python_not_explicitly_selected",
+        "launch_product_experience_incomplete",
+    ]
+    expected_artifacts = [
+        "P0A-CANONICAL",
+        "P0A-EXECUTION",
+        "P0A-EVIDENCE",
+        "P0A-GIT",
+    ]
+    if transition.get("status") != "completed":
+        failures.append("successor_transition.status must be completed")
+    if transition.get("disposition") != "supersede_required":
+        failures.append("successor_transition.disposition must be supersede_required")
+    if transition.get("task_id") != "LAR-P0A-REBASELINE-V324":
+        failures.append("successor_transition.task_id must bind the v3.24 rebaseline task")
+    if transition.get("trigger_id") != "V324-EXACT-TOOLCHAIN-AND-LAUNCH-EXPERIENCE-001":
+        failures.append("successor_transition.trigger_id must bind the declared v3.24 trigger")
+    if transition.get("predecessor") != expected_predecessor:
+        failures.append("successor_transition.predecessor must bind exact frozen v3.23 identities")
+    if transition.get("reason_codes") != expected_reasons:
+        failures.append("successor_transition.reason_codes must match the reviewed successor causes")
+    if transition.get("compatible_predecessor_artifact_ids") != expected_artifacts:
+        failures.append("successor_transition carry-forward set must remain exact and ordered")
+    evaluation = transition.get("predecessor_evaluation")
+    if not isinstance(evaluation, dict):
+        failures.append("successor_transition.predecessor_evaluation must be an object")
+    else:
+        expected_evaluation = {
+            "decision": "preserve_v3_23_semantics",
+            "role": "non_normative_predecessor_evidence",
+            "profile_promoted": False,
+            "result_ref": (
+                "docs/evaluations/local-ai-runtime-0.2/"
+                "native-thin-path-capability-results.v1.json"
+            ),
+            "decision_ref": (
+                "docs/evaluations/local-ai-runtime-0.2/"
+                "native-thin-path-capability-decision.v1.json"
+            ),
+        }
+        if evaluation != expected_evaluation:
+            failures.append("predecessor evaluation projection must remain exact and non-normative")
+    if current_work.get("task_id") == transition.get("task_id"):
+        failures.append("completed successor transition cannot remain the selected work item")
+    for label, value in (
+        ("predecessor candidate", expected_predecessor["path"]),
+        ("predecessor package archive", expected_predecessor["package_archive"]),
+        ("predecessor plan archive", expected_predecessor["plan_archive"]),
+        ("successor evidence", transition.get("evidence_ref")),
+    ):
+        try:
+            path = _resolve_repo_path(root, value, label)
+        except ValueError as exc:
+            failures.append(str(exc))
+        else:
+            if not path.is_file():
+                failures.append(f"{label} does not exist")
+
+
 def _verify_approval_and_stages(
     *,
     root: Path,
@@ -2367,7 +2459,7 @@ def _verify_approval_and_stages(
     package_state: dict[str, Any],
     queue: dict[str, Any],
     current_work: dict[str, Any],
-    evaluation: dict[str, Any],
+    successor: dict[str, Any],
     legacy: dict[str, Any],
     truth_reset: dict[str, Any],
     implementation: dict[str, Any],
@@ -2459,10 +2551,8 @@ def _verify_approval_and_stages(
         "p3_scheduled_self_host_complete"
     ):
         failures.append("P4 completion requires P3 scheduled self-host evidence")
-    if rollout.get("b3_portfolio_generation_active") and not rollout.get(
-        "p4_cohort_complete"
-    ):
-        failures.append("B3 portfolio activation requires the green P4 cohort")
+    if rollout.get("b3_portfolio_generation_active"):
+        failures.append("B3 portfolio scheduling is deferred beyond 0.2")
     if rollout.get("p5_cutover_complete") and not rollout.get("p4_cohort_complete"):
         failures.append("P5 completion requires the P4 cohort")
     if rollout.get("legacy_writer_retired") and not rollout.get("p5_cutover_complete"):
@@ -2486,1135 +2576,18 @@ def _verify_approval_and_stages(
         if not current_kernel.is_dir():
             failures.append("declared current kernel directory does not exist")
 
-    _verify_native_thin_path_evaluation(
-        root=root,
-        evaluation=evaluation,
-        package_state=package_state,
-        current_work=current_work,
-        failures=failures,
-    )
+    if successor.get("status") != "completed":
+        failures.append("v3.24 planning stages require completed successor transition")
 
     if package_state.get("status") == "incomplete":
         if queue.get("queue_id") != "LOCAL-AI-RUNTIME-0.2-BASELINE-CLOSURE":
             failures.append("incomplete package requires baseline-closure queue")
         if current_work.get("selector_action") not in {
             "create_successor_candidate_first",
-            "run_native_thin_path_evaluation_first",
             "close_baseline_normative_package_first",
             "run_baseline_consistency_review",
         }:
             failures.append("incomplete package requires a normative-closure selector action")
-
-
-def _verify_native_thin_path_evaluation(
-    *,
-    root: Path,
-    evaluation: dict[str, Any],
-    package_state: dict[str, Any],
-    current_work: dict[str, Any],
-    failures: list[str],
-) -> None:
-    _require_fields(
-        evaluation,
-        [
-            "status",
-            "decision",
-            "contract_task_id",
-            "execution_task_id",
-            "contract_output_refs",
-            "contract_identity",
-            "result_ref",
-            "decision_ref",
-            "evidence_ref",
-            "comparison_variants",
-            "independent_capability_surfaces",
-            "required_metrics",
-            "hard_promotion_rules",
-            "successor_baseline_id",
-        ],
-        "native_thin_path_evaluation",
-        failures,
-    )
-    status = evaluation.get("status")
-    decision = evaluation.get("decision")
-    expected_contract_task = "LAR-P0A-EVAL-001"
-    expected_execution_task = "LAR-P0A-EVAL-002"
-    if evaluation.get("contract_task_id") != expected_contract_task:
-        failures.append(
-            "native_thin_path_evaluation.contract_task_id must be LAR-P0A-EVAL-001"
-        )
-    if evaluation.get("execution_task_id") != expected_execution_task:
-        failures.append(
-            "native_thin_path_evaluation.execution_task_id must be LAR-P0A-EVAL-002"
-        )
-    if evaluation.get("successor_baseline_id") != "local-ai-runtime-0.2-v3.24":
-        failures.append(
-            "native_thin_path_evaluation.successor_baseline_id must be local-ai-runtime-0.2-v3.24"
-        )
-
-    for field, expected in (
-        ("comparison_variants", NATIVE_THIN_PATH_EVALUATION_VARIANTS),
-        ("independent_capability_surfaces", NATIVE_THIN_PATH_EVALUATION_SURFACES),
-        ("required_metrics", NATIVE_THIN_PATH_EVALUATION_METRICS),
-        ("hard_promotion_rules", NATIVE_THIN_PATH_EVALUATION_HARD_RULES),
-    ):
-        if evaluation.get(field) != expected:
-            failures.append(
-                f"native_thin_path_evaluation.{field} must match the frozen v3.23 evaluation contract"
-            )
-
-    refs = evaluation.get("contract_output_refs")
-    if (
-        not isinstance(refs, list)
-        or len(refs) != 3
-        or not all(isinstance(reference, str) and reference for reference in refs)
-        or len(refs) != len(set(refs))
-    ):
-        failures.append(
-            "native_thin_path_evaluation.contract_output_refs must be three unique non-empty paths"
-        )
-    elif any(not reference.startswith("docs/evaluations/local-ai-runtime-0.2/") for reference in refs):
-        failures.append(
-            "native_thin_path_evaluation.contract_output_refs must remain under the evaluation evidence root"
-        )
-
-    terminal_decisions = set(NATIVE_THIN_PATH_EVALUATION_DECISIONS)
-    state_rules = {
-        "contract_pending": {
-            "current_task": expected_contract_task,
-            "allowed_decisions": {None},
-            "sealed_refs": False,
-        },
-        "execution_pending": {
-            "current_task": expected_execution_task,
-            "allowed_decisions": {None},
-            "sealed_refs": False,
-        },
-        "preserve_v3_23_semantics": {
-            "current_task": None,
-            "allowed_decisions": {"preserve_v3_23_semantics"},
-            "sealed_refs": True,
-        },
-        "narrow_profile_or_adapter_candidate": {
-            "current_task": expected_execution_task,
-            "allowed_decisions": {"narrow_profile_or_adapter_candidate"},
-            "sealed_refs": True,
-        },
-        "supersede_required": {
-            "current_task": expected_execution_task,
-            "allowed_decisions": {"supersede_required"},
-            "sealed_refs": True,
-        },
-    }
-    rule = state_rules.get(status)
-    if rule is None:
-        failures.append(
-            "native_thin_path_evaluation.status must be contract_pending, execution_pending or a terminal decision state"
-        )
-        return
-    if decision not in rule["allowed_decisions"]:
-        failures.append(
-            "native_thin_path_evaluation.decision must match its lifecycle status"
-        )
-    current_task = current_work.get("task_id")
-    expected_current = rule["current_task"]
-    if expected_current is not None and current_task != expected_current:
-        failures.append(
-            "native_thin_path_evaluation pending status must select its matching evaluation work item"
-        )
-    if expected_current is None and current_task in {
-        expected_contract_task,
-        expected_execution_task,
-    }:
-        failures.append(
-            "terminal native_thin_path_evaluation cannot keep an evaluation work item selected"
-        )
-
-    contract_identity = evaluation.get("contract_identity")
-    identity_required = status != "contract_pending"
-    if not identity_required:
-        if contract_identity is not None:
-            failures.append(
-                "contract_pending native_thin_path_evaluation.contract_identity must remain null"
-            )
-    elif not isinstance(contract_identity, dict):
-        failures.append(
-            "execution or terminal native_thin_path_evaluation requires contract_identity"
-        )
-    else:
-        _verify_native_thin_path_evaluation_contract_identity(
-            root=root,
-            identity=contract_identity,
-            evaluation=evaluation,
-            failures=failures,
-        )
-
-    sealed_refs = rule["sealed_refs"]
-    for field in ("result_ref", "decision_ref", "evidence_ref"):
-        value = evaluation.get(field)
-        if sealed_refs:
-            if not isinstance(value, str) or not value.startswith(
-                "docs/evaluations/local-ai-runtime-0.2/"
-            ):
-                failures.append(
-                    f"terminal native_thin_path_evaluation requires an evaluation-root {field}"
-                )
-        elif value is not None:
-            failures.append(
-                f"pending native_thin_path_evaluation.{field} must remain null"
-            )
-
-    if sealed_refs:
-        _verify_terminal_native_thin_path_evaluation_artifacts(
-            root=root,
-            evaluation=evaluation,
-            contract_identity=contract_identity,
-            status=status,
-            decision=decision,
-            failures=failures,
-        )
-
-    if decision in terminal_decisions and status != decision:
-        failures.append(
-            "native_thin_path_evaluation terminal decision must equal its terminal status"
-        )
-    if decision == "preserve_v3_23_semantics":
-        if package_state.get("status") == "incomplete" and current_task == expected_execution_task:
-            failures.append(
-                "preserve_v3_23_semantics must release the evaluation task before normative closure continues"
-            )
-    elif decision in {
-        "narrow_profile_or_adapter_candidate",
-        "supersede_required",
-    }:
-        if package_state.get("approval_eligible"):
-            failures.append(
-                "a semantic-change evaluation decision must keep v3.23 approval-ineligible"
-            )
-        if current_work.get("selector_action") != "create_successor_candidate_first":
-            failures.append(
-                "a semantic-change evaluation decision must select create_successor_candidate_first"
-            )
-
-
-def _verify_native_thin_path_evaluation_contract_identity(
-    *,
-    root: Path,
-    identity: dict[str, Any],
-    evaluation: dict[str, Any],
-    failures: list[str],
-) -> None:
-    """Fail closed unless the pending/terminal state binds exact sealed contract bytes."""
-
-    _require_fields(
-        identity,
-        [
-            "contract_set_id",
-            "baseline_id",
-            "contract_task_id",
-            "execution_task_id",
-            "snapshot",
-            "contracts",
-        ],
-        "native_thin_path_evaluation.contract_identity",
-        failures,
-    )
-    if identity.get("contract_set_id") != NATIVE_THIN_PATH_EVALUATION_CONTRACT_SET_ID:
-        failures.append(
-            "native_thin_path_evaluation.contract_identity must bind the v3.23 evaluation contract set"
-        )
-    for field, expected in (
-        ("baseline_id", CURRENT_BASELINE_ID),
-        ("contract_task_id", "LAR-P0A-EVAL-001"),
-        ("execution_task_id", "LAR-P0A-EVAL-002"),
-    ):
-        if identity.get(field) != expected:
-            failures.append(
-                "native_thin_path_evaluation.contract_identity."
-                f"{field} must match the frozen evaluation contract"
-            )
-    if identity.get("snapshot") != NATIVE_THIN_PATH_EVALUATION_SNAPSHOT:
-        failures.append(
-            "native_thin_path_evaluation.contract_identity.snapshot must match the frozen evaluation snapshot"
-        )
-
-    contracts = identity.get("contracts")
-    if not isinstance(contracts, list) or len(contracts) != len(
-        NATIVE_THIN_PATH_EVALUATION_CONTRACTS
-    ):
-        failures.append(
-            "native_thin_path_evaluation.contract_identity.contracts must contain every sealed contract"
-        )
-        return
-
-    expected_paths = [path for path, _ in NATIVE_THIN_PATH_EVALUATION_CONTRACTS]
-    actual_paths = [entry.get("path") for entry in contracts if isinstance(entry, dict)]
-    if actual_paths != expected_paths:
-        failures.append(
-            "native_thin_path_evaluation.contract_identity.contracts must use the frozen contract path order"
-        )
-        return
-    if evaluation.get("contract_output_refs") != expected_paths:
-        failures.append(
-            "native_thin_path_evaluation.contract_output_refs must match the sealed contract path order"
-        )
-
-    expected_by_path = dict(NATIVE_THIN_PATH_EVALUATION_CONTRACTS)
-    loaded_contracts: dict[str, tuple[dict[str, Any], bytes]] = {}
-    for entry in contracts:
-        if not isinstance(entry, dict):
-            failures.append(
-                "native_thin_path_evaluation.contract_identity.contracts entries must be objects"
-            )
-            continue
-        _require_fields(
-            entry,
-            ["path", "byte_count", "sha256"],
-            "native_thin_path_evaluation.contract_identity.contracts entry",
-            failures,
-        )
-        path_value = entry.get("path")
-        if path_value not in expected_by_path:
-            continue
-        if (
-            not isinstance(entry.get("byte_count"), int)
-            or isinstance(entry.get("byte_count"), bool)
-            or entry["byte_count"] < 1
-        ):
-            failures.append(
-                "native_thin_path_evaluation.contract_identity contract byte_count must be a positive integer"
-            )
-        if not _is_sha256(entry.get("sha256")):
-            failures.append(
-                "native_thin_path_evaluation.contract_identity contract sha256 must be lowercase SHA-256"
-            )
-        try:
-            path = _resolve_repo_path(root, path_value, "evaluation contract")
-        except ValueError as exc:
-            failures.append(str(exc))
-            continue
-        if not path.is_file():
-            failures.append(
-                f"native_thin_path_evaluation sealed contract does not exist: {path_value}"
-            )
-            continue
-        try:
-            payload, raw = _load_json_with_bytes(path)
-        except ValueError as exc:
-            failures.append(
-                f"native_thin_path_evaluation sealed contract must be a readable JSON object: {path_value}: {exc}"
-            )
-            continue
-        loaded_contracts[path_value] = (payload, raw)
-        if entry.get("byte_count") != len(raw):
-            failures.append(
-                "native_thin_path_evaluation.contract_identity contract byte_count must match file bytes"
-            )
-        if entry.get("sha256") != hashlib.sha256(raw).hexdigest():
-            failures.append(
-                "native_thin_path_evaluation.contract_identity contract sha256 must match file bytes"
-            )
-        expected_schema = expected_by_path[path_value]
-        if payload.get("schema_version") != expected_schema:
-            failures.append(
-                f"native_thin_path_evaluation sealed contract has unexpected schema_version: {path_value}"
-            )
-        for field, expected in (
-            ("contract_set_id", NATIVE_THIN_PATH_EVALUATION_CONTRACT_SET_ID),
-            ("baseline_id", CURRENT_BASELINE_ID),
-            ("contract_task_id", "LAR-P0A-EVAL-001"),
-            ("execution_task_id", "LAR-P0A-EVAL-002"),
-            ("snapshot", NATIVE_THIN_PATH_EVALUATION_SNAPSHOT),
-            ("contract_refs", NATIVE_THIN_PATH_EVALUATION_CONTRACT_REFS),
-        ):
-            if payload.get(field) != expected:
-                failures.append(
-                    "native_thin_path_evaluation sealed contract must preserve "
-                    f"{field}: {path_value}"
-                )
-
-    if set(loaded_contracts) != set(expected_paths):
-        return
-
-    evaluation_contract = loaded_contracts[expected_paths[0]][0]
-    task_manifest = loaded_contracts[expected_paths[1]][0]
-    evidence_schema = loaded_contracts[expected_paths[2]][0]
-    _verify_native_thin_path_evaluation_contract_content(
-        evaluation_contract=evaluation_contract,
-        task_manifest=task_manifest,
-        evidence_schema=evidence_schema,
-        failures=failures,
-    )
-
-
-def _verify_native_thin_path_evaluation_contract_content(
-    *,
-    evaluation_contract: dict[str, Any],
-    task_manifest: dict[str, Any],
-    evidence_schema: dict[str, Any],
-    failures: list[str],
-) -> None:
-    variants = evaluation_contract.get("variants")
-    if not isinstance(variants, list) or [
-        variant.get("variant_id") for variant in variants if isinstance(variant, dict)
-    ] != NATIVE_THIN_PATH_EVALUATION_VARIANTS:
-        failures.append("native thin-path evaluation contract must preserve the five comparison variants")
-    surfaces = evaluation_contract.get("capability_probes")
-    if not isinstance(surfaces, list) or [
-        surface.get("surface_id") for surface in surfaces if isinstance(surface, dict)
-    ] != NATIVE_THIN_PATH_EVALUATION_SURFACES:
-        failures.append("native thin-path evaluation contract must preserve the five independent capability surfaces")
-    metrics = evaluation_contract.get("metrics")
-    if not isinstance(metrics, list) or [
-        metric.get("metric_id") for metric in metrics if isinstance(metric, dict)
-    ] != NATIVE_THIN_PATH_EVALUATION_METRICS:
-        failures.append("native thin-path evaluation contract must preserve every required metric")
-    hard_floors = evaluation_contract.get("hard_floors")
-    if not isinstance(hard_floors, list) or [
-        rule.get("rule_id") for rule in hard_floors if isinstance(rule, dict)
-    ] != NATIVE_THIN_PATH_EVALUATION_HARD_RULES:
-        failures.append("native thin-path evaluation contract must preserve every hard floor")
-    decision_contract = evaluation_contract.get("decision_contract")
-    if not isinstance(decision_contract, dict) or decision_contract.get(
-        "allowed_decisions"
-    ) != NATIVE_THIN_PATH_EVALUATION_DECISIONS:
-        failures.append("native thin-path evaluation contract must preserve the three decision values")
-    execution_controls = evaluation_contract.get("execution_controls")
-    if not isinstance(execution_controls, dict):
-        failures.append("native thin-path evaluation contract must declare execution controls")
-    else:
-        model = execution_controls.get("model")
-        worktree = execution_controls.get("worktree")
-        if not isinstance(model, dict) or model.get("model_id") != "gpt-5.6-sol" or model.get(
-            "reasoning_effort"
-        ) != "high":
-            failures.append("native thin-path evaluation contract must fix gpt-5.6-sol/high")
-        if not isinstance(worktree, dict) or worktree.get(
-            "base_commit"
-        ) != NATIVE_THIN_PATH_EVALUATION_SNAPSHOT["commit"] or worktree.get(
-            "base_tree"
-        ) != NATIVE_THIN_PATH_EVALUATION_SNAPSHOT["tree"] or not worktree.get(
-            "primary_worktree_may_not_execute_trials"
-        ):
-            failures.append("native thin-path evaluation contract must require a detached disposable worktree")
-        requested_environment = execution_controls.get("requested_environment")
-        if not isinstance(requested_environment, dict) or requested_environment != {
-            "sandbox_intent": "workspace_write",
-            "network_access": "disabled",
-            "approval_mode": "deny_all",
-            "credential_mutation": "prohibited",
-        }:
-            failures.append(
-                "native thin-path evaluation contract must preserve the fixed sandbox and permission intent"
-            )
-    human_intervention = evaluation_contract.get("human_intervention")
-    if not isinstance(human_intervention, dict) or any(
-        not isinstance(human_intervention.get(field), str)
-        or not human_intervention[field].strip()
-        for field in (
-            "active_minute_rule",
-            "passive_wait_rule",
-            "unknown_observation_rule",
-        )
-    ):
-        failures.append(
-            "native thin-path evaluation contract must define active, passive, and unknown observation rules"
-        )
-    generation_rules = evaluation_contract.get("generation_and_q0_rules")
-    expected_generation_triggers = {
-        "model_change",
-        "reasoning_effort_change",
-        "tool_inventory_change",
-        "sandbox_or_permission_change",
-        "sdk_or_app_server_behavior_change",
-        "managed_worktree_behavior_change",
-        "automation_or_external_effect_change",
-    }
-    if (
-        not isinstance(generation_rules, dict)
-        or set(generation_rules.get("new_generation_triggers", []))
-        != expected_generation_triggers
-        or "Q0" not in str(generation_rules.get("required_followup"))
-    ):
-        failures.append(
-            "native thin-path evaluation contract must preserve capability-generation triggers and Q0 followup"
-        )
-    task_families = task_manifest.get("task_families")
-    if not isinstance(task_families, list) or len(task_families) < 3:
-        failures.append("native thin-path task-family manifest must contain at least three task families")
-    else:
-        ids = [family.get("task_family_id") for family in task_families if isinstance(family, dict)]
-        if len(ids) != len(task_families) or len(ids) != len(set(ids)):
-            failures.append("native thin-path task-family manifest task IDs must be unique")
-        for family in task_families:
-            if not isinstance(family, dict):
-                failures.append("native thin-path task-family manifest entries must be objects")
-                continue
-            if not isinstance(family.get("task_input"), dict) or not isinstance(
-                family.get("success_oracle"), dict
-            ):
-                failures.append("native thin-path task family must define task_input and success_oracle")
-            else:
-                task_input = family["task_input"]
-                oracle = family["success_oracle"]
-                if not isinstance(task_input.get("prompt"), str) or not task_input[
-                    "prompt"
-                ].strip():
-                    failures.append("native thin-path task family task_input.prompt must be non-empty")
-                for field in ("required_facts", "required_commands"):
-                    value = oracle.get(field)
-                    if (
-                        not isinstance(value, list)
-                        or not value
-                        or not all(isinstance(item, str) and item for item in value)
-                    ):
-                        failures.append(
-                            "native thin-path task family success_oracle must define non-empty "
-                            f"{field}"
-                        )
-            if not isinstance(family.get("repeat_count"), int) or family["repeat_count"] < 1:
-                failures.append("native thin-path task family repeat_count must be positive")
-            eligible_variants = family.get("eligible_variants")
-            if not isinstance(eligible_variants, list) or not eligible_variants or not set(eligible_variants).issubset(
-                set(NATIVE_THIN_PATH_EVALUATION_VARIANTS)
-            ):
-                failures.append("native thin-path task family may only reference declared variants")
-    counterbalancing = task_manifest.get("counterbalancing")
-    if not isinstance(counterbalancing, dict) or counterbalancing.get(
-        "method"
-    ) != "balanced_latin_square_v1":
-        failures.append("native thin-path task-family manifest must define counterbalancing")
-    elif (
-        counterbalancing.get("core_variant_order")
-        != NATIVE_THIN_PATH_EVALUATION_VARIANTS[:2]
-        or counterbalancing.get("conditional_variant_order")
-        != NATIVE_THIN_PATH_EVALUATION_VARIANTS[2:]
-        or counterbalancing.get("block_count") != 3
-    ):
-        failures.append(
-            "native thin-path task-family manifest must preserve the fixed variant counterbalancing"
-        )
-    denominator_rules = task_manifest.get("denominator_rules")
-    expected_denominator_keys = {
-        "core_comparison",
-        "conditional_harness_comparison",
-        "downstream_outcome",
-        "recovery_rollback",
-    }
-    if (
-        not isinstance(denominator_rules, dict)
-        or set(denominator_rules) != expected_denominator_keys
-        or any(
-            not isinstance(value, str) or not value.strip()
-            for value in denominator_rules.values()
-        )
-    ):
-        failures.append(
-            "native thin-path task-family manifest must preserve every denominator rule"
-        )
-    record_types = evidence_schema.get("record_types")
-    if not isinstance(record_types, dict) or set(record_types) != {
-        "environment_capture",
-        "trial_record",
-        "capability_probe_record",
-        "recovery_rollback_record",
-        "downstream_outcome_record",
-        "results_artifact",
-        "decision_artifact",
-        "evidence_artifact",
-    }:
-        failures.append("native thin-path evidence schema must define every required record type")
-    identity_requirement = evidence_schema.get("contract_identity_requirement")
-    if not isinstance(identity_requirement, dict) or identity_requirement.get(
-        "identity_field"
-    ) != "contract_identity":
-        failures.append("native thin-path evidence schema must require complete contract_identity")
-    elif set(identity_requirement.get("required_in", [])) != {
-        "environment_capture",
-        "trial_record",
-        "capability_probe_record",
-        "recovery_rollback_record",
-        "downstream_outcome_record",
-        "results_artifact",
-        "decision_artifact",
-        "evidence_artifact",
-    }:
-        failures.append(
-            "native thin-path evidence schema must require contract_identity in every evidence record"
-        )
-
-
-def _verify_terminal_native_thin_path_evaluation_artifacts(
-    *,
-    root: Path,
-    evaluation: dict[str, Any],
-    contract_identity: Any,
-    status: Any,
-    decision: Any,
-    failures: list[str],
-) -> None:
-    """Bind a terminal evaluation decision to real, cross-referenced JSON evidence."""
-
-    if not isinstance(status, str) or not isinstance(decision, str):
-        return
-
-    artifacts: dict[str, tuple[dict[str, Any], bytes]] = {}
-    for field in ("result_ref", "decision_ref", "evidence_ref"):
-        artifact = _load_native_thin_path_evaluation_artifact(
-            root=root,
-            value=evaluation.get(field),
-            field=field,
-            failures=failures,
-        )
-        if artifact is not None:
-            artifacts[field] = artifact
-
-    if set(artifacts) != {"result_ref", "decision_ref", "evidence_ref"}:
-        return
-
-    result, result_raw = artifacts["result_ref"]
-    decision_record, decision_raw = artifacts["decision_ref"]
-    evidence, _ = artifacts["evidence_ref"]
-    contract_refs = evaluation.get("contract_output_refs")
-
-    _require_fields(
-        result,
-        [
-            "schema_version",
-            "baseline_id",
-            "status",
-            "decision",
-            "contract_output_refs",
-            "contract_identity",
-            "decision_ref",
-            "evidence_ref",
-        ],
-        "terminal native thin-path results artifact",
-        failures,
-    )
-    if result.get("schema_version") != NATIVE_THIN_PATH_RESULTS_SCHEMA:
-        failures.append(
-            "terminal native thin-path results artifact has an unexpected schema_version"
-        )
-    if result.get("baseline_id") != CURRENT_BASELINE_ID:
-        failures.append(
-            "terminal native thin-path results artifact must bind the current baseline"
-        )
-    if result.get("status") != status or result.get("decision") != decision:
-        failures.append(
-            "terminal native thin-path results artifact must match planning status and decision"
-        )
-    if result.get("contract_output_refs") != contract_refs:
-        failures.append(
-            "terminal native thin-path results artifact must bind the frozen contract output refs"
-        )
-    if result.get("contract_identity") != contract_identity:
-        failures.append(
-            "terminal native thin-path results artifact must bind the exact contract_identity"
-        )
-    if (
-        result.get("decision_ref") != evaluation.get("decision_ref")
-        or result.get("evidence_ref") != evaluation.get("evidence_ref")
-    ):
-        failures.append(
-            "terminal native thin-path results artifact must bind the declared decision and evidence refs"
-        )
-
-    _require_fields(
-        decision_record,
-        [
-            "schema_version",
-            "baseline_id",
-            "status",
-            "decision",
-            "contract_identity",
-            "result_ref",
-            "evidence_ref",
-        ],
-        "terminal native thin-path decision artifact",
-        failures,
-    )
-    if decision_record.get("schema_version") != NATIVE_THIN_PATH_DECISION_SCHEMA:
-        failures.append(
-            "terminal native thin-path decision artifact has an unexpected schema_version"
-        )
-    if decision_record.get("baseline_id") != CURRENT_BASELINE_ID:
-        failures.append(
-            "terminal native thin-path decision artifact must bind the current baseline"
-        )
-    if (
-        decision_record.get("status") != status
-        or decision_record.get("decision") != decision
-    ):
-        failures.append(
-            "terminal native thin-path decision artifact must match planning status and decision"
-        )
-    if (
-        decision_record.get("result_ref") != evaluation.get("result_ref")
-        or decision_record.get("evidence_ref") != evaluation.get("evidence_ref")
-    ):
-        failures.append(
-            "terminal native thin-path decision artifact must bind the declared result and evidence refs"
-        )
-    if decision_record.get("contract_identity") != contract_identity:
-        failures.append(
-            "terminal native thin-path decision artifact must bind the exact contract_identity"
-        )
-
-    _require_fields(
-        evidence,
-        [
-            "schema_version",
-            "baseline_id",
-            "status",
-            "decision",
-            "contract_identity",
-            "result_ref",
-            "decision_ref",
-            "result_sha256",
-            "decision_sha256",
-        ],
-        "terminal native thin-path evidence artifact",
-        failures,
-    )
-    if evidence.get("schema_version") != NATIVE_THIN_PATH_EVIDENCE_SCHEMA:
-        failures.append(
-            "terminal native thin-path evidence artifact has an unexpected schema_version"
-        )
-    if evidence.get("baseline_id") != CURRENT_BASELINE_ID:
-        failures.append(
-            "terminal native thin-path evidence artifact must bind the current baseline"
-        )
-    if evidence.get("status") != status or evidence.get("decision") != decision:
-        failures.append(
-            "terminal native thin-path evidence artifact must match planning status and decision"
-        )
-    if (
-        evidence.get("result_ref") != evaluation.get("result_ref")
-        or evidence.get("decision_ref") != evaluation.get("decision_ref")
-    ):
-        failures.append(
-            "terminal native thin-path evidence artifact must bind the declared result and decision refs"
-        )
-    if evidence.get("contract_identity") != contract_identity:
-        failures.append(
-            "terminal native thin-path evidence artifact must bind the exact contract_identity"
-        )
-    if evidence.get("result_sha256") != hashlib.sha256(result_raw).hexdigest():
-        failures.append(
-            "terminal native thin-path evidence artifact result_sha256 must match result bytes"
-        )
-    if evidence.get("decision_sha256") != hashlib.sha256(decision_raw).hexdigest():
-        failures.append(
-            "terminal native thin-path evidence artifact decision_sha256 must match decision bytes"
-        )
-    _verify_terminal_generation_projection(result, evidence, failures)
-
-
-def _verify_terminal_generation_projection(
-    result: dict[str, Any],
-    evidence: dict[str, Any],
-    failures: list[str],
-) -> None:
-    """Require pooled trial metrics to remain attributable to capability generations."""
-
-    execution = result.get("execution_condition")
-    comparison = result.get("core_comparison")
-    if not isinstance(execution, dict) or not isinstance(comparison, dict):
-        failures.append(
-            "terminal native thin-path results artifact must contain execution_condition and core_comparison objects"
-        )
-        return
-
-    generation_ids = execution.get("core_generation_sha256")
-    generation_count = execution.get("core_generation_count")
-    current_generation = execution.get("current_qualified_cli_generation_sha256")
-    if (
-        not isinstance(generation_ids, list)
-        or not generation_ids
-        or any(not _is_sha256(value) for value in generation_ids)
-        or len(set(generation_ids)) != len(generation_ids)
-    ):
-        failures.append(
-            "terminal native thin-path results artifact core_generation_sha256 must contain distinct SHA-256 identities"
-        )
-        return
-    if type(generation_count) is not int or generation_count != len(generation_ids):
-        failures.append(
-            "terminal native thin-path results artifact core_generation_count must match core_generation_sha256"
-        )
-    if execution.get("core_generation_policy") != (
-        "append_only_resume_after_new_generation_q0"
-    ):
-        failures.append(
-            "terminal native thin-path results artifact must declare append-only generation/Q0 resume policy"
-        )
-    if current_generation not in generation_ids:
-        failures.append(
-            "terminal native thin-path results artifact current qualified generation must be a core generation"
-        )
-
-    q0_only = execution.get("q0_only_invalidated_generation_sha256", [])
-    if (
-        not isinstance(q0_only, list)
-        or any(not _is_sha256(value) for value in q0_only)
-        or set(q0_only) & set(generation_ids)
-    ):
-        failures.append(
-            "terminal native thin-path results artifact q0-only generations must be distinct SHA-256 identities outside the core set"
-        )
-
-    strata = comparison.get("generation_strata")
-    if not isinstance(strata, list) or len(strata) != len(generation_ids):
-        failures.append(
-            "terminal native thin-path results artifact generation_strata must cover every core generation"
-        )
-        return
-    strata_by_generation: dict[str, dict[str, Any]] = {}
-    for stratum in strata:
-        if not isinstance(stratum, dict) or not _is_sha256(
-            stratum.get("generation_sha256")
-        ):
-            failures.append(
-                "terminal native thin-path results artifact generation_strata entries must be identified objects"
-            )
-            continue
-        generation_id = stratum["generation_sha256"]
-        if generation_id in strata_by_generation:
-            failures.append(
-                "terminal native thin-path results artifact generation_strata must not duplicate a generation"
-            )
-        strata_by_generation[generation_id] = stratum
-    if set(strata_by_generation) != set(generation_ids):
-        failures.append(
-            "terminal native thin-path results artifact generation_strata identities must match core generations"
-        )
-
-    receipts = evidence.get("trial_receipts")
-    projections = evidence.get("generation_trial_projection")
-    generation_records = evidence.get("generation_record_projection")
-    completeness = evidence.get("evidence_completeness")
-    supporting = evidence.get("supporting_records")
-    if (
-        not isinstance(receipts, list)
-        or not isinstance(projections, list)
-        or not isinstance(generation_records, list)
-        or not isinstance(completeness, dict)
-        or not isinstance(supporting, dict)
-    ):
-        failures.append(
-            "terminal native thin-path evidence artifact must contain receipts, generation projections, completeness and supporting records"
-        )
-        return
-
-    record_generation_ids: list[str] = []
-
-    def valid_private_evidence_path(value: Any) -> bool:
-        return (
-            isinstance(value, str)
-            and value.startswith("private-local/")
-            and ".." not in value.split("/")
-        )
-
-    def valid_support_record(key: Any) -> bool:
-        record = supporting.get(key) if isinstance(key, str) else None
-        return (
-            isinstance(record, dict)
-            and valid_private_evidence_path(record.get("path"))
-            and _is_sha256(record.get("sha256"))
-        )
-
-    def is_non_negative_int(value: Any) -> bool:
-        return type(value) is int and value >= 0
-
-    def is_non_negative_number(value: Any) -> bool:
-        return (
-            type(value) in {int, float}
-            and value >= 0
-            and value < float("inf")
-        )
-
-    for projection in generation_records:
-        if not isinstance(projection, dict):
-            failures.append(
-                "terminal native thin-path evidence generation record projection entries must be objects"
-            )
-            continue
-        generation_id = projection.get("generation_sha256")
-        lock_key = projection.get("lock_record")
-        q0_key = projection.get("q0_record")
-        selected_for_core = projection.get("selected_for_core")
-        if (
-            not _is_sha256(generation_id)
-            or not isinstance(lock_key, str)
-            or not isinstance(q0_key, str)
-            or not valid_support_record(lock_key)
-            or not valid_support_record(q0_key)
-            or not isinstance(projection.get("q0_state"), str)
-            or not projection["q0_state"].strip()
-            or not isinstance(selected_for_core, bool)
-            or selected_for_core != (generation_id in generation_ids)
-        ):
-            failures.append(
-                "terminal native thin-path evidence generation record projection must bind each generation to lock and Q0 evidence"
-            )
-            continue
-        record_generation_ids.append(generation_id)
-    expected_record_generations = set(generation_ids) | set(q0_only)
-    if (
-        len(record_generation_ids) != len(set(record_generation_ids))
-        or set(record_generation_ids) != expected_record_generations
-    ):
-        failures.append(
-            "terminal native thin-path evidence generation record projection must cover core and q0-only generations exactly once"
-        )
-
-    receipt_by_hash: dict[str, dict[str, Any]] = {}
-    for receipt in receipts:
-        if (
-            not isinstance(receipt, dict)
-            or not valid_private_evidence_path(receipt.get("path"))
-            or not _is_sha256(receipt.get("sha256"))
-            or not isinstance(receipt.get("variant_id"), str)
-            or receipt.get("normalized_outcome")
-            not in {"succeeded", "failed", "stopped"}
-            or not is_non_negative_number(receipt.get("wall_seconds"))
-            or not is_non_negative_int(receipt.get("input_tokens"))
-            or not is_non_negative_int(receipt.get("output_tokens"))
-        ):
-            failures.append(
-                "terminal native thin-path evidence trial receipts must contain private-local locators, typed non-negative metrics and SHA-256 identities"
-            )
-            continue
-        receipt_by_hash[receipt["sha256"]] = receipt
-    if len(receipt_by_hash) != len(receipts):
-        failures.append(
-            "terminal native thin-path evidence trial receipt identities must be unique"
-        )
-
-    projected_hashes: list[str] = []
-    projected_generation_ids: list[str] = []
-    projected_by_generation: dict[str, list[dict[str, Any]]] = {}
-    for projection in projections:
-        if not isinstance(projection, dict):
-            failures.append(
-                "terminal native thin-path evidence generation projection entries must be objects"
-            )
-            continue
-        generation_id = projection.get("generation_sha256")
-        hashes = projection.get("receipt_sha256")
-        if (
-            generation_id not in generation_ids
-            or not isinstance(hashes, list)
-            or any(not _is_sha256(value) for value in hashes)
-        ):
-            failures.append(
-                "terminal native thin-path evidence generation projection must bind a core generation to receipt hashes"
-            )
-            continue
-        projected_generation_ids.append(generation_id)
-        projected_hashes.extend(hashes)
-        projected_by_generation[generation_id] = [
-            receipt_by_hash[value] for value in hashes if value in receipt_by_hash
-        ]
-    if (
-        len(projected_generation_ids) != len(set(projected_generation_ids))
-        or set(projected_generation_ids) != set(generation_ids)
-    ):
-        failures.append(
-            "terminal native thin-path evidence generation projection must cover each core generation exactly once"
-        )
-    if (
-        len(projected_hashes) != len(set(projected_hashes))
-        or set(projected_hashes) != set(receipt_by_hash)
-    ):
-        failures.append(
-            "terminal native thin-path evidence generation projection must cover each trial receipt exactly once"
-        )
-
-    for generation_id, generation_receipts in projected_by_generation.items():
-        stratum = strata_by_generation.get(generation_id)
-        if stratum is None:
-            continue
-        outcome_counts = {
-            outcome: sum(
-                receipt.get("normalized_outcome") == outcome
-                for receipt in generation_receipts
-            )
-            for outcome in ("succeeded", "failed", "stopped")
-        }
-        expected = {
-            "trials": len(generation_receipts),
-            "successes": outcome_counts["succeeded"],
-            "failures": outcome_counts["failed"],
-            "stops": outcome_counts["stopped"],
-            "input_tokens": sum(
-                receipt.get("input_tokens", 0) for receipt in generation_receipts
-            ),
-            "output_tokens": sum(
-                receipt.get("output_tokens", 0) for receipt in generation_receipts
-            ),
-        }
-        for field, value in expected.items():
-            if not is_non_negative_int(stratum.get(field)) or stratum.get(
-                field
-            ) != value:
-                failures.append(
-                    f"terminal native thin-path generation stratum {field} must match projected receipts: {generation_id}"
-                )
-        wall_total = round(
-            sum(receipt.get("wall_seconds", 0) for receipt in generation_receipts), 3
-        )
-        if not is_non_negative_number(
-            stratum.get("wall_time_total_seconds")
-        ) or stratum.get("wall_time_total_seconds") != wall_total:
-            failures.append(
-                f"terminal native thin-path generation stratum wall time must match projected receipts: {generation_id}"
-            )
-        variants = stratum.get("variants")
-        if not isinstance(variants, list):
-            failures.append(
-                f"terminal native thin-path generation stratum variants must be an array: {generation_id}"
-            )
-            continue
-        variants_by_id = {
-            value.get("variant_id"): value
-            for value in variants
-            if isinstance(value, dict) and isinstance(value.get("variant_id"), str)
-        }
-        expected_variant_ids = {
-            receipt["variant_id"] for receipt in generation_receipts
-        }
-        if len(variants_by_id) != len(variants) or set(variants_by_id) != expected_variant_ids:
-            failures.append(
-                f"terminal native thin-path generation stratum variants must match projected receipts: {generation_id}"
-            )
-            continue
-        for variant_id in expected_variant_ids:
-            variant_receipts = [
-                receipt
-                for receipt in generation_receipts
-                if receipt["variant_id"] == variant_id
-            ]
-            variant = variants_by_id[variant_id]
-            variant_expected = {
-                "trials": len(variant_receipts),
-                "successes": sum(
-                    receipt["normalized_outcome"] == "succeeded"
-                    for receipt in variant_receipts
-                ),
-                "failures": sum(
-                    receipt["normalized_outcome"] == "failed"
-                    for receipt in variant_receipts
-                ),
-                "stops": sum(
-                    receipt["normalized_outcome"] == "stopped"
-                    for receipt in variant_receipts
-                ),
-            }
-            for field, value in variant_expected.items():
-                if not is_non_negative_int(variant.get(field)) or variant.get(
-                    field
-                ) != value:
-                    failures.append(
-                        f"terminal native thin-path generation variant {field} must match projected receipts: {generation_id}/{variant_id}"
-                    )
-
-    declared_trials = comparison.get("declared_trials")
-    if not is_non_negative_int(declared_trials) or declared_trials != len(receipts):
-        failures.append(
-            "terminal native thin-path evidence receipt count must match declared core trials"
-        )
-    if not is_non_negative_int(
-        comparison.get("pooled_across_generation_count")
-    ) or comparison.get("pooled_across_generation_count") != len(generation_ids):
-        failures.append(
-            "terminal native thin-path pooled generation count must match execution condition"
-        )
-    if comparison.get("pooled_profile_promotion_eligible") is not False:
-        failures.append(
-            "terminal native thin-path pooled cross-generation metrics must not be promotion-eligible"
-        )
-    aggregate_fields = {
-        "declared_trials": "trials",
-        "normalized_successes": "successes",
-        "normalized_failures": "failures",
-        "normalized_stops": "stops",
-    }
-    for aggregate_field, stratum_field in aggregate_fields.items():
-        values = [stratum.get(stratum_field) for stratum in strata_by_generation.values()]
-        if not all(is_non_negative_int(value) for value in values) or comparison.get(
-            aggregate_field
-        ) != sum(values):
-            failures.append(
-                f"terminal native thin-path pooled {aggregate_field} must equal generation strata"
-            )
-
-    transition_keys = sorted(
-        key for key in supporting if key.startswith("generation_transition_")
-    )
-    expected_transition_count = max(len(generation_ids) - 1, 0)
-    transition_summary = comparison.get("generation_transition_summary")
-    if (
-        not isinstance(transition_summary, dict)
-        or transition_summary.get("transition_records")
-        != expected_transition_count
-        or transition_summary.get("q0_admitted_trial_generations")
-        != len(generation_ids)
-        or transition_summary.get("q0_only_invalidated_generations") != len(q0_only)
-    ):
-        failures.append(
-            "terminal native thin-path generation transition summary must match execution generations"
-        )
-    if (
-        completeness.get("core_generation_count") != len(generation_ids)
-        or completeness.get("generation_transition_records_present")
-        != len(transition_keys)
-        or completeness.get("generation_transition_records_expected")
-        != expected_transition_count
-        or len(transition_keys) != expected_transition_count
-        or completeness.get("q0_only_invalidated_generation_count") != len(q0_only)
-        or completeness.get("cross_generation_strata_reported")
-        != (len(generation_ids) > 1)
-    ):
-        failures.append(
-            "terminal native thin-path generation completeness must match strata and transition evidence"
-        )
-    for key in transition_keys:
-        if not valid_support_record(key):
-            failures.append(
-                f"terminal native thin-path supporting generation transition is invalid: {key}"
-            )
-
-
-def _load_native_thin_path_evaluation_artifact(
-    *,
-    root: Path,
-    value: Any,
-    field: str,
-    failures: list[str],
-) -> tuple[dict[str, Any], bytes] | None:
-    label = f"terminal native_thin_path_evaluation.{field}"
-    try:
-        path = _resolve_repo_path(root, value, label)
-    except ValueError as exc:
-        failures.append(str(exc))
-        return None
-
-    evaluation_root = (root / NATIVE_THIN_PATH_EVALUATION_ROOT).resolve(strict=False)
-    try:
-        path.relative_to(evaluation_root)
-    except ValueError:
-        failures.append(f"{label} must remain under the evaluation evidence root")
-        return None
-    if not path.is_file():
-        failures.append(f"{label} artifact does not exist")
-        return None
-    try:
-        return _load_json_with_bytes(path)
-    except ValueError as exc:
-        failures.append(f"{label} must be a readable JSON object: {exc}")
-        return None
 
 
 def _verify_authoritative_docs(
@@ -3825,7 +2798,7 @@ def _verify_graph_policy(
         "real_writer_requires": ["LAR-P1G-001", "LAR-Q0-001"],
     }
     if policy != expected:
-        failures.append("work-item graph_policy must match the deterministic v3.23 DAG policy")
+        failures.append("work-item graph_policy must match the deterministic v3.24 DAG policy")
 
     for root in EXPECTED_GRAPH_ROOTS:
         if root not in items:
@@ -3859,14 +2832,7 @@ def _verify_graph_policy(
     selectable = [
         (item.get("priority"), task_id)
         for task_id, item in items.items()
-        if item.get("status")
-        in {
-            "contract_pending",
-            "execution_pending",
-            "narrow_profile_or_adapter_candidate",
-            "supersede_required",
-            "ready",
-        }
+        if item.get("status") == "ready"
         and isinstance(item.get("priority"), int)
         and not isinstance(item.get("priority"), bool)
         and all(
@@ -3910,7 +2876,7 @@ def _verify_contract_projection_policy(
         failures.append("work-item projection rules must be unique non-empty strings")
     if policy.get("projections") != EXPECTED_CONTRACT_PROJECTIONS:
         failures.append(
-            "work-item contract projections must match the frozen v3.23 projection catalog"
+            "work-item contract projections must match the frozen v3.24 projection catalog"
         )
 
     expected_by_task: dict[str, dict[str, list[str]]] = {}

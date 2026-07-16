@@ -92,7 +92,7 @@ $repoRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 $records = New-Object System.Collections.Generic.List[object]
 $failures = New-Object System.Collections.Generic.List[string]
 
-$records.Add((New-GateRecord -Gate 'build' -Status 'gate_na' -Reason 'the v3.23 slice changes candidate planning artifacts and runtime/local-ai-runtime does not exist yet' -AlternativeVerification 'uv run --project .\runtime\host-orchestrator python -m pytest' -EvidenceLink 'docs/specs/acceptance-and-gates.md' -ExpiresAt 'LAR-P0D-001 creates runtime/local-ai-runtime'))
+$records.Add((New-GateRecord -Gate 'build' -Status 'gate_na' -Reason 'the current baseline-candidate slice changes planning artifacts and runtime/local-ai-runtime does not exist yet' -AlternativeVerification 'uv run --project .\runtime\host-orchestrator python -m pytest' -EvidenceLink 'docs/specs/acceptance-and-gates.md' -ExpiresAt 'LAR-P0D-001 creates runtime/local-ai-runtime'))
 
 $testResult = Invoke-CheckedCommand -Command 'uv run --project .\runtime\host-orchestrator python -m pytest' -Action {
     uv run --project .\runtime\host-orchestrator python -m pytest
@@ -114,7 +114,7 @@ if ($contractResult.exit_code -ne 0) {
     $records.Add((New-GateRecord -Gate 'contract/invariant' -Status 'pass' -Command $contractResult.command -KeyOutput $contractResult.output))
 }
 
-$records.Add((New-GateRecord -Gate 'hotspot' -Status 'gate_na' -Reason 'the v3.23 slice changes planning contracts rather than executable runtime hot paths' -AlternativeVerification 'planning governance tests + verifier + selector + git diff --check' -EvidenceLink 'docs/specs/acceptance-and-gates.md' -ExpiresAt 'the first executable runtime slice after LAR-P0D-001'))
+$records.Add((New-GateRecord -Gate 'hotspot' -Status 'gate_na' -Reason 'the current baseline-candidate slice changes planning contracts rather than executable runtime hot paths' -AlternativeVerification 'planning governance tests + verifier + selector + git diff --check' -EvidenceLink 'docs/specs/acceptance-and-gates.md' -ExpiresAt 'the first executable runtime slice after LAR-P0D-001'))
 
 $selectorResult = Invoke-CheckedCommand -Command 'python .\scripts\select-next-work.py' -Action {
     python .\scripts\select-next-work.py

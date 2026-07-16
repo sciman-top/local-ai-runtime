@@ -16,7 +16,7 @@ BASELINE_PATH = (
     REPO_ROOT
     / "docs"
     / "specs"
-    / "local-ai-runtime-0.2-v3.23-baseline-candidate.md"
+    / "local-ai-runtime-0.2-v3.24-baseline-candidate.md"
 )
 BASELINE_ENTRY_PATH = (
     REPO_ROOT
@@ -43,7 +43,7 @@ LINEAGE_PATH = (
     / "specs"
     / "local-ai-runtime-0.2"
     / "normative"
-    / "BaselineLineage.v2.json"
+    / "BaselineLineage.v3.json"
 )
 BASELINE_MANIFEST_SCHEMA_PATH = (
     REPO_ROOT
@@ -133,188 +133,6 @@ def _write_status(tmp_path: Path, mutate) -> Path:
     return path
 
 
-def _copy_native_thin_path_evaluation_contracts(root: Path) -> None:
-    status = json.loads(STATUS_PATH.read_text(encoding="utf-8"))
-    evaluation = status["native_thin_path_evaluation"]
-    identity = evaluation["contract_identity"]
-    assert isinstance(identity, dict)
-    contracts = identity["contracts"]
-    assert isinstance(contracts, list)
-    for entry in contracts:
-        assert isinstance(entry, dict)
-        relative = entry["path"]
-        assert isinstance(relative, str)
-        source = REPO_ROOT / relative
-        target = root / relative
-        target.parent.mkdir(parents=True, exist_ok=True)
-        target.write_bytes(source.read_bytes())
-
-
-def _refresh_contract_identity_for_tmp_root(root: Path, evaluation: dict[str, object]) -> None:
-    identity = evaluation["contract_identity"]
-    assert isinstance(identity, dict)
-    contracts = identity["contracts"]
-    assert isinstance(contracts, list)
-    for entry in contracts:
-        assert isinstance(entry, dict)
-        path = entry["path"]
-        assert isinstance(path, str)
-        raw = (root / path).read_bytes()
-        entry["byte_count"] = len(raw)
-        entry["sha256"] = hashlib.sha256(raw).hexdigest()
-
-
-def _write_terminal_native_thin_path_evaluation_artifacts(
-    root: Path,
-    evaluation: dict[str, object],
-    *,
-    decision: str,
-) -> dict[str, Path]:
-    evidence_root = root / "docs" / "evaluations" / "local-ai-runtime-0.2"
-    evidence_root.mkdir(parents=True, exist_ok=True)
-    result_path = evidence_root / "results.json"
-    decision_path = evidence_root / "decision.json"
-    evidence_path = evidence_root / "evidence.json"
-    result_ref = result_path.relative_to(root).as_posix()
-    decision_ref = decision_path.relative_to(root).as_posix()
-    evidence_ref = evidence_path.relative_to(root).as_posix()
-    generation_sha256 = "a" * 64
-    receipt_sha256 = "b" * 64
-
-    evaluation.update(
-        {
-            "status": decision,
-            "decision": decision,
-            "result_ref": result_ref,
-            "decision_ref": decision_ref,
-            "evidence_ref": evidence_ref,
-        }
-    )
-    result = {
-        "schema_version": "NativeThinPathCapabilityResults.v1",
-        "baseline_id": "local-ai-runtime-0.2-v3.23",
-        "status": decision,
-        "decision": decision,
-        "contract_output_refs": evaluation["contract_output_refs"],
-        "contract_identity": evaluation["contract_identity"],
-        "decision_ref": decision_ref,
-        "evidence_ref": evidence_ref,
-        "execution_condition": {
-            "core_generation_policy": "append_only_resume_after_new_generation_q0",
-            "core_generation_count": 1,
-            "core_generation_sha256": [generation_sha256],
-            "q0_only_invalidated_generation_sha256": [],
-            "current_qualified_cli_generation_sha256": generation_sha256,
-        },
-        "core_comparison": {
-            "declared_trials": 1,
-            "normalized_successes": 1,
-            "normalized_failures": 0,
-            "normalized_stops": 0,
-            "pooled_across_generation_count": 1,
-            "pooled_profile_promotion_eligible": False,
-            "generation_strata": [
-                {
-                    "generation_sha256": generation_sha256,
-                    "trials": 1,
-                    "successes": 1,
-                    "failures": 0,
-                    "stops": 0,
-                    "wall_time_total_seconds": 1.0,
-                    "input_tokens": 1,
-                    "output_tokens": 1,
-                    "variants": [
-                        {
-                            "variant_id": "thin_codex_native",
-                            "trials": 1,
-                            "successes": 1,
-                            "failures": 0,
-                            "stops": 0,
-                        }
-                    ],
-                }
-            ],
-            "generation_transition_summary": {
-                "transition_records": 0,
-                "q0_admitted_trial_generations": 1,
-                "q0_only_invalidated_generations": 0,
-            },
-        },
-    }
-    decision_record = {
-        "schema_version": "NativeThinPathCapabilityDecision.v1",
-        "baseline_id": "local-ai-runtime-0.2-v3.23",
-        "status": decision,
-        "decision": decision,
-        "contract_identity": evaluation["contract_identity"],
-        "result_ref": result_ref,
-        "evidence_ref": evidence_ref,
-    }
-    result_path.write_text(
-        json.dumps(result, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
-    )
-    decision_path.write_text(
-        json.dumps(decision_record, ensure_ascii=False, indent=2) + "\n",
-        encoding="utf-8",
-    )
-    evidence = {
-        "schema_version": "NativeThinPathCapabilityEvidence.v1",
-        "baseline_id": "local-ai-runtime-0.2-v3.23",
-        "status": decision,
-        "decision": decision,
-        "contract_identity": evaluation["contract_identity"],
-        "result_ref": result_ref,
-        "decision_ref": decision_ref,
-        "result_sha256": hashlib.sha256(result_path.read_bytes()).hexdigest(),
-        "decision_sha256": hashlib.sha256(decision_path.read_bytes()).hexdigest(),
-        "supporting_records": {
-            "generation_lock": {"path": "private-local/lock.json", "sha256": "c" * 64},
-            "generation_q0": {"path": "private-local/q0.json", "sha256": "d" * 64},
-        },
-        "generation_record_projection": [
-            {
-                "generation_sha256": generation_sha256,
-                "lock_record": "generation_lock",
-                "q0_record": "generation_q0",
-                "q0_state": "passed",
-                "selected_for_core": True,
-            }
-        ],
-        "trial_receipts": [
-            {
-                "path": "private-local/receipt.json",
-                "sha256": receipt_sha256,
-                "variant_id": "thin_codex_native",
-                "normalized_outcome": "succeeded",
-                "wall_seconds": 1.0,
-                "input_tokens": 1,
-                "output_tokens": 1,
-            }
-        ],
-        "generation_trial_projection": [
-            {
-                "generation_sha256": generation_sha256,
-                "receipt_sha256": [receipt_sha256],
-            }
-        ],
-        "evidence_completeness": {
-            "core_generation_count": 1,
-            "generation_transition_records_present": 0,
-            "generation_transition_records_expected": 0,
-            "q0_only_invalidated_generation_count": 0,
-            "cross_generation_strata_reported": False,
-        },
-    }
-    evidence_path.write_text(
-        json.dumps(evidence, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
-    )
-    return {
-        "result": result_path,
-        "decision": decision_path,
-        "evidence": evidence_path,
-    }
-
-
 def _verifier_attestation(status_path: Path, current_work_item_id: str) -> dict[str, object]:
     return {
         "command": ["python", "verify-planning-status.py"],
@@ -325,7 +143,7 @@ def _verifier_attestation(status_path: Path, current_work_item_id: str) -> dict[
             "status_sha256": hashlib.sha256(status_path.read_bytes()).hexdigest(),
             "selector_policy_path": POLICY_PATH.resolve().as_posix(),
             "selector_policy_sha256": hashlib.sha256(POLICY_PATH.read_bytes()).hexdigest(),
-            "baseline_id": "local-ai-runtime-0.2-v3.23",
+            "baseline_id": "local-ai-runtime-0.2-v3.24",
             "current_work_item_id": current_work_item_id,
         },
         "stderr": "",
@@ -338,22 +156,19 @@ def test_planning_verifier_accepts_truthful_candidate_state() -> None:
     assert completed.returncode == 0, completed.stderr
     payload = json.loads(completed.stdout)
     assert payload["status"] == "pass"
-    assert payload["baseline_id"] == "local-ai-runtime-0.2-v3.23"
+    assert payload["baseline_id"] == "local-ai-runtime-0.2-v3.24"
     assert payload["approval_active"] is False
-    assert payload["missing_artifact_count"] == 7
-    assert payload["current_work_item_id"] == "LAR-P0A-009"
+    assert payload["missing_artifact_count"] == 9
+    assert payload["current_work_item_id"] == "LAR-P0A-004"
     work_items = json.loads(WORK_ITEMS_PATH.read_text(encoding="utf-8"))["work_items"]
     task_ids = {item["task_id"] for item in work_items}
-    assert payload["work_item_count"] == len(work_items) == 65
+    assert payload["work_item_count"] == len(work_items) == 55
     assert {
-        "LAR-P0A-001",
-        "LAR-P0A-REBASELINE-V322",
-        "LAR-P0A-REBASELINE-V323",
-        "LAR-P0A-EVAL-001",
-        "LAR-P0A-EVAL-002",
+        "LAR-P0A-REBASELINE-V324",
+        "LAR-P0A-004",
+        "LAR-P0A-005",
         "LAR-P1C-007",
         "LAR-P1E-007",
-        "LAR-P4-002",
         "LAR-P5-001",
     } <= task_ids
 
@@ -364,578 +179,106 @@ def test_planning_selector_returns_baseline_closure_without_preflight() -> None:
     assert completed.returncode == 0, completed.stderr
     payload = json.loads(completed.stdout)
     assert payload["next_action"] == "close_baseline_normative_package_first"
-    assert payload["current_work_item_id"] == "LAR-P0A-009"
+    assert payload["current_work_item_id"] == "LAR-P0A-004"
     assert payload["side_effects_performed"] is False
     assert payload["preflight_run"] is False
 
 
-def test_native_thin_path_evaluation_preserves_v323_and_seals_artifacts() -> None:
-    status = json.loads(STATUS_PATH.read_text(encoding="utf-8"))
-    evaluation = status["native_thin_path_evaluation"]
+def test_preflight_gate_na_reasons_do_not_pin_a_superseded_candidate() -> None:
+    preflight = (REPO_ROOT / "scripts/governance/preflight.ps1").read_text(
+        encoding="utf-8"
+    )
 
-    assert evaluation["status"] == "preserve_v3_23_semantics"
-    assert evaluation["decision"] == "preserve_v3_23_semantics"
-    assert status["current_work_item"] == {
-        "task_id": "LAR-P0A-009",
-        "selector_action": "close_baseline_normative_package_first",
-        "status": "ready",
-        "reason": "LAR-P0A-008 materialized and verified DeterministicGitContractSet.v1, hardened Git environment and config audit, controller-independent canonical blob/tree/commit framing, claim-time-bound single-parent commit, attempt-local canonical object verification and promotion, no-reflog HEAD/task-ref CAS and ordered finalization/evidence/cleanup without running Git against a real target repository. Materialize complete state, guard, autonomy and operator catalogs.",
+    assert "the current baseline-candidate slice" in preflight
+    assert "the v3.23 slice" not in preflight
+
+
+def test_successor_transition_freezes_v323_and_projects_v324() -> None:
+    status = json.loads(STATUS_PATH.read_text(encoding="utf-8"))
+    transition = status["successor_transition"]
+
+    assert transition["status"] == "completed"
+    assert transition["disposition"] == "supersede_required"
+    assert transition["task_id"] == "LAR-P0A-REBASELINE-V324"
+    assert transition["predecessor"] == {
+        "id": "local-ai-runtime-0.2-v3.23",
+        "path": "docs/specs/local-ai-runtime-0.2-v3.23-baseline-candidate.md",
+        "byte_count": 188325,
+        "sha256": "80562322ebc744eda2a87a17c45f73a11982f4947c9d10e8628bb6f73ee9d5c6",
+        "package_archive": (
+            "docs/specs/local-ai-runtime-0.2/history/"
+            "local-ai-runtime-0.2-v3.23-normative-package.json"
+        ),
+        "plan_archive": "docs/plans/history/local-ai-runtime-0.2-v3.23-work-items.json",
     }
-    assert evaluation["result_ref"].endswith("native-thin-path-capability-results.v1.json")
-    assert evaluation["decision_ref"].endswith("native-thin-path-capability-decision.v1.json")
-    assert evaluation["evidence_ref"].endswith("native-thin-path-capability-evidence.v1.json")
-    result = json.loads((REPO_ROOT / evaluation["result_ref"]).read_text(encoding="utf-8"))
-    assert result["execution_condition"]["core_generation_count"] == 3
-    assert len(result["core_comparison"]["generation_strata"]) == 3
-    assert result["core_comparison"]["pooled_profile_promotion_eligible"] is False
-    assert evaluation["independent_capability_surfaces"] == [
-        "codex_cli_execution_interface",
-        "codex_app_server_client_protocol",
-        "codex_sdk_execution_interface",
-        "codex_managed_worktree_isolation",
-        "codex_automations_scheduling",
+    assert transition["compatible_predecessor_artifact_ids"] == [
+        "P0A-CANONICAL",
+        "P0A-EXECUTION",
+        "P0A-EVIDENCE",
+        "P0A-GIT",
     ]
-    assert "sampled_downstream_outcome" in evaluation["required_metrics"]
-    assert "censored_or_unknown_downstream_outcome_remains_in_denominator" in evaluation[
-        "hard_promotion_rules"
-    ]
-    identity = evaluation["contract_identity"]
-    assert identity["snapshot"] == {
-        "commit": "6fd6cd54037f17e44192bc272306b137def7f8a4",
-        "tree": "11c8ab770769b3aeff5c111063a316e712fa7241",
-    }
-    for contract in identity["contracts"]:
-        path = REPO_ROOT / contract["path"]
-        raw = path.read_bytes()
-        assert len(raw) == contract["byte_count"]
-        assert hashlib.sha256(raw).hexdigest() == contract["sha256"]
-
-
-def test_terminal_generation_projection_covers_every_core_receipt() -> None:
-    status = json.loads(STATUS_PATH.read_text(encoding="utf-8"))
-    evaluation = status["native_thin_path_evaluation"]
-    result = json.loads(
-        (REPO_ROOT / evaluation["result_ref"]).read_text(encoding="utf-8")
+    assert transition["predecessor_evaluation"]["role"] == (
+        "non_normative_predecessor_evidence"
     )
-    evidence = json.loads(
-        (REPO_ROOT / evaluation["evidence_ref"]).read_text(encoding="utf-8")
+    assert transition["predecessor_evaluation"]["profile_promoted"] is False
+
+
+def test_v324_lineage_binds_archives_and_closed_carry_forward() -> None:
+    lineage = json.loads(LINEAGE_PATH.read_text(encoding="utf-8"))
+    payload = lineage["payload"]
+
+    assert lineage["domain"] == "local-ai-runtime/BaselineLineage/v3"
+    assert lineage["schema_version"] == 3
+    assert payload["candidate"]["id"] == "local-ai-runtime-0.2-v3.24"
+    v323 = next(
+        entry
+        for entry in payload["entries"]
+        if entry["id"] == "local-ai-runtime-0.2-v3.23"
     )
-    verify_projection = runpy.run_path(str(VERIFIER_PATH))[
-        "_verify_terminal_generation_projection"
-    ]
-    failures: list[str] = []
-
-    verify_projection(result, evidence, failures)
-
-    assert failures == []
-    evidence["generation_trial_projection"][0]["receipt_sha256"].pop()
-    verify_projection(result, evidence, failures)
-    assert (
-        "terminal native thin-path evidence generation projection must cover each trial receipt exactly once"
-        in failures
+    assert v323["preapproval_inventory_archive"]["sha256"] == (
+        "2771b750557c68002eb54c3681185395e7d2881632211a4bb0bd6de75644d620"
     )
-    evidence = json.loads(
-        (REPO_ROOT / evaluation["evidence_ref"]).read_text(encoding="utf-8")
+    assert v323["work_item_plan_archive"]["sha256"] == (
+        "4b146d79c0f99a9621a8f6a743e8ddab7e2eb6d19356d2152a1c7130c0adebfe"
     )
-    evidence["generation_trial_projection"][0]["receipt_sha256"][0] = {"bad": True}
-    failures.clear()
-    verify_projection(result, evidence, failures)
-    assert (
-        "terminal native thin-path evidence generation projection must bind a core generation to receipt hashes"
-        in failures
-    )
-
-    evidence = json.loads(
-        (REPO_ROOT / evaluation["evidence_ref"]).read_text(encoding="utf-8")
-    )
-    evidence["generation_trial_projection"].insert(
-        0,
-        {
-            "generation_sha256": evidence["generation_trial_projection"][0][
-                "generation_sha256"
-            ],
-            "receipt_sha256": [],
-        },
-    )
-    failures.clear()
-    verify_projection(result, evidence, failures)
-    assert (
-        "terminal native thin-path evidence generation projection must cover each core generation exactly once"
-        in failures
-    )
-
-    evidence = json.loads(
-        (REPO_ROOT / evaluation["evidence_ref"]).read_text(encoding="utf-8")
-    )
-    evidence["trial_receipts"][0]["wall_seconds"] = True
-    failures.clear()
-    verify_projection(result, evidence, failures)
-    assert (
-        "terminal native thin-path evidence trial receipts must contain private-local locators, typed non-negative metrics and SHA-256 identities"
-        in failures
-    )
-
-    evidence = json.loads(
-        (REPO_ROOT / evaluation["evidence_ref"]).read_text(encoding="utf-8")
-    )
-    evidence["supporting_records"]["generation_transition_001"]["path"] = (
-        "../transition.json"
-    )
-    failures.clear()
-    verify_projection(result, evidence, failures)
-    assert (
-        "terminal native thin-path supporting generation transition is invalid: generation_transition_001"
-        in failures
-    )
+    assert [
+        item["artifact_id"] for item in payload["compatible_predecessor_artifacts"]
+    ] == ["P0A-CANONICAL", "P0A-EXECUTION", "P0A-EVIDENCE", "P0A-GIT"]
 
 
-def test_terminal_native_thin_path_evaluation_requires_cross_referenced_json_artifacts(
-    tmp_path: Path,
-) -> None:
-    namespace = runpy.run_path(str(VERIFIER_PATH))
-    verify_evaluation = namespace["_verify_native_thin_path_evaluation"]
-    status = json.loads(STATUS_PATH.read_text(encoding="utf-8"))
-    evaluation = status["native_thin_path_evaluation"]
-    package = status["normative_package"]
-    assert isinstance(evaluation, dict)
-    assert isinstance(package, dict)
-    _copy_native_thin_path_evaluation_contracts(tmp_path)
-    _write_terminal_native_thin_path_evaluation_artifacts(
-        tmp_path,
-        evaluation,
-        decision="preserve_v3_23_semantics",
-    )
-    failures: list[str] = []
-
-    verify_evaluation(
-        root=tmp_path,
-        evaluation=evaluation,
-        package_state=package,
-        current_work={
-            "task_id": "LAR-P0A-002",
-            "selector_action": "close_baseline_normative_package_first",
-        },
-        failures=failures,
-    )
-
-    assert not failures
-
-
-def test_terminal_native_thin_path_evaluation_rejects_missing_or_mismatched_artifacts(
-    tmp_path: Path,
-) -> None:
-    namespace = runpy.run_path(str(VERIFIER_PATH))
-    verify_evaluation = namespace["_verify_native_thin_path_evaluation"]
-    status = json.loads(STATUS_PATH.read_text(encoding="utf-8"))
-    evaluation = status["native_thin_path_evaluation"]
-    package = status["normative_package"]
-    assert isinstance(evaluation, dict)
-    assert isinstance(package, dict)
-    _copy_native_thin_path_evaluation_contracts(tmp_path)
-    artifacts = _write_terminal_native_thin_path_evaluation_artifacts(
-        tmp_path,
-        evaluation,
-        decision="preserve_v3_23_semantics",
-    )
-    decision_record = json.loads(artifacts["decision"].read_text(encoding="utf-8"))
-    decision_record["decision"] = "supersede_required"
-    artifacts["decision"].write_text(
-        json.dumps(decision_record, ensure_ascii=False, indent=2) + "\n",
-        encoding="utf-8",
-    )
-    evidence = json.loads(artifacts["evidence"].read_text(encoding="utf-8"))
-    evidence["decision_sha256"] = hashlib.sha256(
-        artifacts["decision"].read_bytes()
-    ).hexdigest()
-    artifacts["evidence"].write_text(
-        json.dumps(evidence, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
-    )
-    failures: list[str] = []
-
-    verify_evaluation(
-        root=tmp_path,
-        evaluation=evaluation,
-        package_state=package,
-        current_work={
-            "task_id": "LAR-P0A-002",
-            "selector_action": "close_baseline_normative_package_first",
-        },
-        failures=failures,
-    )
-
-    assert (
-        "terminal native thin-path decision artifact must match planning status and decision"
-        in failures
-    )
-    artifacts["result"].unlink()
-    failures.clear()
-
-    verify_evaluation(
-        root=tmp_path,
-        evaluation=evaluation,
-        package_state=package,
-        current_work={
-            "task_id": "LAR-P0A-002",
-            "selector_action": "close_baseline_normative_package_first",
-        },
-        failures=failures,
-    )
-
-    assert "terminal native_thin_path_evaluation.result_ref artifact does not exist" in failures
-    artifacts["result"].write_text("[]\n", encoding="utf-8")
-    failures.clear()
-
-    verify_evaluation(
-        root=tmp_path,
-        evaluation=evaluation,
-        package_state=package,
-        current_work={
-            "task_id": "LAR-P0A-002",
-            "selector_action": "close_baseline_normative_package_first",
-        },
-        failures=failures,
-    )
-
-    assert any(
-        "terminal native_thin_path_evaluation.result_ref must be a readable JSON object"
-        in failure
-        for failure in failures
-    )
-    _write_terminal_native_thin_path_evaluation_artifacts(
-        tmp_path,
-        evaluation,
-        decision="preserve_v3_23_semantics",
-    )
-    evidence = json.loads(artifacts["evidence"].read_text(encoding="utf-8"))
-    evidence["result_sha256"] = "0" * 64
-    artifacts["evidence"].write_text(
-        json.dumps(evidence, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
-    )
-    failures.clear()
-
-    verify_evaluation(
-        root=tmp_path,
-        evaluation=evaluation,
-        package_state=package,
-        current_work={
-            "task_id": "LAR-P0A-002",
-            "selector_action": "close_baseline_normative_package_first",
-        },
-        failures=failures,
-    )
-
-    assert (
-        "terminal native thin-path evidence artifact result_sha256 must match result bytes"
-        in failures
-    )
-
-
-@pytest.mark.parametrize(
-    ("mutate_contract", "expected_failure"),
-    [
-        (
-            lambda root, evaluation: (root / evaluation["contract_output_refs"][0]).unlink(),
-            "native_thin_path_evaluation sealed contract does not exist",
-        ),
-        (
-            lambda root, evaluation: (root / evaluation["contract_output_refs"][1]).write_text(
-                "[]\n", encoding="utf-8"
-            ),
-            "native_thin_path_evaluation sealed contract must be a readable JSON object",
-        ),
-        (
-            lambda root, evaluation: (root / evaluation["contract_output_refs"][2]).write_text(
-                '{"schema_version":"NativeThinPathEvidenceSchema.v1","schema_version":"duplicate"}\n',
-                encoding="utf-8",
-            ),
-            "native_thin_path_evaluation sealed contract must be a readable JSON object",
-        ),
-    ],
-)
-def test_native_thin_path_evaluation_rejects_missing_or_malformed_sealed_contracts(
-    tmp_path: Path,
-    mutate_contract,
-    expected_failure: str,
-) -> None:
-    namespace = runpy.run_path(str(VERIFIER_PATH))
-    verify_evaluation = namespace["_verify_native_thin_path_evaluation"]
-    status = json.loads(STATUS_PATH.read_text(encoding="utf-8"))
-    evaluation = status["native_thin_path_evaluation"]
-    package = status["normative_package"]
-    assert isinstance(evaluation, dict)
-    assert isinstance(package, dict)
-    _copy_native_thin_path_evaluation_contracts(tmp_path)
-    mutate_contract(tmp_path, evaluation)
-    failures: list[str] = []
-
-    verify_evaluation(
-        root=tmp_path,
-        evaluation=evaluation,
-        package_state=package,
-        current_work={
-            "task_id": "LAR-P0A-EVAL-002",
-            "selector_action": "run_native_thin_path_evaluation_first",
-        },
-        failures=failures,
-    )
-
-    assert any(expected_failure in failure for failure in failures)
-
-
-def test_native_thin_path_evaluation_rejects_contract_hash_drift_and_cross_reference_drift(
-    tmp_path: Path,
-) -> None:
-    namespace = runpy.run_path(str(VERIFIER_PATH))
-    verify_evaluation = namespace["_verify_native_thin_path_evaluation"]
-    status = json.loads(STATUS_PATH.read_text(encoding="utf-8"))
-    evaluation = status["native_thin_path_evaluation"]
-    package = status["normative_package"]
-    assert isinstance(evaluation, dict)
-    assert isinstance(package, dict)
-    _copy_native_thin_path_evaluation_contracts(tmp_path)
-    task_manifest_path = tmp_path / evaluation["contract_output_refs"][1]
-    manifest = json.loads(task_manifest_path.read_text(encoding="utf-8"))
-    manifest["contract_refs"]["evaluation_contract"] = "docs/evaluations/local-ai-runtime-0.2/wrong.json"
-    task_manifest_path.write_text(
-        json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
-    )
-    failures: list[str] = []
-
-    verify_evaluation(
-        root=tmp_path,
-        evaluation=evaluation,
-        package_state=package,
-        current_work={
-            "task_id": "LAR-P0A-EVAL-002",
-            "selector_action": "run_native_thin_path_evaluation_first",
-        },
-        failures=failures,
-    )
-
-    assert "native_thin_path_evaluation.contract_identity contract byte_count must match file bytes" in failures
-    assert any("sealed contract must preserve contract_refs" in failure for failure in failures)
-
-
-def test_native_thin_path_evaluation_rejects_semantic_contract_drift_even_with_refreshed_identity(
-    tmp_path: Path,
-) -> None:
-    namespace = runpy.run_path(str(VERIFIER_PATH))
-    verify_evaluation = namespace["_verify_native_thin_path_evaluation"]
-    status = json.loads(STATUS_PATH.read_text(encoding="utf-8"))
-    evaluation = status["native_thin_path_evaluation"]
-    package = status["normative_package"]
-    assert isinstance(evaluation, dict)
-    assert isinstance(package, dict)
-    _copy_native_thin_path_evaluation_contracts(tmp_path)
-    capability_contract_path = tmp_path / evaluation["contract_output_refs"][0]
-    capability_contract = json.loads(capability_contract_path.read_text(encoding="utf-8"))
-    capability_contract["generation_and_q0_rules"]["new_generation_triggers"].remove(
-        "automation_or_external_effect_change"
-    )
-    capability_contract_path.write_text(
-        json.dumps(capability_contract, ensure_ascii=False, indent=2) + "\n",
-        encoding="utf-8",
-    )
-    _refresh_contract_identity_for_tmp_root(tmp_path, evaluation)
-    failures: list[str] = []
-
-    verify_evaluation(
-        root=tmp_path,
-        evaluation=evaluation,
-        package_state=package,
-        current_work={
-            "task_id": "LAR-P0A-EVAL-002",
-            "selector_action": "run_native_thin_path_evaluation_first",
-        },
-        failures=failures,
-    )
-
-    assert (
-        "native thin-path evaluation contract must preserve capability-generation triggers and Q0 followup"
-        in failures
-    )
-
-
-@pytest.mark.parametrize(
-    ("artifact_key", "identity_error"),
-    [
-        (
-            "result",
-            "terminal native thin-path results artifact must bind the exact contract_identity",
-        ),
-        (
-            "decision",
-            "terminal native thin-path decision artifact must bind the exact contract_identity",
-        ),
-        (
-            "evidence",
-            "terminal native thin-path evidence artifact must bind the exact contract_identity",
-        ),
-    ],
-)
-def test_terminal_native_thin_path_evaluation_rejects_mismatched_contract_identity(
-    tmp_path: Path,
-    artifact_key: str,
-    identity_error: str,
-) -> None:
-    namespace = runpy.run_path(str(VERIFIER_PATH))
-    verify_evaluation = namespace["_verify_native_thin_path_evaluation"]
-    status = json.loads(STATUS_PATH.read_text(encoding="utf-8"))
-    evaluation = status["native_thin_path_evaluation"]
-    package = status["normative_package"]
-    assert isinstance(evaluation, dict)
-    assert isinstance(package, dict)
-    _copy_native_thin_path_evaluation_contracts(tmp_path)
-    artifacts = _write_terminal_native_thin_path_evaluation_artifacts(
-        tmp_path,
-        evaluation,
-        decision="preserve_v3_23_semantics",
-    )
-    artifact = json.loads(artifacts[artifact_key].read_text(encoding="utf-8"))
-    artifact["contract_identity"] = {"contract_set_id": "wrong"}
-    artifacts[artifact_key].write_text(
-        json.dumps(artifact, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
-    )
-    evidence = json.loads(artifacts["evidence"].read_text(encoding="utf-8"))
-    if artifact_key == "result":
-        evidence["result_sha256"] = hashlib.sha256(artifacts["result"].read_bytes()).hexdigest()
-    elif artifact_key == "decision":
-        evidence["decision_sha256"] = hashlib.sha256(
-            artifacts["decision"].read_bytes()
-        ).hexdigest()
-    artifacts["evidence"].write_text(
-        json.dumps(evidence, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
-    )
-    failures: list[str] = []
-
-    verify_evaluation(
-        root=tmp_path,
-        evaluation=evaluation,
-        package_state=package,
-        current_work={
-            "task_id": "LAR-P0A-002",
-            "selector_action": "close_baseline_normative_package_first",
-        },
-        failures=failures,
-    )
-
-    assert identity_error in failures
-
-
-@pytest.mark.parametrize(
-    ("status_value", "contract_identity", "expected_failure"),
-    [
-        (
-            "contract_pending",
-            {"unexpected": "identity"},
-            "contract_pending native_thin_path_evaluation.contract_identity must remain null",
-        ),
-        (
-            "execution_pending",
-            None,
-            "execution or terminal native_thin_path_evaluation requires contract_identity",
-        ),
-    ],
-)
-def test_native_thin_path_evaluation_enforces_pending_contract_identity_state(
-    status_value: str,
-    contract_identity: object,
-    expected_failure: str,
-) -> None:
-    namespace = runpy.run_path(str(VERIFIER_PATH))
-    verify_evaluation = namespace["_verify_native_thin_path_evaluation"]
-    status = json.loads(STATUS_PATH.read_text(encoding="utf-8"))
-    evaluation = status["native_thin_path_evaluation"]
-    package = status["normative_package"]
-    assert isinstance(evaluation, dict)
-    assert isinstance(package, dict)
-    evaluation["status"] = status_value
-    evaluation["contract_identity"] = contract_identity
-    failures: list[str] = []
-
-    verify_evaluation(
-        root=REPO_ROOT,
-        evaluation=evaluation,
-        package_state=package,
-        current_work={
-            "task_id": "LAR-P0A-EVAL-001"
-            if status_value == "contract_pending"
-            else "LAR-P0A-EVAL-002",
-            "selector_action": "run_native_thin_path_evaluation_first",
-        },
-        failures=failures,
-    )
-
-    assert expected_failure in failures
-
-
-def test_verifier_rejects_native_thin_path_semantic_change_without_successor_action(
-    tmp_path: Path,
-) -> None:
+def test_verifier_rejects_successor_trigger_drift(tmp_path: Path) -> None:
     def mutate(payload: dict[str, object]) -> None:
-        evaluation = payload["native_thin_path_evaluation"]
-        current = payload["current_work_item"]
-        assert isinstance(evaluation, dict)
-        assert isinstance(current, dict)
-        evaluation.update(
-            {
-                "status": "supersede_required",
-                "decision": "supersede_required",
-                "result_ref": "docs/evaluations/local-ai-runtime-0.2/native-thin-path-capability-results.v1.json",
-                "decision_ref": "docs/evaluations/local-ai-runtime-0.2/native-thin-path-capability-decision.v1.json",
-                "evidence_ref": "docs/evaluations/local-ai-runtime-0.2/native-thin-path-capability-evidence.v1.json",
-            }
-        )
-        current.update(
-            {
-                "task_id": "LAR-P0A-EVAL-002",
-                "selector_action": "run_native_thin_path_evaluation_first",
-                "status": "supersede_required",
-            }
-        )
+        transition = payload["successor_transition"]
+        assert isinstance(transition, dict)
+        transition["reason_codes"] = ["launch_product_experience_incomplete"]
 
     status_path = _write_status(tmp_path, mutate)
     completed = _run(str(VERIFIER_PATH), "--status-path", str(status_path))
 
     assert completed.returncode == 1
-    assert "create_successor_candidate_first" in completed.stderr
+    assert (
+        "successor_transition.reason_codes must match the reviewed successor causes"
+        in completed.stderr
+    )
 
 
-def test_selector_routes_semantic_change_to_successor_candidate(tmp_path: Path) -> None:
+def test_selector_routes_current_candidate_semantic_change_to_successor(
+    tmp_path: Path,
+) -> None:
     namespace = runpy.run_path(str(SELECTOR_PATH))
     select_next_work = namespace["select_next_work"]
 
     def mutate(payload: dict[str, object]) -> None:
-        evaluation = payload["native_thin_path_evaluation"]
-        current = payload["current_work_item"]
-        assert isinstance(evaluation, dict)
-        assert isinstance(current, dict)
-        evaluation.update(
-            {
-                "status": "narrow_profile_or_adapter_candidate",
-                "decision": "narrow_profile_or_adapter_candidate",
-                "result_ref": "docs/evaluations/local-ai-runtime-0.2/native-thin-path-capability-results.v1.json",
-                "decision_ref": "docs/evaluations/local-ai-runtime-0.2/native-thin-path-capability-decision.v1.json",
-                "evidence_ref": "docs/evaluations/local-ai-runtime-0.2/native-thin-path-capability-evidence.v1.json",
-            }
-        )
-        current.update(
-            {
-                "task_id": "LAR-P0A-EVAL-002",
-                "selector_action": "create_successor_candidate_first",
-                "status": "narrow_profile_or_adapter_candidate",
-            }
-        )
+        optimization = payload["planning_optimization"]
+        assert isinstance(optimization, dict)
+        optimization["frozen_v324_semantics_changed"] = True
 
     status_path = _write_status(tmp_path, mutate)
-    select_next_work.__globals__["_run_verifier"] = lambda _root, path, _verifier: {
-        **_verifier_attestation(path, "LAR-P0A-EVAL-002"),
-        "payload": {
-            **_verifier_attestation(path, "LAR-P0A-EVAL-002")["payload"],
-            "baseline_id": "local-ai-runtime-0.2-v3.23",
-        },
-    }
-
+    select_next_work.__globals__["_run_verifier"] = (
+        lambda _root, path, _verifier: _verifier_attestation(
+            path, "LAR-P0A-004"
+        )
+    )
     payload = select_next_work(
         repo_root=REPO_ROOT,
         status_path=status_path,
@@ -944,17 +287,17 @@ def test_selector_routes_semantic_change_to_successor_candidate(tmp_path: Path) 
     )
 
     assert payload["next_action"] == "create_successor_candidate_first"
-    assert payload["current_work_item_id"] == "LAR-P0A-EVAL-002"
+    assert payload["current_work_item_id"] == "LAR-P0A-004"
 
 
-def test_selector_policy_and_implementation_keep_semantic_change_priority_in_sync() -> None:
+def test_selector_policy_and_implementation_keep_successor_priority_in_sync() -> None:
     policy = json.loads(POLICY_PATH.read_text(encoding="utf-8"))
     selector = runpy.run_path(str(SELECTOR_PATH))
-
     expected = (
-        "native_thin_path_semantic_change_requires_successor",
+        "current_candidate_semantic_change_requires_successor",
         "create_successor_candidate_first",
     )
+
     assert policy["selection_order"][1]["condition_id"] == expected[0]
     assert policy["selection_order"][1]["next_action"] == expected[1]
     assert selector["EXPECTED_SELECTOR_STEPS"][1] == expected
@@ -1071,9 +414,9 @@ def test_baseline_bytes_match_planning_identity() -> None:
     status = json.loads(STATUS_PATH.read_text(encoding="utf-8"))
     raw = BASELINE_PATH.read_bytes()
 
-    assert len(raw) == status["baseline_candidate"]["byte_count"] == 188325
+    assert len(raw) == status["baseline_candidate"]["byte_count"] == 199728
     assert hashlib.sha256(raw).hexdigest() == status["baseline_candidate"]["sha256"]
-    assert hashlib.sha256(raw).hexdigest() == "80562322ebc744eda2a87a17c45f73a11982f4947c9d10e8628bb6f73ee9d5c6"
+    assert hashlib.sha256(raw).hexdigest() == "13ee366152d47edec151f30619ccd068a030b63febf2d899ee822d08d4dc4e2a"
     assert raw.endswith(b"\n") and not raw.endswith(b"\n\n")
     assert b"\r" not in raw
 
@@ -1094,8 +437,8 @@ def test_stable_baseline_entry_is_non_normative_and_targets_frozen_candidate() -
         "target_sha256": baseline["sha256"],
         "approval_input": False,
         "maximum_byte_count": 4096,
-        "byte_count": 3793,
-        "sha256": "7fea56d673212dd987cc6cedc2e298efd41194237b7f412d9a5790289dbf0214",
+        "byte_count": 3032,
+        "sha256": "5f0231921d523564d33932caa94a565da8704b9b4dc8b6f6c59646b127ae7f54",
     }
     assert len(raw) <= entry["maximum_byte_count"]
     assert len(raw) == entry["byte_count"]
@@ -1109,8 +452,8 @@ def test_stable_baseline_entry_is_non_normative_and_targets_frozen_candidate() -
         "not a narrative specification",
         "BaselineManifest.v1",
         "BaselineApprovalRecord",
-        "preserve_v3_23_semantics",
-        "LAR-P0A-008",
+        "ProductContract.v2",
+        "LAR-P0A-004",
         "close_baseline_normative_package_first",
     ):
         assert marker in rendered
@@ -1204,7 +547,7 @@ def test_selector_policy_requires_the_stable_baseline_entry() -> None:
     assert policy["required_entrypoints"] == [
         "docs/architecture/planning-status.json",
         "docs/specs/local-ai-runtime-0.2-baseline-candidate.md",
-        "docs/specs/local-ai-runtime-0.2-v3.23-baseline-candidate.md",
+        "docs/specs/local-ai-runtime-0.2-v3.24-baseline-candidate.md",
         "docs/specs/local-ai-runtime-0.2-normative-package.json",
         "docs/plans/local-ai-runtime-0.2-work-items.json",
         "scripts/verify-planning-status.py",
@@ -1264,7 +607,7 @@ def test_source_layout_contract_is_projected_into_all_execution_surfaces() -> No
 def test_work_item_graph_declares_closed_runtime_source_layout() -> None:
     payload = json.loads(WORK_ITEMS_PATH.read_text(encoding="utf-8"))
 
-    assert payload["schema_version"] == "local_ai_runtime_work_items.v3"
+    assert payload["schema_version"] == "local_ai_runtime_work_items.v4"
     assert payload["runtime_source_layout"] == {
         "source_root": "runtime/local-ai-runtime/src/local_ai_runtime/",
         "approved_root_files": ["__init__.py", "__main__.py"],
@@ -1575,7 +918,6 @@ def test_superseded_v320_archive_matches_declared_lineage() -> None:
     assert hashlib.sha256(raw).hexdigest() == archived["sha256"]
     assert archived["sha256"] == "43cb98737daa5d171a9cda2dca49c8f118fb8be92745b4076948d9178e56a130"
 
-
 def test_inventory_versions_and_manifest_review_order_are_closed() -> None:
     inventory = json.loads(INVENTORY_PATH.read_text(encoding="utf-8"))
     artifacts = inventory["required_artifacts"]
@@ -1583,54 +925,32 @@ def test_inventory_versions_and_manifest_review_order_are_closed() -> None:
     artifact_ids = [item["artifact_id"] for item in artifacts]
 
     assert len(artifacts) == 15
-    assert all(item["artifact_version"] for item in artifacts)
-    assert by_id["P0A-SOURCE"]["artifact_version"] == "local-ai-runtime-0.2-v3.23"
-    assert by_id["P0A-SOURCE"]["byte_count"] == 188325
-    assert by_id["P0A-LINEAGE"]["artifact_version"] == "BaselineLineage.v2"
-    assert by_id["P0A-LINEAGE"]["producer_task_id"] == "LAR-P0A-REBASELINE-V323"
-    assert by_id["P0A-EXECUTION"] == {
-        "artifact_id": "P0A-EXECUTION",
-        "kind": "process_job_fencing_bundle",
-        "artifact_version": "ExecutionSafetyContractSet.v1",
-        "path": "docs/specs/local-ai-runtime-0.2/normative/ExecutionSafetyContractSet.v1.json",
-        "status": "present",
-        "byte_count": 7985,
-        "sha256": "a3e8692e691cfa90fba7fc945f4bb0fa55e5380cb9cbe9550857a053cd25cb12",
-        "required_for_approval": True,
-        "producer_task_id": "LAR-P0A-006",
-        "verification": "schema_transition_crash_fixtures",
-    }
-    assert by_id["P0A-EVIDENCE"] == {
-        "artifact_id": "P0A-EVIDENCE",
-        "kind": "events_journal_artifact_evidence_bundle",
-        "artifact_version": "EvidenceContractSet.v1",
-        "path": "docs/specs/local-ai-runtime-0.2/normative/EvidenceContractSet.v1.json",
-        "status": "present",
-        "byte_count": 9656,
-        "sha256": "d9cea69a4680a0229b5680ea0de503e9d6f9d24eb6232893b727e11c1e52e9e0",
-        "required_for_approval": True,
-        "producer_task_id": "LAR-P0A-007",
-        "verification": "schema_event_matrix_secret_safe_fixtures",
-    }
-    assert by_id["P0A-GIT"] == {
-        "artifact_id": "P0A-GIT",
-        "kind": "deterministic_git_bundle",
-        "artifact_version": "DeterministicGitContractSet.v1",
-        "path": "docs/specs/local-ai-runtime-0.2/normative/DeterministicGitContractSet.v1.json",
-        "status": "present",
-        "byte_count": 7438,
-        "sha256": "c6ff21651cd525f1319fe0620f280e96db825086c2e8e98149340f4e08b11e26",
-        "required_for_approval": True,
-        "producer_task_id": "LAR-P0A-008",
-        "verification": "schema_action_graph_object_fixtures",
-    }
+    assert by_id["P0A-SOURCE"]["artifact_version"] == "local-ai-runtime-0.2-v3.24"
+    assert by_id["P0A-SOURCE"]["byte_count"] == 199728
+    assert by_id["P0A-SOURCE"]["producer_task_id"] == "LAR-P0A-REBASELINE-V324"
+    assert by_id["P0A-LINEAGE"]["artifact_version"] == "BaselineLineage.v3"
+    assert by_id["P0A-LINEAGE"]["producer_task_id"] == "LAR-P0A-REBASELINE-V324"
+    assert by_id["P0A-PRODUCT"]["artifact_version"] == "ProductContract.v2"
+    assert by_id["P0A-PRODUCT"]["status"] == "missing"
+    assert by_id["P0A-QUALIFICATION"]["artifact_version"] == "QualificationContractSet.v2"
+    assert by_id["P0A-QUALIFICATION"]["status"] == "missing"
+
+    carried = {"P0A-CANONICAL", "P0A-EXECUTION", "P0A-EVIDENCE", "P0A-GIT"}
+    assert {
+        artifact_id
+        for artifact_id, item in by_id.items()
+        if item.get("carried_forward_from") == "local-ai-runtime-0.2-v3.23"
+    } == carried
+    for artifact_id in carried:
+        assert by_id[artifact_id]["status"] == "present"
+        assert by_id[artifact_id]["producer_task_id"] == "LAR-P0A-REBASELINE-V324"
+
     assert by_id["P0A-MANIFEST"]["producer_task_id"] == "LAR-P0A-013"
     assert by_id["P0A-REVIEW"]["producer_task_id"] == "LAR-P0A-013"
     assert artifact_ids.index("P0A-VERIFIER") < artifact_ids.index("P0A-MANIFEST")
     assert artifact_ids.index("P0A-MANIFEST") < artifact_ids.index("P0A-REVIEW")
 
-
-def test_machine_work_items_are_a_deterministic_v323_dag() -> None:
+def test_machine_work_items_are_a_deterministic_v324_dag() -> None:
     work_items = json.loads(WORK_ITEMS_PATH.read_text(encoding="utf-8"))["work_items"]
     by_id = {item["task_id"]: item for item in work_items}
     phase_counts = {
@@ -1638,7 +958,7 @@ def test_machine_work_items_are_a_deterministic_v323_dag() -> None:
         for phase in ("P1A", "P1B", "P1C", "P1D", "P1E", "P1F")
     }
 
-    assert len(work_items) == 65
+    assert len(work_items) == 55
     assert phase_counts == {
         "P1A": 4,
         "P1B": 5,
@@ -1647,52 +967,51 @@ def test_machine_work_items_are_a_deterministic_v323_dag() -> None:
         "P1E": 7,
         "P1F": 6,
     }
-    assert by_id["LAR-P1A-004"]["next_task_ids"] == [
-        "LAR-P1B-001",
-        "LAR-P1F-001",
+    assert by_id["LAR-P0A-REBASELINE-V324"]["status"] == "completed"
+    assert by_id["LAR-P0A-REBASELINE-V324"]["next_task_ids"] == ["LAR-P0A-004"]
+    assert by_id["LAR-P0A-004"]["status"] == "ready"
+    assert by_id["LAR-P0A-004"]["depends_on"] == ["LAR-P0A-REBASELINE-V324"]
+    assert by_id["LAR-P0A-005"]["depends_on"] == ["LAR-P0A-004"]
+    assert by_id["LAR-P0B-001"]["next_task_ids"] == [
+        "LAR-P0C-001",
+        "LAR-P0D-001",
     ]
-    assert by_id["LAR-P1C-007"]["depends_on"] == [
-        "LAR-P1C-006",
-        "LAR-P1D-004",
+    assert by_id["LAR-P1A-001"]["depends_on"] == [
+        "LAR-P0C-003",
+        "LAR-P0D-001",
     ]
-    assert by_id["LAR-P1F-002"]["depends_on"] == [
-        "LAR-P1E-007",
-        "LAR-P1F-001",
-    ]
-    assert by_id["LAR-P1F-006"]["next_task_ids"] == ["LAR-P1G-001"]
-    assert by_id["LAR-P1G-001"]["depends_on"] == ["LAR-P1F-006"]
-    assert by_id["LAR-P0A-001"]["next_task_ids"] == ["LAR-P0A-REBASELINE-V322"]
-    assert by_id["LAR-P0A-REBASELINE-V322"]["depends_on"] == ["LAR-P0A-001"]
-    assert by_id["LAR-P0A-REBASELINE-V323"]["depends_on"] == ["LAR-P0A-REBASELINE-V322"]
-    assert by_id["LAR-P0A-EVAL-001"]["depends_on"] == ["LAR-P0A-REBASELINE-V323"]
-    assert by_id["LAR-P0A-EVAL-002"]["depends_on"] == ["LAR-P0A-EVAL-001"]
-    assert by_id["LAR-P0A-EVAL-002"]["status"] == "completed"
-    assert by_id["LAR-P0A-EVAL-002"]["next_task_ids"] == ["LAR-P0A-002"]
-    evaluation_acceptance = "\n".join(by_id["LAR-P0A-EVAL-002"]["acceptance"])
-    assert "releases LAR-P0A-002" in evaluation_acceptance
-    assert "releases LAR-P0A-003" not in evaluation_acceptance
-    assert by_id["LAR-P0A-002"]["depends_on"] == ["LAR-P0A-EVAL-002"]
-    assert by_id["LAR-P0A-006"]["status"] == "completed"
-    assert by_id["LAR-P0A-007"]["status"] == "completed"
-    assert by_id["LAR-P0A-008"]["status"] == "completed"
-    assert by_id["LAR-P0A-009"]["status"] == "ready"
-    assert by_id["LAR-P4-001"]["next_task_ids"] == ["LAR-P4-002", "LAR-P5-001"]
-    assert by_id["LAR-P4-002"]["depends_on"] == ["LAR-P4-001"]
+    assert by_id["LAR-P4-001"]["next_task_ids"] == ["LAR-P5-001"]
     assert by_id["LAR-P5-001"]["depends_on"] == ["LAR-P4-001"]
-    assert "LAR-P4-002" not in by_id["LAR-P5-001"]["depends_on"]
+    assert "LAR-P4-002" not in by_id
 
     final_manifest = (
         "docs/specs/local-ai-runtime-0.2/normative/BaselineManifest.v1.json"
     )
-    assert final_manifest not in by_id["LAR-P0A-002"]["scope"]["primary_files"]
+    for task_id in ("LAR-P0A-REBASELINE-V324", "LAR-P0A-004", "LAR-P0A-005"):
+        assert final_manifest not in by_id[task_id]["scope"]["primary_files"]
     assert final_manifest in by_id["LAR-P0A-013"]["scope"]["primary_files"]
 
     required_tokens = {
-        "LAR-P0A-004": {"volatile existing-family lookup", "Existing-family replay remains stable"},
-        "LAR-P0A-006": {"SafetyOnlyExecutionRecord", "execution_authority_kind"},
-        "LAR-P0A-007": {"ExecutionReceipt", "BackupPostActivity", "BackupRestoreIntent"},
-        "LAR-P0A-008": {"GitConfigPolicy", "claim_epoch_seconds", "--no-create-reflog"},
-        "LAR-P0A-010": {"accounting_kill_audit", "EmergencyDiskReserve", "OrdinalIgnoreCase"},
+        "LAR-P0A-004": {
+            "FirstRunExperiencePolicy.v1",
+            "LaunchTemplateCatalog.v1 with four templates",
+            "OperatorPresentationCatalog.v1",
+        },
+        "LAR-P0A-005": {
+            "RuntimeToolchainManifest.v1",
+            "VerificationExecutionProfile.v1",
+            "hash-pinned build backend",
+        },
+        "LAR-P0A-009": {
+            "SQLite is the only policy/transition authority",
+            "Cleanup finalizers cannot be bypassed",
+            "B3 is declared deferred",
+        },
+        "LAR-P0A-010": {
+            "accounting_kill_audit",
+            "EmergencyDiskReserve",
+            "OrdinalIgnoreCase",
+        },
         "LAR-P0A-013": {"package_review_head", "approval_review_head"},
     }
     for task_id, tokens in required_tokens.items():
@@ -1700,7 +1019,9 @@ def test_machine_work_items_are_a_deterministic_v323_dag() -> None:
         assert all(token in rendered for token in tokens)
 
     for task_id, item in by_id.items():
-        if task_id.startswith(("LAR-P1A-", "LAR-P1B-", "LAR-P1C-", "LAR-P1D-", "LAR-P1E-", "LAR-P1F-")):
+        if task_id.startswith(
+            ("LAR-P1A-", "LAR-P1B-", "LAR-P1C-", "LAR-P1D-", "LAR-P1E-", "LAR-P1F-")
+        ):
             assert all(
                 not path.endswith(("/", "\\"))
                 for path in item["scope"]["primary_files"]
@@ -1751,8 +1072,9 @@ def test_planning_optimization_policy_is_bounded_and_qualification_driven() -> N
 
     by_id = {item["task_id"]: item for item in payload["work_items"]}
     p0a004 = json.dumps(by_id["LAR-P0A-004"], ensure_ascii=False, sort_keys=True)
-    assert "WorkRoutingPolicy routes work class only" in p0a004
-    assert "no second planner or runtime model-router service" in p0a004
+    assert "FirstRunExperiencePolicy.v1" in p0a004
+    assert "LaunchTemplateCatalog.v1 with four templates" in p0a004
+    assert "Native Spec can create only a template candidate" in p0a004
 
 
 def test_planning_optimization_verifiers_reject_policy_drift() -> None:
@@ -1826,13 +1148,13 @@ def test_planning_optimization_status_and_doc_projections_are_closed() -> None:
         "policy_ref": "docs/plans/local-ai-runtime-0.2-work-items.json",
         "policy_kind": "bounded_minimum_operator_planning_v1",
         "complexity_health": "warning_all_dimensions",
-        "frozen_v323_semantics_changed": False,
+        "frozen_v324_semantics_changed": False,
         "active_profile_change": "none",
     }
 
     expected_tokens = {
         "AGENTS.md": {"planning_optimization_policy", "同一 session"},
-        "README.md": {"planning_optimization_policy", "最多 3 个"},
+        "README.md": {"planning_optimization_policy", "最多 3 项"},
         "docs/README.md": {"planning_optimization_policy", "最多 3 个"},
         "docs/product/orchestrator-prd.md": {
             "completed_work_items_per_operator_kickoff",
@@ -1847,13 +1169,13 @@ def test_planning_optimization_status_and_doc_projections_are_closed() -> None:
         },
         "docs/plans/orchestrator-implementation-plan.md": {
             "one_selector_selected_work_item",
-            "unknown_or_unavailable_never_zero",
-            "fail_closed_no_silent_dynamic_model_effort_or_provider_fallback",
+            "new_runtime_exact_v1",
+            "RuntimeToolchainManifest",
         },
         "docs/backlog/orchestrator-task-list.md": {"bounded continuation"},
         "docs/specs/acceptance-and-gates.md": {
             "unknown_or_unavailable_never_zero",
-            "declared role/task family/surface/profile generation/cohort",
+            "LaunchTemplateCatalog",
         },
     }
     doc_contracts = {
@@ -1880,45 +1202,41 @@ def test_human_readable_roadmap_projects_machine_work_item_count() -> None:
         "docs/roadmap/orchestrator-roadmap.md"
     ]
 
-
-def test_v323_lineage_binds_candidate_history_and_superseded_plan() -> None:
+def test_v324_lineage_binds_candidate_history_and_superseded_plan() -> None:
     status = json.loads(STATUS_PATH.read_text(encoding="utf-8"))
     lineage_raw = LINEAGE_PATH.read_bytes()
     lineage = json.loads(lineage_raw)
-    work_items = json.loads(WORK_ITEMS_PATH.read_text(encoding="utf-8"))
-    superseded = work_items["supersedes_plan"]
+    superseded = json.loads(
+        WORK_ITEMS_PATH.read_text(encoding="utf-8")
+    )["supersedes_plan"]
 
-    assert len(lineage_raw) == 3495
+    assert len(lineage_raw) == 6700
     assert hashlib.sha256(lineage_raw).hexdigest() == (
-        "49141a69c9aed6065ba063714fb2349750e500199ed8dfaf64fa6e2b198b9043"
+        "b769bb3460a83ba31ca28fe60cc6d4c44902063c69b01ff344942a04e62dc756"
     )
-    assert lineage["domain"] == "local-ai-runtime/BaselineLineage/v2"
-    assert lineage["schema_version"] == 2
+    assert lineage["domain"] == "local-ai-runtime/BaselineLineage/v3"
+    assert lineage["schema_version"] == 3
     assert lineage["payload"]["candidate"] == {
-        "byte_count": 188325,
-        "id": "local-ai-runtime-0.2-v3.23",
-        "path": "docs/specs/local-ai-runtime-0.2-v3.23-baseline-candidate.md",
+        "byte_count": 199728,
+        "id": "local-ai-runtime-0.2-v3.24",
+        "path": "docs/specs/local-ai-runtime-0.2-v3.24-baseline-candidate.md",
         "role": "baseline_candidate",
         "sha256": status["baseline_candidate"]["sha256"],
     }
-    v322 = next(
+    v323 = next(
         entry
         for entry in lineage["payload"]["entries"]
-        if entry["id"] == "local-ai-runtime-0.2-v3.22"
+        if entry["id"] == "local-ai-runtime-0.2-v3.23"
     )
-    assert v322 == {
-        "byte_count": 178330,
-        "id": "local-ai-runtime-0.2-v3.22",
-        "path": "docs/specs/local-ai-runtime-0.2-v3.22-baseline-candidate.md",
-        "role": "superseded_candidate",
-        "sha256": "8338a9dcf4bbbb40ca28f4f2ec6dca37587ee94fbfbbc6e3a0063c4de379569c",
-    }
+    assert v323["preapproval_inventory_archive"]["byte_count"] == 12439
+    assert v323["work_item_plan_archive"]["byte_count"] == 220533
     assert superseded == {
-        "plan_id": "local-ai-runtime-0.2-v3.22-implementation-work-items",
+        "plan_id": "local-ai-runtime-0.2-v3.23-implementation-work-items",
+        "path": "docs/plans/history/local-ai-runtime-0.2-v3.23-work-items.json",
         "terminal_status": "superseded",
-        "last_commit": "6fd6cd54037f17e44192bc272306b137def7f8a4",
-        "byte_count": 202002,
-        "sha256": "acabe34f188d73015536a141a8990c333ce6643dc28347671c2523adcaf7d2cc",
+        "last_commit": "010dede90545e71d634087c84aef75790f5949e9",
+        "byte_count": 220533,
+        "sha256": "4b146d79c0f99a9621a8f6a743e8ddab7e2eb6d19356d2152a1c7130c0adebfe",
     }
 
 
@@ -1936,7 +1254,7 @@ def test_current_lineage_rejects_inventory_projection_drift() -> None:
         failures,
     )
 
-    assert "inventory lineage must exactly project BaselineLineage.v2" in failures
+    assert "inventory lineage must exactly project BaselineLineage.v3" in failures
 
 
 def test_work_item_verifier_rejects_nonreciprocal_or_unreachable_dag_edges() -> None:
@@ -2058,21 +1376,27 @@ def test_contract_projection_policy_is_bidirectional_and_token_closed() -> None:
     )
 
 
-def test_work_item_verifier_requires_locked_offline_gate_profile() -> None:
+def test_work_item_verifier_requires_exact_toolchain_gate_profile() -> None:
     verify_work_items = runpy.run_path(str(VERIFIER_PATH))["_verify_work_items"]
     status = json.loads(STATUS_PATH.read_text(encoding="utf-8"))
     work_items = json.loads(WORK_ITEMS_PATH.read_text(encoding="utf-8"))
-    commands = work_items["verification_profiles"]["new_runtime"]
+    profile = work_items["verification_profiles"]["new_runtime_exact_v1"]
+    rendered = json.dumps(profile, ensure_ascii=False)
 
-    assert commands[0] == "uv lock --check --offline --project runtime/local-ai-runtime"
-    assert all("--frozen" not in command for command in commands)
-    assert all(
-        "--locked --offline" in command
-        for command in commands
-        if command.startswith("uv run ")
+    assert profile["fixed_gate_order"] == [
+        "supply_chain_identity",
+        "build",
+        "test",
+        "contract_invariant",
+        "hotspot",
+    ]
+    assert "sync --exact --locked --offline --no-python-downloads" in rendered
+    assert "run --no-sync --offline --no-python-downloads" in rendered
+    assert "--build-constraint" in rendered and "--require-hashes" in rendered
+
+    profile["environment_preparation"][0] = profile["environment_preparation"][0].replace(
+        "sync --exact", "sync"
     )
-
-    commands[2] = commands[2].replace("--locked", "--frozen")
     failures: list[str] = []
     verify_work_items(
         work_items,
@@ -2081,17 +1405,17 @@ def test_work_item_verifier_requires_locked_offline_gate_profile() -> None:
         status["current_work_item"],
         failures,
     )
-    assert any("locked offline command set" in failure for failure in failures)
+    assert any("exact-toolchain gate" in failure for failure in failures)
+    assert any("missing exact-toolchain token: sync --exact" in failure for failure in failures)
 
 
-def test_work_item_verifier_rejects_b3_before_p4_or_as_p5_dependency() -> None:
+def test_work_item_verifier_rejects_b3_as_a_p5_dependency() -> None:
     verify_work_items = runpy.run_path(str(VERIFIER_PATH))["_verify_work_items"]
     status = json.loads(STATUS_PATH.read_text(encoding="utf-8"))
     work_items = json.loads(WORK_ITEMS_PATH.read_text(encoding="utf-8"))
     by_id = {item["task_id"]: item for item in work_items["work_items"]}
     by_id["LAR-P5-001"]["depends_on"] = ["LAR-P4-002"]
     by_id["LAR-P4-001"]["next_task_ids"].remove("LAR-P5-001")
-    by_id["LAR-P4-002"]["next_task_ids"].append("LAR-P5-001")
     failures: list[str] = []
 
     verify_work_items(
@@ -2102,6 +1426,7 @@ def test_work_item_verifier_rejects_b3_before_p4_or_as_p5_dependency() -> None:
         failures,
     )
 
+    assert "LAR-P5-001 depends on unknown task LAR-P4-002" in failures
     assert "P5 must depend on the green P4 cohort, not B3 activation" in failures
 
 
@@ -2133,7 +1458,7 @@ def test_selector_rejects_unknown_action_even_when_policy_is_structurally_valid(
             "priority": 16,
             "condition_id": "invented_condition",
             "next_action": "invent_unapproved_work_first",
-            "why": "Structurally valid but not part of the reviewed v3.23 stage graph.",
+            "why": "Structurally valid but not part of the reviewed v3.24 stage graph.",
         }
     )
     policy_path = tmp_path / "unknown-action-policy.json"
@@ -2148,7 +1473,7 @@ def test_selector_rejects_unknown_action_even_when_policy_is_structurally_valid(
     assert payload["next_action"] == "repair_gate_first"
     assert payload["verifier_status"] is None
     assert any(
-        "v3.23 action catalog" in issue for issue in payload["governance_issues"]
+        "v3.24 action catalog" in issue for issue in payload["governance_issues"]
     )
 
 
@@ -2260,19 +1585,8 @@ def test_selector_runs_final_baseline_review_for_exact_closure_state(
     def mutate(payload: dict[str, object]) -> None:
         current = payload["current_work_item"]
         package = payload["normative_package"]
-        evaluation = payload["native_thin_path_evaluation"]
         assert isinstance(current, dict)
         assert isinstance(package, dict)
-        assert isinstance(evaluation, dict)
-        evaluation.update(
-            {
-                "status": "preserve_v3_23_semantics",
-                "decision": "preserve_v3_23_semantics",
-                "result_ref": "docs/evaluations/local-ai-runtime-0.2/native-thin-path-capability-results.v1.json",
-                "decision_ref": "docs/evaluations/local-ai-runtime-0.2/native-thin-path-capability-decision.v1.json",
-                "evidence_ref": "docs/evaluations/local-ai-runtime-0.2/native-thin-path-capability-evidence.v1.json",
-            }
-        )
         current["task_id"] = "LAR-P0A-013"
         package["missing_artifact_ids"] = ["P0A-MANIFEST", "P0A-REVIEW"]
 
@@ -2301,19 +1615,8 @@ def test_selector_repairs_malformed_final_review_artifact_set(tmp_path: Path) ->
     def mutate(payload: dict[str, object]) -> None:
         current = payload["current_work_item"]
         package = payload["normative_package"]
-        evaluation = payload["native_thin_path_evaluation"]
         assert isinstance(current, dict)
         assert isinstance(package, dict)
-        assert isinstance(evaluation, dict)
-        evaluation.update(
-            {
-                "status": "preserve_v3_23_semantics",
-                "decision": "preserve_v3_23_semantics",
-                "result_ref": "docs/evaluations/local-ai-runtime-0.2/native-thin-path-capability-results.v1.json",
-                "decision_ref": "docs/evaluations/local-ai-runtime-0.2/native-thin-path-capability-decision.v1.json",
-                "evidence_ref": "docs/evaluations/local-ai-runtime-0.2/native-thin-path-capability-evidence.v1.json",
-            }
-        )
         current["task_id"] = "LAR-P0A-013"
         package["missing_artifact_ids"] = ["P0A-REVIEW", "P0A-MANIFEST"]
 
@@ -2333,11 +1636,10 @@ def test_selector_repairs_malformed_final_review_artifact_set(tmp_path: Path) ->
 
 
 def _write_post_p4_status(
-    tmp_path: Path, *, current_work_item_id: str, b3_active: bool = False
+    tmp_path: Path, *, current_work_item_id: str
 ) -> Path:
     def mutate(payload: dict[str, object]) -> None:
         package = payload["normative_package"]
-        evaluation = payload["native_thin_path_evaluation"]
         approval = payload["approval_state"]
         truth_reset = payload["truth_reset"]
         legacy = payload["legacy_runtime_posture"]
@@ -2349,7 +1651,6 @@ def _write_post_p4_status(
             isinstance(value, dict)
             for value in (
                 package,
-                evaluation,
                 approval,
                 truth_reset,
                 legacy,
@@ -2358,15 +1659,6 @@ def _write_post_p4_status(
                 rollout,
                 current,
             )
-        )
-        evaluation.update(
-            {
-                "status": "preserve_v3_23_semantics",
-                "decision": "preserve_v3_23_semantics",
-                "result_ref": "docs/evaluations/local-ai-runtime-0.2/native-thin-path-capability-results.v1.json",
-                "decision_ref": "docs/evaluations/local-ai-runtime-0.2/native-thin-path-capability-decision.v1.json",
-                "evidence_ref": "docs/evaluations/local-ai-runtime-0.2/native-thin-path-capability-evidence.v1.json",
-            }
         )
         package.update(
             {"status": "complete", "approval_eligible": True, "missing_artifact_ids": []}
@@ -2395,7 +1687,7 @@ def _write_post_p4_status(
                 "p2_pilot_complete": True,
                 "p3_scheduled_self_host_complete": True,
                 "p4_cohort_complete": True,
-                "b3_portfolio_generation_active": b3_active,
+                "b3_portfolio_generation_active": False,
             }
         )
         current["task_id"] = current_work_item_id
@@ -2403,25 +1695,12 @@ def _write_post_p4_status(
     return _write_status(tmp_path, mutate)
 
 
-def test_selector_routes_selected_b3_work_item_after_green_p4(tmp_path: Path) -> None:
-    namespace = runpy.run_path(str(SELECTOR_PATH))
-    select_next_work = namespace["select_next_work"]
-    status_path = _write_post_p4_status(
-        tmp_path, current_work_item_id="LAR-P4-002"
-    )
-    select_next_work.__globals__["_run_verifier"] = (
-        lambda _root, path, _verifier: _verifier_attestation(path, "LAR-P4-002")
-    )
+def test_selector_policy_defers_b3_beyond_v02() -> None:
+    policy = json.loads(POLICY_PATH.read_text(encoding="utf-8"))
+    work_items = json.loads(WORK_ITEMS_PATH.read_text(encoding="utf-8"))["work_items"]
 
-    payload = select_next_work(
-        repo_root=REPO_ROOT,
-        status_path=status_path,
-        policy_path=POLICY_PATH,
-        verifier_path=VERIFIER_PATH,
-    )
-
-    assert payload["next_action"] == "activate_b3_portfolio_generation_first"
-    assert payload["stage_snapshot"]["b3_portfolio_generation_active"] is False
+    assert "activate_b3_portfolio_generation_first" not in policy["allowed_next_actions"]
+    assert all(item["task_id"] != "LAR-P4-002" for item in work_items)
 
 
 def test_selector_routes_p5_without_requiring_b3_activation(tmp_path: Path) -> None:
@@ -2442,7 +1721,7 @@ def test_selector_routes_p5_without_requiring_b3_activation(tmp_path: Path) -> N
     )
 
     assert payload["next_action"] == "cut_over_repositories_first"
-    assert payload["stage_snapshot"]["b3_portfolio_generation_active"] is False
+    assert payload["stage_snapshot"]["p4_cohort_complete"] is True
 
 
 def test_work_item_verifier_reports_malformed_nested_collections() -> None:
@@ -2450,8 +1729,8 @@ def test_work_item_verifier_reports_malformed_nested_collections() -> None:
     status = json.loads(STATUS_PATH.read_text(encoding="utf-8"))
     work_items = json.loads(WORK_ITEMS_PATH.read_text(encoding="utf-8"))
     by_id = {item["task_id"]: item for item in work_items["work_items"]}
-    by_id["LAR-P0A-002"]["scope"] = "not-an-object"
-    by_id["LAR-P0A-003"]["next_task_ids"] = 7
+    by_id["LAR-P0A-004"]["scope"] = "not-an-object"
+    by_id["LAR-P0A-005"]["next_task_ids"] = 7
     failures: list[str] = []
 
     verify_work_items(
@@ -2462,8 +1741,8 @@ def test_work_item_verifier_reports_malformed_nested_collections() -> None:
         failures,
     )
 
-    assert "LAR-P0A-002.scope must be an object" in failures
-    assert "LAR-P0A-003.next_task_ids must be an array" in failures
+    assert "LAR-P0A-004.scope must be an object" in failures
+    assert "LAR-P0A-005.next_task_ids must be an array" in failures
 
 
 def test_selector_repairs_invalid_successful_verifier_output(tmp_path: Path) -> None:
@@ -2555,17 +1834,24 @@ def test_verifier_rejects_implementation_before_truth_reset(tmp_path: Path) -> N
     assert "Legacy Ownership Guard" in completed.stderr
 
 
-def test_verifier_rejects_b3_activation_before_green_p4(tmp_path: Path) -> None:
+def test_verifier_rejects_b3_activation_throughout_v02(tmp_path: Path) -> None:
     def mutate(payload: dict[str, object]) -> None:
         rollout = payload["rollout"]
         assert isinstance(rollout, dict)
-        rollout["b3_portfolio_generation_active"] = True
+        rollout.update(
+            {
+                "p2_pilot_complete": True,
+                "p3_scheduled_self_host_complete": True,
+                "p4_cohort_complete": True,
+                "b3_portfolio_generation_active": True,
+            }
+        )
 
     status_path = _write_status(tmp_path, mutate)
     completed = _run(str(VERIFIER_PATH), "--status-path", str(status_path))
 
     assert completed.returncode == 1
-    assert "B3 portfolio activation requires the green P4 cohort" in completed.stderr
+    assert "B3 portfolio scheduling is deferred beyond 0.2" in completed.stderr
 
 
 def test_selector_repairs_hash_drift_before_selecting_work(tmp_path: Path) -> None:

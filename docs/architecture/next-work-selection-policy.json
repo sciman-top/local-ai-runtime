@@ -1,8 +1,8 @@
 {
   "schema_version": "2.0",
   "policy_id": "local-ai-runtime-0.2-stage-selector",
-  "reviewed_on": "2026-07-13",
-  "review_expires_at": "2026-08-13",
+  "reviewed_on": "2026-07-16",
+  "review_expires_at": "2026-08-16",
   "baseline_review_missing_artifact_sets": [
     [
       "P0A-MANIFEST",
@@ -15,7 +15,6 @@
   "allowed_next_actions": [
     "repair_gate_first",
     "create_successor_candidate_first",
-    "run_native_thin_path_evaluation_first",
     "run_baseline_consistency_review",
     "close_baseline_normative_package_first",
     "record_baseline_approval_first",
@@ -27,7 +26,6 @@
     "run_single_p2_pilot_first",
     "run_five_scheduled_self_host_first",
     "run_30_task_cohort_first",
-    "activate_b3_portfolio_generation_first",
     "cut_over_repositories_first",
     "operate_approved_runtime"
   ],
@@ -40,96 +38,84 @@
     },
     {
       "priority": 2,
-      "condition_id": "native_thin_path_semantic_change_requires_successor",
+      "condition_id": "current_candidate_semantic_change_requires_successor",
       "next_action": "create_successor_candidate_first",
-      "why": "The frozen evaluation changed a Batch prohibition, adapter, authority, concurrency, Q0 trigger, quality promotion or truth source; freeze v3.23 and create the required v3.24 successor candidate instead of continuing P0A."
+      "why": "A new finding changes the frozen v3.24 product, gate, authority, concurrency, Q0, quality-promotion or truth-source semantics; freeze it and create v3.25 rather than editing in place."
     },
     {
       "priority": 3,
-      "condition_id": "native_thin_path_evaluation_pending",
-      "next_action": "run_native_thin_path_evaluation_first",
-      "why": "v3.23 blocks normative package closure until the frozen Native thin-path / capability comparative evaluation records preserve_v3_23_semantics; semantic-change decisions require a successor candidate."
-    },
-    {
-      "priority": 4,
       "condition_id": "baseline_review_closure_pending",
       "next_action": "run_baseline_consistency_review",
       "why": "LAR-P0A-013 must freeze package_review_head, create the final manifest and append the manifest-closure review before approval eligibility."
     },
     {
-      "priority": 5,
+      "priority": 4,
       "condition_id": "normative_package_incomplete",
       "next_action": "close_baseline_normative_package_first",
-      "why": "v3.23 is only a baseline candidate; after a preserve_v3_23_semantics evaluation decision, required normative artifacts outside the final review closure remain missing."
+      "why": "v3.24 is only a baseline candidate; execute the unique current-plan producer for the first non-present artifact."
     },
     {
-      "priority": 6,
+      "priority": 5,
       "condition_id": "approval_eligible_without_active_approval",
       "next_action": "record_baseline_approval_first",
       "why": "The package is approval-eligible, but implementation remains blocked until an explicitly authorized, non-revoked BaselineApprovalRecord exists."
     },
     {
-      "priority": 7,
+      "priority": 6,
       "condition_id": "approved_truth_reset_missing",
       "next_action": "implement_truth_reset_first",
       "why": "An approved baseline must be projected atomically into repository truth before implementation begins."
     },
     {
-      "priority": 8,
+      "priority": 7,
       "condition_id": "truth_reset_done_legacy_guard_missing",
       "next_action": "implement_legacy_guard_first",
       "why": "Every legacy mutation path must consume the shared ownership contract before the new runtime exists or claims work."
     },
     {
-      "priority": 9,
+      "priority": 8,
       "condition_id": "legacy_guard_done_implementation_incomplete",
       "next_action": "implement_local_ai_runtime_first",
       "why": "Implement the next ready P0D/P1 work item from the machine work-item graph."
     },
     {
-      "priority": 10,
+      "priority": 9,
       "condition_id": "implementation_complete_acceptance_missing",
       "next_action": "run_implementation_acceptance_first",
       "why": "All code slices exist, but fixed gates, crashes, migrations, backup/restore and conformance must pass before live qualification."
     },
     {
-      "priority": 11,
+      "priority": 10,
       "condition_id": "implementation_accepted_full_q0_missing",
       "next_action": "run_full_q0_first",
       "why": "Implementation Acceptance does not admit P2; Full Q0 must bind the live platform, toolchain, model, profile and adapter behavior."
     },
     {
-      "priority": 12,
+      "priority": 11,
       "condition_id": "full_q0_green_p2_pilot_missing",
       "next_action": "run_single_p2_pilot_first",
       "why": "All prior gates are active; execute exactly one human-initiated low-risk commit-only pilot."
     },
     {
-      "priority": 13,
+      "priority": 12,
       "condition_id": "p2_pilot_green_p3_missing",
       "next_action": "run_five_scheduled_self_host_first",
       "why": "The single pilot is green; collect five scheduled self-host observations before any multi-repo expansion."
     },
     {
-      "priority": 14,
+      "priority": 13,
       "condition_id": "p3_green_p4_missing",
       "next_action": "run_30_task_cohort_first",
       "why": "Scheduled self-host evidence is green; qualify two target repositories and run the fixed reliability and efficiency cohort."
     },
     {
-      "priority": 15,
-      "condition_id": "p4_green_b3_work_item_selected",
-      "next_action": "activate_b3_portfolio_generation_first",
-      "why": "The P4 cohort is green and LAR-P4-002 is the selected DAG work item; activate exactly one bounded data-only B3 portfolio generation without changing Epoch 1 capacity."
-    },
-    {
-      "priority": 16,
+      "priority": 14,
       "condition_id": "p4_green_p5_missing",
       "next_action": "cut_over_repositories_first",
-      "why": "The cohort meets every hard gate and LAR-P5-001 is the selected DAG work item; perform guarded per-repository CAS cutover whether or not the independent B3 generation was activated."
+      "why": "The B2/per-repo cohort meets every hard gate; perform guarded per-repository CAS cutover. B3 portfolio scheduling is deferred beyond 0.2."
     },
     {
-      "priority": 17,
+      "priority": 15,
       "condition_id": "p5_complete",
       "next_action": "operate_approved_runtime",
       "why": "All planned migration stages are complete; operate only within the approved runtime, qualification and Authorization generations."
@@ -138,7 +124,7 @@
   "required_entrypoints": [
     "docs/architecture/planning-status.json",
     "docs/specs/local-ai-runtime-0.2-baseline-candidate.md",
-    "docs/specs/local-ai-runtime-0.2-v3.23-baseline-candidate.md",
+    "docs/specs/local-ai-runtime-0.2-v3.24-baseline-candidate.md",
     "docs/specs/local-ai-runtime-0.2-normative-package.json",
     "docs/plans/local-ai-runtime-0.2-work-items.json",
     "scripts/verify-planning-status.py",
@@ -171,10 +157,11 @@
     "The selector is read-only and must not run release preflight or mutate state.",
     "A passing planning verifier means the declared state is internally truthful, not that a later gate passed.",
     "The first matching condition wins.",
-    "Historical archive and v3.22/v3.23 rebaseline actions are completed DAG history and are not selectable runtime actions.",
-    "Native thin-path evaluation is selected before normative closure until LAR-P0A-EVAL-002 records preserve_v3_23_semantics; narrow_profile_or_adapter_candidate and supersede_required freeze v3.23 and select create_successor_candidate_first.",
+    "The completed v3.24 successor transition and superseded v3.23 tasks are history and are not selectable runtime actions.",
+    "Any new frozen v3.24 semantic change selects create_successor_candidate_first and requires v3.25.",
     "run_baseline_consistency_review is selected only when current_work_item is LAR-P0A-013 and missing artifacts exactly match a declared review set.",
-    "activate_b3_portfolio_generation_first is selected only for LAR-P4-002 after a green P4 cohort; LAR-P5-001 remains independently selectable without B3 activation.",
+    "The incomplete package selects the unique current-plan producer that produces or reaches the first non-present artifact.",
+    "P4 remains B2/per-repo and proceeds directly to LAR-P5-001; no 0.2 selector action can activate B3.",
     "Unknown or inconsistent state returns repair_gate_first.",
     "The selected action must be present in allowed_next_actions."
   ],

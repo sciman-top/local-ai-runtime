@@ -1,196 +1,170 @@
-# Local AI Runtime 0.2 Acceptance And Gates
+# Local AI Runtime 0.2 验收与门禁合同
 
-## 1. 状态
+## 1. 当前边界
 
-本合同投影 `local-ai-runtime-0.2-v3.23`。当前为 baseline candidate；source 与 v3.23-bound lineage present，其他 13 项仍 missing，尚未达到 Baseline Approval。Native thin-path / capability comparative evaluation 已记录 `preserve_v3_23_semantics`，当前继续 P0A closure；v3.22 是精确 superseded input。
+本合同投影 `local-ai-runtime-0.2-v3.24`。当前为 `baseline_candidate`，package=`6/15 present, 9 non-present`，`blocking_stage=baseline_approval`，唯一 task=`LAR-P0A-004`。v3.23 candidate/package/plan 是 superseded history；predecessor Native comparison 是 non-normative evidence，不是当前 gate、profile promotion 或 approval input。
 
-## 2. 三层不可替代的门
+门禁通过只证明对应层级，不得跨层宣称：
 
-### 2.1 Baseline Approval
+1. planning integrity；
+2. Baseline Approval；
+3. Implementation Acceptance；
+4. Full Q0 / P2 Admission；
+5. P2/P3/P4 rollout；
+6. P5 cutover/retirement。
 
-要求：
+## 2. Baseline Approval
 
-- v3.23 原始 bytes、byte count 和 SHA-256 双路径验证；
-- v3.14-v3.22 谱系闭合，含 v3.17 exact archive、两份 conflicted v3.18、精确 v3.19-v3.22；
-- Native thin-path evaluation 固定同一 snapshot、TaskFamily、model/effort、tool inventory、sandbox、gates 与人工介入定义；质量、安全、证据下降、unowned external effect 或不可复现 recovery/rollback 都不得以效率收益抵消；
-- CLI/SDK execution interface、App Server client protocol、managed Worktree isolation、Automations scheduling 各自独立资格化，不能跨 surface 推断；语义变更必须创建 v3.24 successor，不能改写 v3.23；
-- narrative ID、独立 artifact ID/version/hash 和 immutable BaselineManifest 的版本边界一致；已 present artifact 无原地改写；
-- 全部 Tier A/B 所需 schema、catalog、transition row、example、fixture、verifier 落盘；
-- BaselineManifest hash closure；
-- standalone verifier 绿色；
-- ReviewEvidenceIndex hash chain 绿色；
-- P0/P1 规范 finding 为零；
-- controlled external operator action 验证 InteractiveToken/session、authority SID、command envelope、manifest/review head、expected generation 和一次性 anti-replay challenge；响应丢失重放返回同一 result；
-- append-only `BaselineApprovalRecord` 存在且未被 revocation/supersession。该记录证明受控同 SID operator action，不声称密码学证明物理人类在场。
+Baseline Approval 必须同时满足：
 
-Baseline Approval 不要求 runtime code 存在。当前 `blocking_stage=baseline_approval`。
+- v3.24 narrative byte_count/SHA-256 与 stable entry target 精确一致；
+- `BaselineLineage.v3` 绑定 v3.23 candidate/package/plan archives，carry-forward 仅四项且 focused verifier green；
+- 15 个 artifact 全部 present，artifact ID/version/path/bytes/hash/dependency/verifier 闭合；
+- `ProductContract.v2` 包含 FirstRunExperiencePolicy、LaunchTemplateCatalog、OperatorPresentationCatalog、四 launch templates、positive/negative fixtures；
+- `QualificationContractSet.v2` 包含 RuntimeToolchainManifest、VerificationExecutionProfile、hashed build constraints、toolchain negative fixtures；
+- state/Q0/migration/examples/standalone verifier 完整；
+- preliminary review P0/P1 findings=0，冻结 `package_review_head`；final BaselineManifest 只创建一次；manifest-closure review 证明 `approval_review_head` 是后继；
+- 独立 controlled approval action 绑定 authority/session、expected generation 与 anti-replay challenge。
 
-### 2.2 Implementation Acceptance
+Baseline Approval 不要求 runtime code 存在，也不允许 AI 自签。v3.24 semantic change 必须先创建 v3.25 successor。
 
-要求：
+## 3. Product/launch acceptance
 
-- approved baseline generation 仍 active；
-- Truth Reset 与 Legacy Ownership Guard 绿色；
-- `runtime/local-ai-runtime/src/local_ai_runtime/` 满足 `approved_root_files=["__init__.py","__main__.py"]`、`approved_subpackages=["contracts","kernel","qualification","storage","execution","recovery","git_local","operations","compat"]` 和一对一 `required_source_owners`，批准序列为 `contracts/kernel/qualification/storage/execution/recovery/git_local/operations/compat`；`__main__.py` 只能转发 contracts verifier。任何其他包根功能模块、未批准首级子包、重复源码 owner、缺失 marker、symlink/reparse source entry 或 legacy import 都使验收失败；
-- 新包、migrations、CLI、runbooks、legacy conformance、crash matrix、key-envelope backup/restore drill 与 suspended-only production-restore state machine 完整；
-- 固定 offline build/test/contracts/ruff/pyright/planning/diff 门全部绿色；
-- 不以 repo-side simulation、legacy evidence 或 probe-only 结果替代；
-- `RuntimeCompositionManifest C` 绑定 architecture epoch、approved baseline、capability set、ExecutionProfile、staged installation 和 implementation/toolchain/adapter/schema/probe hashes；
-- append-only `ImplementationAcceptanceRecord I` 绑定 C 和 acceptance evidence，不绑定尚不存在的 Q/B/A。
+首发 first-run 旅程必须端到端机器定义：
 
-Implementation Acceptance 不等于 Full Q0 / P2 Admission。
+`doctor --json -> repo qualify -> template list/show -> batch dry-run -> batch submit --confirm -> status/action -> evidence show`
 
-### 2.3 Full Q0 / P2 Admission
+每步具备 closed inputs、human projection、stable JSON schema、exit code、required authority、no-side-effect/effect boundary、evidence locator、next safe command 和 rollback。Human text 只能由 public state + `OperatorPresentationCatalog` 映射，raw prompt/model/tool/stdout/stderr 与 secret-derived fields 不得插入或持久化。
 
-Full Q0 必须在 `current.json` 仍指向旧版本时，对 staged installation 验证 pinned Codex/Git/Windows/sandbox/adapter/policy/model/profile/keyring/network/Job/filesystem 行为，并创建 `Q(C,I,staged_identity)`。之后才可组装 `B(C,I,Q,expected_previous_active)`，持 activation named mutex 写 durable intent、锁内重验 expected head、ReplaceFileW/read-back pointer 并立即 quick preflight。指针选择成功只创建 `SelectedRuntimeIdentity`；只有 terminal A 为 `activated_and_preflight_passed` 时 `ActiveRuntimeIdentity` 才存在并允许 P2。`selected_not_admitted` 或未终结 activation intent 必须 suspended/recovery-first。Scheduled/B3/cutover 仍需后续阶段证据。
+`LaunchTemplateCatalog` 恰好包含：
 
-## 3. 规划门语义
+- `docs_contract_sync_v1`
+- `bounded_lint_type_repair_v1`
+- `focused_test_repair_v1`
+- `mechanical_repo_maintenance_v1`
 
-```powershell
-python scripts/verify-planning-status.py
-python scripts/select-next-work.py
-```
+每项定义 closed parameters、path/effect envelope、required/forbidden gates、timeout/resource limits、stop/recovery、evaluation denominator、success oracle 和 promotion generation。Native Spec 只能创建 candidate；受控 operator action + review/fixtures/pilot/canary/requalification 才能 promotion。free prompt、dynamic command、dependency install、remote effect、envelope expansion、promotion bypass、secret-bearing fixture 必须 fail closed。
 
-Planning verifier exit 0 表示：候选 bytes、inventory、work-item graph、阶段 flags、文档引用和 selector policy 与仓库事实一致。它明确不表示 normative package、approval、implementation 或 Q0 绿色。
+产品指标至少包括：`prequalified_host_to_first_dry_run_operator_minutes`、`first_commit_ready_pilot_operator_minutes`、`eligible_template_coverage`、`template_qualification_lead_time`、`operator_action_age`、`policy_false_block_review_rate`、`completed_work_items_per_operator_kickoff`、`unattended_verified_closeout_rate`、`net_operator_minutes_per_success`。`unknown_or_unavailable_never_zero`。
 
-Selector 是只读、快速、无副作用入口；不运行 full preflight，不修改状态。当前预期：
+## 4. Planning slice gate
+
+固定顺序仍是 `build -> test -> contract/invariant -> hotspot`：
+
+1. build：`gate_na`；reason=当前是 candidate planning 且新 package 不存在；alternative=`uv run --project ./runtime/host-orchestrator python -m pytest`；evidence=本合同；expires_at=`LAR-P0D-001`；recovery_condition=P0D 建立真实 build 入口。
+2. test：`uv run --project ./runtime/host-orchestrator python -m pytest`。
+3. contract/invariant：`python scripts/verify-planning-status.py`，然后 `python scripts/select-next-work.py`。
+4. hotspot：`gate_na`；reason=planning 不改 runtime hot path；alternative=planning tests + verifier + selector + `git diff --check`；expires_at=first executable slice after P0D；recovery_condition=首个 executable slice 使用真实 hotspot profile。
+5. release-style：`pwsh -NoProfile -NonInteractive -File scripts/governance/preflight.ps1 -DisableAutoCommit`。
+
+Selector 是 read-only、无副作用、不会运行 full preflight。当前期望：
 
 ```json
 {
-  "next_action": "close_baseline_normative_package_first",
-  "current_work_item_id": "LAR-P0A-009"
+  "action": "close_baseline_normative_package_first",
+  "current_work_item_id": "LAR-P0A-004"
 }
 ```
 
-Planning closeout acceptance 以一个 selector-selected work item 为原子单元。只有 acceptance、declared verification、repo evidence、planning status、本地可回滚 commit 和 clean worktree 全部闭合后，同一 run 才能重新 selector；默认预算为 3 项/180 分钟，失败或阶段/批准/successor/live/auth/provider/remote/破坏性边界立即停止。
+## 5. New runtime exact gate profile
 
-自主、速度和效率 claim 必须同时记录 work items/operator kickoff、unattended verified closeout、net operator minutes/success、Native 与 Batch P50/P95、task/downstream outcome、token/cost/rework 和 recovery/rollback。缺失值口径固定为 `unknown_or_unavailable_never_zero`；任何“最优”只在 declared role/task family/surface/profile generation/cohort 内有效。planning model 候选未通过配对评测、generation qualification 和质量/安全/证据硬门前不得激活，禁止 silent dynamic model/effort/provider fallback。
-
-## 4. 固定开发门顺序
-
-仓库级顺序保持：`build -> test -> contract/invariant -> hotspot`。
-
-当前 candidate/planning 切片：
-
-1. build：`gate_na`，当前 legacy 主线无独立 build gate；替代为 host-orchestrator pytest；到新 package scaffold 时失效。
-2. test：`uv run --project ./runtime/host-orchestrator python -m pytest`
-3. contract/invariant：`python scripts/verify-planning-status.py`
-4. hotspot：`gate_na`，替代为 planning tests + verifier + `git diff --check`；到新 package execution slice 时失效。
-5. release-style：`pwsh -NoProfile -NonInteractive -File scripts/governance/preflight.ps1 -DisableAutoCommit`
-6. hygiene：`git diff --check`
-
-新 package 出现后固定为：
+### 5.1 Environment preparation（不是验证 gate）
 
 ```powershell
-uv lock --check --offline --project runtime/local-ai-runtime
-uv build --offline --project runtime/local-ai-runtime runtime/local-ai-runtime
-uv run --locked --offline --project runtime/local-ai-runtime python -m pytest
-uv run --locked --offline --project runtime/local-ai-runtime python -m local_ai_runtime contracts verify
-uv run --locked --offline --project runtime/local-ai-runtime ruff check runtime/local-ai-runtime
-uv run --locked --offline --project runtime/local-ai-runtime pyright --project runtime/local-ai-runtime
+& <uv.absolute_path> sync --exact --locked --offline --no-python-downloads --python <python.absolute_path> --project runtime/local-ai-runtime
+```
+
+Preparation 必须显式调用且单独留 evidence；验证命令不得自动 sync/download。`python.absolute_path`、patch、file identity/SHA-256 与 `uv.absolute_path`/version/hash 必须来自 `RuntimeToolchainManifest`。
+
+### 5.2 固定门序
+
+1. supply-chain identity
+
+```powershell
+& <uv.absolute_path> lock --check --offline --no-python-downloads --python <python.absolute_path> --project runtime/local-ai-runtime
+& <python.absolute_path> -I -s -E -m local_ai_runtime toolchain verify-environment --profile new_runtime_exact_v1 --json
+```
+
+2. build
+
+```powershell
+& <uv.absolute_path> build --offline --no-python-downloads --python <python.absolute_path> --build-constraint <hashed_build_constraints.absolute_path> --require-hashes --project runtime/local-ai-runtime runtime/local-ai-runtime
+```
+
+3. test
+
+```powershell
+& <uv.absolute_path> run --no-sync --offline --no-python-downloads --python <python.absolute_path> --project runtime/local-ai-runtime python -I -s -E -m pytest
+```
+
+4. contract/invariant
+
+```powershell
+& <uv.absolute_path> run --no-sync --offline --no-python-downloads --python <python.absolute_path> --project runtime/local-ai-runtime python -I -s -E -m local_ai_runtime contracts verify
 python scripts/verify-planning-status.py
 python scripts/select-next-work.py
+```
+
+5. hotspot
+
+```powershell
+& <uv.absolute_path> run --no-sync --offline --no-python-downloads --python <python.absolute_path> --project runtime/local-ai-runtime ruff check runtime/local-ai-runtime
+& <uv.absolute_path> run --no-sync --offline --no-python-downloads --python <python.absolute_path> --project runtime/local-ai-runtime pyright --project runtime/local-ai-runtime
 git diff --check
 ```
 
-触及 legacy guard 时额外运行完整 host-orchestrator pytest。
+### 5.3 Exactness / reproducibility assertions
 
-## 5. `gate_na`
+- child `sys.executable`、Python patch/file identity/hash 精确匹配 manifest；
+- installed distributions 与 pytest plugins 无 extraneous/missing/drift；
+- uv 不下载 Python/dependency，不使用 PATH fallback；
+- build backend/frontend/constraints 都由 manifest hash 绑定，cache 中多 backend 不得影响选择；
+- 两个 clean roots、同 source/lock/manifest/`SOURCE_DATE_EPOCH` 产生相同 wheel/sdist member manifest 和 artifact hashes；
+- wrong Python、extraneous package/plugin、download request、unhashed constraint、cache ambiguity、repeat mismatch fixtures 都必须失败。
 
-仅纯文档/注释/排版或门客观不存在时允许，必须记录：
+## 6. Architecture/contract invariants
 
-- `reason`
-- `alternative_verification`
-- `evidence_link`
-- `expires_at`
+- `approved_root_files=[__init__.py,__main__.py]`；`approved_subpackages=[contracts,kernel,qualification,storage,execution,recovery,git_local,operations,compat]`；每个 `required_source_owners` 唯一。
+- SQLite 是唯一 policy/transition authority；journal 只作 accepted-cursor/fence-bound observation/recovery input。同 accepted history + policy generation 必须 deterministic replay。
+- ProcessHandlePolicy/ChildHandleManifest 使用 suspended launch、Job list、`PROC_THREAD_ATTRIBUTE_HANDLE_LIST`、`STARTF_USESTDHANDLES` 精确 stdio/EOF；未知 process identity 禁止 adoption。
+- Windows environment catalog key 使用 `OrdinalIgnoreCase` 唯一性，拒绝 aliases、hidden `=X:`、NUL，输出排序 UTF-16 double-NUL block 并 child read-back。
+- 每 task generation 的 writer execution commit 为 0 或 1；`writer_effect_id` 稳定，`writer_launch_id` attempt-scoped；commit 后不重跑。
+- Git controller 独立计算 canonical payload/OID，pinned Git materialize，`cat-file` read-back；single parent、no reflog、task ref only，不 merge/push。
+- EvidenceProjectionAcceptance、`runtime_external_v1`、QuarantineKeyEnvelope、RuntimeIntegrityKeyEnvelope、BackupRestoreEligibility、BackupPostActivity、BackupRestoreIntent 全部 purpose/activation/generation-bound；raw output/content hash 不持久化。
+- Cleanup finalizer 不得因 guard/marker/journal/file row 缺失而跳过；不确定状态进入 durable recovery/operator action。
+- global writer capacity=1；B3 portfolio scheduling、multi-writer、remote/distributed runtime、SDK/App Server/managed Worktree/Automations 不属于 0.2。
 
-`gate_na` 不改变门顺序，不能用于跳过已存在 gate，也不能把整套测试标成 N/A。至少运行相关 verifier、selector、script parse 和 diff hygiene。
+## 7. Implementation Acceptance
 
-## 6. Contract acceptance
+必须验证：
 
-规范包必须覆盖：
+- P0C legacy ownership guard 与 P0D isolated scaffold 均闭合；new package 不 import/double-write legacy；
+- 55-task graph 的 P1 implementation 与 11 contract projections 双向闭合；
+- migrations/rollback/crash windows/response-loss/backup restore/cross-conformance green；
+- first-run human+JSON journey、four templates、operator inbox/runbooks green；
+- `new_runtime_exact_v1` 与 clean-root reproducibility green；
+- provider-free fixture closeout 无 unauthorized effect；
+- `RuntimeCompositionManifest C` 与 ImplementationAcceptanceRecord 精确绑定。
 
-- byte format、全部 Unicode Cc/Cf/noncharacter/bidi/zero-width policy、duplicate JSON key、NFC、array order/set semantics、domain separation；
-- Git path、NTFS case collision、alias-aware 8.3 handle identity、`policy_query_denied` 和 bypass probe；
-- qualification present/absent/expanded/blocked union；
-- base-bound `QualificationObservation` 与排除普通 base/task/submission identity 的 reusable sensitive set refresh；
-- closed parameters、64 KiB、path/command-line/resource boundaries；
-- submission bounded parse/canonicalize/volatile lookup/authorized replay/absent-only admission 的顺序、root稳定性、零oracle和resubmission uniqueness；
-- `WorkDefinition`/`TaskFamily` closed goal/effect/evaluation、`EffectPlan` logical effect/authority/postcondition/recovery class、bounded `GateGraph` DAG；
-- state transition completeness、guard acyclicity、unknown exit 2；
-- event/status required/forbidden matrix；
-- writer/StageJob suspended launch、`ProcessHandlePolicy`、`PROC_THREAD_ATTRIBUTE_JOB_LIST + PROC_THREAD_ATTRIBUTE_HANDLE_LIST`、`STARTF_USESTDHANDLES` 精确 stdio、`ChildHandleManifest`、parent-end close/EOF、root/child/safety execution authority、grant/revoke、adoption/continuation；
-- Windows environment `OrdinalIgnoreCase` 唯一键、case alias/hidden `=X:`/NUL 拒绝、canonical UTF-16 排序、double-NUL 与 child read-back；
-- opaque sandbox diagnostic、deny-read、bounded rotation、OperatorWorkSession + secret-scan export；
-- mandatory write accounting、watcher/fallback/final audit、emergency reserve lifecycle、optional hard quota 与 disk_pressure 分流；
-- object promotion、claim-time binding、no-reflog finalize/ref/remove；
-- `git_hybrid_materialization_v1`：controller canonical payload/expected OID、pinned Git `hash-object -w` attempt-local materialization、`cat-file` type/size/payload read-back；
-- activation-bound `runtime_external_v1`、`EvidenceProjectionAcceptance`、evidence root与repo/Git/worktree/attempt/controller-sensitive roots的identity/ancestry/alias隔离；
-- purpose-separated `QuarantineKeyEnvelope`/`RuntimeIntegrityKeyEnvelope`、same-SID DPAPI unwrap、`BackupRestoreEligibility`、`BackupPostActivity` marker-before-mutation、immutable `BackupRestoreIntent` 与single consumption；
-- profile generation -> capability generation -> architecture epoch 的升级分类、`Q0TriggerPolicy`、Full/quick/daily Q0 和 reason-code catalogs；
-- `durable_local_status_v1` action inbox 与 optional `qualified_windows_toast_v1` transport 分离；`portfolio_data_only_v1` 拒绝 repo executable selector content。
-- Native thin-path evaluation 的 immutable contract、per-surface capability result、hard-floor/stop-rule 与三种 decision；只有 `preserve_v3_23_semantics` 才释放 P0A closure，`narrow_profile_or_adapter_candidate` 与 `supersede_required` 都创建 v3.24 successor。
-- source-layout contract：包根只允许 `__init__.py` 和薄 `__main__.py`，每个功能模块属于批准子包，规划清单与实际 source tree 使用同一 allowlist verifier。
+通过不自动启用生产 runtime，也不等于 Full Q0。
 
-每个大小、时间、path、override 和 command-line limit 必须有 limit-1/limit/limit+1。
+## 8. Full Q0 / P2 Admission
 
-## 7. At-most-once acceptance
+staged installation 在 current pointer 未切换时完成真实 Windows/Codex/Git/sandbox/toolchain/adapter/profile probes。Full Q0 绑定 `C + I + staged_identity`；activation bundle 绑定 expected previous active；pointer CAS 先生成 SelectedRuntimeIdentity，只有 immediate quick preflight 成功后才形成 ActiveRuntimeIdentity。
 
-Verifier 和 crash tests必须证明：
+Full Q0 至少覆盖：Job/handle/stdio/EOF、named objects、environment、sandbox/secret/keyring、repo/path/Git config/object/ref、process/gate timeout、SQLite/journal recovery、evidence/backup restore、write accounting/emergency reserve、exact toolchain、first-run/four templates、legacy ownership、task-side network deny。Full Q0 green 与 P2 Admission 同 gate，只开放一个 pilot。
 
-- 同一 task generation 恰有一个稳定 `writer_effect_id`，`writer_execution_committed` count 为 0 或 1；commit 后不得创建替代 writer；
-- 同一 attempt 最多一个 `writer_launch_id` 和 writer process；只有 prior suspended process 在 execution commit 前被证明终止，fresh attempt 才可复用 effect ID 并创建新 launch；
-- 同一 StageJob run 最多一个 process identity/execution commit；
-- 同一 attempt/effect 最多一个 AuthorizationExecutionGrant 或 SafetyOnlyExecutionRecord，且不能同时存在；
-- inherited child process grant 恰好引用一个 parent action grant、current fenced head 和 exact StageJob，且不能用于 writer/gate/model/arbitrary command；
-- 同一 fenced action 最多一个 terminal result；
-- 同一 resubmission source 最多一个 successor；
-- 同一 backup generation 最多一个 production restore intent/consumption，且 post-backup authoritative activity 后永远不可恢复 eligibility；
-- ordinary submit 永远返回 root task；
-- 任何响应丢失重放返回原 ID/result；
-- `writer_execution_committed` 后零 mutation 也不能触发 writer retry。
-- `resume_outcome_unknown` 必须继续跟踪原 PID/Job、drain/terminate/seal；无法证明 final result 时写稳定 unresolved，不生成 receipt/commit/ref。
+## 9. P2/P3/P4/P5 acceptance
 
-## 8. Crash matrix
+- P2：one low-risk self-host 完整 commit/task-ref/evidence/recovery/rollback；无隐式人工。
+- P3：five scheduled self-host；验证 scheduler trigger、recovery priority、daily canary、operator action dedupe/age。
+- P4：B2/per-repo；two explicitly qualified repos、30 tasks、至少 25 commit-ready、最多 5 probe-only、12 paired cases；security hard failures=0、mandatory gates/evidence/backup/recovery=100%、unattended >=80%、manual <=20%、无 unresolved state；DownstreamOutcomeRecord 保留 censored/unknown 分母。
+- P5：每 repo zero-active + rollback drill + ownership CAS；全部 cutover 后 legacy read-only；30-day zero legacy calls 后 retire writer；保留 compat/evidence/task refs。
 
-覆盖 ownership replace、claim/lease、marker 各阶段、effect/launch identity、suspended spawn、JOB_LIST/HANDLE_LIST 与 `STARTF_USESTDHANDLES` 构造、parent child-end close/EOF、root/child/safety execution authority、resume barrier、same-name Job、partial/invalid JSONL、event append/flush/DB cursor、segment continuation、artifact intent/publish、连续 adoption、Authorization continuation、gate、Git hybrid materialization/read-back、object promotion、index、HEAD、task ref、evidence、remove、write accounting/limit、emergency reserve release/rebuild、optional quota、key-envelope copy/unwrap、eligible/stale marker、restore intent与restoring/consumed CAS，以及 activation intent/pointer CAS/read-back/immediate-preflight/response-loss recovery。
+P4 不激活 B3；B3 deferred beyond 0.2。P5 直接依赖 P4。
 
-每点必须给出：pre-state、durable writes、injected crash、restart observation、allowed recovery、forbidden duplicate side effect 和 terminal evidence。
+源码 contract marker 为 `contracts/kernel/qualification/storage/execution/recovery/git_local/operations/compat`；它与 `approved_root_files`、`approved_subpackages`、`required_source_owners` 的 machine projection 必须完全一致。
 
-## 9. Security hard gates
+## 10. Evidence 与 truth boundary
 
-以下必须全部为 0，且不接受 waiver：
-
-- unauthorized write；
-- declared/detected secret leakage；
-- duplicate writer；
-- conflicting object/commit/ref；
-- incorrect cleanup；
-- unaccounted Git side effect；
-- successful unauthorized egress。
-
-失败按 GuardCatalog scope 暂停 attempt/template/repo/platform。普通资源和进程失败不能默认升级为 platform incompatible。
-
-## 10. Q0、quick 与 daily
-
-- Full Q0：由 `Q0TriggerPolicy` 对 composition diff 决定。新 adapter/provider/runtime engine、sandbox/token/permission/tool inventory、Git/network/delivery、Windows helper、canonicalization/persistence/schema/migration/probe或 unknown diff 必须 Implementation Acceptance + Full Q0；同一已证明 envelope 内的收窄 timeout/resource/path/gate 可 scoped requalification + new Authorization + canary。真实 Q0 验证 Windows environment block、JOB_LIST/HANDLE_LIST stdio inheritance与EOF、runtime-managed evidence root、DPAPI purpose separation和suspended-only restore eligibility。
-- Quick preflight：每 drain/attempt，复核 hashes、effective config、inventory、auth generation、repo/base/ownership、writable roots、evidence root identity、write-accounting mode 和 emergency-reserve generation。
-- Daily canary：临时 repo 真实验证 allow/deny、untrusted project、config/hooks、opaque sandbox log boundary、provider vs task network、keyring refresh、feature/tool inventory、ephemeral diff、Job kill、handle leakage/EOF、DLL、alias/reparse/hardlink、external evidence isolation、write limits/reserve、Git object 和 deterministic commit。
-
-## 11. Pilot 与 cohort
-
-P2：一个人工启动 low-risk self-host task，commit-ready、安全硬门零、无 unresolved state。
-
-P3：5 个 scheduled self-host writer task，全部完成或 phase 失败。
-
-P4 30-task cohort：Autonomy 全程保持 B2/per-repo；最多 5 probe-only、至少 25 commit-ready；self-host 和两个目标 repo 各至少 5 writer；unattended >=80%，manual <=20%；mandatory gates/evidence/backup/recovery 100%；结束无 unresolved state。每条记录必须标记 `evidence_scope=declared_profile_pilot`，不声明跨 profile 或一般最优。`commit-ready` 不能单独构成长期质量：抽样 `DownstreamOutcomeRecord` 必须绑定 ActiveRuntimeIdentity、task/final integration commit lineage、human review disposition、merge/reject/rework、later CI、revert 或 defect evidence locator；`censored|unknown` 保持分母且不算 pass。
-
-只有 P4 terminal green 后，`LAR-P4-002` 才能通过受控 action 激活 B3 `portfolio_data_only_v1` generation；global capacity仍为1。P5 从 P4 独立继续，不依赖 B3 激活。
-
-效率：至少 12 个相同 snapshot/controller prompt/gate/qualification/task distribution 的严格配对 case，每模板族至少 3 个。`net_operator_minutes_per_success` 下降至少 50%，并且成功/操作者小时提高至少 50%或 P50 周期下降至少 30%。任何 quality、security、evidence 或 sampled `DownstreamOutcomeRecord` hard floor 的下降都使该效率收益无效。
-
-## 12. Evidence acceptance
-
-每个 acceptance record 必须可独立验证，绑定 generation、hash、命令、exit、时间、环境和 evidence locator。Raw prompt、JSONL、stdout/stderr、argv/env/config dump 不进入 evidence；stdout/stderr content hash 也禁止。
-
-任何后续阻断发现通过 append-only revocation/supersession 使旧 approval/acceptance 失效，不能删除或修改旧记录。
+每项证据写 objective/identity/write-set、实际 command/exit/output/hash、acceptance mapping、N/A、compat、risk/unknown、rollback、fresh selector。planning green、phase closeout、repo-side done、Implementation Acceptance、Full Q0、live accepted 必须分别表述；任何 simulation/predecessor/legacy evidence 都不能冒充新 runtime live acceptance。

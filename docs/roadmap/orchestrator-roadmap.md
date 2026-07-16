@@ -1,148 +1,106 @@
 # Local AI Runtime 0.2 路线图
 
-## 状态
+## 1. 路线真值与总原则
 
-当前 baseline `local-ai-runtime-0.2-v3.23` 未批准。冻结正文与 v3.23-bound lineage、manifest schema/fixtures/verifier skeleton、`CanonicalizationPolicy.v1`、`ProductContract.v1`、`QualificationContractSet.v1`、`ExecutionSafetyContractSet.v1`、`EvidenceContractSet.v1` 和 `DeterministicGitContractSet.v1` 已完成，但最终 manifest 仍不存在，规范包仍为 `15 required / 8 present / 7 missing`。`LAR-P0A-EVAL-002` 已完成固定比较并记录 `preserve_v3_23_semantics`；路线图下一步是 `LAR-P0A-009` state/guard/operator catalog slice。不把评测结果、历史 `PHASE-1-VERTICAL-SLICE`、experimental runtime_v2 或 legacy probe 当作新实现完成证据。
+当前 baseline candidate 是 `local-ai-runtime-0.2-v3.24`；package 为 `6/15 present, 9 non-present`；唯一 selectable work item 是 `LAR-P0A-004`。机器图总计 55 项，schema 为 `local_ai_runtime_work_items.v4`，含 11 个 closed contract projections，以 [work items](D:/CODE/local-ai-dev-orchestrator/docs/plans/local-ai-runtime-0.2-work-items.json) 为任务真源。
 
-## 总依赖链
+产品目标是 Windows-local single-operator 的 Unified Native + global capacity=1 deterministic commit-only Batch。首发以首次安全 commit-ready 体验和 operator minutes 为中心，不追求并发吞吐。`same_run_reselect_after_verified_atomic_closeout` 允许一次 kickoff 在每项完整 closeout 后继续，默认最多 3 项/180 分钟；不跨阶段、批准、successor 或 live 外部写边界。
 
-```text
-Native thin-path / capability comparative evaluation
- -> P0A Normative Package Closure
- -> Baseline Approval
- -> P0B Truth Reset
- -> P0C Legacy Ownership Guard
- -> P0D Isolated Package/Harness
- -> P1 Implementation
- -> Implementation Acceptance
- -> Full Q0
- -> P2 One Pilot
- -> P3 Five Scheduled Self-host Tasks
- -> P4 under B2: Two Repos + 30-task Cohort
-    -> P4-002 Activate B3 Portfolio Generation
-    -> P5 Per-repo Cutover + Legacy Retirement
+```mermaid
+flowchart LR
+    P0A["P0A Normative closure"] --> GOV["Baseline Approval"]
+    GOV --> P0B["P0B Truth Reset"]
+    P0B --> P0C["P0C Legacy guard"]
+    P0B --> P0D["P0D No-side-effect scaffold"]
+    P0C --> JOIN["P0C + P0D join"]
+    P0D --> JOIN
+    JOIN --> P1["P1 Implementation"]
+    P1 --> IA["Implementation Acceptance"]
+    IA --> Q0["Full Q0 / P2 Admission"]
+    Q0 --> P2["P2 One pilot"]
+    P2 --> P3["P3 Five scheduled self-host"]
+    P3 --> P4["P4 Two repos / 30 tasks"]
+    P4 --> P5["P5 Per-repo cutover"]
 ```
 
-每个箭头是硬门，不能以文档、fixture、simulation、legacy evidence 或人工口头判断替代。
+## 2. P0A — Baseline normative package closure
 
-Baseline Approval 由独立人工治理工作项 `LAR-GOV-001` 执行；它不与 P0A review 或 P0B Truth Reset 合并。
+目标：在不创建 runtime、approval 或 live evidence 的前提下，把自包含 v3.24 narrative 机械化为完整、可独立验证的 15-artifact package。
 
-执行节奏由现有 machine plan 的 `same_run_reselect_after_verified_atomic_closeout` 控制：每次 selector 仍只返回一个 work item，但一个 bounded run 可在该项 evidence/commit/status/clean-worktree 闭合后重新 selector，默认最多 3 项或 180 分钟。它不新增 roadmap 阶段、不改变 DAG 顺序；阶段/批准、successor、live/auth/provider/remote/破坏性边界和任一失败都停止。
+已完成：
 
-## P0A：规范包闭包
+- `LAR-P0A-REBASELINE-V324`：冻结 v3.23 candidate/package/plan，创建 v3.24 与 `BaselineLineage.v3`；只 carry forward canonicalization、execution、evidence、Git 四个精确 artifact；删除 0.2 B3 activation；建立 exact toolchain/launch experience successor。
+- v3.23 Native comparative evaluation 保留为 non-normative predecessor evidence，不 promotion profile，也不参与当前 selector。
 
-目标：把完整 prose candidate 变成可以批准和实现的机械 contract package。
+剩余关键序列：
 
-工作项：已完成 `LAR-P0A-001`、`LAR-P0A-REBASELINE-V322`、`LAR-P0A-REBASELINE-V323`、`LAR-P0A-EVAL-001`、`LAR-P0A-EVAL-002`、`LAR-P0A-002`、`LAR-P0A-003`、`LAR-P0A-004`、`LAR-P0A-005`、`LAR-P0A-006`、`LAR-P0A-007` 和 `LAR-P0A-008`；评测决定为 `preserve_v3_23_semantics`，当前唯一 selectable 项为 `LAR-P0A-009`。`LAR-P0A-009` 至 `LAR-P0A-013` 继续按 DAG 闭合；后续若出现规范语义变化，仍须创建 successor，不能改写 v3.23。
+1. `LAR-P0A-004` — `ProductContract.v2`、`FirstRunExperiencePolicy`、`LaunchTemplateCatalog`、`OperatorPresentationCatalog`、四模板 positive/negative fixtures；当前 ready。
+2. `LAR-P0A-005` — `QualificationContractSet.v2`、`RuntimeToolchainManifest`、`VerificationExecutionProfile`、hashed build constraints、wrong-interpreter/extraneous-package/backend-cache/repeatability fixtures。
+3. `LAR-P0A-009` — SQLite-authority/journal-observation state policy、GuardCatalog、cleanup finalizers、durable operator inbox、B3 deferred rows。
+4. `LAR-P0A-010` — GateGraph、Q0 triggers、activation chain、resource/process/Windows probes、exact toolchain gate evaluation。
+5. `LAR-P0A-011` — cross-contract examples、negative/crash/limit fixtures。
+6. `LAR-P0A-012` — standalone package verifier 与 tamper tests。
+7. `LAR-P0A-013` — preliminary review、`package_review_head`、一次性 final manifest、manifest-closure review、`approval_review_head`。
 
-交付：
+P0A exit：15/15 present；standalone verifier green；P0/P1 normative findings=0；package `approval_eligible=true`；仍无 approval/runtime/live state。
 
-- 版本谱系、v3.17 exact-byte archive、两份 conflicted v3.18、精确 v3.19-v3.22 archives 与冻结 v3.23 identity；
-- 固定 snapshot、TaskFamily、model/effort、tool inventory、sandbox、gates、人工介入定义的 Native thin-path 比较，及 CLI、App Server、SDK、managed Worktree、Automations 的独立 capability probe；
-- narrative/artifact/package 三层版本语义、manifest schema/byte verifier，以及 P0A-013 冻结 `package_review_head` 后一次性生成的最终 BaselineManifest；
-- WorkDefinition/TaskFamily/EffectPlan/GateGraph、canonicalization/path/alias、永久 submission replay、qualification/auth、writer effect/launch identity、execution-authority/fencing、durable operator inbox、Git hybrid、state/guard、Q0TriggerPolicy、write-accounting/optional-quota bundles；
-- 所有 schema、catalog、transition row、positive/negative examples、crash/limit fixtures；
-- standalone baseline verifier；
-- append-only ReviewEvidenceIndex、preliminary consistency review、manifest-closure review 与 `approval_review_head` 后继证明。
+## 3. Governance — Baseline Approval
 
-出口：Native thin-path 评测具有可审计结果，且若继续 v3.23 必须为 `preserve_v3_23_semantics`；package inventory 零 missing，verifier 绿色，P0/P1 规范 finding 为零，`approval_eligible=true`。Baseline Approval 仍需独立授权记录。
+`LAR-GOV-001` 是独立、明确授权的 controlled action。输入包括 package identity、review heads、authority/session、expected generation 和 anti-replay challenge。AI 不得自签，review 不得顺手批准。
 
-## P0B：Truth Reset
+Exit：active `BaselineApprovalRecord` 精确绑定 v3.24 package；可撤销/替代；不含实现完成声明。
 
-工作项：`LAR-P0B-001`。
+## 4. P0B — Truth Reset
 
-入口：active、未撤销、hash 匹配的 BaselineApprovalRecord。
+`LAR-P0B-001` 在 approval 后将 planning/runtime truth 从 candidate 转换为 approved generation，但不得创建 writer 或 claim。它冻结 active baseline、ownership wire generation、migration preconditions 与 rollback checkpoint。
 
-动作：原子同步 AGENTS、README、PRD、architecture、roadmap、plan、backlog、acceptance、planning status、selector/verifier 和 evidence index。队列切为 `MINIMUM-OPERATOR-COMMIT-ONLY-TRANSITION`，selector 切为 `implement_legacy_guard_first`。
+Exit：Truth Reset record/verification green；legacy runtime 行为不变；P0C/P0D 才可被 selector 释放。
 
-出口：所有 authoritative surfaces 指向同一 approved generation；现有 runtime 仍是当前可执行真值，新包仍未 claim。
+## 5. P0C 与 P0D — 安全并行准备
 
-## P0C：Legacy Ownership Guard
+P0C 关闭 legacy ownership：盘点 `runtime/host-orchestrator`、AgentBridge/Hermes/runtime_v2 全部副作用入口，建立 shared ownership wire、named mutex、repo generation 与 fail-closed guard，并证明 legacy 仍是 owner。
 
-工作项：`LAR-P0C-001` 至 `LAR-P0C-003`。
+P0D 创建无副作用 scaffold：`runtime/local-ai-runtime` Python 3.11.x modular monolith，根只含 `approved_root_files=[__init__.py,__main__.py]`；`approved_subpackages=[contracts,kernel,qualification,storage,execution,recovery,git_local,operations,compat]`，也即 `contracts/kernel/qualification/storage/execution/recovery/git_local/operations/compat`；由 `required_source_owners` 一对一绑定。只允许 contracts verifier/doctor dry-run，不允许 DB claim、writer、Git publication 或 production evidence。
 
-目标：在新 runtime 出现前，先关闭 legacy/new 双 writer 风险。
+两者都只在 P0B 后开始，可由不同写集并行；P1A-001 必须依赖 `LAR-P0C-003` 与 `LAR-P0D-001` 两者，不能只凭 scaffold 进入实现。
 
-- 定义共享 ownership wire、SID/repo identity 和 mutex/SDDL。
-- 枚举并守卫 legacy claim、lease、worktree、executor、writer、repo mutation、Git、commit、closeout、cleanup。
-- 注册现有 repo 为 legacy owner。
-- 完成 cross-runtime conformance、crash/takeover、cutover/rollback drill。
+## 6. P1 — Modular-monolith implementation
 
-出口：不存在未守卫副作用入口；新 claim 仍关闭。
+P1A-P1F 共 35 个编码切片：
 
-## P0D：独立包和验收 harness
+- P1A contracts/kernel：typed contract registry、submission/work definition、reason code/state/guard kernel；
+- P1B storage：SQLite schema/migration/CAS、artifact/evidence/outbox、backup metadata；
+- P1C operations/qualification：composition/activation、toolchain/repo/template qualification、Authorization、CLI/doctor/template/first-run；
+- P1D execution/recovery：claim、suspended Job spawn、pipe/journal/gates、recovery/adoption/cleanup finalizer；
+- P1E git_local：config audit、object materialization/read-back、commit/index/HEAD/task-ref/finalize/remove；
+- P1F product operations/compat：scheduler、four launch templates、managed Native drain、operator action/status/evidence、legacy reader。
 
-工作项：`LAR-P0D-001`。
+`LAR-P1G-001` 是横向 Integration Acceptance candidate：验证全部 11 projections、first-run journey、four templates、exact toolchain、no hidden module、migration/crash/backup/compat；仍不授权 production writer。
 
-目标：创建 `runtime/local-ai-runtime` 的 Python 3.11.x 模块化单体，具体 patch 由 `RuntimeToolchainManifest` 锁定；建立 offline lock/build/test/contracts/ruff/pyright 门，禁止 import `host_orchestrator`，禁止执行 Batch。
+每个 runtime slice 使用 `new_runtime_exact_v1`：显式 exact sync 只作 environment preparation；固定 `supply_chain_identity -> build -> test -> contract_invariant -> hotspot`；validation no-sync/no-download，build backend hash-pinned，clean-root repeatable。
 
-源码布局同时成为机械出口：`approved_root_files=["__init__.py","__main__.py"]`；`approved_subpackages=["contracts","kernel","qualification","storage","execution","recovery","git_local","operations","compat"]`；`required_source_owners` 固定 bootstrap/marker 的唯一任务。P0D 只创建包根 marker、薄 contracts-verifier bootstrap 和 harness；后续每个子包的首个实现任务创建其 `__init__.py`，所有功能模块必须位于批准子包内。
+## 7. Implementation Acceptance 与 Full Q0/P2 Admission
 
-出口：纯 scaffold 和 approved contracts 可离线验证。
+Implementation Acceptance 绑定 `RuntimeCompositionManifest C` 与实现 evidence；Full Q0 在 staged installation 验证 Windows/Git/Codex/sandbox/toolchain/adapter/profile 行为，产生 `Q(C,I,staged_identity)`；activation 只有在 pointer CAS + quick preflight 成功后才生成 `ActiveRuntimeIdentity`。
 
-## P1：实现
+硬门包括：exact interpreter/distribution/plugin/backend identity、Job/handle/stdio/EOF、sandbox/secret isolation、Git config/object/ref、SQLite/journal recovery、backup restore、disk/write accounting、first-run CLI、four template fixtures、legacy guard 与 zero unauthorized egress。
 
-机器图总计 65 项；下表 P1A-P1F 合计 35 个 AI 编码切片，使用确定性 DAG。独立验证分支可以并行准备；每个原子 closeout 只关闭 selector 指向的唯一任务，闭合后才可在同一 bounded run 继续，且 Epoch 1 真实 writer capacity 始终为 1。
+Exit：FullQ0Record green 与 P2 Admission 同 gate；只释放一个 pilot，不等于 general rollout。
 
-| 阶段 | 工作项 | 交付 | 关键出口 |
-|---|---|---|---|
-| P1A | `LAR-P1A-001` 至 `LAR-P1A-004` | canonical/path primitives、typed schemas、state/guard、cross-contract verifier | fixtures 全闭合、未知组合 exit 2 |
-| P1B | `LAR-P1B-001` 至 `LAR-P1B-005` | SQLite/migration、submission、lease/fence、journal/outbox、storage crash replay | migration/rollback、CAS、response-loss 绿色 |
-| P1C | `LAR-P1C-001` 至 `LAR-P1C-007` | install/activation、toolchain/env、repo/Auth、sandbox、write accounting/reserve、offline Q0、adapter no-write smoke | isolated-root/resource/qualification/adapter probes 绿色 |
-| P1D | `LAR-P1D-001` 至 `LAR-P1D-006` | named Job、writer launch、StageJob authority、stream/journal、recovery、gate runner | at-most-once、handle/EOF、revoke/safety、crash matrix 绿色 |
-| P1E | `LAR-P1E-001` 至 `LAR-P1E-007` | Git audit、worktree/mutation、hybrid objects、finalize/ref、artifact/evidence、cleanup/backup、provider-free rehearsal | deterministic closeout 与 anti-rollback restore 绿色 |
-| P1F | `LAR-P1F-001` 至 `LAR-P1F-006` | CLI、Batch commands、scheduler、managed Native、operator/runbooks、compat/eval | stable JSON/exit/reason，所有 dry-run 零 live 副作用 |
-| P1G | `LAR-P1G-001` | Implementation Acceptance | 全 offline gate 和 drill 绿色；P2 仍阻断 |
+## 8. P2-P4 — 渐进证据
 
-## Q0：真实平台资格化与 P2 Admission
+- P2：self-host 单任务，证明从 dry-run 到 local commit/task ref、evidence、recovery/rollback 的完整路径。
+- P3：五次 scheduled self-host，证明 Windows Task Scheduler trigger、recovery priority、operator inbox 与 daily qualification。
+- P4：在 B2/per-repo 下显式资格化两个 repo，运行 30-task cohort（至少 25 commit-ready、最多 5 probe-only、12 paired cases），验证安全硬门、80% unattended、人工分钟、downstream outcome 和恢复。
 
-工作项：`LAR-Q0-001`。
+B3 portfolio scheduling deferred beyond 0.2。P4 不激活 portfolio generation，不执行 repo selector code，绿色后只释放 P5。
 
-入口：Implementation Acceptance active。只运行 staged install/Codex/Git/Windows/sandbox/adapter/model/profile/keyring/network/filesystem probes；禁止 writer。按非循环 `C -> I -> Q -> B -> A` 链完成 pointer CAS 和 immediate preflight，只有 terminal `ActiveRuntimeIdentity` 才打开 P2 Admission。
+## 9. P5 — Per-repo cutover and legacy retirement
 
-出口：FullQ0Record 可验证、P2 admitted、仍无 writer/task ref。
+每个 repo 仅在 zero-active、ownership generation CAS、rollback drill 和 qualification green 时逐个 cutover。全部 repo 完成后 legacy DB 才可只读；连续 30 天零 legacy writer call 后移除 writer，保留 compat reader、历史 evidence 和 task refs。
 
-## P2：单个 pilot
+Exit：目标 repo 全部由 new runtime owned；rollback 可验证；legacy writer retired；不删除历史。
 
-工作项：`LAR-P2-001`。
+## 10. Deferred / successor backlog
 
-入口：Full Q0/P2 Admission active + repo/template qualification + Authorization。
-
-范围：一个 low-risk self-host task，人工显式启动，B1，commit-only，不 scheduled、不 merge/push。
-
-出口：commit-ready、evidence verify、所有安全硬门为零、无悬挂恢复状态。
-
-## P3：五个 scheduled self-host
-
-工作项：`LAR-P3-001`。
-
-范围：一个 promoted template，B2，全局单 writer，5 个 scheduled observations。
-
-出口：5 个 commit-ready、零 unresolved state、完整 OperatorWorkSession 计量。
-
-## P4：真实 repo cohort
-
-工作项：`LAR-P4-001`，之后并列后继为 `LAR-P4-002` 和 `LAR-P5-001`。
-
-范围：Autonomy 保持 B2/per-repo，至少两个 target repo、self-host，总计 30 个 observation；最多 5 probe-only、至少 25 commit-ready；另做至少 12 个严格配对效率 case。每条记录标记 `evidence_scope=declared_profile_pilot`。`commit-ready` 不能单独构成长期质量：每个 promotion cohort 必须抽样附回 `DownstreamOutcomeRecord`，覆盖 human review disposition、merge/reject/rework、后续 CI、revert 或 defect evidence；`censored|unknown` 留在分母且不算 pass。
-
-出口：安全硬门零；无人值守 >=80%；人工介入 <=20%；mandatory gates/evidence/backup/recovery=100%；净人工分钟/成功下降 >=50%；抽样 `DownstreamOutcomeRecord` 无质量下降结论且 unknown/censored 分母可见；无 unresolved state。
-
-`LAR-P4-002` 仅在上述出口全绿后，通过受控 operator action 激活一个 data-only `portfolio_data_only_v1` AutonomyPolicy/Authorization generation。Repo 只能提供 qualification-bound、content-addressed、closed-schema backlog snapshot，不执行 repo selector code。B3 激活失败不否定 cohort，也不阻断独立 P5。
-
-## P5：逐仓切换和退休
-
-工作项：`LAR-P5-001`。
-
-每 repo：maintenance/drain -> zero active -> backup -> rollback drill -> ownership generation CAS -> verify -> observe。失败只回滚该 repo。
-
-全部 repo cutover 且 legacy zero active/closing 后，legacy DB 只读。连续 30 天零 legacy 调用后移除写面；compat reader、历史 evidence 和 task refs 永久保留。
-
-## 升级规则
-
-- B0：contracts/doctor/prepare。
-- B1：单个人工启动 pilot。
-- B2：promoted template 的单项 scheduled drain。
-- B3：多个 qualified repo 的 data-only portfolio selection；全局 capacity 仍为 1。
-
-Profile generation、capability generation、architecture epoch 是不同升级层；运行时只激活一个完整 bundle。升级不扩大 Batch 禁止边界，必须由静态 generation、qualification、Authorization 和阶段验收激活。CLI/SDK execution interface、App Server client protocol、managed Worktree isolation、Automations scheduling 各自是独立 capability generation。任何安全/gate失败、新失败类型、新人工介入或 profile 归因成功率下降立即停止新 claim。跨 repo 多 writer 不是 CapacityProfile 开关，而是 successor architecture epoch。
+以下不在 0.2：B3 portfolio selection、跨 repo/multi-writer、remote/distributed execution、多操作者/多租户、SDK/App Server/managed Worktree/Automations、remote Git/merge/push、task-side network、通用 GUI automation。任何进入都要求 successor candidate、capability/architecture generation、migration/recovery/authority model 与独立 acceptance/Q0/cohort。

@@ -1,54 +1,84 @@
 # Local AI Runtime
 
-Local AI Runtime 是面向 Windows 本机、单操作者信任域的通用受控 AI 开发执行平台。目标产品由 Codex Native Direct/Spec/Program、Python Policy/Evidence Kernel 和全局单 writer 的 deterministic commit-only Batch 组成；legacy Hermes/AgentBridge/host-orchestrator 最终只保留只读兼容面。
+Local AI Runtime 的目标是把 Windows 本机 AI 开发从“会调用模型”提升为“能低人工、可预测、可恢复地交付本地 commit”。产品采用 Unified Native + Batch：Native Direct/Spec/Program 负责低延迟探索、澄清和模板候选；Batch 只执行已资格化的封闭模板，固定全局 `capacity=1`、deterministic commit-only，不 merge/push。
 
-## 当前状态
+## 当前真值
 
-当前规范候选是 `local-ai-runtime-0.2-v3.23`，状态为 `baseline_candidate`，`blocking_stage=baseline_approval`。冻结正文和 v3.23-bound lineage 已落盘，`BaselineManifest.v1` schema/fixtures/verifier skeleton、`CanonicalizationPolicy.v1`、`ProductContract.v1`、`QualificationContractSet.v1`、`ExecutionSafetyContractSet.v1`、`EvidenceContractSet.v1` 与 `DeterministicGitContractSet.v1` contract bundles 已完成，但最终 manifest 尚未创建且 standalone verifier 尚未冻结；规范包仍如实为 `15 required / 8 present / 7 missing`，因此仍是 **Request changes**，不是已批准实现基线。
+当前规范候选是 `local-ai-runtime-0.2-v3.24`，状态为 `baseline_candidate`，`blocking_stage=baseline_approval`。它因 v3.23 的 uv gate 无法证明 exact environment、Python identity、hash-pinned build backend，且首发体验不完整而成为 successor。v3.23 candidate、preapproval inventory 和 machine plan 已按精确 byte/hash 归档，不能改写。
 
-稳定发现入口是 [baseline candidate entry](D:/CODE/local-ai-dev-orchestrator/docs/specs/local-ai-runtime-0.2-baseline-candidate.md)。它只导航到冻结 v3.23 正文，不能作为另一份规范正文、`BaselineManifest` 输入或批准证据。
+规范包当前为 `15 required / 6 present / 9 non-present`，因此仍是 **Request changes**：
 
-- 当前队列：`LOCAL-AI-RUNTIME-0.2-BASELINE-CLOSURE`
-- 当前动作：`close_baseline_normative_package_first`
-- 当前工作项：`LAR-P0A-009`
-- 当前可执行内核：`runtime/host-orchestrator`
-- 新包 `runtime/local-ai-runtime`：尚不存在，批准前禁止创建
-- Truth Reset：未执行
-- Implementation Acceptance：未执行
-- Full Q0 / P2 Admission：未执行
+- present：v3.24 source、`BaselineLineage.v3`，以及明确 byte/hash carry-forward 的 `CanonicalizationPolicy.v1`、`ExecutionSafetyContractSet.v1`、`EvidenceContractSet.v1`、`DeterministicGitContractSet.v1`；
+- non-present：`ProductContract.v2`、`QualificationContractSet.v2`、state/Q0/migration/examples/verifier/final manifest/review；
+- Baseline Approval、Truth Reset、`runtime/local-ai-runtime`、Implementation Acceptance、Full Q0、P2 和 rollout 全部未发生。
 
-机器真值在 [planning-status.json](D:/CODE/local-ai-dev-orchestrator/docs/architecture/planning-status.json)。`python scripts/verify-planning-status.py` 通过只表示上述陈述内部一致，不表示 baseline 已批准或 runtime 已实现。
+机器真值是 [planning-status.json](D:/CODE/local-ai-dev-orchestrator/docs/architecture/planning-status.json)。当前队列为 `LOCAL-AI-RUNTIME-0.2-BASELINE-CLOSURE`，唯一工作项为 `close_baseline_normative_package_first / LAR-P0A-004`。它只创建 v3.24-bound 产品合同、first-run journey、四个 launch templates 与 operator presentation，不实现 runtime。
 
-AI 实施采用 machine work items 顶层 `planning_optimization_policy`：一个 work item 仍是唯一原子 evidence/commit/rollback 单元，但完整 closeout 后可在同一 run 重新 selector，默认最多 3 个 work item 或运行 180 分钟。失败、预算耗尽、阶段/批准、successor、live/auth/provider/remote/破坏性边界均停止。该策略没有 promotion 新 model/profile，也没有改变 v3.23 的单 writer 或 runtime authority。
+稳定 [baseline candidate entry](D:/CODE/local-ai-dev-orchestrator/docs/specs/local-ai-runtime-0.2-baseline-candidate.md) 只是 `role=non_normative_navigation`、`approval_input=false` 的导航页，不是第二份规范、manifest 输入或批准证据。
 
-当前 planning complexity health 是 `warning_all_dimensions`，不是“已变轻”：14 份权威文档、65 个 work items、11 个 projections 和 15 个 normative artifacts 已在数量硬上限，AGENTS/machine plan/verifier/tests 也都超过 80% warning 线。后续扩展这些面必须在同一切片先合并或删除等量复杂度。
+## 首发产品体验
 
-## 阅读顺序
+预资格化主机上的首条可用路径固定为：
 
-1. [planning-status.json](D:/CODE/local-ai-dev-orchestrator/docs/architecture/planning-status.json)：当前阶段、门和唯一工作项。
-2. [baseline candidate entry](D:/CODE/local-ai-dev-orchestrator/docs/specs/local-ai-runtime-0.2-baseline-candidate.md)：稳定导航页，受 planning verifier 约束，不复制规范正文。
-3. [v3.23 baseline candidate](D:/CODE/local-ai-dev-orchestrator/docs/specs/local-ai-runtime-0.2-v3.23-baseline-candidate.md)：唯一冻结的完整、自包含目标语义；v3.17-v3.22 只作为精确谱系和 superseded inputs 保留。
-4. [normative package inventory](D:/CODE/local-ai-dev-orchestrator/docs/specs/local-ai-runtime-0.2-normative-package.json)：批准前必须闭合的 artifact 及真实缺口。
-5. [machine work items](D:/CODE/local-ai-dev-orchestrator/docs/plans/local-ai-runtime-0.2-work-items.json)：v3 确定性 DAG，含 Native thin-path 前置评测、关闭的 package-root/九子包 source layout、65 项 AI 可执行任务、11 项稳定 contract projection、依赖、验收、命令、证据、回滚和停止条件；其中 P1A-P1F 是 35 个受全局单 writer 运行边界约束的编码切片。
-6. [PRD](D:/CODE/local-ai-dev-orchestrator/docs/product/orchestrator-prd.md) 与 [目标架构](D:/CODE/local-ai-dev-orchestrator/docs/architecture/orchestrator-target-architecture.md)：产品和系统投影。
-7. [路线图](D:/CODE/local-ai-dev-orchestrator/docs/roadmap/orchestrator-roadmap.md)、[实施计划](D:/CODE/local-ai-dev-orchestrator/docs/plans/orchestrator-implementation-plan.md)、[任务清单](D:/CODE/local-ai-dev-orchestrator/docs/backlog/orchestrator-task-list.md)：阶段和执行顺序。
-8. [验收与门禁](D:/CODE/local-ai-dev-orchestrator/docs/specs/acceptance-and-gates.md)：批准、实现验收、Q0 和 cohort 口径。
+1. `doctor --json`：证明 uv/Python/toolchain、Windows primitive、磁盘和秘密边界可用；
+2. `repo qualify <path> --json`：只读建立 repo identity、policy generation 与 qualification evidence；
+3. `template list/show`：只显示已批准模板、封闭参数、path/effect envelope、required/forbidden gates；
+4. `batch dry-run --template ...`：输出 canonical `WorkDefinition`、effect preview、预计 gates、停止/回滚条件，不 claim、不写 repo；
+5. `batch submit --confirm <challenge>`：仅在 qualification + Authorization + anti-replay challenge 成立后入队；
+6. `status/action/evidence show`：人类文本由公开 machine state 目录化渲染，同时提供稳定 JSON；blocked/suspended 总有一个 durable operator action。
 
-## 当前与目标边界
+首发只提供四类高频、可机械约束的 template：
 
-| 面 | 当前事实 | 批准后的目标 |
-|---|---|---|
-| 执行内核 | `runtime/host-orchestrator`；`.ai/state/control-plane.db` | `runtime/local-ai-runtime` 独立模块化单体 |
-| 产品主面 | 既有 Hermes -> AgentBridge -> Codex 兼容运行面 | Unified Native + Batch |
-| Batch | 新 Batch 不存在、不可 claim | 已批准模板、qualification、Authorization 下的单 writer commit-only |
-| 状态 | legacy DB 与 evidence 保持原样 | 新 runtime 独立 DB、外置 evidence、fenced side effects |
-| Git 交付 | legacy 行为不变 | 本地 deterministic commit + task ref；不 merge/push |
-| 自治 | 不因本次规划更新扩大 | B0 -> B1 -> B2 -> B3 分级放行 |
-| 迁移 | 未 Truth Reset、未 cutover | legacy guard -> isolated implementation -> per-repo CAS cutover |
+- `docs_contract_sync_v1`
+- `bounded_lint_type_repair_v1`
+- `focused_test_repair_v1`
+- `mechanical_repo_maintenance_v1`
 
-本轮规划重基线不修改 `.ai/config`、legacy DB、worker profile、默认入口或现有 runtime 行为。根 [AGENTS.md](D:/CODE/local-ai-dev-orchestrator/AGENTS.md) 继续描述现行内核；只有 active Baseline Approval 后的 `LAR-P0B-001` 才能执行 Truth Reset。
+自由 prompt、动态命令、依赖安装、remote effect、自动模板 promotion 均不属于 Batch。Native Spec 只能产出候选；promotion 必须是受控 operator action，并重新资格化 generation。
 
-## 常用检查
+## 工程终态与技术栈
+
+0.2 的推荐终态是 Windows-local Python modular monolith，而不是微服务或第二个 planner/router：
+
+- Python 3.11.x patch、uv executable、lockfile、installed distributions、pytest plugins 与 build backend 都由 `RuntimeToolchainManifest` 固定；
+- `runtime/local-ai-runtime/src/local_ai_runtime/` 只允许 `__init__.py`、薄 `__main__.py` 和 `contracts/kernel/qualification/storage/execution/recovery/git_local/operations/compat` 九个子包，`required_source_owners` 一对一；
+- SQLite 是唯一 policy/transition authority；append-only journal 是 observation、recovery 和 audit input，不是第二状态机；
+- Windows Job Object、suspended launch、显式 handle list/stdio、fence/adoption 和 cleanup finalizer 控制进程副作用；
+- Git 只物化 canonical local objects、single-parent execution commit 与 task ref，禁止 merge/push；
+- evidence 使用结构化 event/receipt/artifact、secret-safe projection、外置大对象和 purpose-separated key envelope；
+- Windows Task Scheduler 只触发受控入口；调度权仍在 SQLite state/guard policy；
+- global writer capacity 固定为 1。B3 portfolio scheduling、multi-writer、remote/distributed runtime、SDK/App Server/managed Worktree/Automations 均 deferred beyond 0.2。
+
+该架构对当前约束是更优解：单机单操作者无需分布式一致性成本；模块化单体保留清晰边界且便于一次性 transaction/recovery；CLI + JSON 可同时服务操作者和自动化；封闭模板让权限、证据、回滚和产品指标可验证。它不是“全场景最优”：若未来需要多机、多租户或并行 writer，应通过 architecture epoch successor 重新设计，而不是在 0.2 内预埋分布式抽象。
+
+## 精确工具链门禁
+
+P0D 起使用 machine profile `new_runtime_exact_v1`：
+
+- 环境准备显式运行 `uv sync --exact --locked --offline --no-python-downloads --python <manifest-python>`；它不是验证 gate；
+- 日常 gate 使用 `uv run --no-sync --offline --no-python-downloads --python <manifest-python>`，禁止隐式 sync/download/PATH fallback；
+- build 使用 manifest-bound `--build-constraint <hashed-file> --require-hashes`；
+- 子进程回读 `sys.executable`、patch、distribution、plugin 与 backend 身份；
+- 两个 clean roots 在相同 `SOURCE_DATE_EPOCH` 下必须产出相同 member manifest 和 artifact hashes；
+- 固定门序：`supply_chain_identity -> build -> test -> contract_invariant -> hotspot`。
+
+## 路线与并行边界
+
+P0A 关闭 normative package；独立授权后 P0B Truth Reset。P0B 完成后，P0C legacy ownership guard 与无副作用 P0D scaffold 可并行准备；P1 必须等待二者全部闭合。之后依次为 Implementation Acceptance、Full Q0/P2、single pilot、五次 scheduled self-host、30-task/two-repo P4 cohort、逐仓 P5 cutover。B3 不在 0.2 work-item graph 中。
+
+机器图是 `local_ai_runtime_work_items.v4` 的 55 项 deterministic DAG、11 项 closed contract projections。顶层 `planning_optimization_policy` 规定 `one_selector_selected_work_item`：每项必须 acceptance、verification、evidence、status、一个 local commit 和 clean worktree 全闭合，才能同一 run 重新 selector；默认最多 3 项或 180 分钟，任何失败、阶段/批准、successor、live/auth/provider/remote/破坏性边界停止。
+
+## 权威阅读顺序
+
+1. [planning status](D:/CODE/local-ai-dev-orchestrator/docs/architecture/planning-status.json)
+2. [v3.24 candidate](D:/CODE/local-ai-dev-orchestrator/docs/specs/local-ai-runtime-0.2-v3.24-baseline-candidate.md)
+3. [normative inventory](D:/CODE/local-ai-dev-orchestrator/docs/specs/local-ai-runtime-0.2-normative-package.json)
+4. [machine work items](D:/CODE/local-ai-dev-orchestrator/docs/plans/local-ai-runtime-0.2-work-items.json)
+5. [PRD](D:/CODE/local-ai-dev-orchestrator/docs/product/orchestrator-prd.md) 与 [target architecture](D:/CODE/local-ai-dev-orchestrator/docs/architecture/orchestrator-target-architecture.md)
+6. [roadmap](D:/CODE/local-ai-dev-orchestrator/docs/roadmap/orchestrator-roadmap.md)、[implementation plan](D:/CODE/local-ai-dev-orchestrator/docs/plans/orchestrator-implementation-plan.md)、[task list](D:/CODE/local-ai-dev-orchestrator/docs/backlog/orchestrator-task-list.md)
+7. [acceptance and gates](D:/CODE/local-ai-dev-orchestrator/docs/specs/acceptance-and-gates.md)
+
+## 当前检查
 
 ```powershell
 uv run --project ./runtime/host-orchestrator python -m pytest
@@ -58,13 +88,4 @@ pwsh -NoProfile -NonInteractive -File scripts/governance/preflight.ps1 -DisableA
 git diff --check
 ```
 
-预期 selector 结果为 `close_baseline_normative_package_first`，并返回 `LAR-P0A-009`。`LAR-P0A-008` 已闭合 hardened Git environment/config audit、controller-independent blob/tree/commit framing、claim-time-bound single-parent commit、attempt-local canonical object verification/promotion、no-reflog worktree/HEAD/task-ref publication 与 promote/reachability/index/HEAD/task-ref/evidence/remove 顺序；本次只用 fixture 和 `git hash-object` 无写入交叉验证，没有对真实目标仓执行 Git、创建对象或 ref。`LAR-P0A-EVAL-002` 固定比较已记录 `preserve_v3_23_semantics`：精简 Native 为 `4/9`，Native+agent-side mandatory gate prompt 为 `1/9`，两者都不足以 promotion `gpt-5.6-sol/high` profile；独立 evaluator gates/evidence/recovery 继续保留。18 个 core trial 因外部 host 漂移跨 3 个分别 Q0-admitted CLI generation，合并结果只用于保守决策，不是同 generation profile promotion 证据；CLI execution interface 的资格只绑定当前最终 generation，不能外推到 App Server、SDK、managed Worktree 或 Automations。baseline 仍未批准；任何实现任务若绕过 normative closure、Baseline Approval、Truth Reset 或 Legacy Ownership Guard，均属于非法跳阶段。
-
-## 不可误读的结论
-
-- v3.23 正文完整且谱系 present，不等于规范包完整；正文 ID、各 artifact version 和最终 BaselineManifest 是三个不同的版本层次。
-- planning gate 绿色，不等于 Baseline Approval 绿色。
-- Baseline Approval 绿色，不等于 Implementation Acceptance 绿色。
-- Implementation Acceptance 绿色，不等于 Full Q0 或 P2 Admission 绿色。
-- repo-side fixture、simulation、probe 或 legacy evidence 不得替代新 runtime 的真实门禁。
-- 用户最终仍负责检查、集成、merge 和 push；Batch 0.2 不执行这些操作。
+planning gate 绿色只证明控制面内部一致，不等于 Baseline Approval；Baseline Approval 不等于 Implementation Acceptance；Implementation Acceptance 不等于 Full Q0/P2；fixture、simulation、predecessor evaluation 和 legacy evidence 都不能替代新 runtime 的真实门禁。

@@ -1,20 +1,19 @@
 {
-  "schema_version": "local_ai_runtime_work_items.v4",
-  "plan_id": "local-ai-runtime-0.2-v3.24-implementation-work-items",
-  "baseline_id": "local-ai-runtime-0.2-v3.24",
+  "schema_version": "local_ai_runtime_work_items.v3",
+  "plan_id": "local-ai-runtime-0.2-v3.23-implementation-work-items",
+  "baseline_id": "local-ai-runtime-0.2-v3.23",
   "supersedes_plan": {
-    "plan_id": "local-ai-runtime-0.2-v3.23-implementation-work-items",
-    "path": "docs/plans/history/local-ai-runtime-0.2-v3.23-work-items.json",
+    "plan_id": "local-ai-runtime-0.2-v3.22-implementation-work-items",
     "terminal_status": "superseded",
-    "last_commit": "010dede90545e71d634087c84aef75790f5949e9",
-    "byte_count": 220533,
-    "sha256": "4b146d79c0f99a9621a8f6a743e8ddab7e2eb6d19356d2152a1c7130c0adebfe"
+    "last_commit": "6fd6cd54037f17e44192bc272306b137def7f8a4",
+    "byte_count": 202002,
+    "sha256": "acabe34f188d73015536a141a8990c333ce6643dc28347671c2523adcaf7d2cc"
   },
   "task_identity": "plan_id_plus_task_id",
   "graph_policy": {
     "kind": "deterministic_dag_v1",
     "root_task_ids": [
-      "LAR-P0A-REBASELINE-V324"
+      "LAR-P0A-001"
     ],
     "ready_order": [
       "priority_ascending",
@@ -78,7 +77,7 @@
       ]
     },
     "model_routing": {
-      "scope": "repo_agent_work_not_v324_runtime_authority",
+      "scope": "repo_agent_work_not_v323_runtime_authority",
       "routing_key": [
         "role",
         "risk_tier",
@@ -124,14 +123,7 @@
         "batch_verified_cycle_time_p50_p95",
         "task_success_and_downstream_outcome_rate",
         "token_cost_and_rework_per_success",
-        "recovery_and_rollback_success_rate",
-        "prequalified_host_to_first_dry_run_operator_minutes",
-        "first_commit_ready_pilot_operator_minutes",
-        "template_qualification_lead_time",
-        "eligible_template_coverage",
-        "operator_action_age",
-        "policy_false_block_review_rate",
-        "template_maintenance_minutes_per_success"
+        "recovery_and_rollback_success_rate"
       ],
       "missing_value_rule": "unknown_or_unavailable_never_zero",
       "generation_rule": "cross_generation_results_must_be_stratified_and_cannot_promote_a_profile",
@@ -142,9 +134,9 @@
     "kind": "closed_contract_projection_v1",
     "projection_identity": "plan_id_plus_projection_id",
     "rules": [
-      "Every projection has exactly one current-plan normative producer or explicit successor carry-forward producer and at least one implementation or acceptance consumer.",
+      "Every projection has exactly one P0A normative producer and at least one implementation or acceptance consumer.",
       "Every referenced task exists in this plan generation and mechanically contains every required contract token.",
-      "A superseded-plan task result cannot satisfy a v3.24 projection unless BaselineLineage.v3 lists the exact artifact bytes in compatible_predecessor_artifacts.",
+      "A superseded-plan task result cannot satisfy a v3.23 projection.",
       "Profile generation can select only capabilities jointly admitted by one RuntimeActivationBundle; unsupported capability or architecture changes cannot be enabled by configuration."
     ],
     "projections": [
@@ -152,10 +144,7 @@
         "projection_id": "work_definition_task_family_v1",
         "required_contract_tokens": [
           "WorkDefinition",
-          "TaskFamily",
-          "FirstRunExperiencePolicy",
-          "LaunchTemplateCatalog",
-          "OperatorPresentationCatalog"
+          "TaskFamily"
         ],
         "normative_producer_task_id": "LAR-P0A-004",
         "implementation_task_ids": [
@@ -172,7 +161,7 @@
         "required_contract_tokens": [
           "EffectPlan"
         ],
-        "normative_producer_task_id": "LAR-P0A-REBASELINE-V324",
+        "normative_producer_task_id": "LAR-P0A-006",
         "implementation_task_ids": [
           "LAR-P1A-002",
           "LAR-P1B-003",
@@ -220,7 +209,7 @@
           "writer_effect_id",
           "writer_launch_id"
         ],
-        "normative_producer_task_id": "LAR-P0A-REBASELINE-V324",
+        "normative_producer_task_id": "LAR-P0A-006",
         "implementation_task_ids": [
           "LAR-P1B-003",
           "LAR-P1D-002"
@@ -250,7 +239,7 @@
           "hash-object -w",
           "cat-file"
         ],
-        "normative_producer_task_id": "LAR-P0A-REBASELINE-V324",
+        "normative_producer_task_id": "LAR-P0A-008",
         "implementation_task_ids": [
           "LAR-P1E-003"
         ],
@@ -302,32 +291,31 @@
         ]
       },
       {
-        "projection_id": "exact_toolchain_gate_v1",
+        "projection_id": "portfolio_data_only_v1",
         "required_contract_tokens": [
-          "RuntimeToolchainManifest",
-          "VerificationExecutionProfile",
-          "uv sync --exact",
-          "--no-python-downloads",
-          "--build-constraint",
-          "--require-hashes"
+          "portfolio_data_only_v1"
         ],
-        "normative_producer_task_id": "LAR-P0A-005",
+        "normative_producer_task_id": "LAR-P0A-009",
         "implementation_task_ids": [
-          "LAR-P0D-001",
-          "LAR-P1C-002"
+          "LAR-P1F-003"
         ],
         "acceptance_task_ids": [
-          "LAR-P1G-001",
-          "LAR-Q0-001"
+          "LAR-P4-001",
+          "LAR-P4-002"
         ]
       }
     ]
   },
   "baseline_status": "baseline_candidate",
   "blocking_stage": "baseline_approval",
-  "updated_on": "2026-07-16",
+  "updated_on": "2026-07-14",
   "status_catalog": [
     "completed",
+    "contract_pending",
+    "execution_pending",
+    "preserve_v3_23_semantics",
+    "narrow_profile_or_adapter_candidate",
+    "supersede_required",
     "ready",
     "pending",
     "blocked",
@@ -336,17 +324,17 @@
     "superseded"
   ],
   "global_constraints": [
-    "Do not create a BaselineApprovalRecord until the v3.24 normative package is complete and a consistency review is green.",
+    "Do not create a BaselineApprovalRecord until the normative package is complete and a consistency review is green.",
     "Do not change runtime/host-orchestrator behavior during P0A planning or normative closure tasks.",
     "Do not create runtime/local-ai-runtime before Baseline Approval and the P0B Truth Reset.",
-    "Do not claim Implementation Acceptance Full Q0 P2 admission live acceptance or cutover without their durable records.",
-    "Treat every work-item result as identified by plan_id plus task_id; superseded v3.23 results transfer only through BaselineLineage.v3 compatible_predecessor_artifacts.",
-    "ProductContract.v2 must close the launch templates first-run journey and operator presentation contract before state/Q0 closure.",
-    "QualificationContractSet.v2 must prove exact sync manifest-pinned Python no Python downloads and hash-pinned build backend before implementation.",
-    "CLI App Server SDK managed Worktree and Automations are independent capability surfaces; qualification never transfers across surfaces.",
+    "Do not claim Implementation Acceptance, Full Q0, P2 admission, live acceptance, or cutover without their durable records.",
+    "Treat every work-item result as identified by plan_id plus task_id; a result from a superseded plan cannot close a v3.23 task.",
+    "Before P0A closure, Native thin-path / capability comparative evaluation must remain on a fixed snapshot with fixed task families, model/effort, tool inventory, sandbox, gates and human-intervention definition.",
+    "CLI, App Server, SDK, managed Worktree and Automations are independent capability surfaces; qualification never transfers across surfaces.",
+    "Only preserve_v3_23_semantics releases P0A closure. narrow_profile_or_adapter_candidate or supersede_required freezes v3.23 and requires a successor candidate instead of in-place semantic edits.",
+    "Profile generation may only select jointly admitted capabilities; capability generation and architecture epoch changes require their declared acceptance and Q0 paths.",
     "Epoch 1 global capacity remains exactly one; no work item may enable a second writer or same-effect-domain concurrency.",
-    "B3 portfolio scheduling is deferred beyond 0.2; P4 remains B2/per-repo and proceeds directly to P5.",
-    "Keep each implementation slice reviewable; five primary files is a target not a mechanical failure gate.",
+    "Keep each implementation slice reviewable; five primary files is a target, not a mechanical failure gate.",
     "Keep runtime source closed to approved_root_files and approved_subpackages; package-root files are bootstrap-only and all functional modules belong to approved subpackages.",
     "Preserve user changes and roll back only the current task diff."
   ],
@@ -358,48 +346,17 @@
       "pwsh -NoProfile -NonInteractive -File scripts/governance/preflight.ps1 -DisableAutoCommit",
       "git diff --check"
     ],
-    "new_runtime_exact_v1": {
-      "environment_preparation": [
-        "& <uv.absolute_path> sync --exact --locked --offline --no-python-downloads --python <python.absolute_path> --project runtime/local-ai-runtime"
-      ],
-      "fixed_gate_order": [
-        "supply_chain_identity",
-        "build",
-        "test",
-        "contract_invariant",
-        "hotspot"
-      ],
-      "commands": {
-        "supply_chain_identity": [
-          "& <uv.absolute_path> lock --check --offline --no-python-downloads --python <python.absolute_path> --project runtime/local-ai-runtime",
-          "& <python.absolute_path> -I -s -E -m local_ai_runtime toolchain verify-environment --profile new_runtime_exact_v1 --json"
-        ],
-        "build": [
-          "& <uv.absolute_path> build --offline --no-python-downloads --python <python.absolute_path> --build-constraint <hashed_build_constraints.absolute_path> --require-hashes --project runtime/local-ai-runtime runtime/local-ai-runtime"
-        ],
-        "test": [
-          "& <uv.absolute_path> run --no-sync --offline --no-python-downloads --python <python.absolute_path> --project runtime/local-ai-runtime python -I -s -E -m pytest"
-        ],
-        "contract_invariant": [
-          "& <uv.absolute_path> run --no-sync --offline --no-python-downloads --python <python.absolute_path> --project runtime/local-ai-runtime python -I -s -E -m local_ai_runtime contracts verify",
-          "python scripts/verify-planning-status.py",
-          "python scripts/select-next-work.py"
-        ],
-        "hotspot": [
-          "& <uv.absolute_path> run --no-sync --offline --no-python-downloads --python <python.absolute_path> --project runtime/local-ai-runtime ruff check runtime/local-ai-runtime",
-          "& <uv.absolute_path> run --no-sync --offline --no-python-downloads --python <python.absolute_path> --project runtime/local-ai-runtime pyright --project runtime/local-ai-runtime",
-          "git diff --check"
-        ]
-      },
-      "invariants": [
-        "environment preparation is explicit and never hidden inside a validation gate",
-        "child sys.executable patch path file identity and sha256 match RuntimeToolchainManifest",
-        "installed distributions and pytest plugins contain no extraneous package",
-        "build backend is constrained by manifest-bound hashes",
-        "uv automatic Python download and PATH fallback are denied",
-        "two clean-root builds with the same SOURCE_DATE_EPOCH produce matching member manifest and artifact hashes"
-      ]
-    }
+    "new_runtime": [
+      "uv lock --check --offline --project runtime/local-ai-runtime",
+      "uv build --offline --project runtime/local-ai-runtime runtime/local-ai-runtime",
+      "uv run --locked --offline --project runtime/local-ai-runtime python -m pytest",
+      "uv run --locked --offline --project runtime/local-ai-runtime python -m local_ai_runtime contracts verify",
+      "uv run --locked --offline --project runtime/local-ai-runtime ruff check runtime/local-ai-runtime",
+      "uv run --locked --offline --project runtime/local-ai-runtime pyright --project runtime/local-ai-runtime",
+      "python scripts/verify-planning-status.py",
+      "python scripts/select-next-work.py",
+      "git diff --check"
+    ]
   },
   "runtime_source_layout": {
     "source_root": "runtime/local-ai-runtime/src/local_ai_runtime/",
@@ -434,89 +391,450 @@
   },
   "work_items": [
     {
-      "task_id": "LAR-P0A-REBASELINE-V324",
-      "contract_projections": {
-        "produces": [
-          "effect_plan_v1",
-          "writer_effect_launch_identity_v1",
-          "git_hybrid_materialization_v1"
-        ],
-        "implements": [],
-        "accepts": []
-      },
-      "contract_projection_tokens": [
-        "EffectPlan",
-        "writer_effect_id",
-        "writer_launch_id",
-        "git_hybrid_materialization_v1",
-        "hash-object -w",
-        "cat-file"
-      ],
+      "task_id": "LAR-P0A-001",
       "phase": "P0A",
       "priority": 0,
       "status": "completed",
-      "title": "Create and mechanically project the v3.24 product/toolchain successor",
-      "goal": "Freeze v3.23 candidate/package/plan bytes, create the self-contained v3.24 candidate and BaselineLineage.v3, carry forward only four exact compatible artifacts, replace repeated inexact uv gates with one exact verification profile, and project the successor across every authoritative planning surface without approval or runtime effects.",
+      "title": "Archive and verify the historical candidate source bytes",
+      "goal": "Extract the exact v3.17 and both conflicted v3.18 message/content bodies from the original Codex session, validate their bytes without normalization, and independently verify their SHA-256 values before any v3.22 lineage record is created.",
       "depends_on": [],
       "preconditions": [
-        "v3.23 candidate bytes equal 188325 and SHA-256 80562322ebc744eda2a87a17c45f73a11982f4947c9d10e8628bb6f73ee9d5c6",
-        "v3.23 package and work-item plan archives match their frozen hashes",
-        "No active BaselineApprovalRecord exists",
-        "runtime/local-ai-runtime does not exist"
+        "v3.21 candidate bytes and SHA-256 still match planning-status.json",
+        "No active BaselineApprovalRecord exists"
       ],
       "scope": {
         "in": [
-          "v3.24 self-contained candidate and stable entry",
-          "BaselineLineage.v3 successor trigger and explicit compatible predecessor artifacts",
-          "v3.23 package/plan historical archives",
-          "PRD architecture roadmap plan backlog acceptance status selector verifier tests",
-          "Exact uv/Python/build verification profile and first-launch product design"
+          "Exact v3.17 and both conflicted v3.18 source-message boundaries",
+          "Existing v3.14, v3.16, v3.19, v3.20 and v3.21 identity evidence",
+          "Exact-byte archive validation",
+          "Two independent SHA-256 calculations"
         ],
         "out": [
-          "Creating ProductContract.v2 or QualificationContractSet.v2 normative bytes",
-          "Baseline Approval Truth Reset or runtime/local-ai-runtime",
-          "Live auth provider sandbox DPAPI Batch Git publication remote push or CI retrieval"
+          "Creating BaselineLineage.v1 before the v3.22 identity exists",
+          "Changing any baseline prose",
+          "Approving v3.21",
+          "Runtime code changes"
         ],
         "primary_files": [
-          "docs/specs/local-ai-runtime-0.2-v3.24-baseline-candidate.md",
-          "docs/specs/local-ai-runtime-0.2/normative/BaselineLineage.v3.json",
-          "docs/specs/local-ai-runtime-0.2-normative-package.json",
-          "docs/plans/local-ai-runtime-0.2-work-items.json",
-          "docs/architecture/planning-status.json"
+          "docs/specs/local-ai-runtime-0.2/history/local-ai-runtime-0.2-v3.17.md",
+          "docs/specs/local-ai-runtime-0.2/history/local-ai-runtime-0.2-v3.18-a.md",
+          "docs/specs/local-ai-runtime-0.2/history/local-ai-runtime-0.2-v3.18-b.md",
+          "docs/specs/local-ai-runtime-0.2/history/HistoricalSourceArchive.v1.json",
+          "docs/architecture/planning-status.json",
+          "docs/change-evidence/<date>-lar-p0a-001-lineage.md"
         ]
       },
       "acceptance": [
-        "v3.23 candidate inventory and work-item plan exact bytes remain unchanged and archived",
-        "v3.24 candidate is UTF-8 no-BOM LF-only with one final LF and exact byte/hash bindings",
-        "BaselineLineage.v3 lists exactly four carried artifacts and validates their bytes with focused component verifiers",
-        "ProductContract.v1 and QualificationContractSet.v1 remain frozen v3.23 inputs and are missing for v3.24",
-        "The machine graph has at most 65 items one ready item no P4 B3 activation and a P0C/P0D join before P1",
-        "No active authoritative surface uses the predecessor inexact uv run or unconstrained cached build form",
-        "Planning verifier and selector return v3.24 plus LAR-P0A-004 with no side effects",
-        "No approval implementation Q0 P2 or live evidence is created"
+        "v3.17 is archived as exactly 32825 bytes with SHA-256 a285f5f421a8ccd4debd8794609a2aa0eb07bb1bf651c2467a95f7cad25a5f81",
+        "v3.18-A is archived as exactly 66328 bytes with SHA-256 6924ba562dda8e69274eb80fef9e3a9699eb493570ee08330fcad5ec4bc3baa5",
+        "v3.18-B is archived as exactly 43908 bytes with SHA-256 8da5aa20fb44d95503e443822163397a2aa1df590e1916d1a5a10a6c24ea06b7",
+        "Every archive passes the normative byte policy and Python hashlib plus PowerShell Get-FileHash return the same digest",
+        "The source record identifies the original session, JSONL line, outer record type, message/content boundary and excluded envelope without storing unrelated session content",
+        "P0A-LINEAGE remains missing until v3.22 is frozen and its own candidate identity can be included"
       ],
       "verification": [
-        "python scripts/verify-local-ai-runtime-baseline.py --component canonicalization",
-        "python scripts/verify-local-ai-runtime-baseline.py --component execution-safety",
-        "python scripts/verify-local-ai-runtime-baseline.py --component evidence",
-        "python scripts/verify-local-ai-runtime-baseline.py --component deterministic-git",
+        "python -m json.tool docs/specs/local-ai-runtime-0.2/history/HistoricalSourceArchive.v1.json",
+        "python scripts/verify-planning-status.py",
+        "git diff --check"
+      ],
+      "evidence_path": "docs/change-evidence/<date>-lar-p0a-001-lineage.md",
+      "rollback": "Remove only the three new history archives, HistoricalSourceArchive record and their evidence/status references; do not modify the original session or any frozen candidate.",
+      "stop_conditions": [
+        "Any of the three exact source-message bodies cannot be recovered",
+        "Independent hashes disagree",
+        "Any source requires silent normalization"
+      ],
+      "prohibited_actions": [
+        "Do not reconstruct any candidate from memory or normalized conversation text",
+        "Do not edit the v3.19 or v3.20 archives or the v3.21 candidate",
+        "Do not create an approval record"
+      ],
+      "next_task_ids": [
+        "LAR-P0A-REBASELINE-V322"
+      ]
+    },
+    {
+      "task_id": "LAR-P0A-REBASELINE-V322",
+      "phase": "P0A",
+      "priority": 0,
+      "status": "completed",
+      "title": "Create and mechanically project the superseding v3.22 candidate",
+      "goal": "Create one complete self-contained v3.22 narrative, record v3.21 as its exact superseded candidate, reissue the complete lineage and atomically project the new candidate identity into every planning and implementation truth surface without approving or implementing it.",
+      "depends_on": [
+        "LAR-P0A-001"
+      ],
+      "preconditions": [
+        "All three recovered historical candidate archives pass byte-policy and dual-hash verification",
+        "v3.21 still matches 158485 bytes and SHA-256 1bfb5cd2c92c036804a6005d5b36cdd5acc6bedc4d6bf4070ccfb7a70ce063fb",
+        "No active BaselineApprovalRecord exists"
+      ],
+      "scope": {
+        "in": [
+          "A minimal superseding v3.22 narrative containing the approved architecture corrections",
+          "A terminal v3.21 work-item supersession projection and a new plan generation",
+          "PRD, architecture, roadmap, implementation plan, acceptance, backlog, stable entry, inventory, planning status, selector, verifier, tests and evidence projections"
+        ],
+        "out": [
+          "Baseline Approval or any operator approval record",
+          "Truth Reset, runtime/local-ai-runtime creation or legacy runtime behavior changes",
+          "Full Q0, live Batch claims, provider execution or live acceptance"
+        ],
+        "primary_files": [
+          "docs/specs/local-ai-runtime-0.2-v3.22-baseline-candidate.md",
+          "docs/specs/local-ai-runtime-0.2-baseline-candidate.md",
+          "docs/specs/local-ai-runtime-0.2-normative-package.json",
+          "docs/plans/local-ai-runtime-0.2-work-items.json",
+          "docs/architecture/planning-status.json",
+          "scripts/verify-planning-status.py",
+          "scripts/select-next-work.py",
+          "runtime/host-orchestrator/tests/test_planning_governance.py",
+          "docs/change-evidence/<date>-local-ai-runtime-v3.22-candidate-rebaseline.md"
+        ]
+      },
+      "acceptance": [
+        "The v3.22 candidate is byte-valid, self-contained and has an independently recomputed exact byte count and SHA-256",
+        "Its lineage includes verified v3.17, both conflicted v3.18 archives, v3.19, v3.20 and the exact superseded v3.21 identity",
+        "The active work-item identity is plan_id plus task_id; the v3.21 successor tasks are terminally superseded before v3.22 tasks reuse local IDs",
+        "Verifier, selector, planning status and all projections agree on v3.22 and the next missing normative artifact",
+        "The package remains incomplete and approval_active, truth_reset, implementation_started and p2_admitted all remain false"
+      ],
+      "verification": [
+        "uv run --project ./runtime/host-orchestrator python -m pytest runtime/host-orchestrator/tests/test_planning_governance.py",
         "python scripts/verify-planning-status.py",
         "python scripts/select-next-work.py",
-        "uv run --project ./runtime/host-orchestrator python -m pytest",
         "pwsh -NoProfile -NonInteractive -File scripts/governance/preflight.ps1 -DisableAutoCommit",
         "git diff --check"
       ],
-      "evidence_path": "docs/change-evidence/20260716-local-ai-runtime-v3.24-product-toolchain-rebaseline.md",
-      "rollback": "Revert only v3.24 candidate/lineage/control-plane projections and retain the immutable v3.23 archives; never rewrite v3.23 bytes.",
+      "evidence_path": "docs/change-evidence/<date>-local-ai-runtime-v3.22-candidate-rebaseline.md",
+      "rollback": "Revert only the v3.22 candidate and planning projection, restore the terminal v3.21 candidate-plan pointer, and retain the independently verified history archives.",
       "stop_conditions": [
-        "Any v3.23 frozen byte/hash changes",
-        "A carry-forward artifact is affected by v3.24 semantics or fails its component verifier",
-        "The successor would create approval runtime state live evidence or a second planning authority"
+        "Any historical or v3.21 identity differs from its independently verified bytes",
+        "Any required v3.22 decision remains ambiguous or internally contradictory",
+        "Any projection can select implementation, approval or live execution before normative closure"
       ],
       "prohibited_actions": [
-        "Do not edit v3.23 candidate or existing v1 artifact bytes",
-        "Do not create ProductContract.v2 QualificationContractSet.v2 or final BaselineManifest in this task",
-        "Do not create runtime/local-ai-runtime or execute live probes"
+        "Do not edit any frozen v3.17-v3.21 archive",
+        "Do not inherit P0A-LINEAGE=present without regenerating a v3.22-bound lineage record",
+        "Do not create approval, implementation, Q0, Batch or live evidence"
+      ],
+      "next_task_ids": [
+        "LAR-P0A-REBASELINE-V323"
+      ]
+    },
+    {
+      "task_id": "LAR-P0A-REBASELINE-V323",
+      "phase": "P0A",
+      "priority": 0,
+      "status": "completed",
+      "title": "Create and mechanically project the superseding v3.23 candidate",
+      "goal": "Freeze the v3.23 narrative as a successor to v3.22, preserve v3.22 exact bytes and v3.22-bound planning artifacts as superseded inputs, and project the v3.23 identity plus the required pre-approval Native thin-path evaluation gate into every planning truth surface without approving or implementing it.",
+      "depends_on": [
+        "LAR-P0A-REBASELINE-V322"
+      ],
+      "preconditions": [
+        "The v3.22 candidate remains 178330 bytes with SHA-256 8338a9dcf4bbbb40ca28f4f2ec6dca37587ee94fbfbbc6e3a0063c4de379569c",
+        "The v3.22 work-item plan and normative inventory are archived as exact superseded inputs",
+        "No active BaselineApprovalRecord exists"
+      ],
+      "scope": {
+        "in": [
+          "v3.23 narrative bytes and BaselineLineage.v2",
+          "Native thin-path / capability comparative evaluation gate",
+          "PRD, architecture, roadmap, implementation plan, backlog, acceptance, stable entry, inventory, planning status, selector, verifier, tests and evidence projections"
+        ],
+        "out": [
+          "Baseline Approval or any operator approval record",
+          "Truth Reset, runtime/local-ai-runtime creation or legacy runtime behavior changes",
+          "Full Q0, live Batch claims, provider execution or live acceptance"
+        ],
+        "primary_files": [
+          "docs/specs/local-ai-runtime-0.2-v3.23-baseline-candidate.md",
+          "docs/specs/local-ai-runtime-0.2/normative/BaselineLineage.v2.json",
+          "docs/specs/local-ai-runtime-0.2-baseline-candidate.md",
+          "docs/specs/local-ai-runtime-0.2-normative-package.json",
+          "docs/plans/local-ai-runtime-0.2-work-items.json",
+          "docs/architecture/planning-status.json",
+          "scripts/verify-planning-status.py",
+          "scripts/select-next-work.py",
+          "runtime/host-orchestrator/tests/test_planning_governance.py",
+          "docs/change-evidence/<date>-local-ai-runtime-v3.23-native-thin-path-rebaseline.md"
+        ]
+      },
+      "acceptance": [
+        "The v3.23 candidate is byte-valid, self-contained and has an independently recomputed exact byte count and SHA-256",
+        "BaselineLineage.v2 preserves the frozen v3.22 narrative as a verified superseded candidate",
+        "The active work-item identity is plan_id plus task_id; the v3.22 plan is terminally superseded before v3.23 tasks reuse local IDs",
+        "Verifier, selector, planning status and all human-readable projections agree that Native thin-path evaluation is the first Baseline Approval predecessor",
+        "The package remains incomplete and approval_active, truth_reset, implementation_started and p2_admitted all remain false"
+      ],
+      "verification": [
+        "uv run --project ./runtime/host-orchestrator python -m pytest runtime/host-orchestrator/tests/test_planning_governance.py",
+        "python scripts/verify-planning-status.py",
+        "python scripts/select-next-work.py",
+        "pwsh -NoProfile -NonInteractive -File scripts/governance/preflight.ps1 -DisableAutoCommit",
+        "git diff --check"
+      ],
+      "evidence_path": "docs/change-evidence/<date>-local-ai-runtime-v3.23-native-thin-path-rebaseline.md",
+      "rollback": "Revert only the v3.23 candidate-planning projection; retain the exact v3.22 candidate, v3.22 lineage, v3.22 inventory and v3.22 work-item plan archives.",
+      "stop_conditions": [
+        "Any v3.22 archive or v3.23 candidate identity differs from its independently verified bytes",
+        "The evaluation gate can select approval, implementation or live execution before a machine-readable decision",
+        "Any projection treats a capability probe as Batch authorization"
+      ],
+      "prohibited_actions": [
+        "Do not edit any frozen v3.17-v3.22 candidate or archived v3.22 planning artifact",
+        "Do not create approval, implementation, Q0, Batch or live evidence",
+        "Do not convert a third-party harness comparison into a second control plane"
+      ],
+      "next_task_ids": [
+        "LAR-P0A-EVAL-001"
+      ]
+    },
+    {
+      "task_id": "LAR-P0A-EVAL-001",
+      "phase": "EVAL",
+      "priority": 0,
+      "status": "completed",
+      "title": "Freeze the Native thin-path and capability comparative evaluation contract",
+      "goal": "Create a machine-readable evaluation contract that fixes the repo snapshot, task families, model/effort, tool inventory, sandbox, gates, repetitions, human-intervention definition, stop rules and evidence schema before any comparative execution begins.",
+      "depends_on": [
+        "LAR-P0A-REBASELINE-V323"
+      ],
+      "preconditions": [
+        "v3.23 narrative and BaselineLineage.v2 exact identities verify",
+        "No active BaselineApprovalRecord exists",
+        "The evaluation uses only read-only or disposable-repo variants and cannot create a Batch task, runtime activation or external delivery"
+      ],
+      "scope": {
+        "in": [
+          "NativeThinPathCapabilityEvaluation.v1 contract and fixtures",
+          "Fixed task-family and success-oracle definitions",
+          "Thin Codex Native, Native plus key gates and conditionally applicable Superpowers/Trellis/Hermes comparison lanes",
+          "Independent CLI, App Server, SDK, managed Worktree and Automations probe definitions",
+          "Quality, safety, evidence, net-human-minutes, P50/P95 wall-time, token/cost, conflict/rework, recovery/rollback and sampled downstream-outcome metrics"
+        ],
+        "out": [
+          "Changing v3.23 normative semantics",
+          "Running a live Batch task, merge/push, remote CI read, provider/auth change or host-local Codex restart",
+          "Treating grill-me or grill-with-docs output as an authoritative product decision"
+        ],
+        "primary_files": [
+          "docs/evaluations/local-ai-runtime-0.2/native-thin-path-capability-evaluation.v1.json",
+          "docs/evaluations/local-ai-runtime-0.2/native-thin-path-task-family-manifest.v1.json",
+          "docs/evaluations/local-ai-runtime-0.2/native-thin-path-evidence-schema.v1.json",
+          "docs/change-evidence/<date>-lar-eval-001-evaluation-contract.md"
+        ]
+      },
+      "acceptance": [
+        "The contract fixes one immutable repo snapshot, task inputs, success oracles, variants, model/effort, tool inventory, sandbox, gates, repetitions and counterbalancing before execution",
+        "Every human intervention category and active minute boundary is defined; waiting and unknown observations remain visible rather than excluded",
+        "CLI/SDK execution interface, App Server client protocol, managed Worktree isolation and Automations scheduling each have independent probe scope and no cross-surface inheritance",
+        "Any quality, security or evidence regression, unowned external effect, or unreproducible recovery/rollback is an immediate stop condition that invalidates efficiency gains",
+        "The only permitted later decision values are preserve_v3_23_semantics, narrow_profile_or_adapter_candidate and supersede_required"
+      ],
+      "verification": [
+        "python -m json.tool docs/evaluations/local-ai-runtime-0.2/native-thin-path-capability-evaluation.v1.json",
+        "python scripts/verify-planning-status.py",
+        "python scripts/select-next-work.py",
+        "git diff --check"
+      ],
+      "evidence_path": "docs/change-evidence/<date>-lar-eval-001-evaluation-contract.md",
+      "rollback": "Revert only evaluation-contract files and evidence; do not alter v3.23 narrative bytes, approval state, runtime state or legacy behavior.",
+      "stop_conditions": [
+        "A task family lacks a success oracle or comparable human-intervention definition",
+        "A variant would alter the repo snapshot, gates, model/effort, tool inventory or sandbox after results are observed",
+        "A proposed comparison needs live provider credentials, remote side effects or a second control plane"
+      ],
+      "prohibited_actions": [
+        "Do not self-approve Baseline Approval",
+        "Do not create runtime/local-ai-runtime or a Batch claim",
+        "Do not assume an App, SDK, Worktree or Automation surface is qualified from CLI behavior"
+      ],
+      "next_task_ids": [
+        "LAR-P0A-EVAL-002"
+      ]
+    },
+    {
+      "task_id": "LAR-P0A-EVAL-002",
+      "phase": "EVAL",
+      "priority": 0,
+      "status": "completed",
+      "title": "Execute the Native thin-path and capability comparative evaluation",
+      "goal": "Run the frozen comparative evaluation and produce one machine-readable decision without changing v3.23 semantics, unless the evidence requires an explicit v3.24 successor candidate.",
+      "depends_on": [
+        "LAR-P0A-EVAL-001"
+      ],
+      "preconditions": [
+        "The evaluation contract, task-family manifest and evidence schema are immutable and verify",
+        "All variants use the fixed snapshot, model/effort, gates, tool inventory and sandbox",
+        "No active BaselineApprovalRecord exists"
+      ],
+      "scope": {
+        "in": [
+          "Repeated comparative runs and normalized evidence",
+          "Per-surface capability probe outcomes",
+          "Decision record and non-normative evaluation evidence",
+          "Sampled downstream review disposition, merge/reject/rework, later CI, revert and defect outcome attachments"
+        ],
+        "out": [
+          "In-place editing of v3.23 narrative or present normative artifacts",
+          "Runtime implementation, Batch authorization, remote push or automated remote-CI retrieval",
+          "Promoting a third-party harness as repository control-plane truth"
+        ],
+        "primary_files": [
+          "docs/evaluations/local-ai-runtime-0.2/native-thin-path-capability-results.v1.json",
+          "docs/evaluations/local-ai-runtime-0.2/native-thin-path-capability-decision.v1.json",
+          "docs/change-evidence/<date>-lar-eval-002-comparative-results.md"
+        ]
+      },
+      "acceptance": [
+        "Every declared task and repetition remains in the denominator, including failures, censored downstream outcomes, conflicts, rework and recovery attempts",
+        "The report includes task success, missed defect/regression, safety/gate/evidence completeness, net human minutes, P50/P95 wall time, token/cost, conflict/rework, recovery/rollback and sampled downstream acceptance",
+        "No quality, security or evidence hard floor declines; otherwise efficiency gains are reported but invalid for promotion",
+        "Each capability surface has an explicit qualified, unqualified, not_applicable or inconclusive result with evidence locator",
+        "preserve_v3_23_semantics records a non-normative decision and releases LAR-P0A-002; narrow_profile_or_adapter_candidate or supersede_required freezes v3.23 and requires a v3.24 candidate, lineage, inventory, DAG, selector and verifier before P0A continues"
+      ],
+      "verification": [
+        "python -m json.tool docs/evaluations/local-ai-runtime-0.2/native-thin-path-capability-results.v1.json",
+        "python -m json.tool docs/evaluations/local-ai-runtime-0.2/native-thin-path-capability-decision.v1.json",
+        "python scripts/verify-planning-status.py",
+        "python scripts/select-next-work.py",
+        "git diff --check"
+      ],
+      "evidence_path": "docs/change-evidence/<date>-lar-eval-002-comparative-results.md",
+      "rollback": "Preserve immutable result evidence; if semantics change, append a supersession decision and create v3.24 instead of rewriting v3.23. If semantics do not change, revert only non-normative evaluation projections that were not sealed.",
+      "stop_conditions": [
+        "Any quality, security or evidence hard floor declines",
+        "A capability surface has an unowned external effect or cannot demonstrate recovery/rollback",
+        "Results require changing Batch prohibition, authority, concurrency, Q0 trigger, quality promotion or truth source"
+      ],
+      "prohibited_actions": [
+        "Do not rewrite v3.23 narrative bytes after evidence exists",
+        "Do not activate Batch, merge/push or read remote CI automatically",
+        "Do not conceal unknown or censored downstream outcomes"
+      ],
+      "next_task_ids": [
+        "LAR-P0A-002"
+      ]
+    },
+    {
+      "task_id": "LAR-P0A-002",
+      "phase": "P0A",
+      "priority": 0,
+      "status": "completed",
+      "title": "Revalidate BaselineManifest and normative package closure rules for v3.23",
+      "goal": "Revalidate the retained manifest schema, byte/version rules, fixtures and verifier skeleton against the v3.23 candidate after the comparative evaluation preserves semantics; do not inherit a v3.22 task result by task ID alone or create the final BaselineManifest instance before the package review head is frozen.",
+      "depends_on": [
+        "LAR-P0A-EVAL-002"
+      ],
+      "preconditions": [
+        "BaselineLineage.v2 is present",
+        "v3.23 candidate hash remains unchanged",
+        "Native thin-path evaluation decision is preserve_v3_23_semantics"
+      ],
+      "scope": {
+        "in": [
+          "BaselineManifest.v1 schema and non-final fixtures",
+          "UTF-8/LF/NFC/control-character validation",
+          "Narrative/artifact/package version boundaries and domain-separated hashes"
+        ],
+        "out": [
+          "Final BaselineManifest.v1 instance",
+          "Approval semantics beyond the record schema",
+          "Runtime installation"
+        ],
+        "primary_files": [
+          "docs/specs/local-ai-runtime-0.2/normative/BaselineManifest.v1.schema.json",
+          "docs/specs/local-ai-runtime-0.2/fixtures/baseline-bytes/manifest.json",
+          "scripts/verify-local-ai-runtime-baseline.py",
+          "docs/change-evidence/<date>-lar-p0a-002-manifest.md"
+        ]
+      },
+      "acceptance": [
+        "Validator rejects BOM, CR, non-NFC, trailing SP/HTAB, disallowed controls and wrong terminal LF",
+        "Duplicate artifact IDs and paths are rejected",
+        "Manifest schema requires every entry to bind artifact ID/version, byte count, SHA-256, schema version and verifier ID",
+        "The manifest does not embed its own hash in its hashed payload",
+        "Manifest schema requires a frozen package_review_head and forbids review/approval self-reference",
+        "No final BaselineManifest.v1.json exists and P0A-MANIFEST remains missing",
+        "The standalone verifier skeleton validates bytes/schema fixtures and P0A-VERIFIER remains in_progress, not present"
+      ],
+      "verification": [
+        "python scripts/verify-local-ai-runtime-baseline.py --component manifest --self-test",
+        "python scripts/verify-planning-status.py",
+        "git diff --check"
+      ],
+      "evidence_path": "docs/change-evidence/<date>-lar-p0a-002-manifest.md",
+      "rollback": "Revert only manifest schema/fixtures/verifier-skeleton and inventory references.",
+      "stop_conditions": [
+        "Canonical byte rules contradict v3.23",
+        "A manifest cycle cannot be removed without changing the baseline"
+      ],
+      "prohibited_actions": [
+        "Do not normalize source bytes in place",
+        "Do not create the final BaselineManifest instance",
+        "Do not mark P0A-MANIFEST present or the package complete"
+      ],
+      "next_task_ids": [
+        "LAR-P0A-003"
+      ]
+    },
+    {
+      "task_id": "LAR-P0A-003",
+      "phase": "P0A",
+      "priority": 0,
+      "status": "completed",
+      "title": "Close canonical JSON, Git path and Windows identity contracts",
+      "goal": "Materialize CanonicalizationPolicy.v1 and its positive/negative fixtures with duplicate-key rejection, ordered-array semantics, declared set semantics and independent NTFS collision keys.",
+      "depends_on": [
+        "LAR-P0A-002"
+      ],
+      "preconditions": [
+        "Manifest conventions are fixed"
+      ],
+      "scope": {
+        "in": [
+          "Canonical JSON envelope",
+          "Git path validation",
+          "Windows path and repo identity canonicalization",
+          "SID and named-object identity inputs"
+        ],
+        "out": [
+          "Git execution",
+          "Windows Job creation"
+        ],
+        "primary_files": [
+          "docs/specs/local-ai-runtime-0.2/normative/CanonicalizationPolicy.v1.json",
+          "docs/specs/local-ai-runtime-0.2/schemas/CanonicalEnvelope.v1.schema.json",
+          "docs/specs/local-ai-runtime-0.2/fixtures/canonicalization/manifest.json",
+          "docs/change-evidence/<date>-lar-p0a-003-canonicalization.md"
+        ]
+      },
+      "acceptance": [
+        "Arrays preserve order unless schema declares set_semantics",
+        "Duplicate set keys reject instead of silently deduplicating",
+        "Git path spelling is validated but never normalized",
+        "NTFS collision key is separate from Git path",
+        "Alias-aware 8.3 verification uses handle identity and rejects collisions, alias bypass and post-qualification drift",
+        "An unreadable volume-level 8.3 policy records policy_query_denied and falls back to non-elevated alias/identity probes",
+        "The contract does not require globally disabling short-name creation",
+        "Specification and canonical JSON strings reject unapproved Cc/Cf, bidi, zero-width, BOM and Unicode noncharacters",
+        "limit-1, limit and limit+1 fixtures exist for all bounded fields"
+      ],
+      "verification": [
+        "python scripts/verify-local-ai-runtime-baseline.py --component canonicalization",
+        "python scripts/verify-planning-status.py",
+        "git diff --check"
+      ],
+      "evidence_path": "docs/change-evidence/<date>-lar-p0a-003-canonicalization.md",
+      "rollback": "Revert only the canonicalization bundle and manifest entry.",
+      "stop_conditions": [
+        "Windows case mapping algorithm is not pinned",
+        "Fixture behavior depends on host locale"
+      ],
+      "prohibited_actions": [
+        "Do not case-fold Git paths",
+        "Do not silently deduplicate JSON sets"
       ],
       "next_task_ids": [
         "LAR-P0A-004"
@@ -533,72 +851,68 @@
       },
       "contract_projection_tokens": [
         "WorkDefinition",
-        "TaskFamily",
-        "FirstRunExperiencePolicy",
-        "LaunchTemplateCatalog",
-        "OperatorPresentationCatalog"
+        "TaskFamily"
       ],
       "phase": "P0A",
       "priority": 0,
-      "status": "ready",
-      "title": "Materialize ProductContract.v2 and the launch product experience",
-      "goal": "Create the v3.24-bound product contract for the first usable CLI journey, four closed launch templates, template promotion, human/JSON presentation, operator action inbox and product metrics while preserving the Native/Batch authority boundary.",
+      "status": "completed",
+      "title": "Close product, work routing, template, submission and resubmission contracts",
+      "goal": "Define Unified Native/Batch work-class routing, closed template parameters, permanent submission identity and the atomic TaskResubmission relation while keeping model selection in qualified profile generation.",
       "depends_on": [
-        "LAR-P0A-REBASELINE-V324"
+        "LAR-P0A-003"
       ],
       "preconditions": [
-        "v3.24 successor projection is verified",
-        "P0A-PRODUCT is missing",
-        "No active BaselineApprovalRecord exists"
+        "CanonicalizationPolicy.v1 is fixed"
       ],
       "scope": {
         "in": [
-          "FirstRunExperiencePolicy.v1",
-          "LaunchTemplateCatalog.v1 with four templates",
-          "OperatorPresentationCatalog.v1",
-          "WorkDefinition TaskFamily TaskTemplate and BatchSubmission v2 bindings",
-          "positive and negative product fixtures"
+          "ProductContract",
+          "WorkRoutingPolicy",
+          "WorkRoutingPolicy versus qualified ExecutionProfile selection boundary",
+          "TaskTemplate",
+          "BatchSubmission",
+          "SubmissionFamily and TaskResubmission"
         ],
         "out": [
-          "Runtime implementation",
-          "Automatic template promotion",
-          "Free prompt Batch",
-          "SDK App Server managed Worktree or Automations admission"
+          "Free-prompt Batch",
+          "ResubmissionPermit",
+          "Runtime model router or dynamic model, effort or provider fallback",
+          "Runtime execution"
         ],
         "primary_files": [
-          "docs/specs/local-ai-runtime-0.2/normative/ProductContract.v2.json",
-          "docs/specs/local-ai-runtime-0.2/schemas/FirstRunExperience.v1.schema.json",
-          "docs/specs/local-ai-runtime-0.2/catalogs/LaunchTemplateCatalog.v1.json",
-          "docs/specs/local-ai-runtime-0.2/catalogs/OperatorPresentationCatalog.v1.json",
-          "docs/specs/local-ai-runtime-0.2/fixtures/product-v2/manifest.json"
+          "docs/specs/local-ai-runtime-0.2/normative/ProductContract.v1.json",
+          "docs/specs/local-ai-runtime-0.2/schemas/TaskTemplate.v1.schema.json",
+          "docs/specs/local-ai-runtime-0.2/schemas/BatchSubmission.v1.schema.json",
+          "docs/specs/local-ai-runtime-0.2/fixtures/submission/manifest.json"
         ]
       },
       "acceptance": [
-        "ProductContract.v2 binds local-ai-runtime-0.2-v3.24 and does not rewrite ProductContract.v1",
-        "The first-run journey has explicit commands inputs outputs exit codes authorities rollback and evidence locators",
-        "Exactly four launch templates define closed parameters path/effect envelope required and forbidden gates stop reasons recovery and evaluation denominator",
-        "Native Spec can create only a template candidate; promotion requires a controlled operator action",
-        "Human output is catalog-rendered from public machine state and raw model/tool output is never persisted or interpolated",
-        "Product metrics define denominator unknown handling and collection point without claiming unmeasured targets",
-        "Positive fixtures validate and every free-prompt effect-expansion promotion-bypass or secret-bearing negative fixture fails"
+        "Ordinary duplicate submit permanently returns root_task_id",
+        "TaskResubmission uniqueness is scoped to the resubmission relation",
+        "Replay checks an existing successor before current-task guards",
+        "Submission admission is bounded parse, canonicalize public envelope, volatile existing-family lookup, authorized replay, and only for an absent family current membership, schema, secret scan, qualification and transactional recheck/create",
+        "Existing-family replay remains stable after template catalog, secret scanner, qualification or Authorization generations change",
+        "Rejected submissions create no family and retain no parameters, ordinary digest or stable oracle",
+        "Parameters cannot control executable, argv, env, permissions, gates, refs, model, provider or sandbox",
+        "WorkRoutingPolicy routes work class only; model and effort remain a separately qualified ExecutionProfile and profile-generation concern",
+        "Product and submission closure adds no second planner or runtime model-router service",
+        "Historical task-ref success permanently blocks resubmission"
       ],
       "verification": [
         "python scripts/verify-local-ai-runtime-baseline.py --component product-submission",
         "python scripts/verify-planning-status.py",
-        "python scripts/select-next-work.py",
         "git diff --check"
       ],
-      "evidence_path": "docs/change-evidence/<date>-lar-p0a-004-product-v2-launch-experience.md",
-      "rollback": "Revert only ProductContract.v2 its new schemas/catalogs/fixtures evidence and status projection; keep ProductContract.v1 and v3.24 candidate immutable.",
+      "evidence_path": "docs/change-evidence/<date>-lar-p0a-004-product-submission.md",
+      "rollback": "Revert only the product/submission bundle and manifest references.",
       "stop_conditions": [
-        "A launch template requires free text dynamic commands dependency install remote effects or more than the approved path envelope",
-        "Human presentation requires raw output or secret-derived metadata",
-        "The task would create runtime code or promote a template"
+        "Any parameter field can influence the execution surface",
+        "Response-loss replay can create a second successor"
       ],
       "prohibited_actions": [
-        "Do not edit ProductContract.v1",
-        "Do not implement CLI handlers",
-        "Do not promote or authorize a real template"
+        "Do not add free-text parameters",
+        "Do not add a second planner or dynamic model router",
+        "Do not add a two-stage permit without a new approved requirement"
       ],
       "next_task_ids": [
         "LAR-P0A-005"
@@ -608,105 +922,315 @@
       "task_id": "LAR-P0A-005",
       "phase": "P0A",
       "priority": 0,
-      "status": "pending",
-      "title": "Materialize QualificationContractSet.v2 and exact toolchain gates",
-      "goal": "Create the v3.24 qualification contract that proves exact uv environment synchronization manifest-pinned Python identity no Python downloads hash-pinned build backend and clean-root repeatable builds before any implementation can be accepted.",
+      "status": "completed",
+      "title": "Close qualification, environment and Authorization contracts",
+      "goal": "Define reproducible qualification input closure, immutable environment bindings, keyring-only auth and reusable Authorization with continuation rules.",
       "depends_on": [
         "LAR-P0A-004"
       ],
       "preconditions": [
-        "ProductContract.v2 is present and verified",
-        "P0A-QUALIFICATION is missing",
-        "v3.24 VerificationExecutionProfile command projection is planning-verified"
+        "Submission identity is fixed"
       ],
       "scope": {
         "in": [
-          "QualificationContractSet.v2",
-          "RuntimeToolchainManifest.v1 exact interpreter and uv bindings",
-          "VerificationExecutionProfile.v1",
-          "hashed build constraints and SOURCE_DATE_EPOCH policy",
-          "extraneous package wrong interpreter download and backend negative fixtures"
+          "QualificationSensitiveInputSet",
+          "RepoTemplateQualification",
+          "QualifiedEnvironmentBinding",
+          "CodexSandboxStateBinding",
+          "Authorization",
+          "AttemptAuthorizationContinuation",
+          "AuthorizationExecutionGrant",
+          "Codex sandbox opaque-state and diagnostic contract"
         ],
         "out": [
-          "Preparing a live environment",
-          "Downloading Python or dependencies",
-          "Changing Codex capability surface",
-          "Runtime implementation"
+          "Dependency installation during Batch",
+          "File auth fallback"
         ],
         "primary_files": [
-          "docs/specs/local-ai-runtime-0.2/normative/QualificationContractSet.v2.json",
-          "docs/specs/local-ai-runtime-0.2/schemas/RuntimeToolchainManifest.v1.schema.json",
-          "docs/specs/local-ai-runtime-0.2/catalogs/VerificationExecutionProfile.v1.json",
-          "docs/specs/local-ai-runtime-0.2/fixtures/toolchain-v2/manifest.json",
-          "scripts/verify-local-ai-runtime-baseline.py"
+          "docs/specs/local-ai-runtime-0.2/normative/QualificationContractSet.v1.json",
+          "docs/specs/local-ai-runtime-0.2/schemas/QualificationSensitiveInputSet.v1.schema.json",
+          "docs/specs/local-ai-runtime-0.2/schemas/Authorization.v1.schema.json",
+          "docs/specs/local-ai-runtime-0.2/fixtures/qualification/manifest.json"
         ]
       },
       "acceptance": [
-        "QualificationContractSet.v2 binds v3.24 and leaves QualificationContractSet.v1 unchanged",
-        "Environment preparation uses exact locked offline sync with explicit manifest Python and no Python downloads",
-        "Daily validation uses no-sync and read-backs child interpreter distribution and pytest-plugin identity before build/test",
-        "Build backend dependencies are constrained by manifest-bound hashes and unconstrained cached backend selection is rejected",
-        "Two clean roots with one SOURCE_DATE_EPOCH must produce equal normalized member manifest and final hashes",
-        "Negative fixtures cover extraneous package plugin wrong patch download request multi-backend cache missing hashes and repeat-build mismatch",
-        "Verifier rejects every predecessor inexact gate form in active authoritative surfaces"
+        "Present, absent, expanded and blocked input entries are exhaustive",
+        "QualificationObservation binds the observed base commit/tree and alias evidence while the reusable QualificationSensitiveInputSet excludes base, task and submission identity",
+        "A fresh observation with byte-identical sensitive/environment/instruction/policy hashes refreshes last_observed_base by CAS without incrementing qualification or Authorization generation",
+        "The reusable qualification set binds resolver catalog and negative discovery and changes generation only when a safety-relevant bound hash changes",
+        "Dirty/staged/untracked sensitive inputs block qualification",
+        "CodexSandboxStateBinding separates immutable config, managed sandbox state and broker-only secrets without exporting secret metadata",
+        "sandbox.log is an opaque bounded diagnostic: task processes cannot read it and ordinary evidence stores neither content nor content hash",
+        "Authorization revoke and effect grants share one lock/transaction linearization order",
+        "Normal root grants use basis_kind=active_authorization and bind one exact effect identity",
+        "A committed grant can only complete, terminate or reconcile its exact bound effect",
+        "Authorization checks exist at every irreversible stage",
+        "Continuation cannot authorize another writer"
       ],
       "verification": [
         "python scripts/verify-local-ai-runtime-baseline.py --component qualification",
         "python scripts/verify-planning-status.py",
-        "python scripts/select-next-work.py",
         "git diff --check"
       ],
-      "evidence_path": "docs/change-evidence/<date>-lar-p0a-005-qualification-v2-exact-toolchain.md",
-      "rollback": "Revert only QualificationContractSet.v2 new schemas/catalogs/fixtures verifier branch evidence and status projection; never edit QualificationContractSet.v1.",
+      "evidence_path": "docs/change-evidence/<date>-lar-p0a-005-qualification.md",
+      "rollback": "Revert only qualification/auth artifacts and manifest references.",
       "stop_conditions": [
-        "uv or build behavior cannot be bound to exact official/local help semantics",
-        "A fixture requires network or live installation",
-        "The exact profile cannot prove interpreter or backend identity"
+        "Input discovery closure is ambiguous",
+        "Authorization fingerprint cannot be independently recomputed"
       ],
       "prohibited_actions": [
-        "Do not edit QualificationContractSet.v1",
-        "Do not run environment preparation against production roots",
-        "Do not download Python packages or build dependencies"
+        "Do not hash dirty working-tree content into Authorization",
+        "Do not persist credentials"
       ],
       "next_task_ids": [
-        "LAR-P0A-009"
-      ],
+        "LAR-P0A-006"
+      ]
+    },
+    {
+      "task_id": "LAR-P0A-006",
       "contract_projections": {
         "produces": [
-          "exact_toolchain_gate_v1"
+          "effect_plan_v1",
+          "writer_effect_launch_identity_v1"
         ],
         "implements": [],
         "accepts": []
       },
       "contract_projection_tokens": [
-        "RuntimeToolchainManifest",
-        "VerificationExecutionProfile",
-        "uv sync --exact",
-        "--no-python-downloads",
-        "--build-constraint",
-        "--require-hashes"
+        "EffectPlan",
+        "writer_effect_id",
+        "writer_launch_id"
+      ],
+      "phase": "P0A",
+      "priority": 0,
+      "status": "completed",
+      "title": "Close process, Job, marker, fencing and adoption contracts",
+      "goal": "Define atomic Job join, exact stdio-only handle inheritance, launch-state irreversibility, same-name Job fail-closed behavior and append-only fenced adoption with a mutable CAS head.",
+      "depends_on": [
+        "LAR-P0A-005"
+      ],
+      "preconditions": [
+        "Environment and Authorization identities are fixed"
+      ],
+      "scope": {
+        "in": [
+        "JobIdentity",
+        "StageLaunchRecord",
+        "ProcessHandlePolicy and ChildHandleManifest",
+        "WriterLaunchState",
+          "AuthorizationExecutionGrant and SafetyOnlyExecutionRecord authority union",
+          "FencedActionIntent/Adoption/Head/Result",
+          "Named-object SDDL",
+          "Crash windows"
+        ],
+        "out": [
+          "Writer implementation",
+          "Interactive deletion of unknown Job objects"
+        ],
+        "primary_files": [
+          "docs/specs/local-ai-runtime-0.2/normative/ExecutionSafetyContractSet.v1.json",
+          "docs/specs/local-ai-runtime-0.2/schemas/FencedActionAdoption.v1.schema.json",
+          "docs/specs/local-ai-runtime-0.2/schemas/JobIdentity.v1.schema.json",
+          "docs/specs/local-ai-runtime-0.2/fixtures/execution-safety/manifest.json"
+        ]
+      },
+      "acceptance": [
+        "CREATE_SUSPENDED, PROC_THREAD_ATTRIBUTE_JOB_LIST and PROC_THREAD_ATTRIBUTE_HANDLE_LIST are mandatory for every writer and StageJob process",
+        "STARTF_USESTDHANDLES is set and hStdInput/hStdOutput/hStdError exactly match the three role-correct child handles in the non-empty HANDLE_LIST while bInheritHandles is TRUE",
+        "Controller pipe ends and every Job, mutex, process/thread, DB, auth, policy, evidence, backup, quarantine, file and directory handle remain non-inheritable and absent from HANDLE_LIST",
+        "ChildHandleManifest binds role, object type, direction, access, inheritability read-back, ownership, attribute-list digest and expected EOF without persisting raw handle values",
+        "The controller closes its copies of child pipe ends before ResumeThread, and normal exit, kill, controller crash and response loss all reach bounded stdout/stderr EOF",
+        "Every process-bearing gate, Git, probe and recovery helper has a StageLaunchRecord, suspended atomic Job join and pre-resume execution commit",
+        "A new stage run proves the previous JobIdentity terminal, zero-process and fully drained before launch",
+        "writer_execution_committed is flushed before ResumeThread",
+        "No writer can restart after writer_execution_committed",
+        "Every StageLaunchRecord, FencedActionResult and terminal result references exactly one execution_authority_kind",
+        "Inherited fenced-action grants bind the parent action grant, current head, exact StageJob and next checkpoint and are forbidden for writer, GateRun, model decision, qualification, auth refresh and arbitrary commands",
+        "Safety-only records are the only authority for exact terminate/drain/seal/reconcile/handoff and emergency-reserve release/rebuild effects",
+        "release_emergency_reserve and rebuild_emergency_reserve are fenced, adoptable only for the same immutable safety record and exact reserve generation",
+        "First adoption points to intent hash and every later adoption points to the prior head",
+        "Same-name Job ERROR_ALREADY_EXISTS always parks after closing the inspection handle"
+      ],
+      "verification": [
+        "python scripts/verify-local-ai-runtime-baseline.py --component execution-safety",
+        "python scripts/verify-planning-status.py",
+        "git diff --check"
+      ],
+      "evidence_path": "docs/change-evidence/<date>-lar-p0a-006-execution-safety.md",
+      "rollback": "Revert only execution-safety artifacts and manifest references.",
+      "stop_conditions": [
+        "A crash window permits a second writer",
+        "An adoption can fork from one prior head"
+      ],
+      "prohibited_actions": [
+        "Do not reuse or rename around a surviving Job",
+        "Do not make immutable intent mutable"
+      ],
+      "next_task_ids": [
+        "LAR-P0A-007"
+      ]
+    },
+    {
+      "task_id": "LAR-P0A-007",
+      "phase": "P0A",
+      "priority": 0,
+      "status": "completed",
+      "title": "Close event, journal, artifact, receipt and backup contracts",
+      "goal": "Define secret-safe append-only evidence, runtime-managed external evidence, segment recovery, six-condition receipts, no-replace artifacts and anti-rollback state/evidence backup and restore.",
+      "depends_on": [
+        "LAR-P0A-006"
+      ],
+      "preconditions": [
+        "Launch and fence identities are fixed"
+      ],
+      "scope": {
+        "in": [
+          "NormalizedExecutionEvent matrix",
+          "JournalSegmentManifest",
+        "ExecutionReceipt",
+        "Artifact/outbox/quarantine",
+        "EvidenceProjectionAcceptance and runtime_external_v1 root identity",
+        "QuarantineKeyEnvelope and RuntimeIntegrityKeyEnvelope",
+        "BackupManifest, BackupRestoreEligibility, BackupPostActivity and BackupRestoreIntent"
+        ],
+        "out": [
+          "Raw stdout/stderr persistence",
+          "Pre-scan unknown path/content hashes"
+        ],
+        "primary_files": [
+          "docs/specs/local-ai-runtime-0.2/normative/EvidenceContractSet.v1.json",
+          "docs/specs/local-ai-runtime-0.2/schemas/NormalizedExecutionEvent.v1.schema.json",
+          "docs/specs/local-ai-runtime-0.2/catalogs/EventStatusMatrix.v1.json",
+          "docs/specs/local-ai-runtime-0.2/fixtures/evidence/manifest.json"
+        ]
+      },
+      "acceptance": [
+        "Every event/status combination and required/forbidden field set is explicit",
+        "Pre-scan events contain only random observation IDs, counts, approved path IDs and classes",
+        "Journal DB cursor can only lag the flushed journal",
+        "ExecutionReceipt requires all six terminal conditions",
+        "runtime_external_v1 evidence is activation-bound, controller-published and identity/ancestry/alias-disjoint from repo, Git, worktree, attempt and controller-sensitive roots",
+        "Quarantine and runtime-integrity keys use independent purpose-bound current-user DPAPI envelopes, and required envelopes are included without plaintext key material",
+        "Backups exclude credentials, worktrees and nonterminal state",
+        "Only an already-suspended backup with unchanged control generation can publish an eligible restore head; ordinary online backups are restore-drill-only",
+        "Every later authoritative mutation writes and flushes BackupPostActivity before staling the eligible head, and production restore uses one immutable BackupRestoreIntent plus one eligible-to-restoring-to-consumed CAS chain",
+        "Missing sidecars, post-backup activity, copied old backup directories, generation drift or ambiguous response loss fail closed with no force or marker-deletion path"
+      ],
+      "verification": [
+        "python scripts/verify-local-ai-runtime-baseline.py --component evidence",
+        "python scripts/verify-planning-status.py",
+        "git diff --check"
+      ],
+      "evidence_path": "docs/change-evidence/<date>-lar-p0a-007-evidence.md",
+      "rollback": "Revert only evidence artifacts and manifest references.",
+      "stop_conditions": [
+        "Any pre-scan field acts as a low-entropy oracle",
+        "A receipt can be emitted before Job zero-process or EOF",
+        "A stale or copied backup can regain production-restore eligibility"
+      ],
+      "prohibited_actions": [
+        "Do not persist raw process output or its content hash",
+        "Do not mutate prior events"
+      ],
+      "next_task_ids": [
+        "LAR-P0A-008"
+      ]
+    },
+    {
+      "task_id": "LAR-P0A-008",
+      "contract_projections": {
+        "produces": [
+          "git_hybrid_materialization_v1"
+        ],
+        "implements": [],
+        "accepts": []
+      },
+      "contract_projection_tokens": [
+        "git_hybrid_materialization_v1",
+        "hash-object -w",
+        "cat-file"
+      ],
+      "phase": "P0A",
+      "priority": 0,
+      "status": "completed",
+      "title": "Close deterministic Git publication contracts",
+      "goal": "Define audited Git environment, attempt-local object creation, canonical object promotion, worktree finalization, task-ref publication and cleanup ordering.",
+      "depends_on": [
+        "LAR-P0A-007"
+      ],
+      "preconditions": [
+        "Evidence and fenced-action conventions are fixed"
+      ],
+      "scope": {
+        "in": [
+          "GitConfigPolicy",
+          "ProtectedSurface",
+          "GitObjectPlan/ObjectSetManifest",
+          "Commit byte grammar",
+          "Finalize/ref/remove action graph"
+        ],
+        "out": [
+          "Remote Git",
+          "SHA-256 repositories",
+          "reset --hard cleanup"
+        ],
+        "primary_files": [
+          "docs/specs/local-ai-runtime-0.2/normative/DeterministicGitContractSet.v1.json",
+          "docs/specs/local-ai-runtime-0.2/schemas/ObjectSetManifest.v1.schema.json",
+          "docs/specs/local-ai-runtime-0.2/catalogs/GitConfigPolicy.v1.json",
+          "docs/specs/local-ai-runtime-0.2/fixtures/git/manifest.json"
+        ]
+      },
+      "acceptance": [
+        "Commit has exactly one expected parent and fixed header order",
+        "claim_epoch_seconds is generated once by claim CAS and bound by ResolvedAttemptManifest and GitObjectPlan",
+        "Existing object verification uses canonical type, size and payload/OID, never loose zlib bytes",
+        "Publication order is promote, reachability, index, HEAD, task-ref, evidence, remove",
+        "create_worktree removes only its own per-worktree logs/HEAD and HEAD/task-ref updates use --no-create-reflog with absence proofs",
+        "finalize_worktree proves path/mode/bytes equality before metadata updates",
+        "Task ref uses zero-OID CAS and historical success is durable"
+      ],
+      "verification": [
+        "python scripts/verify-local-ai-runtime-baseline.py --component deterministic-git",
+        "python scripts/verify-planning-status.py",
+        "git diff --check"
+      ],
+      "evidence_path": "docs/change-evidence/<date>-lar-p0a-008-git.md",
+      "rollback": "Revert only deterministic Git artifacts and manifest references.",
+      "stop_conditions": [
+        "Any Git call can inherit uncontrolled config",
+        "Task ref can precede finalized HEAD/index"
+      ],
+      "prohibited_actions": [
+        "Do not run Git against a real target repo during contract authoring",
+        "Do not use reset --hard"
+      ],
+      "next_task_ids": [
+        "LAR-P0A-009"
       ]
     },
     {
       "task_id": "LAR-P0A-009",
       "contract_projections": {
         "produces": [
-          "durable_operator_action_inbox_v1"
+          "durable_operator_action_inbox_v1",
+          "portfolio_data_only_v1"
         ],
         "implements": [],
         "accepts": []
       },
       "contract_projection_tokens": [
         "durable_local_status_v1",
-        "qualified_windows_toast_v1"
+        "qualified_windows_toast_v1",
+        "portfolio_data_only_v1"
       ],
       "phase": "P0A",
       "priority": 0,
-      "status": "pending",
+      "status": "ready",
       "title": "Materialize complete state, guard, autonomy and operator catalogs",
-      "goal": "Materialize complete state guard autonomy and operator catalogs including the SQLite-authority/journal-observation boundary deterministic recovery replay explicit cleanup finalizers first-launch operator inbox and B3-deferred autonomy rows.",
+      "goal": "Write every legal transition row for submission families, tasks, attempts, platform lanes, repo maintenance/cutover, templates, autonomy and operator actions.",
       "depends_on": [
-        "LAR-P0A-005"
+        "LAR-P0A-008"
       ],
       "preconditions": [
         "All domain contracts referenced by guards are fixed"
@@ -734,11 +1258,7 @@
         "Unknown combinations exit 2",
         "Guard dependency graph is acyclic and has fixed precedence",
         "Recovery-eligible attempts outrank new work",
-        "Global resume cannot clear repo/template qualification blocks",
-        "SQLite is the only policy/transition authority and journal replay cannot create state outside the accepted cursor current fence and immutable action history",
-        "Equal accepted history under one policy generation produces the same recovery decision independent of observation time or restart count",
-        "Cleanup finalizers cannot be bypassed by deleting guards rows markers or journal segments",
-        "B3 is declared deferred and no 0.2 state row or operator action can activate it"
+        "Global resume cannot clear repo/template qualification blocks"
       ],
       "verification": [
         "python scripts/verify-local-ai-runtime-baseline.py --component state-policy",
@@ -776,10 +1296,10 @@
         "profile_generation",
         "capability_generation",
         "architecture_epoch",
-      "Q0TriggerPolicy",
-      "RuntimeCompositionManifest",
-      "SelectedRuntimeIdentity",
-      "ActiveRuntimeIdentity"
+        "Q0TriggerPolicy",
+        "RuntimeCompositionManifest",
+        "SelectedRuntimeIdentity",
+        "ActiveRuntimeIdentity"
       ],
       "phase": "P0A",
       "priority": 0,
@@ -794,10 +1314,10 @@
       ],
       "scope": {
         "in": [
-          "CodexFeaturePolicy",
-          "ProcessEnvironmentPolicy",
-          "ProcessHandlePolicy Q0 probes",
-          "GatePolicy",
+        "CodexFeaturePolicy",
+        "ProcessEnvironmentPolicy",
+        "ProcessHandlePolicy Q0 probes",
+        "GatePolicy",
           "ResourceLimitPolicy",
           "Full/quick/daily Q0"
         ],
@@ -1001,10 +1521,10 @@
           "Runtime implementation"
         ],
         "primary_files": [
-          "docs/reviews/local-ai-runtime-0.2/ReviewEvidenceIndex.v1.json",
-          "docs/reviews/local-ai-runtime-0.2/<review-id>.md",
-          "docs/specs/local-ai-runtime-0.2/normative/BaselineManifest.v1.json",
-          "docs/specs/local-ai-runtime-0.2-normative-package.json",
+        "docs/reviews/local-ai-runtime-0.2/ReviewEvidenceIndex.v1.json",
+        "docs/reviews/local-ai-runtime-0.2/<review-id>.md",
+        "docs/specs/local-ai-runtime-0.2/normative/BaselineManifest.v1.json",
+        "docs/specs/local-ai-runtime-0.2-normative-package.json",
           "docs/change-evidence/<date>-lar-p0a-013-review.md"
         ]
       },
@@ -1055,7 +1575,7 @@
       "phase": "Governance",
       "priority": 0,
       "status": "blocked",
-      "title": "Authorize or reject the v3.24 baseline through the controlled approval entrypoint",
+      "title": "Authorize or reject the v3.23 baseline through the controlled approval entrypoint",
       "goal": "After package closure and a preserve_v3_23_semantics evaluation decision, require an explicitly authorized interactive operator to invoke the hash-pinned approval command, validate authority and anti-replay inputs, and create one immutable BaselineApprovalRecord or rejection result without changing normative bytes.",
       "depends_on": [
         "LAR-P0A-013"
@@ -1178,8 +1698,7 @@
         "Do not alter .ai/config or live state"
       ],
       "next_task_ids": [
-        "LAR-P0C-001",
-        "LAR-P0D-001"
+        "LAR-P0C-001"
       ]
     },
     {
@@ -1341,38 +1860,22 @@
         "Do not call this live acceptance"
       ],
       "next_task_ids": [
-        "LAR-P1A-001"
+        "LAR-P0D-001"
       ]
     },
     {
       "task_id": "LAR-P0D-001",
-      "contract_projections": {
-        "produces": [],
-        "implements": [
-          "exact_toolchain_gate_v1"
-        ],
-        "accepts": []
-      },
-      "contract_projection_tokens": [
-        "RuntimeToolchainManifest",
-        "VerificationExecutionProfile",
-        "uv sync --exact",
-        "--no-python-downloads",
-        "--build-constraint",
-        "--require-hashes"
-      ],
       "phase": "P0D",
       "priority": 0,
       "status": "blocked",
       "title": "Create the isolated local-ai-runtime package and acceptance harness",
-      "goal": "Create the modular-monolith skeleton with RuntimeToolchainManifest-pinned Python 3.11.x exact offline environment preparation hash-pinned build backend contracts CLI and no-side-effect harness without importing or touching host_orchestrator state.",
+      "goal": "Create the modular-monolith skeleton with a RuntimeToolchainManifest-pinned Python 3.11.x patch, offline lock/build/test/lint/typecheck harness and contract CLI without importing host_orchestrator.",
       "depends_on": [
-        "LAR-P0B-001"
+        "LAR-P0C-003"
       ],
       "preconditions": [
-        "Baseline Approval remains active",
-        "Truth Reset is complete",
-        "P0D no-side-effect boundary is planning-verified"
+        "Legacy/new ownership conformance is green",
+        "Baseline Approval remains active"
       ],
       "scope": {
         "in": [
@@ -1394,24 +1897,27 @@
         ]
       },
       "acceptance": [
-        "profile:new_runtime_exact_v1 supply-chain build test contract and hotspot stages pass",
-        "Environment read-back proves the exact Python distribution plugin and build-backend identities with no extraneous package",
-        "Two clean-root builds have matching member manifests and artifact hashes",
+        "uv lock --check --offline, offline build and locked tests pass",
         "Import scan proves no host_orchestrator dependency",
-        "The package root contains only __init__.py plus a thin __main__.py contracts-verifier bootstrap and all functional modules belong to approved subpackages",
-        "No executable Batch path repo claim ownership mutation production state or evidence exists"
+        "The package root contains only __init__.py plus a thin __main__.py contracts-verifier bootstrap, and every functional source module belongs to an approved subpackage",
+        "contracts verify exposes stable JSON",
+        "No executable Batch path exists yet"
       ],
       "verification": [
-        "profile:new_runtime_exact_v1",
+        "uv lock --check --offline --project runtime/local-ai-runtime",
+        "uv build --offline --project runtime/local-ai-runtime runtime/local-ai-runtime",
+        "uv run --locked --offline --project runtime/local-ai-runtime python -m pytest",
+        "uv run --locked --offline --project runtime/local-ai-runtime python -m local_ai_runtime contracts verify",
+        "uv run --locked --offline --project runtime/local-ai-runtime ruff check runtime/local-ai-runtime",
+        "uv run --locked --offline --project runtime/local-ai-runtime pyright --project runtime/local-ai-runtime",
         "git diff --check"
       ],
       "evidence_path": "docs/change-evidence/<date>-lar-p0d-001-scaffold.md",
       "rollback": "Remove only the new package skeleton and its planning/evidence references.",
       "stop_conditions": [
-        "Exact offline dependency or build-backend identity is not reproducible",
-        "New package imports legacy implementation or opens legacy state",
-        "A planned source path falls outside the closed runtime source layout",
-        "Any claim writer Git publication or production evidence path becomes reachable"
+        "Offline dependency resolution is not reproducible",
+        "New package imports legacy implementation",
+        "A planned or materialized source path falls outside the closed runtime source layout"
       ],
       "prohibited_actions": [
         "Do not copy legacy runtime code wholesale",
@@ -1429,12 +1935,10 @@
       "title": "Implement canonical bytes, hashes and path primitives",
       "goal": "Implement only the approved canonical JSON envelope, normative byte validator, domain-separated hashing, Git path validator and Windows collision/identity primitives.",
       "depends_on": [
-        "LAR-P0C-003",
         "LAR-P0D-001"
       ],
       "preconditions": [
-        "Package skeleton exact gates pass",
-        "Legacy ownership guard/conformance is green",
+        "Package skeleton gates pass",
         "Approved canonicalization artifacts and fixtures are available read-only"
       ],
       "scope": {
@@ -1463,7 +1967,7 @@
         "No function rewrites Git spelling, source bytes or already-present normative artifacts"
       ],
       "verification": [
-        "profile:new_runtime_exact_v1 focus=\"python -m pytest runtime/local-ai-runtime/tests/contracts/test_canonical.py runtime/local-ai-runtime/tests/contracts/test_paths.py\"",
+        "uv run --locked --offline --project runtime/local-ai-runtime python -m pytest runtime/local-ai-runtime/tests/contracts/test_canonical.py runtime/local-ai-runtime/tests/contracts/test_paths.py",
         "git diff --check"
       ],
       "evidence_path": "docs/change-evidence/<date>-lar-p1a-001-canonical-primitives.md",
@@ -1492,12 +1996,9 @@
         "accepts": []
       },
       "contract_projection_tokens": [
-      "WorkDefinition",
-      "TaskFamily",
-      "FirstRunExperiencePolicy",
-      "LaunchTemplateCatalog",
-      "OperatorPresentationCatalog",
-      "EffectPlan",
+        "WorkDefinition",
+        "TaskFamily",
+        "EffectPlan",
         "profile_generation",
         "capability_generation",
         "architecture_epoch"
@@ -1539,8 +2040,8 @@
         "Nullable, required and forbidden fields are enforced per event and record schema"
       ],
       "verification": [
-        "profile:new_runtime_exact_v1 focus=\"python -m pytest runtime/local-ai-runtime/tests/contracts/test_registry.py runtime/local-ai-runtime/tests/contracts/test_models.py\"",
-        "profile:new_runtime_exact_v1 focus=\"python -m local_ai_runtime contracts verify --scope models\"",
+        "uv run --locked --offline --project runtime/local-ai-runtime python -m pytest runtime/local-ai-runtime/tests/contracts/test_registry.py runtime/local-ai-runtime/tests/contracts/test_models.py",
+        "uv run --locked --offline --project runtime/local-ai-runtime python -m local_ai_runtime contracts verify --scope models",
         "git diff --check"
       ],
       "evidence_path": "docs/change-evidence/<date>-lar-p1a-002-contract-models.md",
@@ -1596,8 +2097,8 @@
         "Safety-only guards cannot authorize ordinary execution effects"
       ],
       "verification": [
-        "profile:new_runtime_exact_v1 focus=\"python -m pytest runtime/local-ai-runtime/tests/kernel/test_state_policy.py runtime/local-ai-runtime/tests/kernel/test_guards.py\"",
-        "profile:new_runtime_exact_v1 focus=\"python -m local_ai_runtime contracts verify --scope state\"",
+        "uv run --locked --offline --project runtime/local-ai-runtime python -m pytest runtime/local-ai-runtime/tests/kernel/test_state_policy.py runtime/local-ai-runtime/tests/kernel/test_guards.py",
+        "uv run --locked --offline --project runtime/local-ai-runtime python -m local_ai_runtime contracts verify --scope state",
         "git diff --check"
       ],
       "evidence_path": "docs/change-evidence/<date>-lar-p1a-003-state-guard-evaluator.md",
@@ -1652,8 +2153,8 @@
         "The complete approved package passes and every tamper fixture fails closed"
       ],
       "verification": [
-        "profile:new_runtime_exact_v1 focus=\"python -m pytest runtime/local-ai-runtime/tests/kernel/test_policy_bundle.py runtime/local-ai-runtime/tests/contracts/test_cross_contracts.py\"",
-        "profile:new_runtime_exact_v1 focus=\"python -m local_ai_runtime contracts verify\"",
+        "uv run --locked --offline --project runtime/local-ai-runtime python -m pytest runtime/local-ai-runtime/tests/kernel/test_policy_bundle.py runtime/local-ai-runtime/tests/contracts/test_cross_contracts.py",
+        "uv run --locked --offline --project runtime/local-ai-runtime python -m local_ai_runtime contracts verify",
         "git diff --check"
       ],
       "evidence_path": "docs/change-evidence/<date>-lar-p1a-004-policy-bundle.md",
@@ -1711,7 +2212,7 @@
         "The code refuses .ai/state/control-plane.db and any path outside the supplied isolated runtime root"
       ],
       "verification": [
-        "profile:new_runtime_exact_v1 focus=\"python -m pytest runtime/local-ai-runtime/tests/storage/test_database.py runtime/local-ai-runtime/tests/storage/test_migrations.py\"",
+        "uv run --locked --offline --project runtime/local-ai-runtime python -m pytest runtime/local-ai-runtime/tests/storage/test_database.py runtime/local-ai-runtime/tests/storage/test_migrations.py",
         "git diff --check"
       ],
       "evidence_path": "docs/change-evidence/<date>-lar-p1b-001-database-bootstrap.md",
@@ -1767,7 +2268,7 @@
         "Historical task-ref success, stale base, non-current source and nonterminal source fail with exact reason codes when no prior successor exists"
       ],
       "verification": [
-        "profile:new_runtime_exact_v1 focus=\"python -m pytest runtime/local-ai-runtime/tests/storage/test_submission_families.py runtime/local-ai-runtime/tests/storage/test_resubmission.py\"",
+        "uv run --locked --offline --project runtime/local-ai-runtime python -m pytest runtime/local-ai-runtime/tests/storage/test_submission_families.py runtime/local-ai-runtime/tests/storage/test_resubmission.py",
         "git diff --check"
       ],
       "evidence_path": "docs/change-evidence/<date>-lar-p1b-002-submission-replay.md",
@@ -1837,7 +2338,7 @@
         "Terminal result is unique and binds current head kind/hash/fence/version"
       ],
       "verification": [
-        "profile:new_runtime_exact_v1 focus=\"python -m pytest runtime/local-ai-runtime/tests/storage/test_leases.py runtime/local-ai-runtime/tests/storage/test_fenced_actions.py\"",
+        "uv run --locked --offline --project runtime/local-ai-runtime python -m pytest runtime/local-ai-runtime/tests/storage/test_leases.py runtime/local-ai-runtime/tests/storage/test_fenced_actions.py",
         "git diff --check"
       ],
       "evidence_path": "docs/change-evidence/<date>-lar-p1b-003-lease-fence-authority.md",
@@ -1894,7 +2395,7 @@
         "Random quarantine IDs are independent of path and content"
       ],
       "verification": [
-        "profile:new_runtime_exact_v1 focus=\"python -m pytest runtime/local-ai-runtime/tests/storage/test_journal_cursor.py runtime/local-ai-runtime/tests/storage/test_outbox.py\"",
+        "uv run --locked --offline --project runtime/local-ai-runtime python -m pytest runtime/local-ai-runtime/tests/storage/test_journal_cursor.py runtime/local-ai-runtime/tests/storage/test_outbox.py",
         "git diff --check"
       ],
       "evidence_path": "docs/change-evidence/<date>-lar-p1b-004-journal-outbox-storage.md",
@@ -1949,7 +2450,7 @@
         "Test teardown deletes only isolated temporary roots"
       ],
       "verification": [
-        "profile:new_runtime_exact_v1 focus=\"python -m pytest runtime/local-ai-runtime/tests/storage/test_crash_matrix.py runtime/local-ai-runtime/tests/storage/test_response_loss.py\"",
+        "uv run --locked --offline --project runtime/local-ai-runtime python -m pytest runtime/local-ai-runtime/tests/storage/test_crash_matrix.py runtime/local-ai-runtime/tests/storage/test_response_loss.py",
         "git diff --check"
       ],
       "evidence_path": "docs/change-evidence/<date>-lar-p1b-005-storage-crash-matrix.md",
@@ -2022,7 +2523,7 @@
         "Every install/replace/flush failpoint resolves to the previous or new verified generation"
       ],
       "verification": [
-        "profile:new_runtime_exact_v1 focus=\"python -m pytest runtime/local-ai-runtime/tests/platform/test_installation.py runtime/local-ai-runtime/tests/platform/test_activation.py\"",
+        "uv run --locked --offline --project runtime/local-ai-runtime python -m pytest runtime/local-ai-runtime/tests/platform/test_installation.py runtime/local-ai-runtime/tests/platform/test_activation.py",
         "git diff --check"
       ],
       "evidence_path": "docs/change-evidence/<date>-lar-p1c-001-install-activation.md",
@@ -2041,21 +2542,6 @@
     },
     {
       "task_id": "LAR-P1C-002",
-      "contract_projections": {
-        "produces": [],
-        "implements": [
-          "exact_toolchain_gate_v1"
-        ],
-        "accepts": []
-      },
-      "contract_projection_tokens": [
-        "RuntimeToolchainManifest",
-        "VerificationExecutionProfile",
-        "uv sync --exact",
-        "--no-python-downloads",
-        "--build-constraint",
-        "--require-hashes"
-      ],
       "phase": "P1C",
       "priority": 1,
       "status": "blocked",
@@ -2094,7 +2580,7 @@
         "Verification performs no package install, restore, network access or production activation"
       ],
       "verification": [
-        "profile:new_runtime_exact_v1 focus=\"python -m pytest runtime/local-ai-runtime/tests/qualification/test_toolchain.py runtime/local-ai-runtime/tests/qualification/test_environment.py\"",
+        "uv run --locked --offline --project runtime/local-ai-runtime python -m pytest runtime/local-ai-runtime/tests/qualification/test_toolchain.py runtime/local-ai-runtime/tests/qualification/test_environment.py",
         "git diff --check"
       ],
       "evidence_path": "docs/change-evidence/<date>-lar-p1c-002-toolchain-environment.md",
@@ -2152,7 +2638,7 @@
         "AuthState stores only generation/store/status/qualified time and needs_auth stops all new provider claims"
       ],
       "verification": [
-        "profile:new_runtime_exact_v1 focus=\"python -m pytest runtime/local-ai-runtime/tests/qualification/test_repository.py runtime/local-ai-runtime/tests/qualification/test_authorization.py\"",
+        "uv run --locked --offline --project runtime/local-ai-runtime python -m pytest runtime/local-ai-runtime/tests/qualification/test_repository.py runtime/local-ai-runtime/tests/qualification/test_authorization.py",
         "git diff --check"
       ],
       "evidence_path": "docs/change-evidence/<date>-lar-p1c-003-repo-auth-authorization.md",
@@ -2209,7 +2695,7 @@
         "sandbox.log content and content hash never enter ordinary records, evidence or backup"
       ],
       "verification": [
-        "profile:new_runtime_exact_v1 focus=\"python -m pytest runtime/local-ai-runtime/tests/qualification/test_overlay.py runtime/local-ai-runtime/tests/qualification/test_sandbox_state.py\"",
+        "uv run --locked --offline --project runtime/local-ai-runtime python -m pytest runtime/local-ai-runtime/tests/qualification/test_overlay.py runtime/local-ai-runtime/tests/qualification/test_sandbox_state.py",
         "git diff --check"
       ],
       "evidence_path": "docs/change-evidence/<date>-lar-p1c-004-sandbox-overlay.md",
@@ -2268,7 +2754,7 @@
         "Hard quota remains disabled unless an applicable primitive passes the complete Q0 bypass matrix"
       ],
       "verification": [
-        "profile:new_runtime_exact_v1 focus=\"python -m pytest runtime/local-ai-runtime/tests/qualification/test_write_accounting.py runtime/local-ai-runtime/tests/qualification/test_emergency_reserve.py\"",
+        "uv run --locked --offline --project runtime/local-ai-runtime python -m pytest runtime/local-ai-runtime/tests/qualification/test_write_accounting.py runtime/local-ai-runtime/tests/qualification/test_emergency_reserve.py",
         "git diff --check"
       ],
       "evidence_path": "docs/change-evidence/<date>-lar-p1c-005-accounting-reserve.md",
@@ -2338,7 +2824,7 @@
         "Missing, unknown or behavior-drifted probes fail closed"
       ],
       "verification": [
-        "profile:new_runtime_exact_v1 focus=\"python -m pytest runtime/local-ai-runtime/tests/qualification/test_probe_matrix.py runtime/local-ai-runtime/tests/qualification/test_reports.py\"",
+        "uv run --locked --offline --project runtime/local-ai-runtime python -m pytest runtime/local-ai-runtime/tests/qualification/test_probe_matrix.py runtime/local-ai-runtime/tests/qualification/test_reports.py",
         "git diff --check"
       ],
       "evidence_path": "docs/change-evidence/<date>-lar-p1c-006-q0-harness.md",
@@ -2397,7 +2883,7 @@
         "Tests terminate only processes proven runtime-owned by executable hash, PID and creation time"
       ],
       "verification": [
-        "profile:new_runtime_exact_v1 focus=\"python -m pytest runtime/local-ai-runtime/tests/execution/test_named_objects.py runtime/local-ai-runtime/tests/execution/test_job_lifecycle.py\"",
+        "uv run --locked --offline --project runtime/local-ai-runtime python -m pytest runtime/local-ai-runtime/tests/execution/test_named_objects.py runtime/local-ai-runtime/tests/execution/test_job_lifecycle.py",
         "git diff --check"
       ],
       "evidence_path": "docs/change-evidence/<date>-lar-p1d-001-named-job.md",
@@ -2441,11 +2927,11 @@
       ],
       "scope": {
         "in": [
-          "Attempt-local environment materialization and identity recheck",
-          "Durable writer-start marker",
-          "CREATE_SUSPENDED plus PROC_THREAD_ATTRIBUTE_JOB_LIST and PROC_THREAD_ATTRIBUTE_HANDLE_LIST launch",
-          "ProcessHandlePolicy, ChildHandleManifest and exact STARTF_USESTDHANDLES stdio mapping",
-          "writer_execution_committed and resume outcome persistence"
+        "Attempt-local environment materialization and identity recheck",
+        "Durable writer-start marker",
+        "CREATE_SUSPENDED plus PROC_THREAD_ATTRIBUTE_JOB_LIST and PROC_THREAD_ATTRIBUTE_HANDLE_LIST launch",
+        "ProcessHandlePolicy, ChildHandleManifest and exact STARTF_USESTDHANDLES stdio mapping",
+        "writer_execution_committed and resume outcome persistence"
         ],
         "out": [
           "Live Codex/model execution",
@@ -2470,7 +2956,7 @@
         "Every marker/spawn/barrier/resume response-loss failpoint has one allowed recovery state"
       ],
       "verification": [
-        "profile:new_runtime_exact_v1 focus=\"python -m pytest runtime/local-ai-runtime/tests/execution/test_writer_marker.py runtime/local-ai-runtime/tests/execution/test_writer_launch.py\"",
+        "uv run --locked --offline --project runtime/local-ai-runtime python -m pytest runtime/local-ai-runtime/tests/execution/test_writer_marker.py runtime/local-ai-runtime/tests/execution/test_writer_launch.py",
         "git diff --check"
       ],
       "evidence_path": "docs/change-evidence/<date>-lar-p1d-002-writer-launch.md",
@@ -2513,8 +2999,8 @@
       ],
       "scope": {
         "in": [
-          "StageLaunchRecord and StageJob identity",
-          "Shared ProcessHandlePolicy and per-run ChildHandleManifest",
+        "StageLaunchRecord and StageJob identity",
+        "Shared ProcessHandlePolicy and per-run ChildHandleManifest",
           "Active-Authorization root grant enforcement",
           "Inherited fenced-action child grant derivation",
           "Safety-only helper authority and durable kill intent"
@@ -2541,7 +3027,7 @@
         "limit+1 and emergency kill persist operator/action/safety/terminate intent before Job termination"
       ],
       "verification": [
-        "profile:new_runtime_exact_v1 focus=\"python -m pytest runtime/local-ai-runtime/tests/execution/test_stage_launch.py runtime/local-ai-runtime/tests/execution/test_execution_authority.py\"",
+        "uv run --locked --offline --project runtime/local-ai-runtime python -m pytest runtime/local-ai-runtime/tests/execution/test_stage_launch.py runtime/local-ai-runtime/tests/execution/test_execution_authority.py",
         "git diff --check"
       ],
       "evidence_path": "docs/change-evidence/<date>-lar-p1d-003-stage-authority.md",
@@ -2600,7 +3086,7 @@
         "DB cursor never leads the flushed segment and continuation preserves prev_hash/sequence"
       ],
       "verification": [
-        "profile:new_runtime_exact_v1 focus=\"python -m pytest runtime/local-ai-runtime/tests/execution/test_stream_limits.py runtime/local-ai-runtime/tests/execution/test_journal.py\"",
+        "uv run --locked --offline --project runtime/local-ai-runtime python -m pytest runtime/local-ai-runtime/tests/execution/test_stream_limits.py runtime/local-ai-runtime/tests/execution/test_journal.py",
         "git diff --check"
       ],
       "evidence_path": "docs/change-evidence/<date>-lar-p1d-004-stream-journal.md",
@@ -2661,8 +3147,8 @@
         "A missing credential, unavailable provider or incompatible adapter reports a scoped smoke failure and cannot be promoted to live acceptance"
       ],
       "verification": [
-        "profile:new_runtime_exact_v1 focus=\"python -m pytest runtime/local-ai-runtime/tests/qualification/test_codex_adapter.py runtime/local-ai-runtime/tests/qualification/test_adapter_no_write_smoke.py\"",
-        "profile:new_runtime_exact_v1 focus=\"python -m local_ai_runtime platform model-probe --mode adapter-no-write-smoke --disposable --json\"",
+        "uv run --locked --offline --project runtime/local-ai-runtime python -m pytest runtime/local-ai-runtime/tests/qualification/test_codex_adapter.py runtime/local-ai-runtime/tests/qualification/test_adapter_no_write_smoke.py",
+        "uv run --locked --offline --project runtime/local-ai-runtime python -m local_ai_runtime platform model-probe --mode adapter-no-write-smoke --disposable --json",
         "git diff --check"
       ],
       "evidence_path": "docs/change-evidence/<date>-lar-p1c-007-adapter-no-write-smoke.md",
@@ -2721,7 +3207,7 @@
         "Recoverable attempts outrank new tasks and parked external waits release capacity"
       ],
       "verification": [
-        "profile:new_runtime_exact_v1 focus=\"python -m pytest runtime/local-ai-runtime/tests/recovery/test_adoption.py runtime/local-ai-runtime/tests/recovery/test_continuation.py\"",
+        "uv run --locked --offline --project runtime/local-ai-runtime python -m pytest runtime/local-ai-runtime/tests/recovery/test_adoption.py runtime/local-ai-runtime/tests/recovery/test_continuation.py",
         "git diff --check"
       ],
       "evidence_path": "docs/change-evidence/<date>-lar-p1d-005-recovery.md",
@@ -2788,7 +3274,7 @@
         "Unknown report fields, shell placeholders, network attempts and environment drift fail closed with scoped reason codes"
       ],
       "verification": [
-        "profile:new_runtime_exact_v1 focus=\"python -m pytest runtime/local-ai-runtime/tests/execution/test_gates.py runtime/local-ai-runtime/tests/execution/test_gate_failures.py\"",
+        "uv run --locked --offline --project runtime/local-ai-runtime python -m pytest runtime/local-ai-runtime/tests/execution/test_gates.py runtime/local-ai-runtime/tests/execution/test_gate_failures.py",
         "git diff --check"
       ],
       "evidence_path": "docs/change-evidence/<date>-lar-p1d-006-gate-runner.md",
@@ -2847,7 +3333,7 @@
         "Audit performs no repository write and retains no sensitive config values"
       ],
       "verification": [
-        "profile:new_runtime_exact_v1 focus=\"python -m pytest runtime/local-ai-runtime/tests/git_local/test_identity.py runtime/local-ai-runtime/tests/git_local/test_audit.py\"",
+        "uv run --locked --offline --project runtime/local-ai-runtime python -m pytest runtime/local-ai-runtime/tests/git_local/test_identity.py runtime/local-ai-runtime/tests/git_local/test_audit.py",
         "git diff --check"
       ],
       "evidence_path": "docs/change-evidence/<date>-lar-p1e-001-git-audit.md",
@@ -2904,7 +3390,7 @@
         "Accepted changed paths, modes and bytes form one immutable input/index plan"
       ],
       "verification": [
-        "profile:new_runtime_exact_v1 focus=\"python -m pytest runtime/local-ai-runtime/tests/git_local/test_worktree.py runtime/local-ai-runtime/tests/git_local/test_mutation_closure.py\"",
+        "uv run --locked --offline --project runtime/local-ai-runtime python -m pytest runtime/local-ai-runtime/tests/git_local/test_worktree.py runtime/local-ai-runtime/tests/git_local/test_mutation_closure.py",
         "git diff --check"
       ],
       "evidence_path": "docs/change-evidence/<date>-lar-p1e-002-worktree-mutations.md",
@@ -2973,7 +3459,7 @@
         "Promotion is create-if-absent, fenced, response-loss idempotent and followed by clear-alternates reachability proof"
       ],
       "verification": [
-        "profile:new_runtime_exact_v1 focus=\"python -m pytest runtime/local-ai-runtime/tests/git_local/test_object_plan.py runtime/local-ai-runtime/tests/git_local/test_promotion.py\"",
+        "uv run --locked --offline --project runtime/local-ai-runtime python -m pytest runtime/local-ai-runtime/tests/git_local/test_object_plan.py runtime/local-ai-runtime/tests/git_local/test_promotion.py",
         "git diff --check"
       ],
       "evidence_path": "docs/change-evidence/<date>-lar-p1e-003-objects-promotion.md",
@@ -3031,7 +3517,7 @@
         "Any historical successful task-ref record permanently blocks resubmission even if the ref is externally deleted"
       ],
       "verification": [
-        "profile:new_runtime_exact_v1 focus=\"python -m pytest runtime/local-ai-runtime/tests/git_local/test_finalize.py runtime/local-ai-runtime/tests/git_local/test_task_ref.py\"",
+        "uv run --locked --offline --project runtime/local-ai-runtime python -m pytest runtime/local-ai-runtime/tests/git_local/test_finalize.py runtime/local-ai-runtime/tests/git_local/test_task_ref.py",
         "git diff --check"
       ],
       "evidence_path": "docs/change-evidence/<date>-lar-p1e-004-finalize-ref.md",
@@ -3064,9 +3550,9 @@
       ],
       "scope": {
         "in": [
-          "Artifact spool/outbox/no-replace publication",
-          "EvidenceProjectionAcceptance plus activation-bound runtime_external_v1 root qualification",
-          "External EvidenceIndex and CloseoutBundle linking",
+        "Artifact spool/outbox/no-replace publication",
+        "EvidenceProjectionAcceptance plus activation-bound runtime_external_v1 root qualification",
+        "External EvidenceIndex and CloseoutBundle linking",
           "ExecutionReceipt six-condition verifier",
           "Commit/ref/evidence association without hash cycle"
         ],
@@ -3091,7 +3577,7 @@
         "Every response-loss checkpoint returns the same artifact/evidence/receipt identity"
       ],
       "verification": [
-        "profile:new_runtime_exact_v1 focus=\"python -m pytest runtime/local-ai-runtime/tests/evidence/test_artifact_publish.py runtime/local-ai-runtime/tests/evidence/test_receipt.py\"",
+        "uv run --locked --offline --project runtime/local-ai-runtime python -m pytest runtime/local-ai-runtime/tests/evidence/test_artifact_publish.py runtime/local-ai-runtime/tests/evidence/test_receipt.py",
         "git diff --check"
       ],
       "evidence_path": "docs/change-evidence/<date>-lar-p1e-005-evidence-closeout.md",
@@ -3125,15 +3611,15 @@
       "scope": {
         "in": [
           "Fenced remove_worktree proof and admin-record verification",
-          "cleanup_required parking",
-          "Quiescent state/evidence backup lock ordering and contents",
-          "QuarantineKeyEnvelope and RuntimeIntegrityKeyEnvelope backup dependencies",
-          "BackupRestoreEligibility, BackupPostActivity and BackupRestoreIntent state machine",
-          "Restore verification in a new isolated root and production-restore core against a disposable production-like fixture"
+        "cleanup_required parking",
+        "Quiescent state/evidence backup lock ordering and contents",
+        "QuarantineKeyEnvelope and RuntimeIntegrityKeyEnvelope backup dependencies",
+        "BackupRestoreEligibility, BackupPostActivity and BackupRestoreIntent state machine",
+        "Restore verification in a new isolated root and production-restore core against a disposable production-like fixture"
         ],
         "out": [
           "Task-ref deletion",
-          "Uncontrolled production-root overwrite or live production restore",
+        "Uncontrolled production-root overwrite or live production restore",
           "Credential/environment/worktree backup"
         ],
         "primary_files": [
@@ -3154,7 +3640,7 @@
         "Restore drill never overwrites production root and detects every tamper fixture"
       ],
       "verification": [
-        "profile:new_runtime_exact_v1 focus=\"python -m pytest runtime/local-ai-runtime/tests/recovery/test_cleanup.py runtime/local-ai-runtime/tests/recovery/test_backup_restore.py\"",
+        "uv run --locked --offline --project runtime/local-ai-runtime python -m pytest runtime/local-ai-runtime/tests/recovery/test_cleanup.py runtime/local-ai-runtime/tests/recovery/test_backup_restore.py",
         "git diff --check"
       ],
       "evidence_path": "docs/change-evidence/<date>-lar-p1e-006-cleanup-backup.md",
@@ -3229,8 +3715,8 @@
         "Rehearsal evidence is labeled fixture_only and cannot satisfy Implementation Acceptance, Full Q0, P2 or live cohort gates"
       ],
       "verification": [
-        "profile:new_runtime_exact_v1 focus=\"python -m pytest runtime/local-ai-runtime/tests/integration/test_fixture_closeout_rehearsal.py\"",
-        "profile:new_runtime_exact_v1 focus=\"python -m local_ai_runtime gates run --profile fixture-closeout-rehearsal --offline --json\"",
+        "uv run --locked --offline --project runtime/local-ai-runtime python -m pytest runtime/local-ai-runtime/tests/integration/test_fixture_closeout_rehearsal.py",
+        "uv run --locked --offline --project runtime/local-ai-runtime python -m local_ai_runtime gates run --profile fixture-closeout-rehearsal --offline --json",
         "git diff --check"
       ],
       "evidence_path": "docs/change-evidence/<date>-lar-p1e-007-fixture-closeout-rehearsal.md",
@@ -3289,7 +3775,7 @@
         "Raw argv, env, prompt and secrets never enter durable CLI diagnostics"
       ],
       "verification": [
-        "profile:new_runtime_exact_v1 focus=\"python -m pytest runtime/local-ai-runtime/tests/cli/test_command_tree.py runtime/local-ai-runtime/tests/cli/test_json_exit_contract.py\"",
+        "uv run --locked --offline --project runtime/local-ai-runtime python -m pytest runtime/local-ai-runtime/tests/cli/test_command_tree.py runtime/local-ai-runtime/tests/cli/test_json_exit_contract.py",
         "git diff --check"
       ],
       "evidence_path": "docs/change-evidence/<date>-lar-p1f-001-cli-kernel.md",
@@ -3347,7 +3833,7 @@
         "All blocked states return the cataloged exit/reason/evidence/suggested-command tuple"
       ],
       "verification": [
-        "profile:new_runtime_exact_v1 focus=\"python -m pytest runtime/local-ai-runtime/tests/cli/test_batch_commands.py runtime/local-ai-runtime/tests/cli/test_batch_replay.py\"",
+        "uv run --locked --offline --project runtime/local-ai-runtime python -m pytest runtime/local-ai-runtime/tests/cli/test_batch_commands.py runtime/local-ai-runtime/tests/cli/test_batch_replay.py",
         "git diff --check"
       ],
       "evidence_path": "docs/change-evidence/<date>-lar-p1f-002-batch-commands.md",
@@ -3369,22 +3855,21 @@
       "contract_projections": {
         "produces": [],
         "implements": [
-          "work_definition_task_family_v1"
+          "work_definition_task_family_v1",
+          "portfolio_data_only_v1"
         ],
         "accepts": []
       },
       "contract_projection_tokens": [
-      "WorkDefinition",
-      "TaskFamily",
-      "FirstRunExperiencePolicy",
-      "LaunchTemplateCatalog",
-      "OperatorPresentationCatalog"
+        "WorkDefinition",
+        "TaskFamily",
+        "portfolio_data_only_v1"
       ],
       "phase": "P1F",
       "priority": 1,
       "status": "blocked",
       "title": "Implement single-capacity scheduling and parking",
-      "goal": "Select one due recovery or explicitly eligible B2/per-repo promoted task at a time park external waits without consuming capacity and expose scheduler install definitions without installing them.",
+      "goal": "Select one due recovery or promoted task at a time, park external waits without consuming capacity and expose scheduler install definitions without installing them.",
       "depends_on": [
         "LAR-P1F-002"
       ],
@@ -3418,7 +3903,7 @@
         "Scheduled command allowlist excludes login, prepare, repair, cutover, maintenance and kill-current"
       ],
       "verification": [
-        "profile:new_runtime_exact_v1 focus=\"python -m pytest runtime/local-ai-runtime/tests/operations/test_scheduler.py runtime/local-ai-runtime/tests/operations/test_task_definition.py\"",
+        "uv run --locked --offline --project runtime/local-ai-runtime python -m pytest runtime/local-ai-runtime/tests/operations/test_scheduler.py runtime/local-ai-runtime/tests/operations/test_task_definition.py",
         "git diff --check"
       ],
       "evidence_path": "docs/change-evidence/<date>-lar-p1f-003-scheduler.md",
@@ -3476,7 +3961,7 @@
         "A crash during emergency kill adopts the same terminate action and completes drain/seal/handoff"
       ],
       "verification": [
-        "profile:new_runtime_exact_v1 focus=\"python -m pytest runtime/local-ai-runtime/tests/operations/test_maintenance.py runtime/local-ai-runtime/tests/operations/test_emergency_kill.py\"",
+        "uv run --locked --offline --project runtime/local-ai-runtime python -m pytest runtime/local-ai-runtime/tests/operations/test_maintenance.py runtime/local-ai-runtime/tests/operations/test_emergency_kill.py",
         "git diff --check"
       ],
       "evidence_path": "docs/change-evidence/<date>-lar-p1f-004-native-maintenance.md",
@@ -3545,7 +4030,7 @@
         "Overlapping operator intervals count once and all failure/cancel/recovery/maintenance minutes enter the numerator"
       ],
       "verification": [
-        "profile:new_runtime_exact_v1 focus=\"python -m pytest runtime/local-ai-runtime/tests/operations/test_operator_actions.py runtime/local-ai-runtime/tests/operations/test_runbook_commands.py\"",
+        "uv run --locked --offline --project runtime/local-ai-runtime python -m pytest runtime/local-ai-runtime/tests/operations/test_operator_actions.py runtime/local-ai-runtime/tests/operations/test_runbook_commands.py",
         "git diff --check"
       ],
       "evidence_path": "docs/change-evidence/<date>-lar-p1f-005-operator-runbooks.md",
@@ -3604,7 +4089,7 @@
         "Canary rollback requires still-valid prior profile, qualification and Authorization and never dynamically falls back"
       ],
       "verification": [
-        "profile:new_runtime_exact_v1 focus=\"python -m pytest runtime/local-ai-runtime/tests/compat/test_commands.py runtime/local-ai-runtime/tests/operations/test_evaluation.py\"",
+        "uv run --locked --offline --project runtime/local-ai-runtime python -m pytest runtime/local-ai-runtime/tests/compat/test_commands.py runtime/local-ai-runtime/tests/operations/test_evaluation.py",
         "git diff --check"
       ],
       "evidence_path": "docs/change-evidence/<date>-lar-p1f-006-compat-evaluation.md",
@@ -3634,18 +4119,14 @@
           "writer_effect_launch_identity_v1",
           "durable_operator_action_inbox_v1",
           "git_hybrid_materialization_v1",
-        "q0_trigger_policy_v1",
-        "activation_admission_chain_v1",
-        "exact_toolchain_gate_v1"
+          "q0_trigger_policy_v1",
+          "activation_admission_chain_v1"
         ]
       },
       "contract_projection_tokens": [
-      "WorkDefinition",
-      "TaskFamily",
-      "FirstRunExperiencePolicy",
-      "LaunchTemplateCatalog",
-      "OperatorPresentationCatalog",
-      "EffectPlan",
+        "WorkDefinition",
+        "TaskFamily",
+        "EffectPlan",
         "GateGraph",
         "profile_generation",
         "capability_generation",
@@ -3658,15 +4139,9 @@
         "hash-object -w",
         "cat-file",
         "Q0TriggerPolicy",
-      "RuntimeCompositionManifest",
-      "SelectedRuntimeIdentity",
-      "ActiveRuntimeIdentity",
-      "RuntimeToolchainManifest",
-      "VerificationExecutionProfile",
-      "uv sync --exact",
-      "--no-python-downloads",
-      "--build-constraint",
-      "--require-hashes"
+        "RuntimeCompositionManifest",
+        "SelectedRuntimeIdentity",
+        "ActiveRuntimeIdentity"
       ],
       "phase": "P1G",
       "priority": 1,
@@ -3692,8 +4167,8 @@
           "P2 admission"
         ],
         "primary_files": [
-          "docs/acceptance/local-ai-runtime-0.2/ImplementationAcceptanceRecord.v1.json",
-          "docs/acceptance/local-ai-runtime-0.2/RuntimeCompositionManifest.v1.json",
+        "docs/acceptance/local-ai-runtime-0.2/ImplementationAcceptanceRecord.v1.json",
+        "docs/acceptance/local-ai-runtime-0.2/RuntimeCompositionManifest.v1.json",
           "docs/change-evidence/<date>-lar-p1g-001-implementation-acceptance.md"
         ]
       },
@@ -3707,12 +4182,12 @@
         "P2 remains blocked"
       ],
       "verification": [
-        "profile:new_runtime_exact_v1 stage=supply_chain_identity",
-        "profile:new_runtime_exact_v1 stage=build",
-        "profile:new_runtime_exact_v1 focus=\"python -m pytest\"",
-        "profile:new_runtime_exact_v1 focus=\"python -m local_ai_runtime contracts verify\"",
-        "profile:new_runtime_exact_v1 focus=\"ruff check runtime/local-ai-runtime\"",
-        "profile:new_runtime_exact_v1 focus=\"pyright --project runtime/local-ai-runtime\"",
+        "uv lock --check --offline --project runtime/local-ai-runtime",
+        "uv build --offline --project runtime/local-ai-runtime runtime/local-ai-runtime",
+        "uv run --locked --offline --project runtime/local-ai-runtime python -m pytest",
+        "uv run --locked --offline --project runtime/local-ai-runtime python -m local_ai_runtime contracts verify",
+        "uv run --locked --offline --project runtime/local-ai-runtime ruff check runtime/local-ai-runtime",
+        "uv run --locked --offline --project runtime/local-ai-runtime pyright --project runtime/local-ai-runtime",
         "python scripts/verify-planning-status.py",
         "git diff --check"
       ],
@@ -3737,9 +4212,8 @@
         "implements": [],
         "accepts": [
           "three_level_evolution_v1",
-        "q0_trigger_policy_v1",
-        "activation_admission_chain_v1",
-        "exact_toolchain_gate_v1"
+          "q0_trigger_policy_v1",
+          "activation_admission_chain_v1"
         ]
       },
       "contract_projection_tokens": [
@@ -3747,15 +4221,9 @@
         "capability_generation",
         "architecture_epoch",
         "Q0TriggerPolicy",
-      "RuntimeCompositionManifest",
-      "SelectedRuntimeIdentity",
-      "ActiveRuntimeIdentity",
-      "RuntimeToolchainManifest",
-      "VerificationExecutionProfile",
-      "uv sync --exact",
-      "--no-python-downloads",
-      "--build-constraint",
-      "--require-hashes"
+        "RuntimeCompositionManifest",
+        "SelectedRuntimeIdentity",
+        "ActiveRuntimeIdentity"
       ],
       "phase": "Q0",
       "priority": 2,
@@ -3807,10 +4275,10 @@
         "Q0, activation or immediate-preflight failure leaves P2 Admission false and produces one scoped OperatorAction"
       ],
       "verification": [
-        "profile:new_runtime_exact_v1 focus=\"python -m local_ai_runtime platform qualify --full --json\"",
-        "profile:new_runtime_exact_v1 focus=\"python -m local_ai_runtime evidence verify --record FullQ0Record.v1 --json\"",
-        "profile:new_runtime_exact_v1 focus=\"python -m local_ai_runtime runtime activate --bundle docs/acceptance/local-ai-runtime-0.2/RuntimeActivationBundle.v1.json --expected-generation <n> --json\"",
-        "profile:new_runtime_exact_v1 focus=\"python -m local_ai_runtime platform doctor --quick --json\"",
+        "uv run --locked --offline --project runtime/local-ai-runtime python -m local_ai_runtime platform qualify --full --json",
+        "uv run --locked --offline --project runtime/local-ai-runtime python -m local_ai_runtime evidence verify --record FullQ0Record.v1 --json",
+        "uv run --locked --offline --project runtime/local-ai-runtime python -m local_ai_runtime runtime activate --bundle docs/acceptance/local-ai-runtime-0.2/RuntimeActivationBundle.v1.json --expected-generation <n> --json",
+        "uv run --locked --offline --project runtime/local-ai-runtime python -m local_ai_runtime platform doctor --quick --json",
         "python scripts/verify-planning-status.py",
         "python scripts/select-next-work.py",
         "git diff --check"
@@ -3867,7 +4335,7 @@
         "No unauthorized write, egress, duplicate writer or cleanup error occurs"
       ],
       "verification": [
-        "profile:new_runtime_exact_v1 focus=\"python -m local_ai_runtime evidence verify --task <task-id> --json\"",
+        "uv run --locked --offline --project runtime/local-ai-runtime python -m local_ai_runtime evidence verify --task <task-id> --json",
         "git show --no-patch --format=raw <task-ref>",
         "git diff --check"
       ],
@@ -3922,9 +4390,9 @@
         "OperatorWorkSession data covers every manual minute"
       ],
       "verification": [
-        "profile:new_runtime_exact_v1 focus=\"python -m local_ai_runtime schedule status --json\"",
-        "profile:new_runtime_exact_v1 focus=\"python -m local_ai_runtime eval baseline --cohort p3 --json\"",
-        "profile:new_runtime_exact_v1 focus=\"python -m local_ai_runtime evidence verify --cohort p3 --json\"",
+        "uv run --locked --offline --project runtime/local-ai-runtime python -m local_ai_runtime schedule status --json",
+        "uv run --locked --offline --project runtime/local-ai-runtime python -m local_ai_runtime eval baseline --cohort p3 --json",
+        "uv run --locked --offline --project runtime/local-ai-runtime python -m local_ai_runtime evidence verify --cohort p3 --json",
         "git diff --check"
       ],
       "evidence_path": "docs/change-evidence/<date>-lar-p3-001-scheduled-self-host.md",
@@ -3947,15 +4415,14 @@
         "produces": [],
         "implements": [],
         "accepts": [
-          "work_definition_task_family_v1"
+          "work_definition_task_family_v1",
+          "portfolio_data_only_v1"
         ]
       },
       "contract_projection_tokens": [
-      "WorkDefinition",
-      "TaskFamily",
-      "FirstRunExperiencePolicy",
-      "LaunchTemplateCatalog",
-      "OperatorPresentationCatalog"
+        "WorkDefinition",
+        "TaskFamily",
+        "portfolio_data_only_v1"
       ],
       "phase": "P4",
       "priority": 4,
@@ -4000,9 +4467,9 @@
         "Autonomy remains B2 for the entire cohort"
       ],
       "verification": [
-        "profile:new_runtime_exact_v1 focus=\"python -m local_ai_runtime eval compare --baseline <id> --cohort p4 --json\"",
-        "profile:new_runtime_exact_v1 focus=\"python -m local_ai_runtime evidence verify --cohort p4 --json\"",
-        "profile:new_runtime_exact_v1 focus=\"python -m local_ai_runtime backup restore-drill --cohort p4 --json\"",
+        "uv run --locked --offline --project runtime/local-ai-runtime python -m local_ai_runtime eval compare --baseline <id> --cohort p4 --json",
+        "uv run --locked --offline --project runtime/local-ai-runtime python -m local_ai_runtime evidence verify --cohort p4 --json",
+        "uv run --locked --offline --project runtime/local-ai-runtime python -m local_ai_runtime backup restore-drill --cohort p4 --json",
         "git diff --check"
       ],
       "evidence_path": "docs/change-evidence/<date>-lar-p4-001-cohort.md",
@@ -4015,11 +4482,84 @@
       "prohibited_actions": [
         "Do not dynamically fall back model/profile",
         "Do not waive safety gates",
-        "Do not activate or implement B3 in 0.2"
+        "Do not activate B3 before the cohort is terminal and green"
       ],
       "next_task_ids": [
+        "LAR-P4-002",
         "LAR-P5-001"
       ]
+    },
+    {
+      "task_id": "LAR-P4-002",
+      "contract_projections": {
+        "produces": [],
+        "implements": [],
+        "accepts": [
+          "portfolio_data_only_v1"
+        ]
+      },
+      "contract_projection_tokens": [
+        "portfolio_data_only_v1"
+      ],
+      "phase": "P4",
+      "priority": 4,
+      "status": "blocked",
+      "title": "Activate the B3 portfolio generation after the green cohort",
+      "goal": "Use the controlled activate_b3_portfolio_generation operator action to atomically activate one reviewed AutonomyPolicy generation and its bounded portfolio Authorization after P4 is green, while preserving Epoch 1 global capacity=1 and data-only repo backlog inputs.",
+      "depends_on": [
+        "LAR-P4-001"
+      ],
+      "preconditions": [
+        "P4 cohort is terminal and green under B2/per-repo scheduling",
+        "The proposed AutonomyPolicy generation binds the current ActiveRuntimeIdentity, qualified repos, TaskFamilies, closed backlog schema, stable selector order and global capacity=1",
+        "A controlled interactive operator action has the expected prior autonomy generation and an unused anti-replay challenge"
+      ],
+      "scope": {
+        "in": [
+          "activate_b3_portfolio_generation OperatorAction and OperatorWorkSession",
+          "Authorization activate portfolio scope with expected autonomy generation CAS",
+          "Data-only qualification-bound backlog snapshot admission",
+          "Post-activation quick preflight, canary and rollback record"
+        ],
+        "out": [
+          "Capacity greater than one, second writer or same-effect-domain concurrency",
+          "Repo-provided selector code, script, expression or prompt execution",
+          "New permission, TaskFamily, risk scope, delivery destination or unsupported capability"
+        ],
+        "primary_files": [
+          "docs/authorizations/local-ai-runtime-0.2/B3PortfolioActivationRecord.v1.json",
+          "docs/evaluations/local-ai-runtime-0.2/p4-b3-activation-canary.json",
+          "docs/change-evidence/<date>-lar-p4-002-activate-b3-portfolio.md"
+        ]
+      },
+      "acceptance": [
+        "authorization activate --scope portfolio binds one reviewed AutonomyPolicy generation, current ActiveRuntimeIdentity and exact qualified repo/TaskFamily allowlist",
+        "The operator action validates InteractiveToken/session, SID, expected prior generation and one-time challenge before one active-head CAS",
+        "Portfolio selection accepts only content-addressed closed-schema data snapshots and uses stable policy ordering; repo executable selector content is rejected",
+        "Global capacity remains exactly one and every repository remains capacity=1 within Epoch 1",
+        "Quick preflight and bounded B3 canary pass with no new failure type, intervention or safety hard gate",
+        "Failure or response loss returns the existing terminal activation result or leaves B2 active; it never partially admits B3",
+        "P5 remains independently selectable from P4 and does not depend on this activation"
+      ],
+      "verification": [
+        "uv run --locked --offline --project runtime/local-ai-runtime python -m local_ai_runtime authorization activate --scope portfolio --autonomy-generation <hash> --expected-generation <n> --challenge <id> --json",
+        "uv run --locked --offline --project runtime/local-ai-runtime python -m local_ai_runtime schedule status --json",
+        "uv run --locked --offline --project runtime/local-ai-runtime python -m local_ai_runtime evidence verify --record docs/authorizations/local-ai-runtime-0.2/B3PortfolioActivationRecord.v1.json --json",
+        "git diff --check"
+      ],
+      "evidence_path": "docs/change-evidence/<date>-lar-p4-002-activate-b3-portfolio.md",
+      "rollback": "CAS back to the still-valid B2 AutonomyPolicy generation, revoke only the B3 portfolio Authorization, preserve cohort evidence and keep every repo qualification unchanged unless its own guard failed.",
+      "stop_conditions": [
+        "P4 is not terminal green or any bound qualification/Authorization/ActiveRuntimeIdentity drifted",
+        "The candidate can execute repo selector code, increase capacity, broaden effects or bypass stable ordering",
+        "Quick preflight/canary reports a safety failure, new failure type or new operator intervention"
+      ],
+      "prohibited_actions": [
+        "Do not activate B3 during or before P4",
+        "Do not enable capacity greater than one or infer permission from backlog content",
+        "Do not make P5 depend on B3"
+      ],
+      "next_task_ids": []
     },
     {
       "task_id": "LAR-P5-001",
@@ -4061,9 +4601,9 @@
         "Compatibility reader, historical evidence and task refs remain readable"
       ],
       "verification": [
-        "profile:new_runtime_exact_v1 focus=\"python -m local_ai_runtime repo ownership-status --all --json\"",
-        "profile:new_runtime_exact_v1 focus=\"python -m local_ai_runtime repo rollback --drill --all --json\"",
-        "profile:new_runtime_exact_v1 focus=\"python -m local_ai_runtime compat verify --json\"",
+        "uv run --locked --offline --project runtime/local-ai-runtime python -m local_ai_runtime repo ownership-status --all --json",
+        "uv run --locked --offline --project runtime/local-ai-runtime python -m local_ai_runtime repo rollback --drill --all --json",
+        "uv run --locked --offline --project runtime/local-ai-runtime python -m local_ai_runtime compat verify --json",
         "git diff --check"
       ],
       "evidence_path": "docs/change-evidence/<date>-lar-p5-001-cutover-retirement.md",
