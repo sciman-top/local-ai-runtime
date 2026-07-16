@@ -8,13 +8,13 @@
 - 当前落点：`runtime/host-orchestrator`、`.ai/state/control-plane.db` 与既有 evidence 仍是唯一现行运行事实；`local-ai-runtime-0.2-v3.24` 只是 `baseline_candidate`，尚未批准、Truth Reset 或实现。
 - 目标归宿：Baseline Approval 后按 v3.24 在 `runtime/local-ai-runtime` 实现 Windows-local、single-operator、Python 3.11.x modular monolith。产品面为 Unified Native Direct/Spec/Program + 全局 `capacity=1` 的 deterministic commit-only Batch；Native 负责低延迟意图形成，Batch 只消费已资格化的封闭模板并产出本地 commit/task ref，不 merge/push。
 - 首发体验：预资格化主机上，操作者经 `doctor -> repo qualify -> template list/show -> batch dry-run -> batch submit -> status/action -> evidence show` 完成第一次安全提交；首发只提供 `docs_contract_sync_v1`、`bounded_lint_type_repair_v1`、`focused_test_repair_v1`、`mechanical_repo_maintenance_v1` 四个 launch templates。
-- 下一最小里程碑：队列 `LOCAL-AI-RUNTIME-0.2-BASELINE-CLOSURE` 的 `close_baseline_normative_package_first / LAR-P0A-009`，创建 SQLite-authority state/guard/operator catalogs、deterministic recovery 与 cleanup-finalizer contracts。`ProductContract.v2` 和 `QualificationContractSet.v2` 已闭合并通过 component verifiers；规范包为 `8/15 present, 7 non-present`，最终 manifest 仍不存在。
+- 下一最小里程碑：队列 `LOCAL-AI-RUNTIME-0.2-BASELINE-CLOSURE` 的 `close_baseline_normative_package_first / LAR-P0A-010`，创建 exact Q0/gate/effective-feature/process/resource-limit catalogs 与边界 fixtures。`ProductContract.v2`、`QualificationContractSet.v2` 和 `StatePolicyCatalog.v1` 已闭合并通过 component verifiers；规范包为 `9/15 present, 6 non-present`，最终 manifest 仍不存在。
 - v3.24 因 v3.23 无法证明 exact uv environment、manifest-selected Python、hash-pinned build backend，且 launch product experience 不完整而成为 successor。v3.23 candidate/package/plan 是精确 superseded inputs；Native comparative evaluation 仅作为非规范 predecessor evidence，不 promotion profile。
 - 本次只是预批准 planning control-plane 重基线，不是 P0B Truth Reset；不得据此创建 approval、新 runtime、Batch claim 或 live evidence。任何 v3.24 冻结语义变更都必须创建 v3.25 successor。
 
 ## A. 仓库事实与模块边界
 - `runtime/host-orchestrator` 是当前 `host_local` 可信内核；active Baseline Approval、Truth Reset 和 Legacy Ownership Guard 之前，禁止创建或激活 `runtime/local-ai-runtime`。
-- `.ai/state/control-plane.db` 是现行 legacy 调度真源；`.ai/config/*.yaml` 是 repo-owned runtime contract。v3.24 target 的 SQLite/journal 规则尚未实现：SQLite 将是唯一 policy/transition authority，journal 只作 observation/recovery input。
+- `.ai/state/control-plane.db` 是现行 legacy 调度真源；`.ai/config/*.yaml` 是 repo-owned runtime contract。v3.24 target 的 SQLite/journal 规则已由 `StatePolicyCatalog.v1` 关闭但尚未实现：SQLite 将是唯一 policy/transition authority，journal 只作 observation/recovery input。
 - `.ai/runs/<run_id>/<task_id>/` 是 task-level 正式证据；`docs/change-evidence/` 是 repo-level 治理证据，二者不得混用。
 - v3.24 candidate、normative inventory、v4 machine work items、planning status 与 selector 只定义目标和阶段门；它们不得覆盖当前 runtime 数据契约或伪造实现证据。
 - carried-forward present artifacts 只有 `CanonicalizationPolicy.v1`、`ExecutionSafetyContractSet.v1`、`EvidenceContractSet.v1`、`DeterministicGitContractSet.v1` 四项；`ProductContract.v1` 与 `QualificationContractSet.v1` 不适用于 v3.24。

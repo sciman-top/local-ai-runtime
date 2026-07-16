@@ -2258,6 +2258,12 @@ def _verify_completed_normative_components(
             "qualification",
             "QualificationContractSet.v2",
         ),
+        (
+            "LAR-P0A-009",
+            "P0A-STATE",
+            "state-policy",
+            "StatePolicyCatalog.v1",
+        ),
     )
     for task_id, artifact_id, component, expected_version in components:
         if work_items.get(task_id, {}).get("status") != "completed":

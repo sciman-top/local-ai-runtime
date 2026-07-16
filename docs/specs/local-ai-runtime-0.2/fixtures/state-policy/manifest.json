@@ -1,0 +1,99 @@
+{
+  "fixture_id": "StatePolicyCatalog.v1.contract-fixtures",
+  "schema_version": 1,
+  "baseline_id": "local-ai-runtime-0.2-v3.24",
+  "state_policy_path": "docs/specs/local-ai-runtime-0.2/normative/StatePolicyCatalog.v1.json",
+  "guard_catalog_path": "docs/specs/local-ai-runtime-0.2/catalogs/GuardCatalog.v1.json",
+  "operator_action_catalog_path": "docs/specs/local-ai-runtime-0.2/catalogs/OperatorActionCatalog.v1.json",
+  "expected_counts": {
+    "policy_tables": 7,
+    "transition_rows": 83,
+    "guards": 91,
+    "guard_precedence_levels": 13,
+    "operator_actions": 16
+  },
+  "positive_cases": [
+    {
+      "case_id": "deterministic_recovery_restart_invariant",
+      "history_a": {
+        "policy_generation": "state-policy-v1",
+        "accepted_cursor": 41,
+        "current_fence": 7,
+        "sealed_segment_head": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "immutable_action_head": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "observation_time": "2026-07-16T01:00:00.000000Z",
+        "controller_restart_count": 1
+      },
+      "history_b": {
+        "policy_generation": "state-policy-v1",
+        "accepted_cursor": 41,
+        "current_fence": 7,
+        "sealed_segment_head": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "immutable_action_head": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "observation_time": "2026-07-16T09:00:00.000000Z",
+        "controller_restart_count": 99
+      },
+      "expected_decision": "same_deterministic_result"
+    },
+    {
+      "case_id": "journal_ahead_without_acceptance_parks",
+      "accepted_cursor": 41,
+      "journal_last_seq": 43,
+      "current_fence": 7,
+      "journal_fence": 8,
+      "expected_decision": "durable_park_with_operator_action"
+    },
+    {
+      "case_id": "cleanup_finalizer_requires_all_proofs",
+      "proofs": [
+        "guard_cleanup_owned_paths",
+        "guard_cleanup_job_zero_process",
+        "guard_cleanup_fence_current",
+        "guard_cleanup_actions_terminal",
+        "guard_cleanup_evidence_terminal",
+        "guard_cleanup_head_index_clean"
+      ],
+      "expected_terminal_proof": [
+        "worktree_directory_absent",
+        "common_dir_worktree_admin_absent",
+        "finalizer_result_immutable"
+      ]
+    },
+    {
+      "case_id": "global_resume_preserves_scoped_blocks",
+      "platform_control_before": "suspended",
+      "platform_control_after": "running",
+      "repo_qualification_before": "repo_requalification_required",
+      "repo_qualification_after": "repo_requalification_required",
+      "template_state_before": "suspended",
+      "template_state_after": "suspended"
+    },
+    {
+      "case_id": "b3_activation_denied",
+      "requested_operation": "request_b3_activation",
+      "expected_exit_code": 2,
+      "expected_effects": [],
+      "operator_action_expected": false
+    }
+  ],
+  "negative_mutations": [
+    {"case_id":"missing_policy_table","target":"state_policy","mutation":"remove_policy_table","expected_reason":"state_policy_table_set"},
+    {"case_id":"duplicate_transition_key","target":"state_policy","mutation":"duplicate_transition_row","expected_reason":"state_policy_row_identity"},
+    {"case_id":"incomplete_transition_row","target":"state_policy","mutation":"remove_row_field","expected_reason":"state_policy_row_schema"},
+    {"case_id":"unknown_guard_reference","target":"state_policy","mutation":"add_unknown_guard","expected_reason":"state_policy_guard_reference"},
+    {"case_id":"illegal_target_state","target":"state_policy","mutation":"set_unknown_target_state","expected_reason":"state_policy_target_state"},
+    {"case_id":"unknown_combination_side_effect","target":"state_policy","mutation":"allow_unknown_combination_effect","expected_reason":"state_policy_unknown_combination"},
+    {"case_id":"journal_promoted_to_authority","target":"state_policy","mutation":"make_journal_authority","expected_reason":"state_policy_authority_boundary"},
+    {"case_id":"recovery_depends_on_restart_count","target":"state_policy","mutation":"remove_restart_from_rejected_inputs","expected_reason":"state_policy_recovery_determinism"},
+    {"case_id":"new_work_outranks_recovery","target":"state_policy","mutation":"move_new_work_before_recovery","expected_reason":"state_policy_scheduler_priority"},
+    {"case_id":"cleanup_bypass_deleted","target":"state_policy","mutation":"remove_cleanup_bypass","expected_reason":"state_policy_cleanup_finalizer"},
+    {"case_id":"guard_cycle","target":"guard_catalog","mutation":"create_guard_cycle","expected_reason":"state_policy_guard_cycle"},
+    {"case_id":"guard_precedence_drift","target":"guard_catalog","mutation":"swap_guard_precedence","expected_reason":"state_policy_guard_precedence"},
+    {"case_id":"missing_operator_action","target":"operator_catalog","mutation":"remove_operator_action","expected_reason":"state_policy_operator_action_set"},
+    {"case_id":"toast_becomes_required","target":"operator_catalog","mutation":"make_toast_required","expected_reason":"state_policy_operator_presentation"},
+    {"case_id":"push_closes_action","target":"operator_catalog","mutation":"allow_push_to_close_action","expected_reason":"state_policy_operator_presentation"},
+    {"case_id":"b3_runtime_activation_row","target":"state_policy","mutation":"activate_b3_row","expected_reason":"state_policy_b3_deferred"},
+    {"case_id":"b3_operator_action","target":"operator_catalog","mutation":"add_b3_operator_action","expected_reason":"state_policy_b3_deferred"},
+    {"case_id":"global_resume_clears_repo_block","target":"guard_catalog","mutation":"allow_resume_to_clear_repo_block","expected_reason":"state_policy_scoped_resume"}
+  ]
+}

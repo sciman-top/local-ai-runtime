@@ -1,0 +1,274 @@
+{
+  "domain": "local-ai-runtime/StatePolicyCatalog/v1",
+  "schema_version": 1,
+  "payload": {
+    "artifact_id": "P0A-STATE",
+    "artifact_version": "StatePolicyCatalog.v1",
+    "baseline_id": "local-ai-runtime-0.2-v3.24",
+    "contract_status": "normative_preimplementation_contract",
+    "authority_model": {
+      "policy_and_transition_authority": "sqlite_only",
+      "write_transaction_mode": "BEGIN IMMEDIATE",
+      "journal_role": "append_only_observation_and_recovery_input",
+      "journal_may_create_policy_state": false,
+      "accepted_replay_inputs": [
+        "db_accepted_cursor",
+        "current_fence",
+        "sealed_segment_chain",
+        "immutable_action_history",
+        "policy_generation"
+      ],
+      "rejected_replay_inputs": [
+        "unaccepted_journal_event",
+        "superseded_event",
+        "duplicate_event",
+        "wrong_generation_event",
+        "observation_time",
+        "controller_restart_count",
+        "scan_count"
+      ],
+      "deterministic_recovery_outcomes": [
+        "same_deterministic_result",
+        "terminal_failure",
+        "durable_park_with_operator_action"
+      ]
+    },
+    "row_schema_fields": [
+      "row_id",
+      "source_state",
+      "operation_or_event",
+      "guard_ids",
+      "allowed_effects",
+      "target_state",
+      "exit_code",
+      "capacity_disposition",
+      "scheduler_priority",
+      "retry_policy"
+    ],
+    "unknown_combination": {
+      "exit_code": 2,
+      "reason_code": "state_operation_combination_unknown",
+      "allowed_effects": [],
+      "capacity_disposition": "unchanged"
+    },
+    "adapter_violation": {
+      "exit_code": 6,
+      "reason_code": "qualified_adapter_schema_violation",
+      "required_effects": [
+        "terminate_exact_job",
+        "drain_streams",
+        "seal_journal",
+        "suspend_platform_incompatible"
+      ]
+    },
+    "scheduler_contract": {
+      "global_writer_capacity": 1,
+      "priority_order": [
+        "live_process_safety",
+        "publication_recovery",
+        "deterministic_closeout",
+        "cleanup",
+        "due_retry",
+        "new_promoted_task"
+      ],
+      "stable_tie_break": [
+        "ready_at_utc",
+        "root_task_id",
+        "generation",
+        "attempt_no"
+      ],
+      "one_controller_invocation_max_claims": 1,
+      "recovery_outranks_new_work": true
+    },
+    "cleanup_finalizer_contract": {
+      "lane": "explicit_finalizer",
+      "required_guards": [
+        "guard_cleanup_owned_paths",
+        "guard_cleanup_job_zero_process",
+        "guard_cleanup_fence_current",
+        "guard_cleanup_actions_terminal",
+        "guard_cleanup_evidence_terminal",
+        "guard_cleanup_head_index_clean"
+      ],
+      "terminal_proof": [
+        "worktree_directory_absent",
+        "common_dir_worktree_admin_absent",
+        "finalizer_result_immutable"
+      ],
+      "forbidden_bypass": [
+        "delete_guard_row",
+        "delete_marker",
+        "delete_journal_segment",
+        "clear_db_row",
+        "direct_terminal_state_edit",
+        "skip_read_back"
+      ],
+      "repair_disposition": "satisfy_replace_or_terminally_close_finalizer_condition"
+    },
+    "policies": [
+      {
+        "policy_id": "SubmissionFamilyStatePolicy",
+        "state_model": "single_lane",
+        "states": ["absent", "open", "awaiting_resolution", "publication_recovery", "commit_ready", "closed"],
+        "terminal_states": ["commit_ready", "closed"],
+        "legal_operations": ["new_submit", "ordinary_replay", "current_terminal_eligible", "task_ref_success_closeout_incomplete", "evidence_cleanup_terminal", "atomic_create_resubmission", "close_without_resubmission", "reopen_or_resubmit"],
+        "rows": [
+          {"row_id":"family.absent.new_submit","source_state":"absent","operation_or_event":"new_submit","guard_ids":["guard_baseline_approved","guard_implementation_accepted","guard_p2_q0","guard_platform_compatible","guard_auth_ready","guard_platform_available_qualified","guard_repo_qualified","guard_template_authorized","guard_task_inputs_qualified"],"allowed_effects":["create_submission_family","create_generation_zero_root"],"target_state":"open","exit_code":0,"capacity_disposition":"not_acquired","scheduler_priority":"new_promoted_task","retry_policy":"same_identity_replay"},
+          {"row_id":"family.any.ordinary_replay","source_state":"any","operation_or_event":"ordinary_replay","guard_ids":["guard_existing_family_read_authorized"],"allowed_effects":["return_immutable_root_task"],"target_state":"unchanged","exit_code":0,"capacity_disposition":"unchanged","scheduler_priority":"none","retry_policy":"same_identity_replay"},
+          {"row_id":"family.open.current_terminal_eligible","source_state":"open","operation_or_event":"current_terminal_eligible","guard_ids":["guard_resolution_eligible"],"allowed_effects":["create_resolution_required_head"],"target_state":"awaiting_resolution","exit_code":3,"capacity_disposition":"release","scheduler_priority":"none","retry_policy":"operator_resolution"},
+          {"row_id":"family.open.task_ref_success_closeout_incomplete","source_state":"open","operation_or_event":"task_ref_success_closeout_incomplete","guard_ids":["guard_publication_identity_known"],"allowed_effects":["create_publication_recovery_handoff"],"target_state":"publication_recovery","exit_code":3,"capacity_disposition":"retain","scheduler_priority":"publication_recovery","retry_policy":"same_identity_replay"},
+          {"row_id":"family.publication_recovery.evidence_cleanup_terminal","source_state":"publication_recovery","operation_or_event":"evidence_cleanup_terminal","guard_ids":["guard_publication_terminal","guard_cleanup_terminal"],"allowed_effects":["seal_family_commit_ready"],"target_state":"commit_ready","exit_code":0,"capacity_disposition":"release","scheduler_priority":"none","retry_policy":"never"},
+          {"row_id":"family.awaiting_resolution.atomic_create_resubmission","source_state":"awaiting_resolution","operation_or_event":"atomic_create_resubmission","guard_ids":["guard_resubmission_eligible"],"allowed_effects":["create_task_resolution","create_generation_successor","cas_family_current"],"target_state":"open","exit_code":0,"capacity_disposition":"not_acquired","scheduler_priority":"new_promoted_task","retry_policy":"same_identity_replay"},
+          {"row_id":"family.awaiting_resolution.close_without_resubmission","source_state":"awaiting_resolution","operation_or_event":"close_without_resubmission","guard_ids":["guard_resolution_close_allowed"],"allowed_effects":["seal_family_closed"],"target_state":"closed","exit_code":0,"capacity_disposition":"release","scheduler_priority":"none","retry_policy":"never"},
+          {"row_id":"family.terminal.reopen_or_resubmit","source_state":"terminal","operation_or_event":"reopen_or_resubmit","guard_ids":[],"allowed_effects":[],"target_state":"unchanged","exit_code":2,"capacity_disposition":"unchanged","scheduler_priority":"none","retry_policy":"never"}
+        ]
+      },
+      {
+        "policy_id": "BatchTaskStatePolicy",
+        "state_model": "single_lane",
+        "states": ["submitted", "queued", "parked", "active", "cancel_pending", "closing", "recovery_pending", "completed", "failed", "cancelled"],
+        "terminal_states": ["completed", "failed", "cancelled"],
+        "legal_operations": ["admission_accepted", "preclaim_guard_blocked", "park_guard_restored", "claim", "attempt_started", "attempt_succeeded", "retry_eligible", "retry_ineligible", "pre_spawn_cancel", "running_cancel", "process_terminal_after_cancel", "closing_cancel_before_ref", "closing_cancel_after_ref", "closeout_terminal", "closeout_ambiguous", "recovery_handoff_ready"],
+        "rows": [
+          {"row_id":"task.submitted.admission_accepted","source_state":"submitted","operation_or_event":"admission_accepted","guard_ids":["guard_task_inputs_qualified"],"allowed_effects":["enqueue_task"],"target_state":"queued","exit_code":0,"capacity_disposition":"not_acquired","scheduler_priority":"new_promoted_task","retry_policy":"same_identity_replay"},
+          {"row_id":"task.queued.preclaim_guard_blocked","source_state":"queued","operation_or_event":"preclaim_guard_blocked","guard_ids":["guard_preclaim_block_present"],"allowed_effects":["park_task","upsert_operator_action"],"target_state":"parked","exit_code":3,"capacity_disposition":"release","scheduler_priority":"none","retry_policy":"guard_change_only"},
+          {"row_id":"task.parked.park_guard_restored","source_state":"parked","operation_or_event":"park_guard_restored","guard_ids":["guard_all_park_blocks_cleared"],"allowed_effects":["queue_existing_task","resolve_operator_action"],"target_state":"queued","exit_code":0,"capacity_disposition":"not_acquired","scheduler_priority":"due_retry","retry_policy":"same_identity_replay"},
+          {"row_id":"task.queued.claim","source_state":"queued","operation_or_event":"claim","guard_ids":["guard_due_recovery_drained","guard_writer_capacity_available","guard_task_inputs_qualified"],"allowed_effects":["create_attempt","acquire_capacity_lease"],"target_state":"active","exit_code":0,"capacity_disposition":"acquire","scheduler_priority":"new_promoted_task","retry_policy":"same_identity_replay"},
+          {"row_id":"task.active.attempt_started","source_state":"active","operation_or_event":"attempt_started","guard_ids":["guard_capacity_lease_current"],"allowed_effects":["bind_current_attempt"],"target_state":"active","exit_code":0,"capacity_disposition":"retain","scheduler_priority":"deterministic_closeout","retry_policy":"same_identity_replay"},
+          {"row_id":"task.active.attempt_succeeded","source_state":"active","operation_or_event":"attempt_succeeded","guard_ids":["guard_attempt_result_valid"],"allowed_effects":["enter_deterministic_closeout"],"target_state":"closing","exit_code":0,"capacity_disposition":"retain","scheduler_priority":"deterministic_closeout","retry_policy":"same_identity_replay"},
+          {"row_id":"task.active.retry_eligible","source_state":"active","operation_or_event":"retry_eligible","guard_ids":["guard_retry_eligible"],"allowed_effects":["create_fresh_attempt"],"target_state":"queued","exit_code":0,"capacity_disposition":"release","scheduler_priority":"due_retry","retry_policy":"guarded_same_generation"},
+          {"row_id":"task.active.retry_ineligible","source_state":"active","operation_or_event":"retry_ineligible","guard_ids":["guard_retry_ineligible"],"allowed_effects":["seal_task_failed","upsert_operator_action"],"target_state":"failed","exit_code":4,"capacity_disposition":"release","scheduler_priority":"none","retry_policy":"operator_resolution"},
+          {"row_id":"task.preclaim.pre_spawn_cancel","source_state":"preclaim","operation_or_event":"pre_spawn_cancel","guard_ids":["guard_no_writer_launch"],"allowed_effects":["seal_task_cancelled"],"target_state":"cancelled","exit_code":0,"capacity_disposition":"release","scheduler_priority":"none","retry_policy":"never"},
+          {"row_id":"task.active.running_cancel","source_state":"active","operation_or_event":"running_cancel","guard_ids":["guard_cancel_intent_allowed"],"allowed_effects":["write_cancel_intent","terminate_exact_job","drain_streams","seal_journal"],"target_state":"cancel_pending","exit_code":0,"capacity_disposition":"retain","scheduler_priority":"live_process_safety","retry_policy":"same_identity_replay"},
+          {"row_id":"task.cancel_pending.process_terminal_after_cancel","source_state":"cancel_pending","operation_or_event":"process_terminal_after_cancel","guard_ids":["guard_job_terminal","guard_journal_sealed"],"allowed_effects":["enter_cancel_closeout"],"target_state":"closing","exit_code":0,"capacity_disposition":"retain","scheduler_priority":"deterministic_closeout","retry_policy":"same_identity_replay"},
+          {"row_id":"task.closing.closing_cancel_before_ref","source_state":"closing","operation_or_event":"closing_cancel_before_ref","guard_ids":["guard_no_publication","guard_no_executing_action"],"allowed_effects":["run_cleanup_finalizer","seal_task_cancelled"],"target_state":"cancelled","exit_code":0,"capacity_disposition":"release","scheduler_priority":"cleanup","retry_policy":"same_finalizer"},
+          {"row_id":"task.closing.closing_cancel_after_ref","source_state":"closing","operation_or_event":"closing_cancel_after_ref","guard_ids":["guard_publication_identity_known"],"allowed_effects":["record_cancel_deferred","continue_publication_recovery"],"target_state":"closing","exit_code":0,"capacity_disposition":"retain","scheduler_priority":"publication_recovery","retry_policy":"same_identity_replay"},
+          {"row_id":"task.closing.closeout_terminal","source_state":"closing","operation_or_event":"closeout_terminal","guard_ids":["guard_publication_terminal","guard_cleanup_terminal"],"allowed_effects":["seal_task_completed"],"target_state":"completed","exit_code":0,"capacity_disposition":"release","scheduler_priority":"none","retry_policy":"never"},
+          {"row_id":"task.closing.closeout_ambiguous","source_state":"closing","operation_or_event":"closeout_ambiguous","guard_ids":["guard_closeout_requires_recovery"],"allowed_effects":["create_recovery_handoff","upsert_operator_action"],"target_state":"recovery_pending","exit_code":3,"capacity_disposition":"retain","scheduler_priority":"publication_recovery","retry_policy":"same_identity_replay"},
+          {"row_id":"task.recovery_pending.recovery_handoff_ready","source_state":"recovery_pending","operation_or_event":"recovery_handoff_ready","guard_ids":["guard_recovery_handoff_committed"],"allowed_effects":["release_capacity_after_handoff"],"target_state":"parked","exit_code":3,"capacity_disposition":"release","scheduler_priority":"due_retry","retry_policy":"operator_resolution"}
+        ]
+      },
+      {
+        "policy_id": "AttemptStatePolicy",
+        "state_model": "single_lane_with_launch_substates",
+        "states": ["created", "claimed", "preparing", "writer_launching", "durable_marker", "spawned_suspended", "writer_running", "verifying", "closing", "recovery_pending", "recovery_required", "reconcile_required", "cleanup_required", "succeeded", "failed", "cancelled"],
+        "terminal_states": ["succeeded", "failed", "cancelled"],
+        "legal_operations": ["claim_attempt", "prepare_complete", "write_launch_intent", "marker_flushed", "process_spawned_suspended", "execution_commit_flushed", "resume_observed", "resume_outcome_unknown", "writer_process_exited", "verification_passed", "verification_failed", "closeout_complete", "cleanup_incomplete", "ambiguous_effect", "reconcile_terminal", "recovery_proof_failed", "operator_terminate_failed", "cleanup_finalizer_complete"],
+        "rows": [
+          {"row_id":"attempt.created.claim_attempt","source_state":"created","operation_or_event":"claim_attempt","guard_ids":["guard_capacity_lease_current"],"allowed_effects":["bind_attempt_fence"],"target_state":"claimed","exit_code":0,"capacity_disposition":"retain","scheduler_priority":"new_promoted_task","retry_policy":"same_identity_replay"},
+          {"row_id":"attempt.claimed.prepare_complete","source_state":"claimed","operation_or_event":"prepare_complete","guard_ids":["guard_task_inputs_qualified"],"allowed_effects":["seal_resolved_attempt_manifest"],"target_state":"preparing","exit_code":0,"capacity_disposition":"retain","scheduler_priority":"new_promoted_task","retry_policy":"same_identity_replay"},
+          {"row_id":"attempt.preparing.write_launch_intent","source_state":"preparing","operation_or_event":"write_launch_intent","guard_ids":["guard_writer_launch_allowed"],"allowed_effects":["create_writer_launch_record"],"target_state":"writer_launching","exit_code":0,"capacity_disposition":"retain","scheduler_priority":"live_process_safety","retry_policy":"same_identity_replay"},
+          {"row_id":"attempt.writer_launching.marker_flushed","source_state":"writer_launching","operation_or_event":"marker_flushed","guard_ids":["guard_marker_identity_fresh"],"allowed_effects":["create_durable_marker"],"target_state":"durable_marker","exit_code":0,"capacity_disposition":"retain","scheduler_priority":"live_process_safety","retry_policy":"same_identity_replay"},
+          {"row_id":"attempt.durable_marker.process_spawned_suspended","source_state":"durable_marker","operation_or_event":"process_spawned_suspended","guard_ids":["guard_process_atomic_job_join"],"allowed_effects":["persist_job_identity","persist_process_identity"],"target_state":"spawned_suspended","exit_code":0,"capacity_disposition":"retain","scheduler_priority":"live_process_safety","retry_policy":"same_identity_replay"},
+          {"row_id":"attempt.spawned_suspended.execution_commit_flushed","source_state":"spawned_suspended","operation_or_event":"execution_commit_flushed","guard_ids":["guard_execution_authority_current"],"allowed_effects":["write_writer_execution_committed","resume_exact_thread"],"target_state":"writer_running","exit_code":0,"capacity_disposition":"retain","scheduler_priority":"live_process_safety","retry_policy":"never"},
+          {"row_id":"attempt.writer_running.resume_observed","source_state":"writer_running","operation_or_event":"resume_observed","guard_ids":["guard_job_identity_current"],"allowed_effects":["drain_normalized_events"],"target_state":"writer_running","exit_code":0,"capacity_disposition":"retain","scheduler_priority":"live_process_safety","retry_policy":"never"},
+          {"row_id":"attempt.writer_running.resume_outcome_unknown","source_state":"writer_running","operation_or_event":"resume_outcome_unknown","guard_ids":["guard_job_identity_current"],"allowed_effects":["track_exact_process","drain_streams","terminate_at_deadline","seal_journal"],"target_state":"recovery_pending","exit_code":3,"capacity_disposition":"retain","scheduler_priority":"live_process_safety","retry_policy":"same_identity_replay"},
+          {"row_id":"attempt.writer_running.writer_process_exited","source_state":"writer_running","operation_or_event":"writer_process_exited","guard_ids":["guard_job_terminal","guard_journal_sealed","guard_execution_receipt_eligible"],"allowed_effects":["create_execution_receipt"],"target_state":"verifying","exit_code":0,"capacity_disposition":"retain","scheduler_priority":"deterministic_closeout","retry_policy":"never"},
+          {"row_id":"attempt.verifying.verification_passed","source_state":"verifying","operation_or_event":"verification_passed","guard_ids":["guard_gate_graph_terminal"],"allowed_effects":["enter_attempt_closeout"],"target_state":"closing","exit_code":0,"capacity_disposition":"retain","scheduler_priority":"deterministic_closeout","retry_policy":"never"},
+          {"row_id":"attempt.verifying.verification_failed","source_state":"verifying","operation_or_event":"verification_failed","guard_ids":["guard_gate_report_terminal"],"allowed_effects":["seal_attempt_failed","run_cleanup_finalizer"],"target_state":"failed","exit_code":4,"capacity_disposition":"retain","scheduler_priority":"cleanup","retry_policy":"operator_resolution"},
+          {"row_id":"attempt.closing.closeout_complete","source_state":"closing","operation_or_event":"closeout_complete","guard_ids":["guard_publication_terminal","guard_cleanup_terminal"],"allowed_effects":["seal_attempt_succeeded"],"target_state":"succeeded","exit_code":0,"capacity_disposition":"release","scheduler_priority":"none","retry_policy":"never"},
+          {"row_id":"attempt.closing.cleanup_incomplete","source_state":"closing","operation_or_event":"cleanup_incomplete","guard_ids":["guard_cleanup_required"],"allowed_effects":["create_cleanup_finalizer","upsert_operator_action"],"target_state":"cleanup_required","exit_code":3,"capacity_disposition":"retain","scheduler_priority":"cleanup","retry_policy":"same_finalizer"},
+          {"row_id":"attempt.any.ambiguous_effect","source_state":"any_nonterminal","operation_or_event":"ambiguous_effect","guard_ids":["guard_effect_reconcile_required"],"allowed_effects":["read_only_reconcile","upsert_operator_action"],"target_state":"reconcile_required","exit_code":3,"capacity_disposition":"retain","scheduler_priority":"publication_recovery","retry_policy":"same_identity_replay"},
+          {"row_id":"attempt.reconcile_required.reconcile_terminal","source_state":"reconcile_required","operation_or_event":"reconcile_terminal","guard_ids":["guard_publication_identity_known","guard_no_executing_action"],"allowed_effects":["resume_same_deterministic_closeout"],"target_state":"closing","exit_code":0,"capacity_disposition":"retain","scheduler_priority":"publication_recovery","retry_policy":"same_identity_replay"},
+          {"row_id":"attempt.recovery_pending.recovery_proof_failed","source_state":"recovery_pending","operation_or_event":"recovery_proof_failed","guard_ids":["guard_recovery_ambiguous"],"allowed_effects":["upsert_operator_action","park_attempt"],"target_state":"recovery_required","exit_code":3,"capacity_disposition":"retain","scheduler_priority":"due_retry","retry_policy":"operator_resolution"},
+          {"row_id":"attempt.recovery_required.operator_terminate_failed","source_state":"recovery_required","operation_or_event":"operator_terminate_failed","guard_ids":["guard_operator_resolution_terminal"],"allowed_effects":["seal_attempt_failed","run_cleanup_finalizer"],"target_state":"failed","exit_code":4,"capacity_disposition":"retain","scheduler_priority":"cleanup","retry_policy":"same_finalizer"},
+          {"row_id":"attempt.cleanup_required.cleanup_finalizer_complete","source_state":"cleanup_required","operation_or_event":"cleanup_finalizer_complete","guard_ids":["guard_cleanup_terminal"],"allowed_effects":["seal_cleanup_result","release_capacity_after_handoff"],"target_state":"failed","exit_code":4,"capacity_disposition":"release","scheduler_priority":"none","retry_policy":"never"}
+        ]
+      },
+      {
+        "policy_id": "PlatformOperationalStatePolicy",
+        "state_model": "orthogonal_lanes",
+        "lanes": {
+          "auth": ["unknown", "ready", "needs_auth"],
+          "control": ["running", "drain_requested", "suspended"],
+          "qualification": ["unqualified", "qualified", "qualification_suspended", "incompatible"],
+          "availability": ["available", "unavailable"],
+          "resource": ["normal", "disk_pressure"]
+        },
+        "terminal_states": [],
+        "legal_operations": ["auth_probe_ready", "auth_probe_failed", "interactive_login_qualified", "request_drain", "drain_complete", "operator_suspend", "operator_resume", "qualification_passed", "qualification_failed_transient", "adapter_drift", "availability_lost", "availability_restored", "disk_floor_crossed", "disk_pressure_remediated"],
+        "rows": [
+          {"row_id":"platform.auth.auth_probe_ready","source_state":"auth=unknown","operation_or_event":"auth_probe_ready","guard_ids":["guard_auth_probe_valid"],"allowed_effects":["cas_auth_generation_ready"],"target_state":"auth=ready","exit_code":0,"capacity_disposition":"unchanged","scheduler_priority":"none","retry_policy":"same_identity_replay"},
+          {"row_id":"platform.auth.auth_probe_failed","source_state":"auth=any","operation_or_event":"auth_probe_failed","guard_ids":["guard_auth_failure_classified"],"allowed_effects":["cas_auth_needs_auth","upsert_operator_action"],"target_state":"auth=needs_auth","exit_code":5,"capacity_disposition":"release","scheduler_priority":"none","retry_policy":"operator_resolution"},
+          {"row_id":"platform.auth.interactive_login_qualified","source_state":"auth=needs_auth","operation_or_event":"interactive_login_qualified","guard_ids":["guard_interactive_operator","guard_auth_generation_advanced"],"allowed_effects":["cas_auth_ready","resolve_operator_action"],"target_state":"auth=ready","exit_code":0,"capacity_disposition":"unchanged","scheduler_priority":"due_retry","retry_policy":"same_identity_replay"},
+          {"row_id":"platform.control.request_drain","source_state":"control=running","operation_or_event":"request_drain","guard_ids":["guard_manual_drain_allowed"],"allowed_effects":["cas_control_drain_requested"],"target_state":"control=drain_requested","exit_code":0,"capacity_disposition":"unchanged","scheduler_priority":"live_process_safety","retry_policy":"same_identity_replay"},
+          {"row_id":"platform.control.drain_complete","source_state":"control=drain_requested","operation_or_event":"drain_complete","guard_ids":["guard_zero_active_effects"],"allowed_effects":["cas_control_suspended"],"target_state":"control=suspended","exit_code":0,"capacity_disposition":"release","scheduler_priority":"none","retry_policy":"same_identity_replay"},
+          {"row_id":"platform.control.operator_suspend","source_state":"control=running","operation_or_event":"operator_suspend","guard_ids":["guard_interactive_operator"],"allowed_effects":["cas_control_drain_requested"],"target_state":"control=drain_requested","exit_code":0,"capacity_disposition":"unchanged","scheduler_priority":"live_process_safety","retry_policy":"same_identity_replay"},
+          {"row_id":"platform.control.operator_resume","source_state":"control=suspended","operation_or_event":"operator_resume","guard_ids":["guard_global_resume_safe"],"allowed_effects":["cas_control_running"],"target_state":"control=running","exit_code":0,"capacity_disposition":"unchanged","scheduler_priority":"due_retry","retry_policy":"same_identity_replay"},
+          {"row_id":"platform.qualification.qualification_passed","source_state":"qualification=unqualified","operation_or_event":"qualification_passed","guard_ids":["guard_full_q0_current"],"allowed_effects":["cas_qualification_generation"],"target_state":"qualification=qualified","exit_code":0,"capacity_disposition":"unchanged","scheduler_priority":"none","retry_policy":"same_identity_replay"},
+          {"row_id":"platform.qualification.qualification_failed_transient","source_state":"qualification=qualified","operation_or_event":"qualification_failed_transient","guard_ids":["guard_canary_retry_exhausted"],"allowed_effects":["cas_qualification_suspended","upsert_operator_action"],"target_state":"qualification=qualification_suspended","exit_code":5,"capacity_disposition":"release","scheduler_priority":"none","retry_policy":"operator_resolution"},
+          {"row_id":"platform.qualification.adapter_drift","source_state":"qualification=any","operation_or_event":"adapter_drift","guard_ids":["guard_adapter_violation_proven"],"allowed_effects":["terminate_exact_job","seal_journal","cas_platform_incompatible","upsert_operator_action"],"target_state":"qualification=incompatible","exit_code":6,"capacity_disposition":"release","scheduler_priority":"live_process_safety","retry_policy":"operator_resolution"},
+          {"row_id":"platform.availability.availability_lost","source_state":"availability=available","operation_or_event":"availability_lost","guard_ids":["guard_service_unavailable"],"allowed_effects":["cas_availability_unavailable"],"target_state":"availability=unavailable","exit_code":5,"capacity_disposition":"release","scheduler_priority":"none","retry_policy":"due_backoff"},
+          {"row_id":"platform.availability.availability_restored","source_state":"availability=unavailable","operation_or_event":"availability_restored","guard_ids":["guard_service_available"],"allowed_effects":["cas_availability_available"],"target_state":"availability=available","exit_code":0,"capacity_disposition":"unchanged","scheduler_priority":"due_retry","retry_policy":"same_identity_replay"},
+          {"row_id":"platform.resource.disk_floor_crossed","source_state":"resource=normal","operation_or_event":"disk_floor_crossed","guard_ids":["guard_disk_pressure_proven"],"allowed_effects":["cas_resource_disk_pressure","terminate_exact_job","seal_journal","upsert_operator_action"],"target_state":"resource=disk_pressure","exit_code":5,"capacity_disposition":"release","scheduler_priority":"live_process_safety","retry_policy":"operator_resolution"},
+          {"row_id":"platform.resource.disk_pressure_remediated","source_state":"resource=disk_pressure","operation_or_event":"disk_pressure_remediated","guard_ids":["guard_disk_pressure_cleared","guard_emergency_reserve_rebuilt"],"allowed_effects":["cas_resource_normal","resolve_operator_action"],"target_state":"resource=normal","exit_code":0,"capacity_disposition":"unchanged","scheduler_priority":"due_retry","retry_policy":"same_identity_replay"}
+        ]
+      },
+      {
+        "policy_id": "RepoCutoverMaintenancePolicy",
+        "state_model": "orthogonal_lanes",
+        "lanes": {
+          "ownership": ["legacy", "guarded_legacy", "batch", "retired"],
+          "maintenance": ["idle", "drain_requested", "active", "repair_required"],
+          "qualification": ["qualified", "repo_requalification_required"]
+        },
+        "terminal_states": [],
+        "legal_operations": ["legacy_guard_verified", "cutover_activate_batch", "rollback_to_guarded_legacy", "retire_legacy", "maintenance_enter", "maintenance_drain_complete", "maintenance_exit_verified", "maintenance_exit_failed", "repo_identity_drift", "repo_requalified", "global_resume_while_repo_blocked"],
+        "rows": [
+          {"row_id":"repo.ownership.legacy_guard_verified","source_state":"ownership=legacy","operation_or_event":"legacy_guard_verified","guard_ids":["guard_legacy_writer_zero","guard_legacy_guard_complete"],"allowed_effects":["cas_ownership_guarded_legacy"],"target_state":"ownership=guarded_legacy","exit_code":0,"capacity_disposition":"unchanged","scheduler_priority":"none","retry_policy":"same_identity_replay"},
+          {"row_id":"repo.ownership.cutover_activate_batch","source_state":"ownership=guarded_legacy","operation_or_event":"cutover_activate_batch","guard_ids":["guard_cutover_eligible","guard_interactive_operator"],"allowed_effects":["create_cutover_record","cas_ownership_batch"],"target_state":"ownership=batch","exit_code":0,"capacity_disposition":"not_acquired","scheduler_priority":"none","retry_policy":"same_identity_replay"},
+          {"row_id":"repo.ownership.rollback_to_guarded_legacy","source_state":"ownership=batch","operation_or_event":"rollback_to_guarded_legacy","guard_ids":["guard_rollback_eligible","guard_interactive_operator"],"allowed_effects":["create_rollback_record","cas_ownership_guarded_legacy"],"target_state":"ownership=guarded_legacy","exit_code":0,"capacity_disposition":"not_acquired","scheduler_priority":"none","retry_policy":"same_identity_replay"},
+          {"row_id":"repo.ownership.retire_legacy","source_state":"ownership=batch","operation_or_event":"retire_legacy","guard_ids":["guard_legacy_retirement_eligible"],"allowed_effects":["seal_legacy_retired"],"target_state":"ownership=retired","exit_code":0,"capacity_disposition":"unchanged","scheduler_priority":"none","retry_policy":"never"},
+          {"row_id":"repo.maintenance.maintenance_enter","source_state":"maintenance=idle","operation_or_event":"maintenance_enter","guard_ids":["guard_interactive_operator","guard_repo_maintenance_enter_allowed"],"allowed_effects":["create_maintenance_record","cas_maintenance_drain_requested"],"target_state":"maintenance=drain_requested","exit_code":0,"capacity_disposition":"unchanged","scheduler_priority":"live_process_safety","retry_policy":"same_identity_replay"},
+          {"row_id":"repo.maintenance.maintenance_drain_complete","source_state":"maintenance=drain_requested","operation_or_event":"maintenance_drain_complete","guard_ids":["guard_repo_zero_active_effects"],"allowed_effects":["cas_maintenance_active"],"target_state":"maintenance=active","exit_code":0,"capacity_disposition":"release","scheduler_priority":"none","retry_policy":"same_identity_replay"},
+          {"row_id":"repo.maintenance.maintenance_exit_verified","source_state":"maintenance=active","operation_or_event":"maintenance_exit_verified","guard_ids":["guard_maintenance_postflight_green"],"allowed_effects":["seal_maintenance_result","cas_maintenance_idle"],"target_state":"maintenance=idle","exit_code":0,"capacity_disposition":"unchanged","scheduler_priority":"due_retry","retry_policy":"same_identity_replay"},
+          {"row_id":"repo.maintenance.maintenance_exit_failed","source_state":"maintenance=active","operation_or_event":"maintenance_exit_failed","guard_ids":["guard_maintenance_recovery_required"],"allowed_effects":["cas_maintenance_repair_required","upsert_operator_action"],"target_state":"maintenance=repair_required","exit_code":3,"capacity_disposition":"release","scheduler_priority":"due_retry","retry_policy":"operator_resolution"},
+          {"row_id":"repo.qualification.repo_identity_drift","source_state":"qualification=qualified","operation_or_event":"repo_identity_drift","guard_ids":["guard_repo_identity_drift"],"allowed_effects":["cas_repo_requalification_required","upsert_operator_action"],"target_state":"qualification=repo_requalification_required","exit_code":3,"capacity_disposition":"release","scheduler_priority":"none","retry_policy":"operator_resolution"},
+          {"row_id":"repo.qualification.repo_requalified","source_state":"qualification=repo_requalification_required","operation_or_event":"repo_requalified","guard_ids":["guard_repo_requalification_green"],"allowed_effects":["cas_repo_qualified","resolve_operator_action"],"target_state":"qualification=qualified","exit_code":0,"capacity_disposition":"unchanged","scheduler_priority":"due_retry","retry_policy":"same_identity_replay"},
+          {"row_id":"repo.blocked.global_resume_while_repo_blocked","source_state":"qualification=repo_requalification_required","operation_or_event":"global_resume_while_repo_blocked","guard_ids":["guard_repo_block_persists"],"allowed_effects":[],"target_state":"unchanged","exit_code":3,"capacity_disposition":"release","scheduler_priority":"none","retry_policy":"operator_resolution"}
+        ]
+      },
+      {
+        "policy_id": "TemplateLifecyclePolicy",
+        "state_model": "single_lane",
+        "states": ["draft", "qualifying", "awaiting_authorization", "pilot", "canary", "promoted", "suspended", "retired"],
+        "terminal_states": ["retired"],
+        "legal_operations": ["start_qualification", "qualification_passed", "authorization_activated", "pilot_passed", "canary_passed", "safety_or_new_failure", "requalification_passed", "retire_template", "global_resume_while_template_blocked"],
+        "rows": [
+          {"row_id":"template.draft.start_qualification","source_state":"draft","operation_or_event":"start_qualification","guard_ids":["guard_template_definition_closed"],"allowed_effects":["create_template_qualification"],"target_state":"qualifying","exit_code":0,"capacity_disposition":"not_acquired","scheduler_priority":"none","retry_policy":"same_identity_replay"},
+          {"row_id":"template.qualifying.qualification_passed","source_state":"qualifying","operation_or_event":"qualification_passed","guard_ids":["guard_template_qualification_green"],"allowed_effects":["seal_template_qualification"],"target_state":"awaiting_authorization","exit_code":0,"capacity_disposition":"unchanged","scheduler_priority":"none","retry_policy":"same_identity_replay"},
+          {"row_id":"template.awaiting_authorization.authorization_activated","source_state":"awaiting_authorization","operation_or_event":"authorization_activated","guard_ids":["guard_template_authorization_current"],"allowed_effects":["cas_template_pilot"],"target_state":"pilot","exit_code":0,"capacity_disposition":"unchanged","scheduler_priority":"new_promoted_task","retry_policy":"same_identity_replay"},
+          {"row_id":"template.pilot.pilot_passed","source_state":"pilot","operation_or_event":"pilot_passed","guard_ids":["guard_pilot_acceptance_green"],"allowed_effects":["cas_template_canary"],"target_state":"canary","exit_code":0,"capacity_disposition":"unchanged","scheduler_priority":"new_promoted_task","retry_policy":"same_identity_replay"},
+          {"row_id":"template.canary.canary_passed","source_state":"canary","operation_or_event":"canary_passed","guard_ids":["guard_canary_acceptance_green"],"allowed_effects":["cas_template_promoted"],"target_state":"promoted","exit_code":0,"capacity_disposition":"unchanged","scheduler_priority":"new_promoted_task","retry_policy":"same_identity_replay"},
+          {"row_id":"template.runtime.safety_or_new_failure","source_state":"any_nonterminal","operation_or_event":"safety_or_new_failure","guard_ids":["guard_template_suspend_required"],"allowed_effects":["cas_template_suspended","upsert_operator_action"],"target_state":"suspended","exit_code":3,"capacity_disposition":"release","scheduler_priority":"none","retry_policy":"operator_resolution"},
+          {"row_id":"template.suspended.requalification_passed","source_state":"suspended","operation_or_event":"requalification_passed","guard_ids":["guard_template_requalification_green","guard_template_authorization_current"],"allowed_effects":["cas_template_canary","resolve_operator_action"],"target_state":"canary","exit_code":0,"capacity_disposition":"unchanged","scheduler_priority":"new_promoted_task","retry_policy":"same_identity_replay"},
+          {"row_id":"template.any.retire_template","source_state":"any_nonterminal","operation_or_event":"retire_template","guard_ids":["guard_template_retirement_allowed"],"allowed_effects":["seal_template_retired"],"target_state":"retired","exit_code":0,"capacity_disposition":"release","scheduler_priority":"none","retry_policy":"never"},
+          {"row_id":"template.suspended.global_resume_while_template_blocked","source_state":"suspended","operation_or_event":"global_resume_while_template_blocked","guard_ids":["guard_template_block_persists"],"allowed_effects":[],"target_state":"unchanged","exit_code":3,"capacity_disposition":"release","scheduler_priority":"none","retry_policy":"operator_resolution"}
+        ]
+      },
+      {
+        "policy_id": "AutonomyPolicy",
+        "state_model": "single_lane",
+        "states": ["B0", "B1", "B2", "B3_deferred"],
+        "terminal_states": [],
+        "legal_operations": ["activate_b1_pilot", "activate_b2_scheduler", "operator_submit_pilot", "drain_promoted_task", "scheduled_drain", "request_b3_activation", "portfolio_backlog_observed"],
+        "rows": [
+          {"row_id":"autonomy.B0.activate_b1_pilot","source_state":"B0","operation_or_event":"activate_b1_pilot","guard_ids":["guard_b1_activation_eligible","guard_interactive_operator"],"allowed_effects":["cas_autonomy_b1"],"target_state":"B1","exit_code":0,"capacity_disposition":"unchanged","scheduler_priority":"none","retry_policy":"same_identity_replay"},
+          {"row_id":"autonomy.B1.activate_b2_scheduler","source_state":"B1","operation_or_event":"activate_b2_scheduler","guard_ids":["guard_b2_activation_eligible","guard_interactive_operator"],"allowed_effects":["cas_autonomy_b2"],"target_state":"B2","exit_code":0,"capacity_disposition":"unchanged","scheduler_priority":"none","retry_policy":"same_identity_replay"},
+          {"row_id":"autonomy.B1.operator_submit_pilot","source_state":"B1","operation_or_event":"operator_submit_pilot","guard_ids":["guard_template_authorized","guard_writer_capacity_available"],"allowed_effects":["create_pilot_submission"],"target_state":"B1","exit_code":0,"capacity_disposition":"not_acquired","scheduler_priority":"new_promoted_task","retry_policy":"same_identity_replay"},
+          {"row_id":"autonomy.B2.drain_promoted_task","source_state":"B2","operation_or_event":"drain_promoted_task","guard_ids":["guard_promoted_backlog_ready","guard_due_recovery_drained","guard_writer_capacity_available"],"allowed_effects":["select_one_stable_ready_task"],"target_state":"B2","exit_code":0,"capacity_disposition":"not_acquired","scheduler_priority":"new_promoted_task","retry_policy":"same_identity_replay"},
+          {"row_id":"autonomy.B2.scheduled_drain","source_state":"B2","operation_or_event":"scheduled_drain","guard_ids":["guard_scheduled_invocation_qualified","guard_due_recovery_drained","guard_writer_capacity_available"],"allowed_effects":["drain_max_tasks_one"],"target_state":"B2","exit_code":0,"capacity_disposition":"not_acquired","scheduler_priority":"new_promoted_task","retry_policy":"same_identity_replay"},
+          {"row_id":"autonomy.any.request_b3_activation","source_state":"any","operation_or_event":"request_b3_activation","guard_ids":["guard_b3_deferred"],"allowed_effects":[],"target_state":"unchanged","exit_code":2,"capacity_disposition":"unchanged","scheduler_priority":"none","retry_policy":"never"},
+          {"row_id":"autonomy.B2.portfolio_backlog_observed","source_state":"B2","operation_or_event":"portfolio_backlog_observed","guard_ids":["guard_b3_deferred"],"allowed_effects":["record_nonactivating_observation"],"target_state":"B2","exit_code":0,"capacity_disposition":"unchanged","scheduler_priority":"none","retry_policy":"never"}
+        ]
+      }
+    ],
+    "b3_disposition": {
+      "status": "deferred_data_only",
+      "runtime_0_2_activation_row_exists": false,
+      "operator_activation_action_exists": false,
+      "allowed_0_2_effects": ["record_nonactivating_observation"],
+      "successor_requirements": ["p5_closeout", "b2_metrics", "independent_b3_threat_recovery_review", "successor_capability_generation"]
+    }
+  }
+}

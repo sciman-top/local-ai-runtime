@@ -2,7 +2,7 @@
 
 ## 1. 目标、当前落点与真值
 
-目标是在 Baseline Approval 后，把现行 `runtime/host-orchestrator` 逐步迁移到 `runtime/local-ai-runtime`：Windows-local、single-operator、Python modular monolith、Unified Native + global capacity=1 deterministic commit-only Batch。当前仍是 v3.24 preapproval planning：package `8/15 present, 7 non-present`，唯一 task 为 `LAR-P0A-009`，不得创建 runtime、approval、claim 或 live evidence。
+目标是在 Baseline Approval 后，把现行 `runtime/host-orchestrator` 逐步迁移到 `runtime/local-ai-runtime`：Windows-local、single-operator、Python modular monolith、Unified Native + global capacity=1 deterministic commit-only Batch。当前仍是 v3.24 preapproval planning：package `9/15 present, 6 non-present`，唯一 task 为 `LAR-P0A-010`，不得创建 runtime、approval、claim 或 live evidence。
 
 机器执行真源是 [local-ai-runtime-0.2-work-items.json](D:/CODE/local-ai-dev-orchestrator/docs/plans/local-ai-runtime-0.2-work-items.json)。本文件说明如何执行；若 task scope/acceptance/dependency/status 与 machine plan 冲突，以 verifier 通过的 machine plan 为准并先修正文档漂移。
 
@@ -53,13 +53,13 @@
 
 必须证明：显式 `uv sync --locked --offline --no-python-downloads --python <manifest-python>` 只作 environment preparation；`uv sync` 默认 exact，`--inexact` 必须拒绝；daily validation `run --no-sync`；child `sys.executable`/patch/file identity/hash、installed distributions/plugins 精确；build frontend/backend/constraints hash-bound；同一 `SOURCE_DATE_EPOCH` 的两个 clean roots 具有相同 member manifest/artifact hashes。wrong patch、extraneous package/plugin、download request、multi-backend cache、missing hashes、repeat mismatch 全部拒绝。
 
-### 3.4 `LAR-P0A-009` — State/guard/operator catalogs
+### 3.4 `LAR-P0A-009` — State/guard/operator catalogs（已完成）
 
 SQLite 是唯一 policy/transition authority；journal 只提供 accepted-cursor/fence-bound observation/recovery input。相同 accepted history + policy generation 必须 deterministic replay；journal 缺口/重复/越界/fence drift 都 suspended。Cleanup finalizer 不能因 guard row、marker、journal segment 删除而绕过。
 
 状态域保持独立表，GuardCatalog precedence/DAG 固定；每行含 source、operation/event、guards、effects、target、exit、capacity、priority、retry。`durable_local_status_v1` 必需，`qualified_windows_toast_v1` 可选。B3 状态与 operator action 均 deferred。
 
-### 3.5 `LAR-P0A-010..013`
+### 3.5 `LAR-P0A-010..013`（当前 `010` ready）
 
 - `010`：GateGraph、three-level evolution、Q0TriggerPolicy、RuntimeCompositionManifest/SelectedRuntimeIdentity/ActiveRuntimeIdentity、ProcessHandlePolicy/ChildHandleManifest、`PROC_THREAD_ATTRIBUTE_HANDLE_LIST`、`STARTF_USESTDHANDLES`、Windows `OrdinalIgnoreCase` environment、resource/write accounting、emergency reserve、exact toolchain gate evaluation。
 - `011`：完整 positive/cross-contract/negative/crash/limit fixtures，覆盖 BackupRestoreEligibility、BackupPostActivity、BackupRestoreIntent、QuarantineKeyEnvelope、RuntimeIntegrityKeyEnvelope、`runtime_external_v1` 与 EvidenceProjectionAcceptance。
@@ -123,4 +123,4 @@ Implementation Acceptance 覆盖 code/migration/CLI/first-run/templates/crash/ba
 
 ## 9. 当前下一步
 
-执行 `LAR-P0A-009`，只创建 state/guard/operator catalog artifacts。不得创建 final manifest、approval、Truth Reset、`runtime/local-ai-runtime`、真实 Git publication、修改 `.ai` live state、读取 live auth/DPAPI/sandbox state、remote push 或 CI retrieval。
+执行 `LAR-P0A-010`，只创建 Q0/gate/feature/process/resource-limit catalog artifacts 与边界 fixtures。不得运行 live Q0，创建 final manifest、approval、Truth Reset、`runtime/local-ai-runtime`、真实 Git publication，修改 `.ai` live state，读取 live auth/DPAPI/sandbox state，remote push 或 CI retrieval。

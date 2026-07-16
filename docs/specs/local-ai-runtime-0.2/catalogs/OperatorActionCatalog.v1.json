@@ -1,0 +1,61 @@
+{
+  "catalog_version": "OperatorActionCatalog.v1",
+  "baseline_id": "local-ai-runtime-0.2-v3.24",
+  "row_schema_fields": [
+    "action_id",
+    "reason_code",
+    "scope",
+    "precondition_guard_ids",
+    "allowed_command",
+    "dedup_key_fields",
+    "notification_policy_id",
+    "capacity_disposition",
+    "terminal_conditions"
+  ],
+  "storage_contract": {
+    "action_row": "immutable",
+    "resolution_log": "append_only",
+    "active_head": "mutable_generation_cas",
+    "free_text_in_database": false,
+    "response_loss": "read_existing_action_and_resolution_before_rechecking_first_create_guards"
+  },
+  "presentation_contract": {
+    "required_inbox": "durable_local_status_v1",
+    "inbox_queries": ["runtime status", "scope status"],
+    "optional_push_transport": "qualified_windows_toast_v1",
+    "push_requires": ["capability_snapshot_current", "operator_opt_in", "full_q0_current", "quick_preflight_green"],
+    "push_triggers": ["dedup_key_first_seen", "state_escalated", "generation_changed"],
+    "push_failure_effect": "record_transport_outcome_only",
+    "push_must_not": ["close_action", "drop_inbox_action", "expand_action_scope"],
+    "public_fields_only": ["public_object_ids", "reason_code", "state", "allowed_command"],
+    "forbidden_payloads": ["path", "raw_output", "prompt", "parameter", "content_digest", "free_text"]
+  },
+  "operator_work_session_contract": {
+    "required_for_side_effecting_command": true,
+    "required_fields": ["session_id", "operator_sid_hash", "action_id", "scope", "reason_code", "start_utc", "end_utc", "active_minutes", "result", "evidence_locator", "superseded_session_id"],
+    "interactive_presence_proof": ["interactive_token", "session_identity"],
+    "scheduled_or_service_token": "deny"
+  },
+  "actions": [
+    {"action_id":"platform_login_required","reason_code":"needs_auth","scope":"provider_global","precondition_guard_ids":["guard_auth_failure_classified"],"allowed_command":"platform login","dedup_key_fields":["action_id","auth_generation"],"notification_policy_id":"durable_inbox_optional_qualified_toast_v1","capacity_disposition":"release","terminal_conditions":["auth_generation_advanced","auth_probe_ready","quick_qualification_green"]},
+    {"action_id":"environment_requalification_required","reason_code":"environment_binding_drift","scope":"environment","precondition_guard_ids":["guard_task_inputs_qualified"],"allowed_command":"environment verify","dedup_key_fields":["action_id","binding_id","observed_generation"],"notification_policy_id":"durable_inbox_optional_qualified_toast_v1","capacity_disposition":"release","terminal_conditions":["new_environment_binding_verified","affected_attempts_reconciled"]},
+    {"action_id":"disk_pressure_remediation","reason_code":"disk_pressure","scope":"installation_volume","precondition_guard_ids":["guard_disk_pressure_proven"],"allowed_command":"platform doctor","dedup_key_fields":["action_id","volume_identity","resource_generation"],"notification_policy_id":"durable_inbox_optional_qualified_toast_v1","capacity_disposition":"release","terminal_conditions":["disk_pressure_cleared","emergency_reserve_rebuilt","quick_preflight_green"]},
+    {"action_id":"authorization_activation_required","reason_code":"authorization_missing_or_stale","scope":"repo_template","precondition_guard_ids":["guard_template_authorized"],"allowed_command":"authorization activate","dedup_key_fields":["action_id","repo_id","template_id","sensitive_set_hash"],"notification_policy_id":"durable_inbox_optional_qualified_toast_v1","capacity_disposition":"release","terminal_conditions":["authorization_head_current","sensitive_set_hash_matches"]},
+    {"action_id":"repo_requalification_required","reason_code":"repo_identity_or_policy_drift","scope":"repo","precondition_guard_ids":["guard_repo_identity_drift"],"allowed_command":"repo qualify","dedup_key_fields":["action_id","repo_id","ownership_generation"],"notification_policy_id":"durable_inbox_optional_qualified_toast_v1","capacity_disposition":"release","terminal_conditions":["repo_requalification_green","ownership_generation_current"]},
+    {"action_id":"template_suspension_review","reason_code":"template_suspended","scope":"template","precondition_guard_ids":["guard_template_suspend_required"],"allowed_command":"contracts verify","dedup_key_fields":["action_id","template_id","failure_type","policy_generation"],"notification_policy_id":"durable_inbox_optional_qualified_toast_v1","capacity_disposition":"release","terminal_conditions":["template_requalification_green","authorization_current","canary_green_or_retired"]},
+    {"action_id":"recovery_required","reason_code":"attempt_recovery_required","scope":"attempt","precondition_guard_ids":["guard_recovery_ambiguous"],"allowed_command":"batch status","dedup_key_fields":["action_id","attempt_id","recovery_checkpoint_hash"],"notification_policy_id":"durable_inbox_optional_qualified_toast_v1","capacity_disposition":"release_after_handoff","terminal_conditions":["same_recovery_checkpoint_terminal","attempt_terminal_or_parked"]},
+    {"action_id":"reconcile_required","reason_code":"fenced_action_reconcile_required","scope":"fenced_action","precondition_guard_ids":["guard_effect_reconcile_required"],"allowed_command":"batch reconcile","dedup_key_fields":["action_id","fenced_action_id","head_hash"],"notification_policy_id":"durable_inbox_optional_qualified_toast_v1","capacity_disposition":"retain_until_handoff","terminal_conditions":["read_only_reconcile_terminal","same_action_head_terminal_or_parked"]},
+    {"action_id":"cleanup_required","reason_code":"cleanup_finalizer_incomplete","scope":"attempt","precondition_guard_ids":["guard_cleanup_required"],"allowed_command":"batch status","dedup_key_fields":["action_id","attempt_id","expected_cleanup_hash"],"notification_policy_id":"durable_inbox_optional_qualified_toast_v1","capacity_disposition":"retain_until_handoff","terminal_conditions":["cleanup_terminal","worktree_and_admin_absent","finalizer_result_immutable"]},
+    {"action_id":"ownership_repair_required","reason_code":"ownership_registry_ambiguous","scope":"repo","precondition_guard_ids":["guard_repo_identity_drift","guard_interactive_operator"],"allowed_command":"repo ownership-repair","dedup_key_fields":["action_id","repo_id","observed_registry_hash"],"notification_policy_id":"durable_inbox_optional_qualified_toast_v1","capacity_disposition":"release","terminal_conditions":["ownership_registry_repaired","backup_verified","repo_requalified"]},
+    {"action_id":"maintenance_recovery_required","reason_code":"maintenance_exit_failed","scope":"repo","precondition_guard_ids":["guard_maintenance_recovery_required"],"allowed_command":"repo maintenance status","dedup_key_fields":["action_id","repo_id","maintenance_generation"],"notification_policy_id":"durable_inbox_optional_qualified_toast_v1","capacity_disposition":"release","terminal_conditions":["maintenance_postflight_green","maintenance_head_idle"]},
+    {"action_id":"activation_rollback_required","reason_code":"activation_postflight_failed","scope":"installation","precondition_guard_ids":["guard_platform_compatible","guard_interactive_operator"],"allowed_command":"runtime rollback","dedup_key_fields":["action_id","activation_generation"],"notification_policy_id":"durable_inbox_optional_qualified_toast_v1","capacity_disposition":"release","terminal_conditions":["rollback_record_terminal","selected_runtime_verified","platform_suspended_or_healthy"]},
+    {"action_id":"backup_restore_required","reason_code":"production_restore_required","scope":"installation_backup","precondition_guard_ids":["guard_interactive_operator","guard_zero_active_effects"],"allowed_command":"backup restore","dedup_key_fields":["action_id","backup_id","eligibility_generation"],"notification_policy_id":"durable_inbox_optional_qualified_toast_v1","capacity_disposition":"release","terminal_conditions":["single_restore_intent_consumed","restored_state_verified","platform_remains_suspended"]},
+    {"action_id":"cutover_or_rollback_required","reason_code":"repo_cutover_decision_required","scope":"repo","precondition_guard_ids":["guard_cutover_eligible","guard_interactive_operator"],"allowed_command":"repo cutover","dedup_key_fields":["action_id","repo_id","ownership_generation"],"notification_policy_id":"durable_inbox_optional_qualified_toast_v1","capacity_disposition":"release","terminal_conditions":["cutover_or_rollback_record_terminal","ownership_generation_advanced"]},
+    {"action_id":"platform_suspend_review","reason_code":"platform_suspended_or_incompatible","scope":"platform","precondition_guard_ids":["guard_platform_compatible","guard_interactive_operator"],"allowed_command":"platform doctor","dedup_key_fields":["action_id","control_generation"],"notification_policy_id":"durable_inbox_optional_qualified_toast_v1","capacity_disposition":"release","terminal_conditions":["platform_diagnosis_terminal","resume_guard_green_or_remains_suspended"]},
+    {"action_id":"emergency_kill_current","reason_code":"live_process_emergency","scope":"attempt","precondition_guard_ids":["guard_interactive_operator","guard_job_identity_current"],"allowed_command":"platform kill-current","dedup_key_fields":["action_id","attempt_id","job_identity_hash"],"notification_policy_id":"durable_inbox_optional_qualified_toast_v1","capacity_disposition":"retain_until_handoff","terminal_conditions":["exact_job_terminal","streams_eof","journal_sealed","recovery_handoff_committed"]}
+  ],
+  "b3_disposition": {
+    "status": "deferred_no_runtime_0_2_action",
+    "successor_only_action_name": "activate_b3_portfolio_generation"
+  }
+}

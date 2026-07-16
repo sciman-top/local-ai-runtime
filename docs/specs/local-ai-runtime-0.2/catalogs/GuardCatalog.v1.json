@@ -1,0 +1,165 @@
+{
+  "catalog_version": "GuardCatalog.v1",
+  "baseline_id": "local-ai-runtime-0.2-v3.24",
+  "guard_contract": {
+    "required_fields_after_expansion": [
+      "guard_id",
+      "scope",
+      "immutable_input_snapshot",
+      "precedence",
+      "reason_code",
+      "depends_on_guard_ids",
+      "safety_only"
+    ],
+    "reason_code_derivation": "remove_guard_prefix_then_append__blocked",
+    "evaluation": "first_failed_guard_in_precedence_then_guard_id_order",
+    "unknown_guard_result": "contract_failure",
+    "dependency_graph": "acyclic"
+  },
+  "precedence_order": [
+    "baseline_approval",
+    "implementation_acceptance",
+    "p2_q0",
+    "platform_incompatible",
+    "manual_drain_suspend",
+    "needs_auth",
+    "platform_unavailable_or_qualification_suspended",
+    "disk_pressure",
+    "repo_ownership_maintenance_requalification",
+    "template_qualification_authorization",
+    "task_base_environment_limits",
+    "due_recovery",
+    "writer_capacity"
+  ],
+  "guard_groups": [
+    {
+      "precedence": "baseline_approval",
+      "scope": "installation",
+      "immutable_input_snapshot": ["baseline_id", "approval_head", "revocation_head"],
+      "safety_only": false,
+      "guard_ids": ["guard_baseline_approved"]
+    },
+    {
+      "precedence": "implementation_acceptance",
+      "scope": "installation",
+      "immutable_input_snapshot": ["composition_id", "implementation_acceptance_head"],
+      "safety_only": false,
+      "guard_ids": ["guard_implementation_accepted"]
+    },
+    {
+      "precedence": "p2_q0",
+      "scope": "installation",
+      "immutable_input_snapshot": ["composition_id", "implementation_id", "full_q0_id", "active_runtime_identity"],
+      "safety_only": false,
+      "guard_ids": ["guard_p2_q0", "guard_full_q0_current", "guard_b1_activation_eligible", "guard_b2_activation_eligible"]
+    },
+    {
+      "precedence": "platform_incompatible",
+      "scope": "platform_or_attempt",
+      "immutable_input_snapshot": ["capability_generation", "toolchain_generation", "adapter_generation", "job_identity", "execution_authority_head"],
+      "safety_only": false,
+      "guard_ids": ["guard_platform_compatible", "guard_adapter_violation_proven", "guard_process_atomic_job_join", "guard_execution_authority_current", "guard_job_identity_current", "guard_marker_identity_fresh"]
+    },
+    {
+      "precedence": "manual_drain_suspend",
+      "scope": "platform_repo_or_operator_session",
+      "immutable_input_snapshot": ["control_generation", "operator_session_id", "active_effect_set_hash"],
+      "safety_only": false,
+      "guard_ids": ["guard_manual_drain_allowed", "guard_zero_active_effects", "guard_global_resume_safe", "guard_interactive_operator", "guard_no_executing_action", "guard_operator_resolution_terminal"]
+    },
+    {
+      "precedence": "needs_auth",
+      "scope": "provider_global",
+      "immutable_input_snapshot": ["provider_id", "auth_generation", "auth_probe_id"],
+      "safety_only": false,
+      "guard_ids": ["guard_auth_ready", "guard_auth_probe_valid", "guard_auth_failure_classified", "guard_auth_generation_advanced"]
+    },
+    {
+      "precedence": "platform_unavailable_or_qualification_suspended",
+      "scope": "platform",
+      "immutable_input_snapshot": ["qualification_generation", "availability_generation", "canary_result_id", "scheduler_capability_id"],
+      "safety_only": false,
+      "guard_ids": ["guard_platform_available_qualified", "guard_canary_retry_exhausted", "guard_service_available", "guard_service_unavailable", "guard_scheduled_invocation_qualified"]
+    },
+    {
+      "precedence": "disk_pressure",
+      "scope": "installation_volume",
+      "immutable_input_snapshot": ["volume_identity", "resource_generation", "emergency_reserve_generation"],
+      "safety_only": true,
+      "guard_ids": ["guard_disk_pressure_proven", "guard_disk_pressure_cleared", "guard_emergency_reserve_rebuilt"]
+    },
+    {
+      "precedence": "repo_ownership_maintenance_requalification",
+      "scope": "repo",
+      "immutable_input_snapshot": ["repo_id", "ownership_generation", "maintenance_generation", "repo_qualification_generation"],
+      "safety_only": false,
+      "guard_ids": ["guard_repo_qualified", "guard_cutover_eligible", "guard_rollback_eligible", "guard_legacy_writer_zero", "guard_legacy_guard_complete", "guard_legacy_retirement_eligible", "guard_repo_maintenance_enter_allowed", "guard_repo_zero_active_effects", "guard_maintenance_postflight_green", "guard_maintenance_recovery_required", "guard_repo_identity_drift", "guard_repo_requalification_green", "guard_repo_block_persists"]
+    },
+    {
+      "precedence": "template_qualification_authorization",
+      "scope": "repo_template",
+      "immutable_input_snapshot": ["repo_id", "template_id", "template_generation", "qualification_id", "authorization_head"],
+      "safety_only": false,
+      "guard_ids": ["guard_template_authorized", "guard_template_authorization_current", "guard_template_definition_closed", "guard_template_qualification_green", "guard_pilot_acceptance_green", "guard_canary_acceptance_green", "guard_template_suspend_required", "guard_template_requalification_green", "guard_template_retirement_allowed", "guard_template_block_persists", "guard_promoted_backlog_ready"]
+    },
+    {
+      "precedence": "task_base_environment_limits",
+      "scope": "family_task_or_attempt",
+      "immutable_input_snapshot": ["root_task_id", "task_generation", "attempt_id", "expected_base", "environment_binding", "limit_generation"],
+      "safety_only": false,
+      "guard_ids": ["guard_task_inputs_qualified", "guard_existing_family_read_authorized", "guard_resolution_eligible", "guard_resubmission_eligible", "guard_resolution_close_allowed", "guard_retry_eligible", "guard_retry_ineligible", "guard_preclaim_block_present", "guard_all_park_blocks_cleared", "guard_no_writer_launch", "guard_cancel_intent_allowed", "guard_writer_launch_allowed", "guard_gate_graph_terminal", "guard_gate_report_terminal", "guard_attempt_result_valid"]
+    },
+    {
+      "precedence": "due_recovery",
+      "scope": "task_attempt_or_fenced_action",
+      "immutable_input_snapshot": ["task_generation", "attempt_id", "current_fence", "accepted_cursor", "sealed_segment_head", "action_head", "cleanup_head"],
+      "safety_only": true,
+      "guard_ids": ["guard_due_recovery_drained", "guard_publication_identity_known", "guard_publication_terminal", "guard_no_publication", "guard_closeout_requires_recovery", "guard_recovery_handoff_committed", "guard_recovery_ambiguous", "guard_effect_reconcile_required", "guard_job_terminal", "guard_journal_sealed", "guard_execution_receipt_eligible", "guard_cleanup_required", "guard_cleanup_terminal", "guard_cleanup_owned_paths", "guard_cleanup_job_zero_process", "guard_cleanup_fence_current", "guard_cleanup_actions_terminal", "guard_cleanup_evidence_terminal", "guard_cleanup_head_index_clean"]
+    },
+    {
+      "precedence": "writer_capacity",
+      "scope": "global_capacity",
+      "immutable_input_snapshot": ["capacity_generation", "lease_id", "lease_fence", "ready_queue_head"],
+      "safety_only": false,
+      "guard_ids": ["guard_writer_capacity_available", "guard_capacity_lease_current"]
+    }
+  ],
+  "dependency_edges": [
+    {"guard_id":"guard_implementation_accepted","depends_on_guard_id":"guard_baseline_approved"},
+    {"guard_id":"guard_p2_q0","depends_on_guard_id":"guard_implementation_accepted"},
+    {"guard_id":"guard_full_q0_current","depends_on_guard_id":"guard_implementation_accepted"},
+    {"guard_id":"guard_b1_activation_eligible","depends_on_guard_id":"guard_p2_q0"},
+    {"guard_id":"guard_b2_activation_eligible","depends_on_guard_id":"guard_b1_activation_eligible"},
+    {"guard_id":"guard_execution_receipt_eligible","depends_on_guard_id":"guard_job_terminal"},
+    {"guard_id":"guard_execution_receipt_eligible","depends_on_guard_id":"guard_journal_sealed"},
+    {"guard_id":"guard_cleanup_terminal","depends_on_guard_id":"guard_cleanup_owned_paths"},
+    {"guard_id":"guard_cleanup_terminal","depends_on_guard_id":"guard_cleanup_job_zero_process"},
+    {"guard_id":"guard_cleanup_terminal","depends_on_guard_id":"guard_cleanup_fence_current"},
+    {"guard_id":"guard_cleanup_terminal","depends_on_guard_id":"guard_cleanup_actions_terminal"},
+    {"guard_id":"guard_cleanup_terminal","depends_on_guard_id":"guard_cleanup_evidence_terminal"},
+    {"guard_id":"guard_cleanup_terminal","depends_on_guard_id":"guard_cleanup_head_index_clean"},
+    {"guard_id":"guard_resubmission_eligible","depends_on_guard_id":"guard_resolution_eligible"},
+    {"guard_id":"guard_writer_launch_allowed","depends_on_guard_id":"guard_task_inputs_qualified"},
+    {"guard_id":"guard_cutover_eligible","depends_on_guard_id":"guard_repo_qualified"},
+    {"guard_id":"guard_rollback_eligible","depends_on_guard_id":"guard_repo_zero_active_effects"}
+  ],
+  "safety_only_contract": {
+    "guard_ids": ["guard_disk_pressure_proven", "guard_emergency_reserve_rebuilt", "guard_job_terminal", "guard_journal_sealed", "guard_recovery_handoff_committed", "guard_cleanup_terminal"],
+    "allowed_effects": ["terminate_exact_job", "close_exact_job", "drain_existing_pipe", "seal_journal", "read_only_reconcile", "durable_recovery_handoff", "release_exact_emergency_reserve", "rebuild_exact_emergency_reserve"],
+    "forbidden_effects": ["create_writer", "create_gate_run", "publish_git_ref", "publish_artifact", "publish_evidence", "delete_unknown_path", "expand_repo_or_task_state"]
+  },
+  "global_resume_contract": {
+    "may_change_only": ["PlatformOperationalStatePolicy.control"],
+    "must_not_clear": ["RepoCutoverMaintenancePolicy.qualification", "TemplateLifecyclePolicy.suspended", "repo_ownership_block", "template_authorization_block"]
+  },
+  "b3_guard": {
+    "guard_id": "guard_b3_deferred",
+    "scope": "autonomy",
+    "immutable_input_snapshot": ["baseline_id", "autonomy_generation"],
+    "precedence": "template_qualification_authorization",
+    "reason_code": "b3_deferred_blocked",
+    "depends_on_guard_ids": [],
+    "safety_only": false,
+    "result": "deny_activation_exit_2"
+  }
+}

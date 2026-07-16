@@ -28,6 +28,10 @@ from qualification_v2_contract import (
     QualificationV2ValidationError,
     verify_qualification_v2_bundle,
 )
+from state_policy_contract import (
+    StatePolicyValidationError,
+    verify_state_policy_bundle,
+)
 
 
 MANIFEST_DOMAIN = "local-ai-runtime/BaselineManifest/v1"
@@ -3308,6 +3312,24 @@ def verify_qualification_component(repo_root: Path) -> dict[str, Any]:
     }
 
 
+def verify_state_policy_component(repo_root: Path) -> dict[str, Any]:
+    """Verify the v3.24 state, guard, operator-action and fixture bundle."""
+
+    try:
+        current = verify_state_policy_bundle(repo_root)
+    except StatePolicyValidationError as exc:
+        raise ValidationFailure(exc.reason, str(exc)) from exc
+    return {
+        "status": "pass",
+        "component": "state-policy",
+        **current,
+        "fixture_counts": {
+            "positive": current["positive_fixture_count"],
+            "negative": current["negative_fixture_count"],
+        },
+    }
+
+
 def _verify_execution_safety_identity(
     raw: bytes, identity_key: str, reason: str, label: str
 ) -> None:
@@ -6372,6 +6394,7 @@ def _parse_args(argv: list[str]) -> argparse.Namespace:
             "canonicalization",
             "product-submission",
             "qualification",
+            "state-policy",
             "execution-safety",
             "evidence",
             "deterministic-git",
@@ -6399,6 +6422,9 @@ def main(argv: list[str] | None = None) -> int:
         elif args.component == "qualification":
             payload = verify_qualification_component(root)
             exit_code = 0
+        elif args.component == "state-policy":
+            payload = verify_state_policy_component(root)
+            exit_code = 0
         elif args.component == "execution-safety":
             payload = verify_execution_safety_component(root)
             exit_code = 0
@@ -6417,6 +6443,7 @@ def main(argv: list[str] | None = None) -> int:
                     "canonicalization",
                     "product_submission",
                     "qualification",
+                    "state_policy",
                     "execution_safety",
                     "evidence",
                     "deterministic_git",

@@ -702,7 +702,7 @@
       ],
       "phase": "P0A",
       "priority": 0,
-      "status": "ready",
+      "status": "completed",
       "title": "Materialize complete state, guard, autonomy and operator catalogs",
       "goal": "Materialize complete state guard autonomy and operator catalogs including the SQLite-authority/journal-observation boundary deterministic recovery replay explicit cleanup finalizers first-launch operator inbox and B3-deferred autonomy rows.",
       "depends_on": [
@@ -745,7 +745,7 @@
         "python scripts/verify-planning-status.py",
         "git diff --check"
       ],
-      "evidence_path": "docs/change-evidence/<date>-lar-p0a-009-state-policy.md",
+      "evidence_path": "docs/change-evidence/20260716-lar-p0a-009-state-policy.md",
       "rollback": "Revert only state/guard/operator catalogs and manifest references.",
       "stop_conditions": [
         "A legal CLI operation has no transition row",
@@ -783,7 +783,7 @@
       ],
       "phase": "P0A",
       "priority": 0,
-      "status": "pending",
+      "status": "ready",
       "title": "Close Q0, gate, feature and resource-limit catalogs",
       "goal": "Materialize Full/quick/daily qualification matrices, exact offline gates, effective feature inventory and all resource boundary fixtures.",
       "depends_on": [

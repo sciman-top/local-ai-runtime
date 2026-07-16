@@ -1,5 +1,7 @@
 # Change Evidence Index
 
+- [2026-07-16 LAR-P0A-009 State/guard/operator policy](20260716-lar-p0a-009-state-policy.md) — closes seven independent state domains, fixed guard precedence and dependencies, deterministic accepted-history recovery, non-bypassable cleanup finalizers, durable operator actions and the B3-deferred boundary without modifying runtime or live state.
+
 - [2026-07-16 LAR-P0A-005 QualificationContractSet.v2 exact toolchain](20260716-lar-p0a-005-qualification-v2-exact-toolchain.md) — closes explicit exact preparation, manifest Python/uv/environment read-back, hash-pinned build backend, no-sync validation, clean-root reproducibility and 12 negative toolchain fixtures without touching a live environment.
 
 - [2026-07-16 LAR-P0A-004 ProductContract.v2 and launch experience](20260716-lar-p0a-004-product-v2-launch-experience.md) — closes the ten-step first-run CLI journey, four launch templates, catalog-only operator presentation, metrics/unknown policy and 12 negative product fixtures without runtime implementation or approval.
@@ -40,13 +42,14 @@
 
 - v3.24 是 `baseline_candidate`，不是 approved baseline；v3.23 candidate/package/plan 与更早版本只作为精确 superseded history。
 - 当前队列是 `LOCAL-AI-RUNTIME-0.2-BASELINE-CLOSURE`。
-- `LAR-P0A-REBASELINE-V324` 已完成 successor projection；当前 selector 是 `close_baseline_normative_package_first`，唯一 selectable task 是 `LAR-P0A-004`。规范包为 15 required / 6 present / 9 non-present；下一步创建 `ProductContract.v2` 和 launch product experience，随后创建 `QualificationContractSet.v2` 与 exact toolchain gates。baseline 仍未批准。
+- `LAR-P0A-REBASELINE-V324`、`LAR-P0A-004`、`LAR-P0A-005` 与 `LAR-P0A-009` 已完成；当前 selector 是 `close_baseline_normative_package_first`，唯一 selectable task 是 `LAR-P0A-010`。规范包为 15 required / 9 present / 6 non-present；下一步创建 Q0/gate/effective-feature/process/resource-limit catalogs 与边界 fixtures。baseline 仍未批准。
 - v3.23 Native thin-path comparison 仅为 non-normative predecessor evidence，不 promotion profile、不参与当前 selector，也不向 SDK/App Server/managed Worktree/Automations 外推。
 - `runtime/host-orchestrator` 仍是现行内核；没有 Truth Reset、新 Batch、Implementation Acceptance、Full Q0 或 P2 admission。
 - 下方 2026-07-06 至 2026-07-10 的 Phase 1/runtime_v2 selector 结论是历史 evidence，不再是 next-work truth。
 
 当前入口：
 
+- [20260716 LAR-P0A-009 State/Guard/Operator Policy](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260716-lar-p0a-009-state-policy.md) - 当前 package closure evidence；SQLite authority、journal observation、deterministic recovery、cleanup finalizers、operator actions 与 B3 deferred
 - [20260716 Local AI Runtime v3.24 Product/Toolchain Rebaseline](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260716-local-ai-runtime-v3.24-product-toolchain-rebaseline.md) - 当前候选规划真值；v3.24/Lineage.v3、exact toolchain、first-launch product experience、55 项 v4 DAG、B3 deferred 与非批准边界
 - [20260714 LAR-P0A-002 v3.23 Manifest Revalidation](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260714-lar-p0a-002-manifest-revalidation.md) - predecessor manifest contract history；positive fixture/self-test 绑定冻结 v3.23 与 `BaselineLineage.v2`，最终 manifest 仍不存在
 - [20260712 Local AI Runtime v3.23 Native Thin-Path Rebaseline](D:/CODE/local-ai-dev-orchestrator/docs/change-evidence/20260712-local-ai-runtime-v3.23-native-thin-path-rebaseline.md) - superseded candidate/history evidence；不再是 next-work truth

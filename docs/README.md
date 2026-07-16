@@ -4,7 +4,7 @@
 
 当前候选为 `local-ai-runtime-0.2-v3.24`，`blocking_stage=baseline_approval`。它是 v3.23 的 successor，不是已批准基线；原因是 predecessor gate 未证明 exact uv environment、manifest Python 与 hash-pinned build backend，且 launch product experience 不完整。v3.23 candidate/package/plan 仅作为冻结历史，Native thin-path comparative result 仅为 non-normative predecessor evidence。
 
-当前 package 是 `8/15 present, 7 non-present`。`ProductContract.v2` 与 `QualificationContractSet.v2` 已创建并通过 component verifiers；state/Q0/migration/examples/verifier/final manifest/review 尚未闭合，`runtime/local-ai-runtime` 不存在。当前唯一 machine work item 是 `LAR-P0A-009`；selector action 是 `close_baseline_normative_package_first`。
+当前 package 是 `9/15 present, 6 non-present`。`ProductContract.v2`、`QualificationContractSet.v2` 与 `StatePolicyCatalog.v1` 已创建并通过 component verifiers；Q0/migration/examples/verifier/final manifest/review 尚未闭合，`runtime/local-ai-runtime` 不存在。当前唯一 machine work item 是 `LAR-P0A-010`；selector action 是 `close_baseline_normative_package_first`。
 
 `planning_optimization_policy` 使用 `one_selector_selected_work_item` 和 `same_run_reselect_after_verified_atomic_closeout`：一个 work item 必须 acceptance、verification、evidence、status、local commit、clean worktree 全闭合后，同一 run 才能继续；默认最多 3 个或 180 分钟，阶段/批准/successor/live 边界停止。
 

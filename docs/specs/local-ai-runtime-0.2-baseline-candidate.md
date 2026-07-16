@@ -30,14 +30,17 @@ v3.23 narrative, preapproval inventory and machine plan remain exact frozen
 history.
 
 The v3.24 package is still **Request changes**: 15 artifacts are required,
-8 are present and 7 are non-present. Source and `BaselineLineage.v3` are
+9 are present and 6 are non-present. Source and `BaselineLineage.v3` are
 present. `CanonicalizationPolicy.v1`, `ExecutionSafetyContractSet.v1`,
 `EvidenceContractSet.v1` and `DeterministicGitContractSet.v1` are present
 only through the lineage's explicit byte/hash carry-forward. `ProductContract.v2`
 is present with the first-run journey, four launch templates and operator
 presentation contracts. `QualificationContractSet.v2` is present with exact
-uv/Python/build gates. The next ready work item is `LAR-P0A-009`, which must
-create state, guard, cleanup and operator-action catalogs.
+uv/Python/build gates. `StatePolicyCatalog.v1` is present with seven independent
+state domains, fixed guard precedence, deterministic recovery, non-bypassable
+cleanup finalizers and durable operator actions. The next ready work item is
+`LAR-P0A-010`, which must create Q0, gate, effective-feature and resource-limit
+catalogs without running a live Q0.
 The selector action is `close_baseline_normative_package_first`.
 
 Baseline Approval, Truth Reset, `runtime/local-ai-runtime`, Implementation

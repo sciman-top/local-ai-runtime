@@ -21,24 +21,23 @@
     "target_sha256": "13ee366152d47edec151f30619ccd068a030b63febf2d899ee822d08d4dc4e2a",
     "approval_input": false,
     "maximum_byte_count": 4096,
-    "byte_count": 3098,
-    "sha256": "c2c2d1d9549164a7dddc2d3c6e708c73bc714bf4bf48d6598422acff8759c43c"
+    "byte_count": 3314,
+    "sha256": "d7332c1ba0f88bd3c4c0f638de1364a77d8d190a4919ba9526bfc6b5a36a2f73"
   },
   "approval_state": {
     "active": false,
     "generation": 0,
     "approval_record": null,
     "revocation_record": null,
-    "reason": "v3.24 source/lineage, four explicit compatible predecessor artifacts, ProductContract.v2 and QualificationContractSet.v2 are present; seven later closure artifacts remain non-present."
+    "reason": "v3.24 source/lineage, four explicit compatible predecessor artifacts, ProductContract.v2, QualificationContractSet.v2 and StatePolicyCatalog.v1 are present; six later closure artifacts remain non-present."
   },
   "normative_package": {
     "inventory_ref": "docs/specs/local-ai-runtime-0.2-normative-package.json",
     "status": "incomplete",
     "approval_eligible": false,
     "required_artifact_count": 15,
-    "present_artifact_count": 8,
+    "present_artifact_count": 9,
     "missing_artifact_ids": [
-      "P0A-STATE",
       "P0A-Q0",
       "P0A-MIGRATION",
       "P0A-EXAMPLES",
@@ -55,13 +54,13 @@
     "source_work_items": "docs/plans/local-ai-runtime-0.2-work-items.json",
     "source_plan_id": "local-ai-runtime-0.2-v3.24-implementation-work-items",
     "work_item_count": 55,
-    "why_now": "v3.24 supersedes the unapprovable v3.23 gate semantics, now has eight verified artifacts including ProductContract.v2 and QualificationContractSet.v2, and must next materialize the state/guard/operator catalogs before later closure artifacts."
+    "why_now": "v3.24 supersedes the unapprovable v3.23 gate semantics, now has nine verified artifacts including ProductContract.v2, QualificationContractSet.v2 and StatePolicyCatalog.v1, and must next materialize the Q0/gate/feature/resource-limit catalogs before later closure artifacts."
   },
   "current_work_item": {
-    "task_id": "LAR-P0A-009",
+    "task_id": "LAR-P0A-010",
     "selector_action": "close_baseline_normative_package_first",
     "status": "ready",
-    "reason": "Materialize complete SQLite-authority state, guard, deterministic recovery, cleanup-finalizer and durable operator-action catalogs while keeping B3 deferred and without changing runtime behavior."
+    "reason": "Materialize exact Q0, gate, effective-feature, process/environment and resource-limit catalogs with limit fixtures, without running a live Q0 or creating the runtime."
   },
   "planning_optimization": {
     "status": "active",
@@ -107,7 +106,7 @@
     "p5_cutover_complete": false,
     "legacy_writer_retired": false
   },
-  "current_evidence_ref": "docs/change-evidence/20260716-lar-p0a-005-qualification-v2-exact-toolchain.md",
+  "current_evidence_ref": "docs/change-evidence/20260716-lar-p0a-009-state-policy.md",
   "authoritative_docs": [
     "AGENTS.md",
     "README.md",
@@ -130,7 +129,7 @@
       "required_strings": [
         "local-ai-runtime-0.2-v3.24",
         "LOCAL-AI-RUNTIME-0.2-BASELINE-CLOSURE",
-        "LAR-P0A-009",
+        "LAR-P0A-010",
         "planning_optimization_policy",
         "new_runtime_exact_v1",
         "B3 portfolio scheduling",
@@ -143,7 +142,7 @@
         "local-ai-runtime-0.2-v3.24",
         "baseline_candidate",
         "LOCAL-AI-RUNTIME-0.2-BASELINE-CLOSURE",
-        "LAR-P0A-009",
+        "LAR-P0A-010",
         "planning_optimization_policy",
         "最多 3 项",
         "docs_contract_sync_v1",
@@ -155,7 +154,7 @@
       "required_strings": [
         "local-ai-runtime-0.2-v3.24",
         "blocking_stage=baseline_approval",
-        "LAR-P0A-009",
+        "LAR-P0A-010",
         "planning_optimization_policy",
         "最多 3 个",
         "ProductContract.v2",
@@ -304,7 +303,7 @@
         "docs/specs/local-ai-runtime-0.2-v3.24-baseline-candidate.md",
         "13ee366152d47edec151f30619ccd068a030b63febf2d899ee822d08d4dc4e2a",
         "BaselineManifest.v1",
-        "LAR-P0A-009"
+        "LAR-P0A-010"
       ]
     },
     {
