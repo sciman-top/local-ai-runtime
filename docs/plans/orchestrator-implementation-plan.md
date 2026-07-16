@@ -2,7 +2,7 @@
 
 ## 1. 目标、当前落点与真值
 
-目标是在 Baseline Approval 后，把现行 `runtime/host-orchestrator` 逐步迁移到 `runtime/local-ai-runtime`：Windows-local、single-operator、Python modular monolith、Unified Native + global capacity=1 deterministic commit-only Batch。当前仍是 v3.24 preapproval planning：package `9/15 present, 6 non-present`，唯一 task 为 `LAR-P0A-010`，不得创建 runtime、approval、claim 或 live evidence。
+目标是在 Baseline Approval 后，把现行 `runtime/host-orchestrator` 逐步迁移到 `runtime/local-ai-runtime`：Windows-local、single-operator、Python modular monolith、Unified Native + global capacity=1 deterministic commit-only Batch。当前仍是 v3.25 preapproval planning：package `9/15 present, 6 non-present`，唯一 task 为 `LAR-P0A-010`，不得创建 runtime、approval、claim 或 live evidence。
 
 机器执行真源是 [local-ai-runtime-0.2-work-items.json](D:/CODE/local-ai-dev-orchestrator/docs/plans/local-ai-runtime-0.2-work-items.json)。本文件说明如何执行；若 task scope/acceptance/dependency/status 与 machine plan 冲突，以 verifier 通过的 machine plan 为准并先修正文档漂移。
 
@@ -21,19 +21,19 @@
 9. task status、inventory/status count、current work、docs 和 selector 一次性同步；fresh verifier/selector 必须指向唯一后继。
 10. `git diff --check`、全量 gate、diff review 通过后创建一个可回滚 local commit；worktree clean 才算 closeout。
 
-完整 closeout 后可在同一 run 重新 selector，默认最多 3 个 completed items 或 180 分钟。失败、预算耗尽、gate/selector 红、依赖/授权缺失、阶段/批准转换、v3.24 semantic successor、live/auth/provider/remote/破坏性/外部写或非当前 diff 均停止；`cross_phase_continuation=false`。
+完整 closeout 后可在同一 run 重新 selector，默认最多 3 个 completed items 或 180 分钟。失败、预算耗尽、gate/selector 红、依赖/授权缺失、阶段/批准转换、v3.25 semantic successor、live/auth/provider/remote/破坏性/外部写或非当前 diff 均停止；`cross_phase_continuation=false`。
 
 ## 3. P0A normative closure
 
 ### 3.1 已完成 successor slice
 
-`LAR-P0A-REBASELINE-V324` 已完成：
+`LAR-P0A-REBASELINE-V325` 已完成：
 
-- v3.23 candidate `188325 / 80562322...d5c6`、package inventory `12439 / 2771b750...d620`、machine plan `220533 / 4b146d79...ebfe` 精确归档；
-- v3.24 candidate 与 `BaselineLineage.v3` 冻结；
-- 只 carry forward `CanonicalizationPolicy.v1`、`ExecutionSafetyContractSet.v1`、`EvidenceContractSet.v1`、`DeterministicGitContractSet.v1`；
-- `ProductContract.v1`/`QualificationContractSet.v1` 保持 predecessor-only，v3.24 要求 v2；
-- 机器图降为 55 项，删除 0.2 B3 activation，建立 P0C/P0D join 与 exact toolchain projection。
+- v3.24 candidate `199728 / 13ee3661...e2a`、package inventory `15646 / 144383f8...7a9f`、machine plan `187913 / 10d48982...18df` 精确归档；
+- v3.25 candidate 与 `BaselineLineage.v4` 冻结；
+- carry forward `CanonicalizationPolicy.v1`、`ProductContract.v2`、`QualificationContractSet.v2`、`ExecutionSafetyContractSet.v1`、`EvidenceContractSet.v1`、`DeterministicGitContractSet.v1`、`StatePolicyCatalog.v1` 七项；
+- 环境证明拆为 `pre_resume_parent_environment_proof` 与 `post_resume_q0_child_environment_observation`，并删除可执行命令中的无效 exact-option sync spelling；
+- 机器图降为 52 项，保持 0.2 B3 deferred、P0C/P0D join 与 exact toolchain projection。
 
 ### 3.2 `LAR-P0A-004` — ProductContract.v2（已完成）
 
@@ -107,7 +107,7 @@ New runtime：
 6. hotspot：ruff + pyright + diff check；
 7. clean-root reproducibility：两根 member manifest/artifact hash 对比。
 
-任何 `uv run --locked --offline`、无 `--require-hashes` build、PATH Python 或自动 Python download 都不构成 v3.24 acceptance evidence。
+任何 `uv run --locked --offline`、unsupported exact-option sync、无 `--require-hashes` build、PATH Python 或自动 Python download 都不构成 v3.25 acceptance evidence。parent buffer proof 不得冒充 child observation；post-resume Q0 child mismatch 直接 `platform_incompatible`。
 
 ## 7. Acceptance、rollout 与迁移
 

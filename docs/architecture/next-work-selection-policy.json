@@ -40,7 +40,7 @@
       "priority": 2,
       "condition_id": "current_candidate_semantic_change_requires_successor",
       "next_action": "create_successor_candidate_first",
-      "why": "A new finding changes the frozen v3.24 product, gate, authority, concurrency, Q0, quality-promotion or truth-source semantics; freeze it and create v3.25 rather than editing in place."
+      "why": "A new finding changes the frozen v3.25 product, gate, authority, concurrency, Q0, quality-promotion or truth-source semantics; freeze it and create v3.26 rather than editing in place."
     },
     {
       "priority": 3,
@@ -52,7 +52,7 @@
       "priority": 4,
       "condition_id": "normative_package_incomplete",
       "next_action": "close_baseline_normative_package_first",
-      "why": "v3.24 is only a baseline candidate; execute the unique current-plan producer for the first non-present artifact."
+      "why": "v3.25 is only a baseline candidate; execute the unique current-plan producer for the first non-present artifact."
     },
     {
       "priority": 5,
@@ -124,7 +124,7 @@
   "required_entrypoints": [
     "docs/architecture/planning-status.json",
     "docs/specs/local-ai-runtime-0.2-baseline-candidate.md",
-    "docs/specs/local-ai-runtime-0.2-v3.24-baseline-candidate.md",
+    "docs/specs/local-ai-runtime-0.2-v3.25-baseline-candidate.md",
     "docs/specs/local-ai-runtime-0.2-normative-package.json",
     "docs/plans/local-ai-runtime-0.2-work-items.json",
     "scripts/verify-planning-status.py",
@@ -157,8 +157,8 @@
     "The selector is read-only and must not run release preflight or mutate state.",
     "A passing planning verifier means the declared state is internally truthful, not that a later gate passed.",
     "The first matching condition wins.",
-    "The completed v3.24 successor transition and superseded v3.23 tasks are history and are not selectable runtime actions.",
-    "Any new frozen v3.24 semantic change selects create_successor_candidate_first and requires v3.25.",
+    "The completed v3.25 successor transition and superseded v3.24 tasks are history and are not selectable runtime actions.",
+    "Any new frozen v3.25 semantic change selects create_successor_candidate_first and requires v3.26.",
     "run_baseline_consistency_review is selected only when current_work_item is LAR-P0A-013 and missing artifacts exactly match a declared review set.",
     "The incomplete package selects the unique current-plan producer that produces or reaches the first non-present artifact.",
     "P4 remains B2/per-repo and proceeds directly to LAR-P5-001; no 0.2 selector action can activate B3.",

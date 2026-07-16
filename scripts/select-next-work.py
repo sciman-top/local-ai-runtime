@@ -211,7 +211,7 @@ def select_next_work(
         )
 
     if (
-        planning_optimization.get("frozen_v324_semantics_changed") is True
+        planning_optimization.get("frozen_v325_semantics_changed") is True
         or successor.get("status") != "completed"
     ):
         action = "create_successor_candidate_first"
@@ -316,7 +316,7 @@ def _validate_policy(policy: dict[str, Any]) -> dict[str, str]:
         )
     if allowed != EXPECTED_SELECTOR_ACTIONS:
         raise ValueError(
-            "selector allowed_next_actions must match the v3.24 action catalog"
+            "selector allowed_next_actions must match the v3.25 action catalog"
         )
     review_sets = policy["baseline_review_missing_artifact_sets"]
     if (
@@ -362,7 +362,7 @@ def _validate_policy(policy: dict[str, Any]) -> dict[str, str]:
     ]
     if actual_steps != EXPECTED_SELECTOR_STEPS:
         raise ValueError(
-            "selector condition/action order must match the v3.24 stage graph"
+            "selector condition/action order must match the v3.25 stage graph"
         )
     entrypoints = policy["required_entrypoints"]
     if not isinstance(entrypoints, list) or not all(

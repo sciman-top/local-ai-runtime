@@ -16,7 +16,7 @@ BASELINE_PATH = (
     REPO_ROOT
     / "docs"
     / "specs"
-    / "local-ai-runtime-0.2-v3.24-baseline-candidate.md"
+    / "local-ai-runtime-0.2-v3.25-baseline-candidate.md"
 )
 BASELINE_ENTRY_PATH = (
     REPO_ROOT
@@ -43,7 +43,7 @@ LINEAGE_PATH = (
     / "specs"
     / "local-ai-runtime-0.2"
     / "normative"
-    / "BaselineLineage.v3.json"
+    / "BaselineLineage.v4.json"
 )
 BASELINE_MANIFEST_SCHEMA_PATH = (
     REPO_ROOT
@@ -81,6 +81,8 @@ HIGH_RISK_PROJECTION_TOKENS = frozenset(
         "PROC_THREAD_ATTRIBUTE_HANDLE_LIST",
         "STARTF_USESTDHANDLES",
         "OrdinalIgnoreCase",
+        "pre_resume_parent_environment_proof",
+        "post_resume_q0_child_environment_observation",
         "runtime_external_v1",
         "EvidenceProjectionAcceptance",
         "QuarantineKeyEnvelope",
@@ -143,7 +145,7 @@ def _verifier_attestation(status_path: Path, current_work_item_id: str) -> dict[
             "status_sha256": hashlib.sha256(status_path.read_bytes()).hexdigest(),
             "selector_policy_path": POLICY_PATH.resolve().as_posix(),
             "selector_policy_sha256": hashlib.sha256(POLICY_PATH.read_bytes()).hexdigest(),
-            "baseline_id": "local-ai-runtime-0.2-v3.24",
+            "baseline_id": "local-ai-runtime-0.2-v3.25",
             "current_work_item_id": current_work_item_id,
         },
         "stderr": "",
@@ -156,17 +158,16 @@ def test_planning_verifier_accepts_truthful_candidate_state() -> None:
     assert completed.returncode == 0, completed.stderr
     payload = json.loads(completed.stdout)
     assert payload["status"] == "pass"
-    assert payload["baseline_id"] == "local-ai-runtime-0.2-v3.24"
+    assert payload["baseline_id"] == "local-ai-runtime-0.2-v3.25"
     assert payload["approval_active"] is False
     assert payload["missing_artifact_count"] == 6
     assert payload["current_work_item_id"] == "LAR-P0A-010"
     work_items = json.loads(WORK_ITEMS_PATH.read_text(encoding="utf-8"))["work_items"]
     task_ids = {item["task_id"] for item in work_items}
-    assert payload["work_item_count"] == len(work_items) == 55
+    assert payload["work_item_count"] == len(work_items) == 52
     assert {
-        "LAR-P0A-REBASELINE-V324",
-        "LAR-P0A-004",
-        "LAR-P0A-005",
+        "LAR-P0A-REBASELINE-V325",
+        "LAR-P0A-010",
         "LAR-P1C-007",
         "LAR-P1E-007",
         "LAR-P5-001",
@@ -193,57 +194,68 @@ def test_preflight_gate_na_reasons_do_not_pin_a_superseded_candidate() -> None:
     assert "the v3.23 slice" not in preflight
 
 
-def test_successor_transition_freezes_v323_and_projects_v324() -> None:
+def test_successor_transition_freezes_v324_and_projects_v325() -> None:
     status = json.loads(STATUS_PATH.read_text(encoding="utf-8"))
     transition = status["successor_transition"]
 
     assert transition["status"] == "completed"
     assert transition["disposition"] == "supersede_required"
-    assert transition["task_id"] == "LAR-P0A-REBASELINE-V324"
+    assert transition["task_id"] == "LAR-P0A-REBASELINE-V325"
     assert transition["predecessor"] == {
-        "id": "local-ai-runtime-0.2-v3.23",
-        "path": "docs/specs/local-ai-runtime-0.2-v3.23-baseline-candidate.md",
-        "byte_count": 188325,
-        "sha256": "80562322ebc744eda2a87a17c45f73a11982f4947c9d10e8628bb6f73ee9d5c6",
+        "id": "local-ai-runtime-0.2-v3.24",
+        "path": "docs/specs/local-ai-runtime-0.2-v3.24-baseline-candidate.md",
+        "byte_count": 199728,
+        "sha256": "13ee366152d47edec151f30619ccd068a030b63febf2d899ee822d08d4dc4e2a",
         "package_archive": (
             "docs/specs/local-ai-runtime-0.2/history/"
-            "local-ai-runtime-0.2-v3.23-normative-package.json"
+            "local-ai-runtime-0.2-v3.24-normative-package.json"
         ),
-        "plan_archive": "docs/plans/history/local-ai-runtime-0.2-v3.23-work-items.json",
+        "plan_archive": "docs/plans/history/local-ai-runtime-0.2-v3.24-work-items.json",
     }
     assert transition["compatible_predecessor_artifact_ids"] == [
         "P0A-CANONICAL",
+        "P0A-PRODUCT",
+        "P0A-QUALIFICATION",
         "P0A-EXECUTION",
         "P0A-EVIDENCE",
         "P0A-GIT",
+        "P0A-STATE",
     ]
     assert transition["predecessor_evaluation"]["role"] == (
-        "non_normative_predecessor_evidence"
+        "primary_source_contract_research"
     )
     assert transition["predecessor_evaluation"]["profile_promoted"] is False
 
 
-def test_v324_lineage_binds_archives_and_closed_carry_forward() -> None:
+def test_v325_lineage_binds_archives_and_closed_carry_forward() -> None:
     lineage = json.loads(LINEAGE_PATH.read_text(encoding="utf-8"))
     payload = lineage["payload"]
 
-    assert lineage["domain"] == "local-ai-runtime/BaselineLineage/v3"
-    assert lineage["schema_version"] == 3
-    assert payload["candidate"]["id"] == "local-ai-runtime-0.2-v3.24"
-    v323 = next(
+    assert lineage["domain"] == "local-ai-runtime/BaselineLineage/v4"
+    assert lineage["schema_version"] == 4
+    assert payload["candidate"]["id"] == "local-ai-runtime-0.2-v3.25"
+    v324 = next(
         entry
         for entry in payload["entries"]
-        if entry["id"] == "local-ai-runtime-0.2-v3.23"
+        if entry["id"] == "local-ai-runtime-0.2-v3.24"
     )
-    assert v323["preapproval_inventory_archive"]["sha256"] == (
-        "2771b750557c68002eb54c3681185395e7d2881632211a4bb0bd6de75644d620"
+    assert v324["preapproval_inventory_archive"]["sha256"] == (
+        "144383f8704f366008e9cb514898e05f1fd7a45310d39cd64bdc546544247a9f"
     )
-    assert v323["work_item_plan_archive"]["sha256"] == (
-        "4b146d79c0f99a9621a8f6a743e8ddab7e2eb6d19356d2152a1c7130c0adebfe"
+    assert v324["work_item_plan_archive"]["sha256"] == (
+        "10d48982b7b45f2c8033f1ba571aceba51106484347a71ec436121607f2518df"
     )
     assert [
         item["artifact_id"] for item in payload["compatible_predecessor_artifacts"]
-    ] == ["P0A-CANONICAL", "P0A-EXECUTION", "P0A-EVIDENCE", "P0A-GIT"]
+    ] == [
+        "P0A-CANONICAL",
+        "P0A-PRODUCT",
+        "P0A-QUALIFICATION",
+        "P0A-EXECUTION",
+        "P0A-EVIDENCE",
+        "P0A-GIT",
+        "P0A-STATE",
+    ]
 
 
 def test_verifier_rejects_successor_trigger_drift(tmp_path: Path) -> None:
@@ -271,7 +283,7 @@ def test_selector_routes_current_candidate_semantic_change_to_successor(
     def mutate(payload: dict[str, object]) -> None:
         optimization = payload["planning_optimization"]
         assert isinstance(optimization, dict)
-        optimization["frozen_v324_semantics_changed"] = True
+        optimization["frozen_v325_semantics_changed"] = True
 
     status_path = _write_status(tmp_path, mutate)
     select_next_work.__globals__["_run_verifier"] = (
@@ -415,9 +427,9 @@ def test_baseline_bytes_match_planning_identity() -> None:
     status = json.loads(STATUS_PATH.read_text(encoding="utf-8"))
     raw = BASELINE_PATH.read_bytes()
 
-    assert len(raw) == status["baseline_candidate"]["byte_count"] == 199728
+    assert len(raw) == status["baseline_candidate"]["byte_count"] == 202958
     assert hashlib.sha256(raw).hexdigest() == status["baseline_candidate"]["sha256"]
-    assert hashlib.sha256(raw).hexdigest() == "13ee366152d47edec151f30619ccd068a030b63febf2d899ee822d08d4dc4e2a"
+    assert hashlib.sha256(raw).hexdigest() == "39ec0479a6ba0a0bf099f9d3f2410abb078ec3a3de4c3fe414ea76819f3834e0"
     assert raw.endswith(b"\n") and not raw.endswith(b"\n\n")
     assert b"\r" not in raw
 
@@ -438,8 +450,8 @@ def test_stable_baseline_entry_is_non_normative_and_targets_frozen_candidate() -
         "target_sha256": baseline["sha256"],
         "approval_input": False,
         "maximum_byte_count": 4096,
-        "byte_count": 3314,
-        "sha256": "d7332c1ba0f88bd3c4c0f638de1364a77d8d190a4919ba9526bfc6b5a36a2f73",
+        "byte_count": 3242,
+        "sha256": "64b1abdd652ddad763b6b790287fa03a54cc8c192426aa15b1fb04d01b3904b7",
     }
     assert len(raw) <= entry["maximum_byte_count"]
     assert len(raw) == entry["byte_count"]
@@ -548,7 +560,7 @@ def test_selector_policy_requires_the_stable_baseline_entry() -> None:
     assert policy["required_entrypoints"] == [
         "docs/architecture/planning-status.json",
         "docs/specs/local-ai-runtime-0.2-baseline-candidate.md",
-        "docs/specs/local-ai-runtime-0.2-v3.24-baseline-candidate.md",
+        "docs/specs/local-ai-runtime-0.2-v3.25-baseline-candidate.md",
         "docs/specs/local-ai-runtime-0.2-normative-package.json",
         "docs/plans/local-ai-runtime-0.2-work-items.json",
         "scripts/verify-planning-status.py",
@@ -926,11 +938,11 @@ def test_inventory_versions_and_manifest_review_order_are_closed() -> None:
     artifact_ids = [item["artifact_id"] for item in artifacts]
 
     assert len(artifacts) == 15
-    assert by_id["P0A-SOURCE"]["artifact_version"] == "local-ai-runtime-0.2-v3.24"
-    assert by_id["P0A-SOURCE"]["byte_count"] == 199728
-    assert by_id["P0A-SOURCE"]["producer_task_id"] == "LAR-P0A-REBASELINE-V324"
-    assert by_id["P0A-LINEAGE"]["artifact_version"] == "BaselineLineage.v3"
-    assert by_id["P0A-LINEAGE"]["producer_task_id"] == "LAR-P0A-REBASELINE-V324"
+    assert by_id["P0A-SOURCE"]["artifact_version"] == "local-ai-runtime-0.2-v3.25"
+    assert by_id["P0A-SOURCE"]["byte_count"] == 202958
+    assert by_id["P0A-SOURCE"]["producer_task_id"] == "LAR-P0A-REBASELINE-V325"
+    assert by_id["P0A-LINEAGE"]["artifact_version"] == "BaselineLineage.v4"
+    assert by_id["P0A-LINEAGE"]["producer_task_id"] == "LAR-P0A-REBASELINE-V325"
     assert by_id["P0A-PRODUCT"]["artifact_version"] == "ProductContract.v2"
     assert by_id["P0A-PRODUCT"]["status"] == "present"
     assert by_id["P0A-PRODUCT"]["byte_count"] == 14902
@@ -950,22 +962,30 @@ def test_inventory_versions_and_manifest_review_order_are_closed() -> None:
         "423f90a0550630b0d413cc82a53f98b6602d05cd6b7a9072f2a65759e15189de"
     )
 
-    carried = {"P0A-CANONICAL", "P0A-EXECUTION", "P0A-EVIDENCE", "P0A-GIT"}
+    carried = {
+        "P0A-CANONICAL",
+        "P0A-PRODUCT",
+        "P0A-QUALIFICATION",
+        "P0A-EXECUTION",
+        "P0A-EVIDENCE",
+        "P0A-GIT",
+        "P0A-STATE",
+    }
     assert {
         artifact_id
         for artifact_id, item in by_id.items()
-        if item.get("carried_forward_from") == "local-ai-runtime-0.2-v3.23"
+        if item.get("carried_forward_from") == "local-ai-runtime-0.2-v3.24"
     } == carried
     for artifact_id in carried:
         assert by_id[artifact_id]["status"] == "present"
-        assert by_id[artifact_id]["producer_task_id"] == "LAR-P0A-REBASELINE-V324"
+        assert by_id[artifact_id]["producer_task_id"] == "LAR-P0A-REBASELINE-V325"
 
     assert by_id["P0A-MANIFEST"]["producer_task_id"] == "LAR-P0A-013"
     assert by_id["P0A-REVIEW"]["producer_task_id"] == "LAR-P0A-013"
     assert artifact_ids.index("P0A-VERIFIER") < artifact_ids.index("P0A-MANIFEST")
     assert artifact_ids.index("P0A-MANIFEST") < artifact_ids.index("P0A-REVIEW")
 
-def test_machine_work_items_are_a_deterministic_v324_dag() -> None:
+def test_machine_work_items_are_a_deterministic_v325_dag() -> None:
     work_items = json.loads(WORK_ITEMS_PATH.read_text(encoding="utf-8"))["work_items"]
     by_id = {item["task_id"]: item for item in work_items}
     phase_counts = {
@@ -973,7 +993,7 @@ def test_machine_work_items_are_a_deterministic_v324_dag() -> None:
         for phase in ("P1A", "P1B", "P1C", "P1D", "P1E", "P1F")
     }
 
-    assert len(work_items) == 55
+    assert len(work_items) == 52
     assert phase_counts == {
         "P1A": 4,
         "P1B": 5,
@@ -982,14 +1002,10 @@ def test_machine_work_items_are_a_deterministic_v324_dag() -> None:
         "P1E": 7,
         "P1F": 6,
     }
-    assert by_id["LAR-P0A-REBASELINE-V324"]["status"] == "completed"
-    assert by_id["LAR-P0A-REBASELINE-V324"]["next_task_ids"] == ["LAR-P0A-004"]
-    assert by_id["LAR-P0A-004"]["status"] == "completed"
-    assert by_id["LAR-P0A-004"]["depends_on"] == ["LAR-P0A-REBASELINE-V324"]
-    assert by_id["LAR-P0A-005"]["status"] == "completed"
-    assert by_id["LAR-P0A-005"]["depends_on"] == ["LAR-P0A-004"]
-    assert by_id["LAR-P0A-009"]["status"] == "completed"
+    assert by_id["LAR-P0A-REBASELINE-V325"]["status"] == "completed"
+    assert by_id["LAR-P0A-REBASELINE-V325"]["next_task_ids"] == ["LAR-P0A-010"]
     assert by_id["LAR-P0A-010"]["status"] == "ready"
+    assert by_id["LAR-P0A-010"]["depends_on"] == ["LAR-P0A-REBASELINE-V325"]
     assert by_id["LAR-P0B-001"]["next_task_ids"] == [
         "LAR-P0C-001",
         "LAR-P0D-001",
@@ -1006,34 +1022,26 @@ def test_machine_work_items_are_a_deterministic_v324_dag() -> None:
         "docs/specs/local-ai-runtime-0.2/normative/BaselineManifest.v1.json"
     )
     for task_id in (
-        "LAR-P0A-REBASELINE-V324",
-        "LAR-P0A-004",
-        "LAR-P0A-005",
-        "LAR-P0A-009",
+        "LAR-P0A-REBASELINE-V325",
+        "LAR-P0A-010",
+        "LAR-P0A-011",
+        "LAR-P0A-012",
     ):
         assert final_manifest not in by_id[task_id]["scope"]["primary_files"]
     assert final_manifest in by_id["LAR-P0A-013"]["scope"]["primary_files"]
 
     required_tokens = {
-        "LAR-P0A-004": {
-            "FirstRunExperiencePolicy.v1",
-            "LaunchTemplateCatalog.v1 with four templates",
-            "OperatorPresentationCatalog.v1",
-        },
-        "LAR-P0A-005": {
-            "RuntimeToolchainManifest.v1",
-            "VerificationExecutionProfile.v1",
-            "hash-pinned build backend",
-        },
-        "LAR-P0A-009": {
-            "SQLite is the only policy/transition authority",
-            "Cleanup finalizers cannot be bypassed",
-            "B3 is declared deferred",
+        "LAR-P0A-REBASELINE-V325": {
+            "BaselineLineage.v4",
+            "exactly seven compatible artifacts",
+            "pre_resume_parent_environment_proof",
+            "post_resume_q0_child_environment_observation",
         },
         "LAR-P0A-010": {
             "accounting_kill_audit",
             "EmergencyDiskReserve",
             "OrdinalIgnoreCase",
+            "never claim per-child pre-resume environment read-back",
         },
         "LAR-P0A-013": {"package_review_head", "approval_review_head"},
     }
@@ -1094,10 +1102,12 @@ def test_planning_optimization_policy_is_bounded_and_qualification_driven() -> N
     )
 
     by_id = {item["task_id"]: item for item in payload["work_items"]}
-    p0a004 = json.dumps(by_id["LAR-P0A-004"], ensure_ascii=False, sort_keys=True)
-    assert "FirstRunExperiencePolicy.v1" in p0a004
-    assert "LaunchTemplateCatalog.v1 with four templates" in p0a004
-    assert "Native Spec can create only a template candidate" in p0a004
+    rebaseline = json.dumps(
+        by_id["LAR-P0A-REBASELINE-V325"], ensure_ascii=False, sort_keys=True
+    )
+    assert "BaselineLineage.v4" in rebaseline
+    assert "pre_resume_parent_environment_proof" in rebaseline
+    assert "post_resume_q0_child_environment_observation" in rebaseline
 
 
 def test_planning_optimization_verifiers_reject_policy_drift() -> None:
@@ -1171,7 +1181,7 @@ def test_planning_optimization_status_and_doc_projections_are_closed() -> None:
         "policy_ref": "docs/plans/local-ai-runtime-0.2-work-items.json",
         "policy_kind": "bounded_minimum_operator_planning_v1",
         "complexity_health": "warning_all_dimensions",
-        "frozen_v324_semantics_changed": False,
+        "frozen_v325_semantics_changed": False,
         "active_profile_change": "none",
     }
 
@@ -1225,7 +1235,7 @@ def test_human_readable_roadmap_projects_machine_work_item_count() -> None:
         "docs/roadmap/orchestrator-roadmap.md"
     ]
 
-def test_v324_lineage_binds_candidate_history_and_superseded_plan() -> None:
+def test_v325_lineage_binds_candidate_history_and_superseded_plan() -> None:
     status = json.loads(STATUS_PATH.read_text(encoding="utf-8"))
     lineage_raw = LINEAGE_PATH.read_bytes()
     lineage = json.loads(lineage_raw)
@@ -1233,33 +1243,33 @@ def test_v324_lineage_binds_candidate_history_and_superseded_plan() -> None:
         WORK_ITEMS_PATH.read_text(encoding="utf-8")
     )["supersedes_plan"]
 
-    assert len(lineage_raw) == 6700
+    assert len(lineage_raw) == 8809
     assert hashlib.sha256(lineage_raw).hexdigest() == (
-        "b769bb3460a83ba31ca28fe60cc6d4c44902063c69b01ff344942a04e62dc756"
+        "877e28619076761047bd83b43cfe16fa736c49c1e1e913a936722eb843b726ad"
     )
-    assert lineage["domain"] == "local-ai-runtime/BaselineLineage/v3"
-    assert lineage["schema_version"] == 3
+    assert lineage["domain"] == "local-ai-runtime/BaselineLineage/v4"
+    assert lineage["schema_version"] == 4
     assert lineage["payload"]["candidate"] == {
-        "byte_count": 199728,
-        "id": "local-ai-runtime-0.2-v3.24",
-        "path": "docs/specs/local-ai-runtime-0.2-v3.24-baseline-candidate.md",
+        "byte_count": 202958,
+        "id": "local-ai-runtime-0.2-v3.25",
+        "path": "docs/specs/local-ai-runtime-0.2-v3.25-baseline-candidate.md",
         "role": "baseline_candidate",
         "sha256": status["baseline_candidate"]["sha256"],
     }
-    v323 = next(
+    v324 = next(
         entry
         for entry in lineage["payload"]["entries"]
-        if entry["id"] == "local-ai-runtime-0.2-v3.23"
+        if entry["id"] == "local-ai-runtime-0.2-v3.24"
     )
-    assert v323["preapproval_inventory_archive"]["byte_count"] == 12439
-    assert v323["work_item_plan_archive"]["byte_count"] == 220533
+    assert v324["preapproval_inventory_archive"]["byte_count"] == 15646
+    assert v324["work_item_plan_archive"]["byte_count"] == 187913
     assert superseded == {
-        "plan_id": "local-ai-runtime-0.2-v3.23-implementation-work-items",
-        "path": "docs/plans/history/local-ai-runtime-0.2-v3.23-work-items.json",
+        "plan_id": "local-ai-runtime-0.2-v3.24-implementation-work-items",
+        "path": "docs/plans/history/local-ai-runtime-0.2-v3.24-work-items.json",
         "terminal_status": "superseded",
-        "last_commit": "010dede90545e71d634087c84aef75790f5949e9",
-        "byte_count": 220533,
-        "sha256": "4b146d79c0f99a9621a8f6a743e8ddab7e2eb6d19356d2152a1c7130c0adebfe",
+        "last_commit": "74f00670ab6dddae7a248e87f57062b32440bba4",
+        "byte_count": 187913,
+        "sha256": "10d48982b7b45f2c8033f1ba571aceba51106484347a71ec436121607f2518df",
     }
 
 
@@ -1277,7 +1287,7 @@ def test_current_lineage_rejects_inventory_projection_drift() -> None:
         failures,
     )
 
-    assert "inventory lineage must exactly project BaselineLineage.v3" in failures
+    assert "inventory lineage must exactly project BaselineLineage.v4" in failures
 
 
 def test_work_item_verifier_rejects_nonreciprocal_or_unreachable_dag_edges() -> None:
@@ -1382,7 +1392,7 @@ def test_contract_projection_policy_is_bidirectional_and_token_closed() -> None:
 
     extra_projection = json.loads(WORK_ITEMS_PATH.read_text(encoding="utf-8"))
     by_id = {item["task_id"]: item for item in extra_projection["work_items"]}
-    by_id["LAR-P0A-004"]["contract_projections"]["implements"].append(
+    by_id["LAR-P0A-REBASELINE-V325"]["contract_projections"]["produces"].append(
         "unapproved_projection_v1"
     )
     failures = []
@@ -1394,7 +1404,7 @@ def test_contract_projection_policy_is_bidirectional_and_token_closed() -> None:
         failures,
     )
     assert any(
-        "LAR-P0A-004.implements projections must exactly match policy" in failure
+        "LAR-P0A-REBASELINE-V325.produces projections must exactly match policy" in failure
         for failure in failures
     )
 
@@ -1482,7 +1492,7 @@ def test_selector_rejects_unknown_action_even_when_policy_is_structurally_valid(
             "priority": 16,
             "condition_id": "invented_condition",
             "next_action": "invent_unapproved_work_first",
-            "why": "Structurally valid but not part of the reviewed v3.24 stage graph.",
+            "why": "Structurally valid but not part of the reviewed v3.25 stage graph.",
         }
     )
     policy_path = tmp_path / "unknown-action-policy.json"
@@ -1497,7 +1507,7 @@ def test_selector_rejects_unknown_action_even_when_policy_is_structurally_valid(
     assert payload["next_action"] == "repair_gate_first"
     assert payload["verifier_status"] is None
     assert any(
-        "v3.24 action catalog" in issue for issue in payload["governance_issues"]
+        "v3.25 action catalog" in issue for issue in payload["governance_issues"]
     )
 
 
@@ -1753,8 +1763,8 @@ def test_work_item_verifier_reports_malformed_nested_collections() -> None:
     status = json.loads(STATUS_PATH.read_text(encoding="utf-8"))
     work_items = json.loads(WORK_ITEMS_PATH.read_text(encoding="utf-8"))
     by_id = {item["task_id"]: item for item in work_items["work_items"]}
-    by_id["LAR-P0A-004"]["scope"] = "not-an-object"
-    by_id["LAR-P0A-005"]["next_task_ids"] = 7
+    by_id["LAR-P0A-010"]["scope"] = "not-an-object"
+    by_id["LAR-P0A-011"]["next_task_ids"] = 7
     failures: list[str] = []
 
     verify_work_items(
@@ -1765,8 +1775,8 @@ def test_work_item_verifier_reports_malformed_nested_collections() -> None:
         failures,
     )
 
-    assert "LAR-P0A-004.scope must be an object" in failures
-    assert "LAR-P0A-005.next_task_ids must be an array" in failures
+    assert "LAR-P0A-010.scope must be an object" in failures
+    assert "LAR-P0A-011.next_task_ids must be an array" in failures
 
 
 def test_selector_repairs_invalid_successful_verifier_output(tmp_path: Path) -> None:

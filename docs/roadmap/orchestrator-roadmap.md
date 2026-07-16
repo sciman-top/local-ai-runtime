@@ -2,7 +2,7 @@
 
 ## 1. 路线真值与总原则
 
-当前 baseline candidate 是 `local-ai-runtime-0.2-v3.24`；package 为 `9/15 present, 6 non-present`；唯一 selectable work item 是 `LAR-P0A-010`。机器图总计 55 项，schema 为 `local_ai_runtime_work_items.v4`，含 11 个 closed contract projections，以 [work items](D:/CODE/local-ai-dev-orchestrator/docs/plans/local-ai-runtime-0.2-work-items.json) 为任务真源。
+当前 baseline candidate 是 `local-ai-runtime-0.2-v3.25`；package 为 `9/15 present, 6 non-present`；唯一 selectable work item 是 `LAR-P0A-010`。机器图总计 52 项，schema 为 `local_ai_runtime_work_items.v4`，含 11 个 closed contract projections，以 [work items](D:/CODE/local-ai-dev-orchestrator/docs/plans/local-ai-runtime-0.2-work-items.json) 为任务真源。
 
 产品目标是 Windows-local single-operator 的 Unified Native + global capacity=1 deterministic commit-only Batch。首发以首次安全 commit-ready 体验和 operator minutes 为中心，不追求并发吞吐。`same_run_reselect_after_verified_atomic_closeout` 允许一次 kickoff 在每项完整 closeout 后继续，默认最多 3 项/180 分钟；不跨阶段、批准、successor 或 live 外部写边界。
 
@@ -25,12 +25,12 @@ flowchart LR
 
 ## 2. P0A — Baseline normative package closure
 
-目标：在不创建 runtime、approval 或 live evidence 的前提下，把自包含 v3.24 narrative 机械化为完整、可独立验证的 15-artifact package。
+目标：在不创建 runtime、approval 或 live evidence 的前提下，把自包含 v3.25 narrative 机械化为完整、可独立验证的 15-artifact package。
 
 已完成：
 
-- `LAR-P0A-REBASELINE-V324`：冻结 v3.23 candidate/package/plan，创建 v3.24 与 `BaselineLineage.v3`；只 carry forward canonicalization、execution、evidence、Git 四个精确 artifact；删除 0.2 B3 activation；建立 exact toolchain/launch experience successor。
-- v3.23 Native comparative evaluation 保留为 non-normative predecessor evidence，不 promotion profile，也不参与当前 selector。
+- `LAR-P0A-REBASELINE-V325`：冻结 v3.24 candidate/package/plan，创建 v3.25 与 `BaselineLineage.v4`；carry forward 七个精确兼容 artifact；把不可实现的 pre-resume child observation 拆成 parent pre-resume proof 与 post-resume no-write Q0 child observation；保持 0.2 B3 deferred。
+- v3.24 product/toolchain/state closure 与 v3.23 Native comparative evaluation均保留为 non-normative predecessor evidence，不 promotion profile，也不参与当前 selector。
 
 剩余关键序列：
 
@@ -48,7 +48,7 @@ P0A exit：15/15 present；standalone verifier green；P0/P1 normative findings=
 
 `LAR-GOV-001` 是独立、明确授权的 controlled action。输入包括 package identity、review heads、authority/session、expected generation 和 anti-replay challenge。AI 不得自签，review 不得顺手批准。
 
-Exit：active `BaselineApprovalRecord` 精确绑定 v3.24 package；可撤销/替代；不含实现完成声明。
+Exit：active `BaselineApprovalRecord` 精确绑定 v3.25 package；可撤销/替代；不含实现完成声明。
 
 ## 4. P0B — Truth Reset
 

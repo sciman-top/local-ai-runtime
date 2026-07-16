@@ -2,7 +2,7 @@
 
 ## 1. 状态与架构原则
 
-目标规范为 `local-ai-runtime-0.2-v3.24`，当前仍是 baseline candidate。本文描述批准后的目标，不宣称组件已经实现；v3.23 candidate/package/plan 是保留 exact bytes/hash 的 superseded inputs。
+目标规范为 `local-ai-runtime-0.2-v3.25`，当前仍是 baseline candidate。本文描述批准后的目标，不宣称组件已经实现；v3.24 candidate/package/plan 是保留 exact bytes/hash 的 superseded inputs。
 
 核心原则：
 
@@ -15,7 +15,7 @@
 - 不以“最终一致”掩盖不可解释的进程、对象、ref、worktree 或 evidence 状态。
 - 长期产品范围是受控本地开发工作流，不预建跨平台、多租户、分布式或第二 agent runtime 空壳；未实现 protocol 的能力始终 unsupported。
 
-repo planning 是实现期薄控制面，不是目标 runtime 的第二套编排架构。唯一 `planning_optimization_policy` 在现有 machine work items 中定义 work-item 原子 closeout、bounded continuation、复杂度硬上限、planning model 候选资格化和结果指标；selector、planning-status 与 verifier 继续复用。不得新增第二个 planner/router、平行 task 真源或 runtime model-router service。该 planning policy 不进入冻结 v3.24 runtime authority，也不改变 capacity=1、effect protocol、Q0 或事实来源。
+repo planning 是实现期薄控制面，不是目标 runtime 的第二套编排架构。唯一 `planning_optimization_policy` 在现有 machine work items 中定义 work-item 原子 closeout、bounded continuation、复杂度硬上限、planning model 候选资格化和结果指标；selector、planning-status 与 verifier 继续复用。不得新增第二个 planner/router、平行 task 真源或 runtime model-router service。该 planning policy 不进入冻结 v3.25 runtime authority，也不改变 capacity=1、effect protocol、Q0 或事实来源。
 
 ## 2. 当前态与目标态
 
@@ -24,13 +24,13 @@ repo planning 是实现期薄控制面，不是目标 runtime 的第二套编排
 | 运行内核 | `runtime/host-orchestrator` | `runtime/local-ai-runtime/src/local_ai_runtime/` |
 | 状态 | `.ai/state/control-plane.db`，另有 experimental runtime_v2 | `%LOCALAPPDATA%/LocalAIRuntime/state` 独立 DB |
 | 运行证据 | legacy `.ai/runs/...` | 外置 `evidence`、journal、receipt、artifact index |
-| 所有权 | 尚无 v3.24 shared guard | versioned ownership wire + repo mutex + generation |
+| 所有权 | 尚无 v3.25 shared guard | versioned ownership wire + repo mutex + generation |
 | 执行 | legacy host-local paths | isolated Job-bound writer/gate/Git adapters |
 | 迁移 | 未开始 | guard legacy -> implement isolated -> per-repo cutover -> read-only compat |
 
 批准前禁止创建目标包；P0C Legacy Ownership Guard 绿色前禁止目标 runtime claim repo。
 
-v3.24 已经是 successor：v3.23 的 `uv run --locked` 不能证明 exact environment，build backend 未 hash-pin，manifest Python 未被 gate 显式选择，且首发体验不完整。predecessor Native thin-path 结果仅作为 non-normative evidence，不 promotion profile、不驱动当前 selector、不跨 surface 外推。0.2 只接纳 CLI execution interface；App Server、SDK、managed Worktree 和 Automations 都 deferred，未来必须各自通过 capability generation、Implementation Acceptance 与 Full Q0。
+v3.25 是 v3.24 的最小 successor：`CREATE_SUSPENDED` child 在 `ResumeThread` 前不运行，无法在该时点调用 `GetEnvironmentStringsW` 自读并报告 environment；predecessor 的 exact-option sync spelling 也不是受支持参数。产品、架构、容量、exact toolchain 和 launch experience 保持不变。0.2 只接纳 CLI execution interface；App Server、SDK、managed Worktree 和 Automations 都 deferred，未来必须各自通过 capability generation、Implementation Acceptance 与 Full Q0。
 
 目标源码的首级子包边界固定为 `contracts/kernel/qualification/storage/execution/recovery/git_local/operations/compat`。结构化机器约束固定为 `approved_root_files=["__init__.py","__main__.py"]`、`approved_subpackages=["contracts","kernel","qualification","storage","execution","recovery","git_local","operations","compat"]` 和 bootstrap/marker 到首个任务的一对一 `required_source_owners`。`__main__.py` 仅作为 `python -m local_ai_runtime contracts verify` 的薄转发层。Artifact/evidence 持久化归 `storage`，安装、激活、CLI、Batch、doctor、scheduler、managed Native 和 evaluation 编排归 `operations`；不得在包根新增其他功能模块，也不得增生平行的 `evidence`、`commands` 或其他未批准首级子包。
 
@@ -172,6 +172,25 @@ launch_intent
 
 Spawn 使用 `CREATE_SUSPENDED + PROC_THREAD_ATTRIBUTE_JOB_LIST` 原子加入预建 Job。PID/creation time 持久化后才是 `spawned_suspended`；writer 使用 `WriterLaunchRecord`，gate/Git/probe/recovery helper 使用 `StageLaunchRecord`，两者都在 resume 前绑定恰好一个 execution authority 和对应 execution-commit barrier。Writer/正常 gate 使用 active-Authorization grant；可收养 controller action 的 Git/helper child process 使用绑定 parent action grant、current fenced head 与 exact StageJob 的 inherited grant；封闭 safety helper 使用 `SafetyOnlyExecutionRecord`。Revoke 与 root grant 由同一 repo-lock/`BEGIN IMMEDIATE` 顺序线性化。
 
+Windows environment 采用两阶段、不同证据资格的证明流：
+
+```mermaid
+flowchart LR
+    A["Catalog inputs"] --> B["Canonical UTF-16 serializer"]
+    B --> C["pre_resume_parent_environment_proof"]
+    C --> D["CreateProcessW suspended"]
+    D --> E["Execution authority + commit barrier"]
+    E --> F["ResumeThread"]
+    F --> G["No-write Q0 child first action"]
+    G --> H["GetEnvironmentStringsW + digest"]
+    H --> I["post_resume_q0_child_environment_observation"]
+    I --> J{"Digest equal?"}
+    J -->|Yes| K["Generation qualified"]
+    J -->|No| L["platform_incompatible"]
+```
+
+`pre_resume_parent_environment_proof` 每次 launch 都验证传入的 canonical block、key grammar、OrdinalIgnoreCase uniqueness、排序、长度、double-NUL、digest 与 CreateProcess flags；它证明 parent 输入，不声称读取 child。`post_resume_q0_child_environment_observation` 只由专用 no-write Q0 child 在 resume 后第一个 application action 产生，用于资格化同 generation 的 serializer/CreateProcess composition。普通 writer/gate 仍生成独立 parent proof，但不逐 child 执行或展示 Q0 probe；任何 mismatch、未知 generation 或证据混用都 fail closed。
+
 `writer_effect_id=stable(task_generation,resolved_writer_intent)`；`writer_launch_id=unique(writer_effect_id,attempt_id)`。同一 task generation 的 writer execution commit 为 0 或 1；同一 attempt 最多一个 launch/process identity。只有 suspended process 在 execution commit 前被证明终止时，fresh attempt 才能复用 effect ID 并创建新 launch ID。一旦 committed，该 task generation 永久禁止再启动 writer，零 tool/零 mutation 或 `resume_outcome_unknown` 都不能证明未执行；原进程仍须被 exact PID/Job 跟踪、drain、终止和 seal，无法闭合时写稳定 unresolved result，不发布 commit/ref。合法语义重做只能由原子 resubmission 创建新 task generation。
 
 同名 Job 即使零进程也不能复用。检查、关闭检查 handle、重新 CreateJobObject 全程持 attempt mutex；`ERROR_ALREADY_EXISTS` 继续 park，不能换名绕过。
@@ -243,6 +262,6 @@ Ownership record 绑定 canonical common-dir identity、owner、status、generat
 
 0.2 的 autonomy ceiling 是 B2/per-repo scheduling。B3 portfolio selection、portfolio generation 与 repo auto-selection 全部 deferred beyond 0.2，机器图不含激活任务或状态转换；P4 只验证两个显式资格化 repo 的固定 cohort，绿色后直接进入 P5 per-repo cutover。若未来需要 B3，必须用 successor baseline 定义 backlog authority、fairness、cross-repo recovery/resource policy、operator override、data migration 与独立 cohort，而不是在当前 control plane 内开启隐藏开关。
 
-Baseline Approval 的前置是 v3.24 的 15-artifact closure、standalone verifier 和两阶段 review，不是 surface 名称或 predecessor evaluation。若产品/工具链/authority/并发/Q0/事实源发生语义变化，冻结 v3.24 并创建 v3.25 successor。
+Baseline Approval 的前置是 v3.25 的 15-artifact closure、standalone verifier 和两阶段 review，不是 surface 名称或 predecessor evaluation。若产品/工具链/authority/并发/Q0/事实源或环境证明协议发生语义变化，冻结 v3.25 并创建 v3.26 successor。
 
 当前架构执行入口由 [machine work items](D:/CODE/local-ai-dev-orchestrator/docs/plans/local-ai-runtime-0.2-work-items.json) 控制；不能从本图直接跳到代码实现。

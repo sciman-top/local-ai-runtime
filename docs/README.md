@@ -2,7 +2,7 @@
 
 ## 规划真值
 
-当前候选为 `local-ai-runtime-0.2-v3.24`，`blocking_stage=baseline_approval`。它是 v3.23 的 successor，不是已批准基线；原因是 predecessor gate 未证明 exact uv environment、manifest Python 与 hash-pinned build backend，且 launch product experience 不完整。v3.23 candidate/package/plan 仅作为冻结历史，Native thin-path comparative result 仅为 non-normative predecessor evidence。
+当前候选为 `local-ai-runtime-0.2-v3.25`，`blocking_stage=baseline_approval`。它是 v3.24 的最小 successor，不是已批准基线；原因是 predecessor 要求不可实现的 pre-resume child environment observation，并使用不存在的 exact-option sync spelling。v3.24 candidate/package/plan 仅作为冻结历史；产品、架构、容量与 launch experience 保持不变。
 
 当前 package 是 `9/15 present, 6 non-present`。`ProductContract.v2`、`QualificationContractSet.v2` 与 `StatePolicyCatalog.v1` 已创建并通过 component verifiers；Q0/migration/examples/verifier/final manifest/review 尚未闭合，`runtime/local-ai-runtime` 不存在。当前唯一 machine work item 是 `LAR-P0A-010`；selector action 是 `close_baseline_normative_package_first`。
 
@@ -13,10 +13,10 @@
 | 文档 | 回答什么 | 不证明什么 |
 |---|---|---|
 | [planning-status.json](architecture/planning-status.json) | 当前 baseline/package/queue/work item/阶段门 | 产品语义本身 |
-| [v3.24 candidate](specs/local-ai-runtime-0.2-v3.24-baseline-candidate.md) | 自包含目标语义、首发体验、架构和门禁 | 已批准或已实现 |
+| [v3.25 candidate](specs/local-ai-runtime-0.2-v3.25-baseline-candidate.md) | 自包含目标语义、首发体验、架构和门禁 | 已批准或已实现 |
 | [stable candidate entry](specs/local-ai-runtime-0.2-baseline-candidate.md) | 稳定发现路径与 exact target identity | normative input |
 | [normative package inventory](specs/local-ai-runtime-0.2-normative-package.json) | 15 artifacts、carry-forward、缺口、approval eligibility | runtime completion |
-| [machine work items](plans/local-ai-runtime-0.2-work-items.json) | 55 项 DAG、11 projections、AI scope/acceptance/gates/rollback | 自动授权跨阶段 |
+| [machine work items](plans/local-ai-runtime-0.2-work-items.json) | 52 项 DAG、11 projections、AI scope/acceptance/gates/rollback | 自动授权跨阶段 |
 | [PRD](product/orchestrator-prd.md) | 用户、目标、功能、首发流程、指标、非目标 | 组件实现细节 |
 | [target architecture](architecture/orchestrator-target-architecture.md) | 模块、数据、信任、状态、进程、Git、迁移 | 当前代码已存在 |
 | [roadmap](roadmap/orchestrator-roadmap.md) | P0A-P5 阶段和 join/barrier | 单 task 精确写集 |
@@ -37,10 +37,10 @@ SQLite 是唯一 policy/transition authority；journal 是观察/恢复输入，
 ## 当前与目标边界
 
 - 现行可执行内核仍是 `runtime/host-orchestrator`；`.ai/state/control-plane.db` 与既有 evidence 仍是 runtime truth。
-- v3.24 只定义目标；P0A 完成后仍需显式 Baseline Approval。
+- v3.25 只定义目标；P0A 完成后仍需显式 Baseline Approval。
 - P0B Truth Reset 后，P0C legacy guard 与 no-side-effect P0D scaffold 可并行；P1 等待二者。
 - Implementation Acceptance、Full Q0/P2、P2/P3/P4 evidence、P5 per-repo cutover 缺一不可。
-- `complexity_health=warning_all_dimensions` 仍保留：权威面数量固定 14，machine plan 55 项、projection 11、artifact 15；后续新增机制必须替换既有面或创建 successor，并优先删除重复逻辑。
+- `complexity_health=warning_all_dimensions` 仍保留：权威面数量固定 14，machine plan 52 项、projection 11、artifact 15；后续新增机制必须替换既有面或创建 successor，并优先删除重复逻辑。
 
 ## 快速核验
 

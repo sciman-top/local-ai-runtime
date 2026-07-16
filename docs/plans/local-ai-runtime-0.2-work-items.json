@@ -1,20 +1,20 @@
 {
   "schema_version": "local_ai_runtime_work_items.v4",
-  "plan_id": "local-ai-runtime-0.2-v3.24-implementation-work-items",
-  "baseline_id": "local-ai-runtime-0.2-v3.24",
+  "plan_id": "local-ai-runtime-0.2-v3.25-implementation-work-items",
+  "baseline_id": "local-ai-runtime-0.2-v3.25",
   "supersedes_plan": {
-    "plan_id": "local-ai-runtime-0.2-v3.23-implementation-work-items",
-    "path": "docs/plans/history/local-ai-runtime-0.2-v3.23-work-items.json",
+    "plan_id": "local-ai-runtime-0.2-v3.24-implementation-work-items",
+    "path": "docs/plans/history/local-ai-runtime-0.2-v3.24-work-items.json",
     "terminal_status": "superseded",
-    "last_commit": "010dede90545e71d634087c84aef75790f5949e9",
-    "byte_count": 220533,
-    "sha256": "4b146d79c0f99a9621a8f6a743e8ddab7e2eb6d19356d2152a1c7130c0adebfe"
+    "last_commit": "74f00670ab6dddae7a248e87f57062b32440bba4",
+    "byte_count": 187913,
+    "sha256": "10d48982b7b45f2c8033f1ba571aceba51106484347a71ec436121607f2518df"
   },
   "task_identity": "plan_id_plus_task_id",
   "graph_policy": {
     "kind": "deterministic_dag_v1",
     "root_task_ids": [
-      "LAR-P0A-REBASELINE-V324"
+      "LAR-P0A-REBASELINE-V325"
     ],
     "ready_order": [
       "priority_ascending",
@@ -78,7 +78,7 @@
       ]
     },
     "model_routing": {
-      "scope": "repo_agent_work_not_v324_runtime_authority",
+      "scope": "repo_agent_work_not_v325_runtime_authority",
       "routing_key": [
         "role",
         "risk_tier",
@@ -144,7 +144,7 @@
     "rules": [
       "Every projection has exactly one current-plan normative producer or explicit successor carry-forward producer and at least one implementation or acceptance consumer.",
       "Every referenced task exists in this plan generation and mechanically contains every required contract token.",
-      "A superseded-plan task result cannot satisfy a v3.24 projection unless BaselineLineage.v3 lists the exact artifact bytes in compatible_predecessor_artifacts.",
+      "A superseded-plan task result cannot satisfy a v3.25 projection unless BaselineLineage.v4 lists the exact artifact bytes in compatible_predecessor_artifacts.",
       "Profile generation can select only capabilities jointly admitted by one RuntimeActivationBundle; unsupported capability or architecture changes cannot be enabled by configuration."
     ],
     "projections": [
@@ -157,7 +157,7 @@
           "LaunchTemplateCatalog",
           "OperatorPresentationCatalog"
         ],
-        "normative_producer_task_id": "LAR-P0A-004",
+        "normative_producer_task_id": "LAR-P0A-REBASELINE-V325",
         "implementation_task_ids": [
           "LAR-P1A-002",
           "LAR-P1F-003"
@@ -172,7 +172,7 @@
         "required_contract_tokens": [
           "EffectPlan"
         ],
-        "normative_producer_task_id": "LAR-P0A-REBASELINE-V324",
+        "normative_producer_task_id": "LAR-P0A-REBASELINE-V325",
         "implementation_task_ids": [
           "LAR-P1A-002",
           "LAR-P1B-003",
@@ -220,7 +220,7 @@
           "writer_effect_id",
           "writer_launch_id"
         ],
-        "normative_producer_task_id": "LAR-P0A-REBASELINE-V324",
+        "normative_producer_task_id": "LAR-P0A-REBASELINE-V325",
         "implementation_task_ids": [
           "LAR-P1B-003",
           "LAR-P1D-002"
@@ -235,7 +235,7 @@
           "durable_local_status_v1",
           "qualified_windows_toast_v1"
         ],
-        "normative_producer_task_id": "LAR-P0A-009",
+        "normative_producer_task_id": "LAR-P0A-REBASELINE-V325",
         "implementation_task_ids": [
           "LAR-P1F-005"
         ],
@@ -250,7 +250,7 @@
           "hash-object -w",
           "cat-file"
         ],
-        "normative_producer_task_id": "LAR-P0A-REBASELINE-V324",
+        "normative_producer_task_id": "LAR-P0A-REBASELINE-V325",
         "implementation_task_ids": [
           "LAR-P1E-003"
         ],
@@ -311,7 +311,7 @@
           "--build-constraint",
           "--require-hashes"
         ],
-        "normative_producer_task_id": "LAR-P0A-005",
+        "normative_producer_task_id": "LAR-P0A-REBASELINE-V325",
         "implementation_task_ids": [
           "LAR-P0D-001",
           "LAR-P1C-002"
@@ -336,13 +336,13 @@
     "superseded"
   ],
   "global_constraints": [
-    "Do not create a BaselineApprovalRecord until the v3.24 normative package is complete and a consistency review is green.",
+    "Do not create a BaselineApprovalRecord until the v3.25 normative package is complete and a consistency review is green.",
     "Do not change runtime/host-orchestrator behavior during P0A planning or normative closure tasks.",
     "Do not create runtime/local-ai-runtime before Baseline Approval and the P0B Truth Reset.",
     "Do not claim Implementation Acceptance Full Q0 P2 admission live acceptance or cutover without their durable records.",
-    "Treat every work-item result as identified by plan_id plus task_id; superseded v3.23 results transfer only through BaselineLineage.v3 compatible_predecessor_artifacts.",
-    "ProductContract.v2 must close the launch templates first-run journey and operator presentation contract before state/Q0 closure.",
-    "QualificationContractSet.v2 must prove exact sync manifest-pinned Python no Python downloads and hash-pinned build backend before implementation.",
+    "Treat every work-item result as identified by plan_id plus task_id; superseded v3.24 results transfer only through BaselineLineage.v4 compatible_predecessor_artifacts.",
+    "Pre-resume environment evidence is parent-buffer proof; only the dedicated no-write Q0 child may provide post-resume child observation.",
+    "uv sync default exact behavior is required and --inexact is forbidden; --exact is not an executable option.",
     "CLI App Server SDK managed Worktree and Automations are independent capability surfaces; qualification never transfers across surfaces.",
     "Epoch 1 global capacity remains exactly one; no work item may enable a second writer or same-effect-domain concurrency.",
     "B3 portfolio scheduling is deferred beyond 0.2; P4 remains B2/per-repo and proceeds directly to P5.",
@@ -434,68 +434,90 @@
   },
   "work_items": [
     {
-      "task_id": "LAR-P0A-REBASELINE-V324",
+      "task_id": "LAR-P0A-REBASELINE-V325",
       "contract_projections": {
         "produces": [
+          "work_definition_task_family_v1",
           "effect_plan_v1",
           "writer_effect_launch_identity_v1",
-          "git_hybrid_materialization_v1"
+          "durable_operator_action_inbox_v1",
+          "git_hybrid_materialization_v1",
+          "exact_toolchain_gate_v1"
         ],
         "implements": [],
         "accepts": []
       },
       "contract_projection_tokens": [
+        "WorkDefinition",
+        "TaskFamily",
+        "FirstRunExperiencePolicy",
+        "LaunchTemplateCatalog",
+        "OperatorPresentationCatalog",
         "EffectPlan",
         "writer_effect_id",
         "writer_launch_id",
+        "durable_local_status_v1",
+        "qualified_windows_toast_v1",
         "git_hybrid_materialization_v1",
         "hash-object -w",
-        "cat-file"
+        "cat-file",
+        "RuntimeToolchainManifest",
+        "VerificationExecutionProfile",
+        "uv sync default exact; --inexact forbidden",
+        "--no-python-downloads",
+        "--build-constraint",
+        "--require-hashes"
       ],
       "phase": "P0A",
       "priority": 0,
       "status": "completed",
-      "title": "Create and mechanically project the v3.24 product/toolchain successor",
-      "goal": "Freeze v3.23 candidate/package/plan bytes, create the self-contained v3.24 candidate and BaselineLineage.v3, carry forward only four exact compatible artifacts, replace repeated inexact uv gates with one exact verification profile, and project the successor across every authoritative planning surface without approval or runtime effects.",
+      "title": "Create and mechanically project the v3.25 environment-proof successor",
+      "goal": "Freeze v3.24 candidate/package/plan bytes, create the self-contained v3.25 candidate and BaselineLineage.v4, carry forward exactly seven compatible artifacts, replace impossible pre-resume child environment observation with parent pre-resume proof plus post-resume no-write Q0 observation, and project the successor without approval, runtime or live-Q0 effects.",
       "depends_on": [],
       "preconditions": [
-        "v3.23 candidate bytes equal 188325 and SHA-256 80562322ebc744eda2a87a17c45f73a11982f4947c9d10e8628bb6f73ee9d5c6",
-        "v3.23 package and work-item plan archives match their frozen hashes",
+        "v3.24 candidate bytes equal 199728 and SHA-256 13ee366152d47edec151f30619ccd068a030b63febf2d899ee822d08d4dc4e2a",
+        "v3.24 package and work-item plan archives match their frozen hashes",
+        "Microsoft primary sources prove a CREATE_SUSPENDED child cannot self-observe or report its environment before ResumeThread",
+        "Local uv sync help exposes default exact behavior through the inexact opt-out and does not expose an exact opt-in",
         "No active BaselineApprovalRecord exists",
         "runtime/local-ai-runtime does not exist"
       ],
       "scope": {
         "in": [
-          "v3.24 self-contained candidate and stable entry",
-          "BaselineLineage.v3 successor trigger and explicit compatible predecessor artifacts",
-          "v3.23 package/plan historical archives",
-          "PRD architecture roadmap plan backlog acceptance status selector verifier tests",
-          "Exact uv/Python/build verification profile and first-launch product design"
+          "v3.25 self-contained candidate and stable entry",
+          "BaselineLineage.v4 successor trigger and seven explicit compatible predecessor artifacts",
+          "v3.24 package/plan historical archives",
+          "pre_resume_parent_environment_proof",
+          "post_resume_q0_child_environment_observation",
+          "PRD architecture roadmap plan backlog acceptance status selector verifier tests"
         ],
         "out": [
-          "Creating ProductContract.v2 or QualificationContractSet.v2 normative bytes",
+          "Creating P0A-Q0 or any later non-present normative artifact",
           "Baseline Approval Truth Reset or runtime/local-ai-runtime",
-          "Live auth provider sandbox DPAPI Batch Git publication remote push or CI retrieval"
+          "Live Q0 auth provider sandbox DPAPI Batch Git publication remote push or CI retrieval"
         ],
         "primary_files": [
-          "docs/specs/local-ai-runtime-0.2-v3.24-baseline-candidate.md",
-          "docs/specs/local-ai-runtime-0.2/normative/BaselineLineage.v3.json",
+          "docs/specs/local-ai-runtime-0.2-v3.25-baseline-candidate.md",
+          "docs/specs/local-ai-runtime-0.2/normative/BaselineLineage.v4.json",
           "docs/specs/local-ai-runtime-0.2-normative-package.json",
           "docs/plans/local-ai-runtime-0.2-work-items.json",
           "docs/architecture/planning-status.json"
         ]
       },
       "acceptance": [
-        "v3.23 candidate inventory and work-item plan exact bytes remain unchanged and archived",
-        "v3.24 candidate is UTF-8 no-BOM LF-only with one final LF and exact byte/hash bindings",
-        "BaselineLineage.v3 lists exactly four carried artifacts and validates their bytes with focused component verifiers",
-        "ProductContract.v1 and QualificationContractSet.v1 remain frozen v3.23 inputs and are missing for v3.24",
-        "The machine graph has at most 65 items one ready item no P4 B3 activation and a P0C/P0D join before P1",
-        "No active authoritative surface uses the predecessor inexact uv run or unconstrained cached build form",
-        "Planning verifier and selector return v3.24 plus LAR-P0A-004 with no side effects",
+        "v3.24 candidate inventory and work-item plan exact bytes remain unchanged and archived",
+        "v3.25 candidate is UTF-8 no-BOM LF-only NFC with one final LF and exact byte/hash bindings",
+        "BaselineLineage.v4 lists exactly seven carried artifacts and validates their bytes with focused component verifiers",
+        "P0A-Q0 migration examples verifier manifest and review remain non-present",
+        "The machine graph has exactly 52 items one ready item no P4 B3 activation and a P0C/P0D join before P1",
+        "No active authoritative surface requires child self-observation before ResumeThread or uses an unsupported exact-option sync command",
+        "Planning verifier and selector return v3.25 plus LAR-P0A-010 with no side effects",
         "No approval implementation Q0 P2 or live evidence is created"
       ],
       "verification": [
+        "python scripts/product_v2_contract.py",
+        "python scripts/qualification_v2_contract.py",
+        "python scripts/state_policy_contract.py",
         "python scripts/verify-local-ai-runtime-baseline.py --component canonicalization",
         "python scripts/verify-local-ai-runtime-baseline.py --component execution-safety",
         "python scripts/verify-local-ai-runtime-baseline.py --component evidence",
@@ -506,254 +528,17 @@
         "pwsh -NoProfile -NonInteractive -File scripts/governance/preflight.ps1 -DisableAutoCommit",
         "git diff --check"
       ],
-      "evidence_path": "docs/change-evidence/20260716-local-ai-runtime-v3.24-product-toolchain-rebaseline.md",
-      "rollback": "Revert only v3.24 candidate/lineage/control-plane projections and retain the immutable v3.23 archives; never rewrite v3.23 bytes.",
+      "evidence_path": "docs/change-evidence/20260716-local-ai-runtime-v3.25-environment-proof-rebaseline.md",
+      "rollback": "Revert only v3.25 candidate/lineage/control-plane projections and retain the immutable v3.24 archives; never rewrite v3.24 bytes.",
       "stop_conditions": [
-        "Any v3.23 frozen byte/hash changes",
-        "A carry-forward artifact is affected by v3.24 semantics or fails its component verifier",
+        "Any v3.24 frozen candidate inventory or plan byte/hash changes",
+        "A listed carry-forward artifact is affected by the two-stage environment-proof semantics or fails its component verifier",
         "The successor would create approval runtime state live evidence or a second planning authority"
       ],
       "prohibited_actions": [
-        "Do not edit v3.23 candidate or existing v1 artifact bytes",
-        "Do not create ProductContract.v2 QualificationContractSet.v2 or final BaselineManifest in this task",
+        "Do not edit v3.24 candidate or any carried artifact bytes",
+        "Do not create P0A-Q0 or final BaselineManifest in this task",
         "Do not create runtime/local-ai-runtime or execute live probes"
-      ],
-      "next_task_ids": [
-        "LAR-P0A-004"
-      ]
-    },
-    {
-      "task_id": "LAR-P0A-004",
-      "contract_projections": {
-        "produces": [
-          "work_definition_task_family_v1"
-        ],
-        "implements": [],
-        "accepts": []
-      },
-      "contract_projection_tokens": [
-        "WorkDefinition",
-        "TaskFamily",
-        "FirstRunExperiencePolicy",
-        "LaunchTemplateCatalog",
-        "OperatorPresentationCatalog"
-      ],
-      "phase": "P0A",
-      "priority": 0,
-      "status": "completed",
-      "title": "Materialize ProductContract.v2 and the launch product experience",
-      "goal": "Create the v3.24-bound product contract for the first usable CLI journey, four closed launch templates, template promotion, human/JSON presentation, operator action inbox and product metrics while preserving the Native/Batch authority boundary.",
-      "depends_on": [
-        "LAR-P0A-REBASELINE-V324"
-      ],
-      "preconditions": [
-        "v3.24 successor projection is verified",
-        "P0A-PRODUCT is missing",
-        "No active BaselineApprovalRecord exists"
-      ],
-      "scope": {
-        "in": [
-          "FirstRunExperiencePolicy.v1",
-          "LaunchTemplateCatalog.v1 with four templates",
-          "OperatorPresentationCatalog.v1",
-          "WorkDefinition TaskFamily TaskTemplate and BatchSubmission v2 bindings",
-          "positive and negative product fixtures"
-        ],
-        "out": [
-          "Runtime implementation",
-          "Automatic template promotion",
-          "Free prompt Batch",
-          "SDK App Server managed Worktree or Automations admission"
-        ],
-        "primary_files": [
-          "docs/specs/local-ai-runtime-0.2/normative/ProductContract.v2.json",
-          "docs/specs/local-ai-runtime-0.2/schemas/FirstRunExperience.v1.schema.json",
-          "docs/specs/local-ai-runtime-0.2/catalogs/LaunchTemplateCatalog.v1.json",
-          "docs/specs/local-ai-runtime-0.2/catalogs/OperatorPresentationCatalog.v1.json",
-          "docs/specs/local-ai-runtime-0.2/fixtures/product-v2/manifest.json"
-        ]
-      },
-      "acceptance": [
-        "ProductContract.v2 binds local-ai-runtime-0.2-v3.24 and does not rewrite ProductContract.v1",
-        "The first-run journey has explicit commands inputs outputs exit codes authorities rollback and evidence locators",
-        "Exactly four launch templates define closed parameters path/effect envelope required and forbidden gates stop reasons recovery and evaluation denominator",
-        "Native Spec can create only a template candidate; promotion requires a controlled operator action",
-        "Human output is catalog-rendered from public machine state and raw model/tool output is never persisted or interpolated",
-        "Product metrics define denominator unknown handling and collection point without claiming unmeasured targets",
-        "Positive fixtures validate and every free-prompt effect-expansion promotion-bypass or secret-bearing negative fixture fails"
-      ],
-      "verification": [
-        "python scripts/verify-local-ai-runtime-baseline.py --component product-submission",
-        "python scripts/verify-planning-status.py",
-        "python scripts/select-next-work.py",
-        "git diff --check"
-      ],
-      "evidence_path": "docs/change-evidence/20260716-lar-p0a-004-product-v2-launch-experience.md",
-      "rollback": "Revert only ProductContract.v2 its new schemas/catalogs/fixtures evidence and status projection; keep ProductContract.v1 and v3.24 candidate immutable.",
-      "stop_conditions": [
-        "A launch template requires free text dynamic commands dependency install remote effects or more than the approved path envelope",
-        "Human presentation requires raw output or secret-derived metadata",
-        "The task would create runtime code or promote a template"
-      ],
-      "prohibited_actions": [
-        "Do not edit ProductContract.v1",
-        "Do not implement CLI handlers",
-        "Do not promote or authorize a real template"
-      ],
-      "next_task_ids": [
-        "LAR-P0A-005"
-      ]
-    },
-    {
-      "task_id": "LAR-P0A-005",
-      "phase": "P0A",
-      "priority": 0,
-      "status": "completed",
-      "title": "Materialize QualificationContractSet.v2 and exact toolchain gates",
-      "goal": "Create the v3.24 qualification contract that proves exact uv environment synchronization manifest-pinned Python identity no Python downloads hash-pinned build backend and clean-root repeatable builds before any implementation can be accepted.",
-      "depends_on": [
-        "LAR-P0A-004"
-      ],
-      "preconditions": [
-        "ProductContract.v2 is present and verified",
-        "P0A-QUALIFICATION is missing",
-        "v3.24 VerificationExecutionProfile command projection is planning-verified"
-      ],
-      "scope": {
-        "in": [
-          "QualificationContractSet.v2",
-          "RuntimeToolchainManifest.v1 exact interpreter and uv bindings",
-          "VerificationExecutionProfile.v1",
-          "hashed build constraints and SOURCE_DATE_EPOCH policy",
-          "extraneous package wrong interpreter download and backend negative fixtures"
-        ],
-        "out": [
-          "Preparing a live environment",
-          "Downloading Python or dependencies",
-          "Changing Codex capability surface",
-          "Runtime implementation"
-        ],
-        "primary_files": [
-          "docs/specs/local-ai-runtime-0.2/normative/QualificationContractSet.v2.json",
-          "docs/specs/local-ai-runtime-0.2/schemas/RuntimeToolchainManifest.v1.schema.json",
-          "docs/specs/local-ai-runtime-0.2/catalogs/VerificationExecutionProfile.v1.json",
-          "docs/specs/local-ai-runtime-0.2/fixtures/toolchain-v2/manifest.json",
-          "scripts/verify-local-ai-runtime-baseline.py"
-        ]
-      },
-      "acceptance": [
-        "QualificationContractSet.v2 binds v3.24 and leaves QualificationContractSet.v1 unchanged",
-        "Environment preparation uses exact locked offline sync with explicit manifest Python and no Python downloads",
-        "Daily validation uses no-sync and read-backs child interpreter distribution and pytest-plugin identity before build/test",
-        "Build backend dependencies are constrained by manifest-bound hashes and unconstrained cached backend selection is rejected",
-        "Two clean roots with one SOURCE_DATE_EPOCH must produce equal normalized member manifest and final hashes",
-        "Negative fixtures cover extraneous package plugin wrong patch download request multi-backend cache missing hashes and repeat-build mismatch",
-        "Verifier rejects every predecessor inexact gate form in active authoritative surfaces"
-      ],
-      "verification": [
-        "python scripts/verify-local-ai-runtime-baseline.py --component qualification",
-        "python scripts/verify-planning-status.py",
-        "python scripts/select-next-work.py",
-        "git diff --check"
-      ],
-      "evidence_path": "docs/change-evidence/20260716-lar-p0a-005-qualification-v2-exact-toolchain.md",
-      "rollback": "Revert only QualificationContractSet.v2 new schemas/catalogs/fixtures verifier branch evidence and status projection; never edit QualificationContractSet.v1.",
-      "stop_conditions": [
-        "uv or build behavior cannot be bound to exact official/local help semantics",
-        "A fixture requires network or live installation",
-        "The exact profile cannot prove interpreter or backend identity"
-      ],
-      "prohibited_actions": [
-        "Do not edit QualificationContractSet.v1",
-        "Do not run environment preparation against production roots",
-        "Do not download Python packages or build dependencies"
-      ],
-      "next_task_ids": [
-        "LAR-P0A-009"
-      ],
-      "contract_projections": {
-        "produces": [
-          "exact_toolchain_gate_v1"
-        ],
-        "implements": [],
-        "accepts": []
-      },
-      "contract_projection_tokens": [
-        "RuntimeToolchainManifest",
-        "VerificationExecutionProfile",
-        "uv sync default exact; --inexact forbidden",
-        "--no-python-downloads",
-        "--build-constraint",
-        "--require-hashes"
-      ]
-    },
-    {
-      "task_id": "LAR-P0A-009",
-      "contract_projections": {
-        "produces": [
-          "durable_operator_action_inbox_v1"
-        ],
-        "implements": [],
-        "accepts": []
-      },
-      "contract_projection_tokens": [
-        "durable_local_status_v1",
-        "qualified_windows_toast_v1"
-      ],
-      "phase": "P0A",
-      "priority": 0,
-      "status": "completed",
-      "title": "Materialize complete state, guard, autonomy and operator catalogs",
-      "goal": "Materialize complete state guard autonomy and operator catalogs including the SQLite-authority/journal-observation boundary deterministic recovery replay explicit cleanup finalizers first-launch operator inbox and B3-deferred autonomy rows.",
-      "depends_on": [
-        "LAR-P0A-005"
-      ],
-      "preconditions": [
-        "All domain contracts referenced by guards are fixed"
-      ],
-      "scope": {
-        "in": [
-          "Seven state policy tables",
-          "GuardCatalog precedence and acyclic dependencies",
-          "OperatorActionCatalog",
-          "Capacity and scheduler disposition"
-        ],
-        "out": [
-          "Hidden handler branches",
-          "One cartesian-product state table"
-        ],
-        "primary_files": [
-          "docs/specs/local-ai-runtime-0.2/normative/StatePolicyCatalog.v1.json",
-          "docs/specs/local-ai-runtime-0.2/catalogs/GuardCatalog.v1.json",
-          "docs/specs/local-ai-runtime-0.2/catalogs/OperatorActionCatalog.v1.json",
-          "docs/specs/local-ai-runtime-0.2/fixtures/state-policy/manifest.json"
-        ]
-      },
-      "acceptance": [
-        "Every row has source, operation/event, guards, allowed effects, target, exit, capacity, priority and retry policy",
-        "Unknown combinations exit 2",
-        "Guard dependency graph is acyclic and has fixed precedence",
-        "Recovery-eligible attempts outrank new work",
-        "Global resume cannot clear repo/template qualification blocks",
-        "SQLite is the only policy/transition authority and journal replay cannot create state outside the accepted cursor current fence and immutable action history",
-        "Equal accepted history under one policy generation produces the same recovery decision independent of observation time or restart count",
-        "Cleanup finalizers cannot be bypassed by deleting guards rows markers or journal segments",
-        "B3 is declared deferred and no 0.2 state row or operator action can activate it"
-      ],
-      "verification": [
-        "python scripts/verify-local-ai-runtime-baseline.py --component state-policy",
-        "python scripts/verify-planning-status.py",
-        "git diff --check"
-      ],
-      "evidence_path": "docs/change-evidence/20260716-lar-p0a-009-state-policy.md",
-      "rollback": "Revert only state/guard/operator catalogs and manifest references.",
-      "stop_conditions": [
-        "A legal CLI operation has no transition row",
-        "Guard dependencies contain a cycle"
-      ],
-      "prohibited_actions": [
-        "Do not encode transition policy only in prose",
-        "Do not merge independent state domains"
       ],
       "next_task_ids": [
         "LAR-P0A-010"
@@ -776,10 +561,10 @@
         "profile_generation",
         "capability_generation",
         "architecture_epoch",
-      "Q0TriggerPolicy",
-      "RuntimeCompositionManifest",
-      "SelectedRuntimeIdentity",
-      "ActiveRuntimeIdentity"
+        "Q0TriggerPolicy",
+        "RuntimeCompositionManifest",
+        "SelectedRuntimeIdentity",
+        "ActiveRuntimeIdentity"
       ],
       "phase": "P0A",
       "priority": 0,
@@ -787,15 +572,18 @@
       "title": "Close Q0, gate, feature and resource-limit catalogs",
       "goal": "Materialize Full/quick/daily qualification matrices, exact offline gates, effective feature inventory and all resource boundary fixtures.",
       "depends_on": [
-        "LAR-P0A-009"
+        "LAR-P0A-REBASELINE-V325"
       ],
       "preconditions": [
-        "State and guard scopes are fixed"
+        "State and guard scopes are fixed in carried StatePolicyCatalog.v1",
+        "v3.25 two-stage environment-proof semantics are frozen",
+        "No live Q0 is authorized for contract authoring"
       ],
       "scope": {
         "in": [
           "CodexFeaturePolicy",
           "ProcessEnvironmentPolicy",
+          "PreResumeEnvironmentProofPolicy",
           "ProcessHandlePolicy Q0 probes",
           "GatePolicy",
           "ResourceLimitPolicy",
@@ -815,7 +603,10 @@
       "acceptance": [
         "Every gate stores exact executable, argv, env digest, cwd, timeout and expected report",
         "Every sandbox gate/Git argv includes --include-managed-config",
-        "ProcessEnvironmentPolicy uses OrdinalIgnoreCase uniqueness for ASCII catalog keys, rejects aliases, hidden =X: entries and NUL, emits one sorted UTF-16 block with an exact double-NUL terminator and verifies the child-observed block before resume",
+        "ProcessEnvironmentPolicy uses OrdinalIgnoreCase uniqueness for ASCII catalog keys, rejects aliases, hidden =X: entries and NUL, and emits one sorted UTF-16 block with an exact double-NUL terminator",
+        "pre_resume_parent_environment_proof binds canonical UTF-16 bytes, grammar, uniqueness, order, limits, terminator, digest and CreateProcess flags before ResumeThread",
+        "post_resume_q0_child_environment_observation uses a dedicated no-write child whose first application action reads its own environment and reports a digest equal to the parent proof",
+        "Production launches use a generation-qualified parent serializer proof and never claim per-child pre-resume environment read-back",
         "Q0 proves JOB_LIST plus HANDLE_LIST atomic spawn, exact STARTF_USESTDHANDLES stdio roles, no ambient sensitive handles and bounded EOF after exit, kill, crash and response loss",
         "Q0 proves runtime-managed external evidence root isolation, purpose-separated DPAPI key envelopes and suspended-only single-consumption restore eligibility",
         "Every bounded field has limit-1/limit/limit+1 fixtures",
@@ -1055,7 +846,7 @@
       "phase": "Governance",
       "priority": 0,
       "status": "blocked",
-      "title": "Authorize or reject the v3.24 baseline through the controlled approval entrypoint",
+      "title": "Authorize or reject the v3.25 baseline through the controlled approval entrypoint",
       "goal": "After package closure and a preserve_v3_23_semantics evaluation decision, require an explicitly authorized interactive operator to invoke the hash-pinned approval command, validate authority and anti-replay inputs, and create one immutable BaselineApprovalRecord or rejection result without changing normative bytes.",
       "depends_on": [
         "LAR-P0A-013"
@@ -1492,12 +1283,12 @@
         "accepts": []
       },
       "contract_projection_tokens": [
-      "WorkDefinition",
-      "TaskFamily",
-      "FirstRunExperiencePolicy",
-      "LaunchTemplateCatalog",
-      "OperatorPresentationCatalog",
-      "EffectPlan",
+        "WorkDefinition",
+        "TaskFamily",
+        "FirstRunExperiencePolicy",
+        "LaunchTemplateCatalog",
+        "OperatorPresentationCatalog",
+        "EffectPlan",
         "profile_generation",
         "capability_generation",
         "architecture_epoch"
@@ -3374,11 +3165,11 @@
         "accepts": []
       },
       "contract_projection_tokens": [
-      "WorkDefinition",
-      "TaskFamily",
-      "FirstRunExperiencePolicy",
-      "LaunchTemplateCatalog",
-      "OperatorPresentationCatalog"
+        "WorkDefinition",
+        "TaskFamily",
+        "FirstRunExperiencePolicy",
+        "LaunchTemplateCatalog",
+        "OperatorPresentationCatalog"
       ],
       "phase": "P1F",
       "priority": 1,
@@ -3634,18 +3425,18 @@
           "writer_effect_launch_identity_v1",
           "durable_operator_action_inbox_v1",
           "git_hybrid_materialization_v1",
-        "q0_trigger_policy_v1",
-        "activation_admission_chain_v1",
-        "exact_toolchain_gate_v1"
+          "q0_trigger_policy_v1",
+          "activation_admission_chain_v1",
+          "exact_toolchain_gate_v1"
         ]
       },
       "contract_projection_tokens": [
-      "WorkDefinition",
-      "TaskFamily",
-      "FirstRunExperiencePolicy",
-      "LaunchTemplateCatalog",
-      "OperatorPresentationCatalog",
-      "EffectPlan",
+        "WorkDefinition",
+        "TaskFamily",
+        "FirstRunExperiencePolicy",
+        "LaunchTemplateCatalog",
+        "OperatorPresentationCatalog",
+        "EffectPlan",
         "GateGraph",
         "profile_generation",
         "capability_generation",
@@ -3658,15 +3449,15 @@
         "hash-object -w",
         "cat-file",
         "Q0TriggerPolicy",
-      "RuntimeCompositionManifest",
-      "SelectedRuntimeIdentity",
-      "ActiveRuntimeIdentity",
-      "RuntimeToolchainManifest",
-      "VerificationExecutionProfile",
-      "uv sync default exact; --inexact forbidden",
-      "--no-python-downloads",
-      "--build-constraint",
-      "--require-hashes"
+        "RuntimeCompositionManifest",
+        "SelectedRuntimeIdentity",
+        "ActiveRuntimeIdentity",
+        "RuntimeToolchainManifest",
+        "VerificationExecutionProfile",
+        "uv sync default exact; --inexact forbidden",
+        "--no-python-downloads",
+        "--build-constraint",
+        "--require-hashes"
       ],
       "phase": "P1G",
       "priority": 1,
@@ -3737,9 +3528,9 @@
         "implements": [],
         "accepts": [
           "three_level_evolution_v1",
-        "q0_trigger_policy_v1",
-        "activation_admission_chain_v1",
-        "exact_toolchain_gate_v1"
+          "q0_trigger_policy_v1",
+          "activation_admission_chain_v1",
+          "exact_toolchain_gate_v1"
         ]
       },
       "contract_projection_tokens": [
@@ -3747,15 +3538,15 @@
         "capability_generation",
         "architecture_epoch",
         "Q0TriggerPolicy",
-      "RuntimeCompositionManifest",
-      "SelectedRuntimeIdentity",
-      "ActiveRuntimeIdentity",
-      "RuntimeToolchainManifest",
-      "VerificationExecutionProfile",
-      "uv sync default exact; --inexact forbidden",
-      "--no-python-downloads",
-      "--build-constraint",
-      "--require-hashes"
+        "RuntimeCompositionManifest",
+        "SelectedRuntimeIdentity",
+        "ActiveRuntimeIdentity",
+        "RuntimeToolchainManifest",
+        "VerificationExecutionProfile",
+        "uv sync default exact; --inexact forbidden",
+        "--no-python-downloads",
+        "--build-constraint",
+        "--require-hashes"
       ],
       "phase": "Q0",
       "priority": 2,
@@ -3951,11 +3742,11 @@
         ]
       },
       "contract_projection_tokens": [
-      "WorkDefinition",
-      "TaskFamily",
-      "FirstRunExperiencePolicy",
-      "LaunchTemplateCatalog",
-      "OperatorPresentationCatalog"
+        "WorkDefinition",
+        "TaskFamily",
+        "FirstRunExperiencePolicy",
+        "LaunchTemplateCatalog",
+        "OperatorPresentationCatalog"
       ],
       "phase": "P4",
       "priority": 4,

@@ -9,36 +9,35 @@ evidence or `BaselineApprovalRecord` input. Do not copy candidate prose here.
 
 ## Frozen Narrative Target
 
-- Baseline ID: `local-ai-runtime-0.2-v3.24`
-- Canonical path: [v3.24 baseline candidate](local-ai-runtime-0.2-v3.24-baseline-candidate.md)
-- Canonical repo path: `docs/specs/local-ai-runtime-0.2-v3.24-baseline-candidate.md`
-- Exact bytes: `199728`
-- SHA-256: `13ee366152d47edec151f30619ccd068a030b63febf2d899ee822d08d4dc4e2a`
+- Baseline ID: `local-ai-runtime-0.2-v3.25`
+- Canonical path: [v3.25 baseline candidate](local-ai-runtime-0.2-v3.25-baseline-candidate.md)
+- Canonical repo path: `docs/specs/local-ai-runtime-0.2-v3.25-baseline-candidate.md`
+- Exact bytes: `202958`
+- SHA-256: `39ec0479a6ba0a0bf099f9d3f2410abb078ec3a3de4c3fe414ea76819f3834e0`
 - Status: `baseline_candidate`; `blocking_stage=baseline_approval`
 
-Only the frozen narrative target above defines the v3.24 product and target
+Only the frozen narrative target above defines the v3.25 product and target
 runtime semantics. Any semantic or byte change requires a successor narrative
 ID. Updating this navigation page cannot alter the target hash, close an
 artifact, authorize implementation or approve the baseline.
 
 ## Current Approval Boundary
 
-v3.24 supersedes v3.23 because the predecessor gate commands could not prove an
-exact uv environment, manifest-pinned Python or hash-pinned build backend, and
-because its first-launch product experience was not decision-complete. The
-v3.23 narrative, preapproval inventory and machine plan remain exact frozen
-history.
+v3.25 minimally supersedes v3.24 because a `CREATE_SUSPENDED` child cannot run
+`GetEnvironmentStringsW` or report its own environment before `ResumeThread`,
+and because the predecessor's exact-option sync spelling is not supported. The successor
+uses `pre_resume_parent_environment_proof` plus a dedicated no-write
+`post_resume_q0_child_environment_observation`, and uses default-exact
+`uv sync` with `--inexact` forbidden. The v3.24 narrative, preapproval inventory
+and machine plan remain exact frozen history.
 
-The v3.24 package is still **Request changes**: 15 artifacts are required,
-9 are present and 6 are non-present. Source and `BaselineLineage.v3` are
-present. `CanonicalizationPolicy.v1`, `ExecutionSafetyContractSet.v1`,
-`EvidenceContractSet.v1` and `DeterministicGitContractSet.v1` are present
-only through the lineage's explicit byte/hash carry-forward. `ProductContract.v2`
-is present with the first-run journey, four launch templates and operator
-presentation contracts. `QualificationContractSet.v2` is present with exact
-uv/Python/build gates. `StatePolicyCatalog.v1` is present with seven independent
-state domains, fixed guard precedence, deterministic recovery, non-bypassable
-cleanup finalizers and durable operator actions. The next ready work item is
+The v3.25 package is still **Request changes**: 15 artifacts are required,
+9 are present and 6 are non-present. Source and `BaselineLineage.v4` are
+present. The seven existing `CanonicalizationPolicy.v1`, `ProductContract.v2`,
+`QualificationContractSet.v2`, `ExecutionSafetyContractSet.v1`,
+`EvidenceContractSet.v1`, `DeterministicGitContractSet.v1` and
+`StatePolicyCatalog.v1` artifacts are present only through the lineage's
+explicit v3.24 byte/hash carry-forward. The next ready work item is
 `LAR-P0A-010`, which must create Q0, gate, effective-feature and resource-limit
 catalogs without running a live Q0.
 The selector action is `close_baseline_normative_package_first`.
@@ -52,7 +51,7 @@ Acceptance, Full Q0, P2 and live rollout remain inactive.
   artifact closure, carry-forward and approval eligibility.
 - [Machine work items](../plans/local-ai-runtime-0.2-work-items.json): bounded
   AI execution scopes, dependencies, acceptance, verification and rollback.
-- [v3.24 rebaseline evidence](../change-evidence/20260716-local-ai-runtime-v3.24-product-toolchain-rebaseline.md):
+- [v3.25 rebaseline evidence](../change-evidence/20260716-local-ai-runtime-v3.25-environment-proof-rebaseline.md):
   successor trigger, frozen predecessor identities and verification evidence.
 
 `python scripts/verify-planning-status.py` verifies this entry's binding to

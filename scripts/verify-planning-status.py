@@ -14,11 +14,11 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_STATUS_PATH = ROOT / "docs" / "architecture" / "planning-status.json"
 POLICY_PATH = Path("docs/architecture/next-work-selection-policy.json")
-CURRENT_BASELINE_ID = "local-ai-runtime-0.2-v3.24"
-CURRENT_BASELINE_PATH = "docs/specs/local-ai-runtime-0.2-v3.24-baseline-candidate.md"
+CURRENT_BASELINE_ID = "local-ai-runtime-0.2-v3.25"
+CURRENT_BASELINE_PATH = "docs/specs/local-ai-runtime-0.2-v3.25-baseline-candidate.md"
 CURRENT_BASELINE_ENTRY_PATH = "docs/specs/local-ai-runtime-0.2-baseline-candidate.md"
 CURRENT_LINEAGE_PATH = (
-    "docs/specs/local-ai-runtime-0.2/normative/BaselineLineage.v3.json"
+    "docs/specs/local-ai-runtime-0.2/normative/BaselineLineage.v4.json"
 )
 HISTORICAL_SOURCE_RECORD_PATH = (
     "docs/specs/local-ai-runtime-0.2/history/HistoricalSourceArchive.v1.json"
@@ -56,7 +56,7 @@ EXPECTED_SELECTOR_STEPS = [
     ("p5_complete", "operate_approved_runtime"),
 ]
 EXPECTED_SELECTOR_ACTIONS = [action for _, action in EXPECTED_SELECTOR_STEPS]
-CURRENT_WORK_ITEM_COUNT = 55
+CURRENT_WORK_ITEM_COUNT = 52
 EXPECTED_ARTIFACT_IDS = [
     "P0A-SOURCE",
     "P0A-LINEAGE",
@@ -125,23 +125,23 @@ EXPECTED_WORK_ITEM_STATUSES = [
 ]
 EXPECTED_VERIFICATION_PROFILES = {"planning", "new_runtime_exact_v1"}
 EXPECTED_PLANNING_OPTIMIZATION_SHA256 = (
-    "5da5bcca5482afda6c0a393a8b03edb38498ee7affeee2960d4bf32838ef6604"
+    "ecff976c978d818034e02135cd9c417a548c7fe66d8f7e958ccf8b0217e01485"
 )
 EXPECTED_EXACT_TOOLCHAIN_PROFILE_SHA256 = (
     "45f46c17f102fce0baa04619d8432655d85c479b9a51e11edb0f1c5e4de2b3f2"
 )
-EXPECTED_GRAPH_ROOTS = ["LAR-P0A-REBASELINE-V324"]
+EXPECTED_GRAPH_ROOTS = ["LAR-P0A-REBASELINE-V325"]
 EXPECTED_SUPERSEDED_PLAN = {
-    "plan_id": "local-ai-runtime-0.2-v3.23-implementation-work-items",
-    "path": "docs/plans/history/local-ai-runtime-0.2-v3.23-work-items.json",
+    "plan_id": "local-ai-runtime-0.2-v3.24-implementation-work-items",
+    "path": "docs/plans/history/local-ai-runtime-0.2-v3.24-work-items.json",
     "terminal_status": "superseded",
-    "last_commit": "010dede90545e71d634087c84aef75790f5949e9",
-    "byte_count": 220533,
-    "sha256": "4b146d79c0f99a9621a8f6a743e8ddab7e2eb6d19356d2152a1c7130c0adebfe",
+    "last_commit": "74f00670ab6dddae7a248e87f57062b32440bba4",
+    "byte_count": 187913,
+    "sha256": "10d48982b7b45f2c8033f1ba571aceba51106484347a71ec436121607f2518df",
 }
-CURRENT_LINEAGE_BYTE_COUNT = 6700
+CURRENT_LINEAGE_BYTE_COUNT = 8809
 CURRENT_LINEAGE_SHA256 = (
-    "b769bb3460a83ba31ca28fe60cc6d4c44902063c69b01ff344942a04e62dc756"
+    "877e28619076761047bd83b43cfe16fa736c49c1e1e913a936722eb843b726ad"
 )
 BASELINE_MANIFEST_SCHEMA_PATH = Path(
     "docs/specs/local-ai-runtime-0.2/normative/BaselineManifest.v1.schema.json"
@@ -163,14 +163,14 @@ EXPECTED_CONTRACT_PROJECTIONS = [
             "LaunchTemplateCatalog",
             "OperatorPresentationCatalog",
         ],
-        "normative_producer_task_id": "LAR-P0A-004",
+        "normative_producer_task_id": "LAR-P0A-REBASELINE-V325",
         "implementation_task_ids": ["LAR-P1A-002", "LAR-P1F-003"],
         "acceptance_task_ids": ["LAR-P1G-001", "LAR-P4-001"],
     },
     {
         "projection_id": "effect_plan_v1",
         "required_contract_tokens": ["EffectPlan"],
-        "normative_producer_task_id": "LAR-P0A-REBASELINE-V324",
+        "normative_producer_task_id": "LAR-P0A-REBASELINE-V325",
         "implementation_task_ids": ["LAR-P1A-002", "LAR-P1B-003", "LAR-P1D-003"],
         "acceptance_task_ids": ["LAR-P1G-001"],
     },
@@ -195,7 +195,7 @@ EXPECTED_CONTRACT_PROJECTIONS = [
     {
         "projection_id": "writer_effect_launch_identity_v1",
         "required_contract_tokens": ["writer_effect_id", "writer_launch_id"],
-        "normative_producer_task_id": "LAR-P0A-REBASELINE-V324",
+        "normative_producer_task_id": "LAR-P0A-REBASELINE-V325",
         "implementation_task_ids": ["LAR-P1B-003", "LAR-P1D-002"],
         "acceptance_task_ids": ["LAR-P1G-001"],
     },
@@ -205,7 +205,7 @@ EXPECTED_CONTRACT_PROJECTIONS = [
             "durable_local_status_v1",
             "qualified_windows_toast_v1",
         ],
-        "normative_producer_task_id": "LAR-P0A-009",
+        "normative_producer_task_id": "LAR-P0A-REBASELINE-V325",
         "implementation_task_ids": ["LAR-P1F-005"],
         "acceptance_task_ids": ["LAR-P1G-001"],
     },
@@ -216,7 +216,7 @@ EXPECTED_CONTRACT_PROJECTIONS = [
             "hash-object -w",
             "cat-file",
         ],
-        "normative_producer_task_id": "LAR-P0A-REBASELINE-V324",
+        "normative_producer_task_id": "LAR-P0A-REBASELINE-V325",
         "implementation_task_ids": ["LAR-P1E-003"],
         "acceptance_task_ids": ["LAR-P1E-007", "LAR-P1G-001"],
     },
@@ -258,7 +258,7 @@ EXPECTED_CONTRACT_PROJECTIONS = [
             "--build-constraint",
             "--require-hashes",
         ],
-        "normative_producer_task_id": "LAR-P0A-005",
+        "normative_producer_task_id": "LAR-P0A-REBASELINE-V325",
         "implementation_task_ids": ["LAR-P0D-001", "LAR-P1C-002"],
         "acceptance_task_ids": ["LAR-P1G-001", "LAR-Q0-001"],
     },
@@ -1080,12 +1080,12 @@ def _verify_current_lineage(
         None,
     )
     expected_artifact = {
-        "artifact_version": "BaselineLineage.v3",
+        "artifact_version": "BaselineLineage.v4",
         "path": CURRENT_LINEAGE_PATH,
         "status": "present",
         "byte_count": CURRENT_LINEAGE_BYTE_COUNT,
         "sha256": CURRENT_LINEAGE_SHA256,
-        "producer_task_id": "LAR-P0A-REBASELINE-V324",
+        "producer_task_id": "LAR-P0A-REBASELINE-V325",
     }
     if lineage_artifact is None:
         failures.append("inventory must contain the P0A-LINEAGE artifact")
@@ -1095,22 +1095,22 @@ def _verify_current_lineage(
             failures.append(f"P0A-LINEAGE.{field} must equal {expected!r}")
 
     try:
-        lineage_path = _resolve_repo_path(root, CURRENT_LINEAGE_PATH, "BaselineLineage.v3")
+        lineage_path = _resolve_repo_path(root, CURRENT_LINEAGE_PATH, "BaselineLineage.v4")
         raw = lineage_path.read_bytes()
         lineage = _loads_json_object(raw.decode("utf-8"), CURRENT_LINEAGE_PATH)
     except (OSError, UnicodeDecodeError, ValueError) as exc:
-        failures.append(f"BaselineLineage.v3 is unreadable: {exc}")
+        failures.append(f"BaselineLineage.v4 is unreadable: {exc}")
         return
-    _verify_normative_bytes(raw, "BaselineLineage.v3", failures)
+    _verify_normative_bytes(raw, "BaselineLineage.v4", failures)
     if len(raw) != CURRENT_LINEAGE_BYTE_COUNT:
-        failures.append("BaselineLineage.v3 byte count mismatch")
+        failures.append("BaselineLineage.v4 byte count mismatch")
     if hashlib.sha256(raw).hexdigest() != CURRENT_LINEAGE_SHA256:
-        failures.append("BaselineLineage.v3 SHA-256 mismatch")
-    if lineage.get("domain") != "local-ai-runtime/BaselineLineage/v3":
-        failures.append("BaselineLineage.v3 domain mismatch")
-    if lineage.get("schema_version") != 3:
-        failures.append("BaselineLineage.v3 schema_version must be 3")
-    payload = _as_dict(lineage.get("payload"), "BaselineLineage.v3.payload", failures)
+        failures.append("BaselineLineage.v4 SHA-256 mismatch")
+    if lineage.get("domain") != "local-ai-runtime/BaselineLineage/v4":
+        failures.append("BaselineLineage.v4 domain mismatch")
+    if lineage.get("schema_version") != 4:
+        failures.append("BaselineLineage.v4 schema_version must be 4")
+    payload = _as_dict(lineage.get("payload"), "BaselineLineage.v4.payload", failures)
     expected_candidate = {
         "byte_count": baseline.get("byte_count"),
         "id": baseline.get("id"),
@@ -1119,36 +1119,36 @@ def _verify_current_lineage(
         "sha256": baseline.get("sha256"),
     }
     if payload.get("candidate") != expected_candidate:
-        failures.append("BaselineLineage.v3 candidate must bind the current v3.24 identity")
+        failures.append("BaselineLineage.v4 candidate must bind the current v3.25 identity")
 
     entries_value = payload.get("entries")
     if not isinstance(entries_value, list):
-        failures.append("BaselineLineage.v3 entries must be an array")
+        failures.append("BaselineLineage.v4 entries must be an array")
         return
     entries = {
         entry.get("id"): entry for entry in entries_value if isinstance(entry, dict)
     }
-    expected_v323 = {
-        "byte_count": 188325,
-        "id": "local-ai-runtime-0.2-v3.23",
-        "path": "docs/specs/local-ai-runtime-0.2-v3.23-baseline-candidate.md",
+    expected_v324 = {
+        "byte_count": 199728,
+        "id": "local-ai-runtime-0.2-v3.24",
+        "path": "docs/specs/local-ai-runtime-0.2-v3.24-baseline-candidate.md",
         "role": "superseded_candidate",
-        "sha256": "80562322ebc744eda2a87a17c45f73a11982f4947c9d10e8628bb6f73ee9d5c6",
+        "sha256": "13ee366152d47edec151f30619ccd068a030b63febf2d899ee822d08d4dc4e2a",
         "preapproval_inventory_archive": {
-            "byte_count": 12439,
-            "path": "docs/specs/local-ai-runtime-0.2/history/local-ai-runtime-0.2-v3.23-normative-package.json",
-            "sha256": "2771b750557c68002eb54c3681185395e7d2881632211a4bb0bd6de75644d620",
+            "byte_count": 15646,
+            "path": "docs/specs/local-ai-runtime-0.2/history/local-ai-runtime-0.2-v3.24-normative-package.json",
+            "sha256": "144383f8704f366008e9cb514898e05f1fd7a45310d39cd64bdc546544247a9f",
         },
         "work_item_plan_archive": {
-            "byte_count": 220533,
-            "path": "docs/plans/history/local-ai-runtime-0.2-v3.23-work-items.json",
-            "sha256": "4b146d79c0f99a9621a8f6a743e8ddab7e2eb6d19356d2152a1c7130c0adebfe",
+            "byte_count": 187913,
+            "path": "docs/plans/history/local-ai-runtime-0.2-v3.24-work-items.json",
+            "sha256": "10d48982b7b45f2c8033f1ba571aceba51106484347a71ec436121607f2518df",
         },
     }
-    if entries.get("local-ai-runtime-0.2-v3.23") != expected_v323:
-        failures.append("BaselineLineage.v3 must bind the exact superseded v3.23 identity and archives")
+    if entries.get("local-ai-runtime-0.2-v3.24") != expected_v324:
+        failures.append("BaselineLineage.v4 must bind the exact superseded v3.24 identity and archives")
     if len(entries) != len(entries_value):
-        failures.append("BaselineLineage.v3 entry IDs must be unique")
+        failures.append("BaselineLineage.v4 entry IDs must be unique")
 
     projected_inventory_lineage = _project_inventory_lineage(
         entries_value,
@@ -1156,11 +1156,63 @@ def _verify_current_lineage(
         payload.get("compatible_predecessor_artifacts"),
     )
     if inventory.get("lineage") != projected_inventory_lineage:
-        failures.append("inventory lineage must exactly project BaselineLineage.v3")
+        failures.append("inventory lineage must exactly project BaselineLineage.v4")
+
+    compatible = payload.get("compatible_predecessor_artifacts")
+    expected_compatible_ids = [
+        "P0A-CANONICAL",
+        "P0A-PRODUCT",
+        "P0A-QUALIFICATION",
+        "P0A-EXECUTION",
+        "P0A-EVIDENCE",
+        "P0A-GIT",
+        "P0A-STATE",
+    ]
+    if not isinstance(compatible, list):
+        failures.append("BaselineLineage.v4 compatible_predecessor_artifacts must be an array")
+    else:
+        compatible_ids = [
+            item.get("artifact_id") for item in compatible if isinstance(item, dict)
+        ]
+        if compatible_ids != expected_compatible_ids:
+            failures.append("BaselineLineage.v4 carry-forward IDs must match the exact v3.24 set")
+        for item in compatible:
+            if not isinstance(item, dict):
+                failures.append("BaselineLineage.v4 carry-forward entry must be an object")
+                continue
+            if item.get("baseline_id") != "local-ai-runtime-0.2-v3.24":
+                failures.append("BaselineLineage.v4 carry-forward entry must bind v3.24")
+            for field in ("compatibility_scope", "verification"):
+                if not isinstance(item.get(field), str) or not item[field]:
+                    failures.append(
+                        f"BaselineLineage.v4 carry-forward {item.get('artifact_id')}.{field} must be non-empty"
+                    )
+
+    expected_trigger = {
+        "disposition": "supersede_required",
+        "evidence_ref": "docs/change-evidence/20260716-local-ai-runtime-v3.25-environment-proof-rebaseline.md",
+        "predecessor_id": "local-ai-runtime-0.2-v3.24",
+        "reason_codes": [
+            "pre_resume_child_environment_observation_not_supported_by_documented_windows_api",
+            "uv_sync_exact_option_not_supported_default_exact_required",
+        ],
+        "trigger_id": "V325-PRE-RESUME-ENVIRONMENT-PROOF-001",
+    }
+    if payload.get("successor_trigger") != expected_trigger:
+        failures.append("BaselineLineage.v4 successor trigger must match the reviewed v3.25 causes")
+    lineage_invariants = payload.get("invariants")
+    rendered_invariants = json.dumps(lineage_invariants, ensure_ascii=False)
+    for token in (
+        "pre_resume_parent_environment_proof",
+        "post_resume_q0_child_environment_observation",
+        "no evidence may claim child self-observation before ResumeThread",
+    ):
+        if token not in rendered_invariants:
+            failures.append(f"BaselineLineage.v4 invariants missing token: {token}")
 
     historical = _as_dict(
         payload.get("historical_source_archive"),
-        "BaselineLineage.v3.historical_source_archive",
+        "BaselineLineage.v4.historical_source_archive",
         failures,
     )
     historical_path = historical.get("path")
@@ -1215,7 +1267,7 @@ def _verify_inventory(
     if inventory.get("baseline_id") != baseline.get("id"):
         failures.append("inventory baseline_id must match planning baseline id")
     if inventory.get("package_id") != f"{CURRENT_BASELINE_ID}-normative-package":
-        failures.append("inventory package_id must match the v3.24 package identity")
+        failures.append("inventory package_id must match the v3.25 package identity")
     if inventory.get("blocking_stage") != baseline.get("blocking_stage"):
         failures.append("inventory blocking_stage must match planning baseline")
 
@@ -1233,7 +1285,7 @@ def _verify_inventory(
     artifact_ids = [item.get("artifact_id") for item in artifacts if isinstance(item, dict)]
     if artifact_ids != EXPECTED_ARTIFACT_IDS:
         failures.append(
-            "inventory artifact IDs/order must match the v3.24 closure sequence"
+            "inventory artifact IDs/order must match the v3.25 closure sequence"
         )
 
     seen_ids: set[str] = set()
@@ -1321,8 +1373,8 @@ def _verify_inventory(
     source_artifact = artifacts_by_id.get("P0A-SOURCE", {})
     if source_artifact.get("artifact_version") != CURRENT_BASELINE_ID:
         failures.append("P0A-SOURCE artifact_version must equal the narrative ID")
-    if source_artifact.get("producer_task_id") != "LAR-P0A-REBASELINE-V324":
-        failures.append("P0A-SOURCE producer must be the v3.24 rebaseline task")
+    if source_artifact.get("producer_task_id") != "LAR-P0A-REBASELINE-V325":
+        failures.append("P0A-SOURCE producer must be the v3.25 rebaseline task")
     for field in ("path", "byte_count", "sha256"):
         if source_artifact.get(field) != baseline.get(field):
             failures.append(f"P0A-SOURCE.{field} must match planning baseline")
@@ -1331,13 +1383,16 @@ def _verify_inventory(
 
     expected_carry_forward = {
         "P0A-CANONICAL",
+        "P0A-PRODUCT",
+        "P0A-QUALIFICATION",
         "P0A-EXECUTION",
         "P0A-EVIDENCE",
         "P0A-GIT",
+        "P0A-STATE",
     }
     for artifact_id, artifact in artifacts_by_id.items():
         expected_origin = (
-            "local-ai-runtime-0.2-v3.23"
+            "local-ai-runtime-0.2-v3.24"
             if artifact_id in expected_carry_forward
             else None
         )
@@ -1345,10 +1400,16 @@ def _verify_inventory(
             failures.append(
                 f"{artifact_id}.carried_forward_from must equal {expected_origin!r}"
             )
+        if artifact_id in expected_carry_forward and artifact.get(
+            "producer_task_id"
+        ) != "LAR-P0A-REBASELINE-V325":
+            failures.append(
+                f"{artifact_id}.producer_task_id must be LAR-P0A-REBASELINE-V325"
+            )
     if artifacts_by_id.get("P0A-PRODUCT", {}).get("artifact_version") != "ProductContract.v2":
-        failures.append("v3.24 requires ProductContract.v2")
+        failures.append("v3.25 requires ProductContract.v2")
     if artifacts_by_id.get("P0A-QUALIFICATION", {}).get("artifact_version") != "QualificationContractSet.v2":
-        failures.append("v3.24 requires QualificationContractSet.v2")
+        failures.append("v3.25 requires QualificationContractSet.v2")
 
     manifest_artifact = artifacts_by_id.get("P0A-MANIFEST", {})
     review_artifact = artifacts_by_id.get("P0A-REVIEW", {})
@@ -1568,7 +1629,7 @@ def _verify_planning_optimization_projection(
         "policy_ref",
         "policy_kind",
         "complexity_health",
-        "frozen_v324_semantics_changed",
+        "frozen_v325_semantics_changed",
         "active_profile_change",
     }
     if set(projection) != expected_keys:
@@ -1584,8 +1645,8 @@ def _verify_planning_optimization_projection(
         failures.append("planning_optimization policy_kind must match machine policy")
     if projection.get("complexity_health") != "warning_all_dimensions":
         failures.append("planning_optimization complexity_health must expose current warning state")
-    if projection.get("frozen_v324_semantics_changed") is not False:
-        failures.append("planning optimization must not claim frozen v3.24 semantic change")
+    if projection.get("frozen_v325_semantics_changed") is not False:
+        failures.append("planning optimization must not claim frozen v3.25 semantic change")
     if projection.get("active_profile_change") != routing.get("active_profile_change"):
         failures.append("planning_optimization active_profile_change must match routing policy")
 
@@ -1625,7 +1686,7 @@ def _verify_work_items(
             f"work-item schema_version must be {WORK_ITEM_SCHEMA_VERSION}"
         )
     if payload.get("plan_id") != f"{CURRENT_BASELINE_ID}-implementation-work-items":
-        failures.append("work-item plan_id must match the v3.24 implementation graph")
+        failures.append("work-item plan_id must match the v3.25 implementation graph")
     if payload.get("baseline_id") != baseline.get("id"):
         failures.append("work-item baseline_id must match planning baseline")
     if payload.get("baseline_status") != baseline.get("status"):
@@ -1633,7 +1694,7 @@ def _verify_work_items(
     if payload.get("blocking_stage") != baseline.get("blocking_stage"):
         failures.append("work-item blocking_stage must match planning baseline")
     if payload.get("supersedes_plan") != EXPECTED_SUPERSEDED_PLAN:
-        failures.append("work-item supersedes_plan must match the frozen v3.23 plan identity")
+        failures.append("work-item supersedes_plan must match the frozen v3.24 plan identity")
     if payload.get("task_identity") != "plan_id_plus_task_id":
         failures.append("work-item task_identity must be plan_id_plus_task_id")
     if not isinstance(payload.get("updated_on"), str) or not payload["updated_on"].strip():
@@ -1766,7 +1827,7 @@ def _verify_work_items(
         failures.append("work-item status_catalog must be a unique array")
         status_catalog = []
     elif status_catalog != EXPECTED_WORK_ITEM_STATUSES:
-        failures.append("work-item status_catalog must match the v3.24 state set and order")
+        failures.append("work-item status_catalog must match the v3.25 state set and order")
 
     required = [
         "task_id",
@@ -1805,7 +1866,7 @@ def _verify_work_items(
         order.append(task_id)
         phase = item.get("phase")
         task_id_parts = task_id.split("-")
-        if task_id == "LAR-P0A-REBASELINE-V324":
+        if task_id == "LAR-P0A-REBASELINE-V325":
             expected_phase = "P0A"
         elif (
             len(task_id_parts) != 3
@@ -1923,36 +1984,21 @@ def _verify_work_items(
         )
 
     required_task_tokens = {
-        "LAR-P0A-REBASELINE-V324": [
-            "exact verification profile",
-            "first-launch product design",
-            "BaselineLineage.v3",
-            "ProductContract.v2",
-            "QualificationContractSet.v2",
-        ],
-        "LAR-P0A-004": [
-            "FirstRunExperiencePolicy.v1",
-            "LaunchTemplateCatalog.v1 with four templates",
-            "OperatorPresentationCatalog.v1",
-            "Native Spec can create only a template candidate",
-        ],
-        "LAR-P0A-005": [
-            "RuntimeToolchainManifest.v1",
-            "VerificationExecutionProfile.v1",
-            "exact locked offline sync",
-            "hash-pinned build backend",
-        ],
-        "LAR-P0A-009": [
-            "SQLite is the only policy/transition authority",
-            "same recovery decision",
-            "Cleanup finalizers cannot be bypassed",
-            "B3 is declared deferred",
+        "LAR-P0A-REBASELINE-V325": [
+            "BaselineLineage.v4",
+            "exactly seven compatible artifacts",
+            "pre_resume_parent_environment_proof",
+            "post_resume_q0_child_environment_observation",
+            "Microsoft primary sources",
         ],
         "LAR-P0A-010": [
             "accounting_kill_audit",
             "EmergencyDiskReserve",
             "HardWriteQuotaCapability is optional",
             "exact offline gates",
+            "pre_resume_parent_environment_proof",
+            "post_resume_q0_child_environment_observation",
+            "never claim per-child pre-resume environment read-back",
         ],
         "LAR-P0A-013": [
             "package_review_head",
@@ -1980,9 +2026,10 @@ def _verify_work_items(
                 failures.append(f"{task_id} missing required semantic token: {token}")
 
     manifest_predecessor_tasks = [
-        items.get("LAR-P0A-REBASELINE-V324", {}),
-        items.get("LAR-P0A-004", {}),
-        items.get("LAR-P0A-005", {}),
+        items.get("LAR-P0A-REBASELINE-V325", {}),
+        items.get("LAR-P0A-010", {}),
+        items.get("LAR-P0A-011", {}),
+        items.get("LAR-P0A-012", {}),
     ]
     manifest_close_task = items.get("LAR-P0A-013", {})
     final_manifest_path = (
@@ -1992,7 +2039,7 @@ def _verify_work_items(
         final_manifest_path in _work_item_scope_list(item, "primary_files")
         for item in manifest_predecessor_tasks
     ):
-        failures.append("pre-closure v3.24 tasks must not create the final BaselineManifest instance")
+        failures.append("pre-closure v3.25 tasks must not create the final BaselineManifest instance")
     if final_manifest_path not in _work_item_scope_list(
         manifest_close_task, "primary_files"
     ):
@@ -2251,19 +2298,13 @@ def _verify_completed_normative_components(
         if isinstance(item, dict) and isinstance(item.get("artifact_id"), str)
     }
     components = (
-        ("LAR-P0A-004", "P0A-PRODUCT", "product-submission", "ProductContract.v2"),
-        (
-            "LAR-P0A-005",
-            "P0A-QUALIFICATION",
-            "qualification",
-            "QualificationContractSet.v2",
-        ),
-        (
-            "LAR-P0A-009",
-            "P0A-STATE",
-            "state-policy",
-            "StatePolicyCatalog.v1",
-        ),
+        ("LAR-P0A-REBASELINE-V325", "P0A-CANONICAL", "canonicalization", "CanonicalizationPolicy.v1"),
+        ("LAR-P0A-REBASELINE-V325", "P0A-PRODUCT", "product-submission", "ProductContract.v2"),
+        ("LAR-P0A-REBASELINE-V325", "P0A-QUALIFICATION", "qualification", "QualificationContractSet.v2"),
+        ("LAR-P0A-REBASELINE-V325", "P0A-EXECUTION", "execution-safety", "ExecutionSafetyContractSet.v1"),
+        ("LAR-P0A-REBASELINE-V325", "P0A-EVIDENCE", "evidence", "EvidenceContractSet.v1"),
+        ("LAR-P0A-REBASELINE-V325", "P0A-GIT", "deterministic-git", "DeterministicGitContractSet.v1"),
+        ("LAR-P0A-REBASELINE-V325", "P0A-STATE", "state-policy", "StatePolicyCatalog.v1"),
     )
     for task_id, artifact_id, component, expected_version in components:
         if work_items.get(task_id, {}).get("status") != "completed":
@@ -2347,7 +2388,7 @@ def _verify_selector_policy(
         failures.append("selector allowed_next_actions must be a unique array")
         allowed = []
     if allowed != EXPECTED_SELECTOR_ACTIONS:
-        failures.append("selector allowed_next_actions must match the v3.24 action catalog")
+        failures.append("selector allowed_next_actions must match the v3.25 action catalog")
     if current_work.get("selector_action") not in allowed:
         failures.append("current selector action is not allowed by selector policy")
     completed_history_actions = {
@@ -2366,7 +2407,7 @@ def _verify_selector_policy(
     review_sets = policy.get("baseline_review_missing_artifact_sets")
     if review_sets != EXPECTED_REVIEW_MISSING_ARTIFACT_SETS:
         failures.append(
-            "selector baseline_review_missing_artifact_sets must match the v3.24 manifest/review closure"
+            "selector baseline_review_missing_artifact_sets must match the v3.25 manifest/review closure"
         )
     missing = package_state.get("missing_artifact_ids")
     review_phase = (
@@ -2421,7 +2462,7 @@ def _verify_selector_policy(
         ]
         if actual_steps != EXPECTED_SELECTOR_STEPS:
             failures.append(
-                "selector condition/action order must match the v3.24 stage graph"
+                "selector condition/action order must match the v3.25 stage graph"
             )
 
     required_entrypoints = policy.get("required_entrypoints")
@@ -2459,38 +2500,39 @@ def _verify_successor_transition(
     failures: list[str],
 ) -> None:
     expected_predecessor = {
-        "id": "local-ai-runtime-0.2-v3.23",
-        "path": "docs/specs/local-ai-runtime-0.2-v3.23-baseline-candidate.md",
-        "byte_count": 188325,
-        "sha256": "80562322ebc744eda2a87a17c45f73a11982f4947c9d10e8628bb6f73ee9d5c6",
+        "id": "local-ai-runtime-0.2-v3.24",
+        "path": "docs/specs/local-ai-runtime-0.2-v3.24-baseline-candidate.md",
+        "byte_count": 199728,
+        "sha256": "13ee366152d47edec151f30619ccd068a030b63febf2d899ee822d08d4dc4e2a",
         "package_archive": (
             "docs/specs/local-ai-runtime-0.2/history/"
-            "local-ai-runtime-0.2-v3.23-normative-package.json"
+            "local-ai-runtime-0.2-v3.24-normative-package.json"
         ),
-        "plan_archive": "docs/plans/history/local-ai-runtime-0.2-v3.23-work-items.json",
+        "plan_archive": "docs/plans/history/local-ai-runtime-0.2-v3.24-work-items.json",
     }
     expected_reasons = [
-        "uv_locked_run_not_exact_environment",
-        "build_backend_not_hash_pinned",
-        "manifest_python_not_explicitly_selected",
-        "launch_product_experience_incomplete",
+        "pre_resume_child_environment_observation_not_supported_by_documented_windows_api",
+        "uv_sync_exact_option_not_supported_default_exact_required",
     ]
     expected_artifacts = [
         "P0A-CANONICAL",
+        "P0A-PRODUCT",
+        "P0A-QUALIFICATION",
         "P0A-EXECUTION",
         "P0A-EVIDENCE",
         "P0A-GIT",
+        "P0A-STATE",
     ]
     if transition.get("status") != "completed":
         failures.append("successor_transition.status must be completed")
     if transition.get("disposition") != "supersede_required":
         failures.append("successor_transition.disposition must be supersede_required")
-    if transition.get("task_id") != "LAR-P0A-REBASELINE-V324":
-        failures.append("successor_transition.task_id must bind the v3.24 rebaseline task")
-    if transition.get("trigger_id") != "V324-EXACT-TOOLCHAIN-AND-LAUNCH-EXPERIENCE-001":
-        failures.append("successor_transition.trigger_id must bind the declared v3.24 trigger")
+    if transition.get("task_id") != "LAR-P0A-REBASELINE-V325":
+        failures.append("successor_transition.task_id must bind the v3.25 rebaseline task")
+    if transition.get("trigger_id") != "V325-PRE-RESUME-ENVIRONMENT-PROOF-001":
+        failures.append("successor_transition.trigger_id must bind the declared v3.25 trigger")
     if transition.get("predecessor") != expected_predecessor:
-        failures.append("successor_transition.predecessor must bind exact frozen v3.23 identities")
+        failures.append("successor_transition.predecessor must bind exact frozen v3.24 identities")
     if transition.get("reason_codes") != expected_reasons:
         failures.append("successor_transition.reason_codes must match the reviewed successor causes")
     if transition.get("compatible_predecessor_artifact_ids") != expected_artifacts:
@@ -2500,17 +2542,11 @@ def _verify_successor_transition(
         failures.append("successor_transition.predecessor_evaluation must be an object")
     else:
         expected_evaluation = {
-            "decision": "preserve_v3_23_semantics",
-            "role": "non_normative_predecessor_evidence",
+            "decision": "replace_pre_resume_child_observation_with_two_stage_proof",
+            "role": "primary_source_contract_research",
             "profile_promoted": False,
-            "result_ref": (
-                "docs/evaluations/local-ai-runtime-0.2/"
-                "native-thin-path-capability-results.v1.json"
-            ),
-            "decision_ref": (
-                "docs/evaluations/local-ai-runtime-0.2/"
-                "native-thin-path-capability-decision.v1.json"
-            ),
+            "result_ref": "docs/research/20260716-lar-p0a-010-q0-primary-sources.md",
+            "decision_ref": "docs/change-evidence/20260716-local-ai-runtime-v3.25-environment-proof-rebaseline.md",
         }
         if evaluation != expected_evaluation:
             failures.append("predecessor evaluation projection must remain exact and non-normative")
@@ -2656,7 +2692,7 @@ def _verify_approval_and_stages(
             failures.append("declared current kernel directory does not exist")
 
     if successor.get("status") != "completed":
-        failures.append("v3.24 planning stages require completed successor transition")
+        failures.append("v3.25 planning stages require completed successor transition")
 
     if package_state.get("status") == "incomplete":
         if queue.get("queue_id") != "LOCAL-AI-RUNTIME-0.2-BASELINE-CLOSURE":
@@ -2877,7 +2913,7 @@ def _verify_graph_policy(
         "real_writer_requires": ["LAR-P1G-001", "LAR-Q0-001"],
     }
     if policy != expected:
-        failures.append("work-item graph_policy must match the deterministic v3.24 DAG policy")
+        failures.append("work-item graph_policy must match the deterministic v3.25 DAG policy")
 
     for root in EXPECTED_GRAPH_ROOTS:
         if root not in items:
@@ -2955,7 +2991,7 @@ def _verify_contract_projection_policy(
         failures.append("work-item projection rules must be unique non-empty strings")
     if policy.get("projections") != EXPECTED_CONTRACT_PROJECTIONS:
         failures.append(
-            "work-item contract projections must match the frozen v3.24 projection catalog"
+            "work-item contract projections must match the frozen v3.25 projection catalog"
         )
 
     expected_by_task: dict[str, dict[str, list[str]]] = {}

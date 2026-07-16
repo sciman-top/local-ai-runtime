@@ -1,35 +1,35 @@
 {
   "schema_version": "2.0",
-  "status_id": "local-ai-runtime-0.2-v3.24-rebaseline-status",
+  "status_id": "local-ai-runtime-0.2-v3.25-rebaseline-status",
   "updated_on": "2026-07-16",
   "baseline_candidate": {
-    "id": "local-ai-runtime-0.2-v3.24",
-    "title": "Local AI Runtime 0.2 v3.24 Windows-Local Governed AI Development Execution Baseline Candidate",
-    "path": "docs/specs/local-ai-runtime-0.2-v3.24-baseline-candidate.md",
-    "byte_count": 199728,
-    "sha256": "13ee366152d47edec151f30619ccd068a030b63febf2d899ee822d08d4dc4e2a",
+    "id": "local-ai-runtime-0.2-v3.25",
+    "title": "Local AI Runtime 0.2 v3.25 Windows-Local Governed AI Development Execution Baseline Candidate",
+    "path": "docs/specs/local-ai-runtime-0.2-v3.25-baseline-candidate.md",
+    "byte_count": 202958,
+    "sha256": "39ec0479a6ba0a0bf099f9d3f2410abb078ec3a3de4c3fe414ea76819f3834e0",
     "status": "baseline_candidate",
-    "decision": "request_changes_until_v324_normative_package_closure",
+    "decision": "request_changes_until_v325_normative_package_closure",
     "blocking_stage": "baseline_approval"
   },
   "baseline_entry": {
     "path": "docs/specs/local-ai-runtime-0.2-baseline-candidate.md",
     "role": "non_normative_navigation",
-    "target_baseline_id": "local-ai-runtime-0.2-v3.24",
-    "target_path": "docs/specs/local-ai-runtime-0.2-v3.24-baseline-candidate.md",
-    "target_byte_count": 199728,
-    "target_sha256": "13ee366152d47edec151f30619ccd068a030b63febf2d899ee822d08d4dc4e2a",
+    "target_baseline_id": "local-ai-runtime-0.2-v3.25",
+    "target_path": "docs/specs/local-ai-runtime-0.2-v3.25-baseline-candidate.md",
+    "target_byte_count": 202958,
+    "target_sha256": "39ec0479a6ba0a0bf099f9d3f2410abb078ec3a3de4c3fe414ea76819f3834e0",
     "approval_input": false,
     "maximum_byte_count": 4096,
-    "byte_count": 3314,
-    "sha256": "d7332c1ba0f88bd3c4c0f638de1364a77d8d190a4919ba9526bfc6b5a36a2f73"
+    "byte_count": 3242,
+    "sha256": "64b1abdd652ddad763b6b790287fa03a54cc8c192426aa15b1fb04d01b3904b7"
   },
   "approval_state": {
     "active": false,
     "generation": 0,
     "approval_record": null,
     "revocation_record": null,
-    "reason": "v3.24 source/lineage, four explicit compatible predecessor artifacts, ProductContract.v2, QualificationContractSet.v2 and StatePolicyCatalog.v1 are present; six later closure artifacts remain non-present."
+    "reason": "v3.25 source/lineage plus seven exact compatible v3.24 artifacts are present; six later closure artifacts remain non-present."
   },
   "normative_package": {
     "inventory_ref": "docs/specs/local-ai-runtime-0.2-normative-package.json",
@@ -48,27 +48,27 @@
   },
   "current_active_queue": {
     "queue_id": "LOCAL-AI-RUNTIME-0.2-BASELINE-CLOSURE",
-    "label": "Close the v3.24 normative package after product/toolchain successor projection",
+    "label": "Close the v3.25 normative package after environment-proof successor projection",
     "status": "in_progress",
     "source_plan": "docs/plans/orchestrator-implementation-plan.md",
     "source_work_items": "docs/plans/local-ai-runtime-0.2-work-items.json",
-    "source_plan_id": "local-ai-runtime-0.2-v3.24-implementation-work-items",
-    "work_item_count": 55,
-    "why_now": "v3.24 supersedes the unapprovable v3.23 gate semantics, now has nine verified artifacts including ProductContract.v2, QualificationContractSet.v2 and StatePolicyCatalog.v1, and must next materialize the Q0/gate/feature/resource-limit catalogs before later closure artifacts."
+    "source_plan_id": "local-ai-runtime-0.2-v3.25-implementation-work-items",
+    "work_item_count": 52,
+    "why_now": "v3.25 replaces the unsupported pre-resume child environment observation and invalid uv --exact spelling while preserving nine verified artifacts; it must next materialize Q0/gate/feature/resource-limit catalogs with the two-stage environment proof."
   },
   "current_work_item": {
     "task_id": "LAR-P0A-010",
     "selector_action": "close_baseline_normative_package_first",
     "status": "ready",
-    "reason": "Materialize exact Q0, gate, effective-feature, process/environment and resource-limit catalogs with limit fixtures, without running a live Q0 or creating the runtime."
+    "reason": "Materialize exact Q0, gate, effective-feature, two-stage process/environment and resource-limit catalogs with limit fixtures, without running a live Q0 or creating the runtime."
   },
   "planning_optimization": {
     "status": "active",
     "policy_ref": "docs/plans/local-ai-runtime-0.2-work-items.json",
     "policy_kind": "bounded_minimum_operator_planning_v1",
     "complexity_health": "warning_all_dimensions",
-    "frozen_v324_semantics_changed": false,
-    "active_profile_change": "none"
+    "active_profile_change": "none",
+    "frozen_v325_semantics_changed": false
   },
   "legacy_runtime_posture": {
     "current_kernel": "runtime/host-orchestrator",
@@ -78,7 +78,7 @@
     "new_package_exists": false,
     "legacy_guard_complete": false,
     "new_batch_claims_allowed": false,
-    "notes": "Existing host-orchestrator and runtime_v2 behavior remain unchanged during v3.24 candidate closure. They are migration inputs, not target implementation."
+    "notes": "Existing host-orchestrator and runtime_v2 behavior remain unchanged during v3.25 candidate closure. They are migration inputs, not target implementation."
   },
   "truth_reset": {
     "performed": false,
@@ -106,7 +106,7 @@
     "p5_cutover_complete": false,
     "legacy_writer_retired": false
   },
-  "current_evidence_ref": "docs/change-evidence/20260716-lar-p0a-009-state-policy.md",
+  "current_evidence_ref": "docs/change-evidence/20260716-local-ai-runtime-v3.25-environment-proof-rebaseline.md",
   "authoritative_docs": [
     "AGENTS.md",
     "README.md",
@@ -118,7 +118,7 @@
     "docs/backlog/orchestrator-task-list.md",
     "docs/specs/acceptance-and-gates.md",
     "docs/specs/local-ai-runtime-0.2-baseline-candidate.md",
-    "docs/specs/local-ai-runtime-0.2-v3.24-baseline-candidate.md",
+    "docs/specs/local-ai-runtime-0.2-v3.25-baseline-candidate.md",
     "docs/specs/local-ai-runtime-0.2-normative-package.json",
     "docs/plans/local-ai-runtime-0.2-work-items.json",
     "docs/architecture/next-work-selection-policy.json"
@@ -127,7 +127,7 @@
     {
       "path": "AGENTS.md",
       "required_strings": [
-        "local-ai-runtime-0.2-v3.24",
+        "local-ai-runtime-0.2-v3.25",
         "LOCAL-AI-RUNTIME-0.2-BASELINE-CLOSURE",
         "LAR-P0A-010",
         "planning_optimization_policy",
@@ -139,7 +139,7 @@
     {
       "path": "README.md",
       "required_strings": [
-        "local-ai-runtime-0.2-v3.24",
+        "local-ai-runtime-0.2-v3.25",
         "baseline_candidate",
         "LOCAL-AI-RUNTIME-0.2-BASELINE-CLOSURE",
         "LAR-P0A-010",
@@ -152,7 +152,7 @@
     {
       "path": "docs/README.md",
       "required_strings": [
-        "local-ai-runtime-0.2-v3.24",
+        "local-ai-runtime-0.2-v3.25",
         "blocking_stage=baseline_approval",
         "LAR-P0A-010",
         "planning_optimization_policy",
@@ -197,7 +197,9 @@
         "docs_contract_sync_v1",
         "approved_root_files",
         "approved_subpackages",
-        "required_source_owners"
+        "required_source_owners",
+        "pre_resume_parent_environment_proof",
+        "post_resume_q0_child_environment_observation"
       ]
     },
     {
@@ -207,7 +209,7 @@
         "P0B",
         "P5",
         "B2/per-repo",
-        "机器图总计 55 项",
+        "机器图总计 52 项",
         "same_run_reselect_after_verified_atomic_closeout",
         "B3 portfolio scheduling deferred beyond 0.2",
         "approved_root_files",
@@ -218,10 +220,9 @@
     {
       "path": "docs/plans/orchestrator-implementation-plan.md",
       "required_strings": [
-        "LAR-P0A-REBASELINE-V324",
-        "LAR-P0A-004",
-        "LAR-P0A-005",
-        "LAR-P0A-009",
+        "LAR-P0A-REBASELINE-V325",
+        "pre_resume_parent_environment_proof",
+        "post_resume_q0_child_environment_observation",
         "LAR-P1A-004",
         "LAR-P1F-006",
         "ProcessHandlePolicy",
@@ -275,15 +276,17 @@
         "contracts/kernel/qualification/storage/execution/recovery/git_local/operations/compat",
         "approved_root_files",
         "approved_subpackages",
-        "required_source_owners"
+        "required_source_owners",
+        "pre_resume_parent_environment_proof",
+        "post_resume_q0_child_environment_observation"
       ]
     },
     {
       "path": "docs/backlog/orchestrator-task-list.md",
       "required_strings": [
-        "LAR-P0A-REBASELINE-V324",
-        "LAR-P0A-004",
-        "LAR-P0A-005",
+        "LAR-P0A-REBASELINE-V325",
+        "pre_resume_parent_environment_proof",
+        "post_resume_q0_child_environment_observation",
         "LAR-P1A-004",
         "LAR-P1F-006",
         "LAR-P1G-001",
@@ -299,9 +302,9 @@
       "required_strings": [
         "role=non_normative_navigation",
         "approval_input=false",
-        "local-ai-runtime-0.2-v3.24",
-        "docs/specs/local-ai-runtime-0.2-v3.24-baseline-candidate.md",
-        "13ee366152d47edec151f30619ccd068a030b63febf2d899ee822d08d4dc4e2a",
+        "local-ai-runtime-0.2-v3.25",
+        "docs/specs/local-ai-runtime-0.2-v3.25-baseline-candidate.md",
+        "39ec0479a6ba0a0bf099f9d3f2410abb078ec3a3de4c3fe414ea76819f3834e0",
         "BaselineManifest.v1",
         "LAR-P0A-010"
       ]
@@ -338,7 +341,9 @@
         "contracts/kernel/qualification/storage/execution/recovery/git_local/operations/compat",
         "approved_root_files",
         "approved_subpackages",
-        "required_source_owners"
+        "required_source_owners",
+        "pre_resume_parent_environment_proof",
+        "post_resume_q0_child_environment_observation"
       ]
     }
   ],
@@ -353,35 +358,36 @@
   "successor_transition": {
     "status": "completed",
     "disposition": "supersede_required",
-    "task_id": "LAR-P0A-REBASELINE-V324",
+    "task_id": "LAR-P0A-REBASELINE-V325",
     "predecessor": {
-      "id": "local-ai-runtime-0.2-v3.23",
-      "path": "docs/specs/local-ai-runtime-0.2-v3.23-baseline-candidate.md",
-      "byte_count": 188325,
-      "sha256": "80562322ebc744eda2a87a17c45f73a11982f4947c9d10e8628bb6f73ee9d5c6",
-      "package_archive": "docs/specs/local-ai-runtime-0.2/history/local-ai-runtime-0.2-v3.23-normative-package.json",
-      "plan_archive": "docs/plans/history/local-ai-runtime-0.2-v3.23-work-items.json"
+      "id": "local-ai-runtime-0.2-v3.24",
+      "path": "docs/specs/local-ai-runtime-0.2-v3.24-baseline-candidate.md",
+      "byte_count": 199728,
+      "sha256": "13ee366152d47edec151f30619ccd068a030b63febf2d899ee822d08d4dc4e2a",
+      "package_archive": "docs/specs/local-ai-runtime-0.2/history/local-ai-runtime-0.2-v3.24-normative-package.json",
+      "plan_archive": "docs/plans/history/local-ai-runtime-0.2-v3.24-work-items.json"
     },
-    "trigger_id": "V324-EXACT-TOOLCHAIN-AND-LAUNCH-EXPERIENCE-001",
+    "trigger_id": "V325-PRE-RESUME-ENVIRONMENT-PROOF-001",
     "reason_codes": [
-      "uv_locked_run_not_exact_environment",
-      "build_backend_not_hash_pinned",
-      "manifest_python_not_explicitly_selected",
-      "launch_product_experience_incomplete"
+      "pre_resume_child_environment_observation_not_supported_by_documented_windows_api",
+      "uv_sync_exact_option_not_supported_default_exact_required"
     ],
     "predecessor_evaluation": {
-      "decision": "preserve_v3_23_semantics",
-      "role": "non_normative_predecessor_evidence",
+      "decision": "replace_pre_resume_child_observation_with_two_stage_proof",
+      "role": "primary_source_contract_research",
       "profile_promoted": false,
-      "result_ref": "docs/evaluations/local-ai-runtime-0.2/native-thin-path-capability-results.v1.json",
-      "decision_ref": "docs/evaluations/local-ai-runtime-0.2/native-thin-path-capability-decision.v1.json"
+      "result_ref": "docs/research/20260716-lar-p0a-010-q0-primary-sources.md",
+      "decision_ref": "docs/change-evidence/20260716-local-ai-runtime-v3.25-environment-proof-rebaseline.md"
     },
     "compatible_predecessor_artifact_ids": [
       "P0A-CANONICAL",
+      "P0A-PRODUCT",
+      "P0A-QUALIFICATION",
       "P0A-EXECUTION",
       "P0A-EVIDENCE",
-      "P0A-GIT"
+      "P0A-GIT",
+      "P0A-STATE"
     ],
-    "evidence_ref": "docs/change-evidence/20260716-local-ai-runtime-v3.24-product-toolchain-rebaseline.md"
+    "evidence_ref": "docs/change-evidence/20260716-local-ai-runtime-v3.25-environment-proof-rebaseline.md"
   }
 }
